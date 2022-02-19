@@ -12,7 +12,7 @@ class TestApp(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    grid = grids.Grid1D(shape=(4, 1, 1), dx=300, dy=350, dz=40, phi=0.27, k=270, dtype='double')
+    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270, dtype='double')
     fluid = fluids.Fluid(mu=0.5 , B=1, dtype='double')
     model = models.Model(grid, fluid, dtype='single')
     model.set_well(i=4, q=-600, s=1.5, r=3.5)

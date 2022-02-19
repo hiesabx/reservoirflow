@@ -11,59 +11,8 @@ class Grid(Base):
         2. columns for dy. 2D grids are stored as a table where rows refer to x-direction while columns refere to y-direction. 
         3. layers for dz. 3D grids are stored as cubes where rows refer to x-direction, columns to y-direction, and layers for z-direction.
     '''
-    def __init__(self, shape, dx, dy, dz):
-        self.dim = list(dim for dim in shape if dim > 1)
-        self.dims = (dx, dy, dz) # lengths: dx, dy, dz
-        self.dtype = np.single # np.single, np.double
-        if len(self.dim) == 1:
-            self.grid_type = '1D'
-        elif len(self.dim) == 2:
-            self.grid_type = '2D'
-        elif len(self.dim) == 3:
-            self.grid_type = '3D'
-        else:
-            assert len(self.dim) <= 3, 'Geometry higher than 3 dimensions is not allowed!'
-
-
-    def set_tops(self, values):
-        self.z = self.blocks * values
-
-
-    def set_rock_props(self, phi, k):
-        self.phi = self.blocks * phi # np.zeros(self.shape) + phi
-        self.k = self.blocks * k # np.zeros(self.shape) + k
-
-
-    def set_system(self, sys_type, units):
-        self.sys_units = units
-        if sys_type in ['incompressible']:
-            self.RHS = 0
-            self.sys_type = 'incompressible'
-        else:
-            self.RHS = 0
-            print("System type is unknown!. RHS is set to 0 'incompressible'")
-
-
-    def get_neighbors(self, index):
-        if len(self.dim) == 1:
-            assert index > 0 and index <= self.shape-2, 'grid index is out of range'
-            if index == 1:
-                return [index+1]
-            if index == self.shape-2:
-                return [index-1]
-            else:
-                return [index-1, index+1]
-
-
-    def get_boundaries(self, index):
-        if len(self.dim) == 1:
-            assert index > 0 and index <= self.shape-2, 'grid index is out of range'
-            if index == 1:
-                return [index-1]
-            if index == self.shape-2:
-                return [index+1]
-            else:
-                return []
+    def __init__(self):
+        pass
 
 
 #%% 2. 1D Grid Class: 
@@ -72,24 +21,26 @@ class Grid1D(Base):
     Grid class to create a grid using numpy arrays. 1D grids are stored as 1 column with multiple rows which represent x-direction.  
     '''
     name = '1D Grid'
-    def __init__(self, shape, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='us'):
+    def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='us'):
         """
         
         """
         # super().__init__(unit)
-        self.dim = list(dim for dim in shape if dim > 1)
-        assert len(self.dim) == 1, 'Geometry higher than 1D is not allowed using Grid1D class.'
-        self.dims = (dx, dy, dz) # lengths: dx, dy, dz
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.get_dimension() # self.dimension = self.D
+        self.get_shape() # self.shape
+        self.get_order(type='natural')
+        assert self.D <= 1, 'Geometry higher than 1D is not allowed using Grid1D class.'
         self.dtype = dtype # np.single, np.double
-        self.type = '1D'
-        self.shape = np.max(shape) + 2 # + 2 boundaries in 1D
-        self.order = np.arange(self.shape) # natural order: 0, -1 are boundaries.
-        self.blocks = np.ones(self.shape, dtype='int')
-        self.iBlocks = self.blocks.copy()
-        self.iBlocks[[0, -1]] = 0
-        self.bBlocks = np.zeros(self.shape, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
-        self.bBlocks[[0, -1]] = 1            
-        self.boundaries = np.argwhere(self.bBlocks != 0)
+        self.type = 'cartesian'
+        self.blocks = np.ones(self.nx + 2, dtype='int')
+        self.i_blocks = self.blocks.copy()
+        self.i_blocks[[0, -1]] = 0
+        self.b_blocks = np.zeros(self.nx + 2, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
+        self.b_blocks[[0, -1]] = 1            
+        self.boundaries = self.get_boundaries()
         self.dx = self.blocks * dx
         self.dy = self.blocks * dy
         self.dz = self.blocks * dz
@@ -193,22 +144,40 @@ class Grid1D(Base):
     get_A = get_area
 
 
+    def get_dimension(self):
+        self.dimension = self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
+    get_D = get_dimension
+
+    
+    def get_shape(self):
+        self.shape = (self.nx, self.ny, self.nz)
+    get_s = get_shape
+
+
+    def get_order(self, type='natural'):
+        if type == 'natural':
+            self.order = np.arange(self.nx + 2) # natural order: 0, -1 are boundaries.
+        else:
+            raise ValueError("""Order type is not supported.\n
+                            Supported order types: ['natural']""")
+    
     def get_boundaries(self, i=None):
         """
         Arguments:
             - i: index in x-direction.
         """
         if i == None:
-            return [0, self.shape-1]
-        assert i > 0 and i <= self.shape-2, 'grid index is out of range(1, {}).'.format(self.shape-1)
-        if i == 1:
-            if i == self.shape-2:
-                return [i-1, i+1]
-            return [i-1]
-        if i == self.shape-2:
-            return [i+1]
+            return [0, self.nx + 1] # np.argwhere(self.b_blocks == 1)
+        assert i > 0 and i <= self.nx, 'grid index is out of range(1, {}).'.format(self.nx + 1)
+        if self.nx == 1:
+            return [0, 2]
         else:
-            return []
+            if i == 1:
+                return [0]
+            if i == self.nx:
+                return [self.nx + 1]
+            else:
+                return []
     get_b = get_boundaries
 
 
@@ -217,25 +186,28 @@ class Grid1D(Base):
         Arguments:
             - i: index in x-direction.
         """
-        assert i > 0 and i <= self.shape-2, 'grid index is out of range.'
-        if i == 1:
-            return [i+1]
-        if i == self.shape-2:
-            return [i-1]
+        assert i > 0 and i <= self.nx, 'grid index is out of range.'
+        if self.nx == 1:
+            return []
         else:
-            return [i-1, i+1]
+            if i == 1:
+                return [i+1]
+            if i == self.nx:
+                return [i-1]
+            else:
+                return [i-1, i+1]
     get_n = get_neighbors
 
 
 #%%
 if __name__ == '__main__':
     # Define:
-    grid = Grid1D(shape=(4, 1, 1), dx=300, dy=350, dz=40, phi=0.27, k=270)
+    grid = Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270)
     # Doc:
     print(grid.__doc__)
     # Setters:
     grid.set_comp(1e-6)
-    grid.set_permeability(200, 1)
+    # grid.set_permeability(200, 1)
     # grid.set_props(0.3, 11)
     # grid.set_phi(0.2)
     # grid.set_k(10)
