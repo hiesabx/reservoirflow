@@ -23,7 +23,7 @@ class Model(base.Base):
         self.grid = grid # composition
         self.fluid = fluid # composition
         self.pressures = (self.grid.blocks * np.nan).astype(self.dtype)
-        self.rates = np.zeros(grid.shape, dtype=self.dtype)
+        self.rates = np.zeros(grid.nx + 2, dtype=self.dtype)
         self.wells = {}
         #self.add_well(well)
         self.set_properties()
@@ -150,7 +150,7 @@ class Model(base.Base):
 
     def update_matrix(self, i, A, d, sparse):
         # arrays are passed by reference
-        n = self.grid.dim[0]
+        n = self.grid.nx
         i_lhs, i_rhs = self.get_i_flow_equation(i)
         i_lhs = list(i_lhs.values())
         d[i-1] = np.array(i_rhs).astype(self.dtype)
@@ -172,8 +172,8 @@ class Model(base.Base):
     
 
     def get_matrix(self, sparse, plot=False):
-        if self.grid.type == '1D':
-            n = self.grid.dim[0]
+        if self.grid.D == 1:
+            n = self.grid.nx
             if sparse:
                 A = ss.diags([-self.trans*2, self.trans[1:-1], self.trans[:-2]],
                              [0, 1, -1], 
@@ -214,7 +214,7 @@ class Model(base.Base):
         else:
             pressures = np.linalg.solve(self.A, self.d) # same as: np.dot(np.linalg.inv(A),d)
         
-        if self.grid.type == '1D':
+        if self.grid.D == 1:
             # Update pressures: 
             self.pressures[1:-1] = pressures.flatten()
             # Update wells:
@@ -259,7 +259,7 @@ class Model(base.Base):
 
 
     def plot_grid(self):
-        values = self.pressures[1:-1][np.newaxis,:][np.newaxis,:]
+        values = self.pressures[1:-1].reshape(4, 1, 1)
         grid = pv.UniformGrid()
         grid.dimensions = np.array(values.shape) + 1
         grid.origin = (0, 0, 0)  # The bottom left corner of the data set
@@ -269,10 +269,11 @@ class Model(base.Base):
 
 
 if __name__ == '__main__':
-    grid = grids.Grid1D(shape=(4, 1, 1), dx=300, dy=350, dz=40, phi=0.27, k=270, dtype='double')
+    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=300, dz=40, phi=0.27, k=270, dtype='double')
     fluid = fluids.Fluid(mu=0.5 , B=1, dtype='double')
     model = Model(grid, fluid, dtype='single')
     model.set_well(i=4, q=-600, s=1.5, r=3.5) # model.set_well(i=4, wells.Well(i=4, q=-600, s=0, r=3.5))
+    model.set_well(i=1, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: {'pressure': 4000}, -1: {'rate': 0}})
     # print(model.pressures)
     # A, d = model.get_matrix(sparse=True)
@@ -284,7 +285,7 @@ if __name__ == '__main__':
     # model.get_flow_equations()
     # print(model.get_matrix(sparse=False)[0])
     # print(model.get_matrix(sparse=True)[0].toarray())
-    model.solve(sparse=True, check_MB=False)
+    model.solve(sparse=False, check_MB=True, verbose=False)
     #model.plot('pressures')
     model.plot_grid()
     # Comp
