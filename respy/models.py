@@ -30,8 +30,7 @@ class Model(base.Base):
 
 
     def set_transmissibility(self):
-        self.transmissibility = self.trans = (self.factors['transmissibility conversion'] * \
-                                            (self.grid.k * self.grid.area) / (self.fluid.mu * self.fluid.B * self.grid.dx))[:-1]
+        self.transmissibility = self.trans = self.grid.G / (self.fluid.mu * self.fluid.B)
     get_trans = set_transmissibility
 
 
@@ -260,7 +259,7 @@ class Model(base.Base):
 
 
     def plot_grid(self):
-        values = self.pressures[1:-1].reshape(4, 1, 1)
+        values = self.pressures[1:-1][np.newaxis,:][np.newaxis,:]
         grid = pv.UniformGrid()
         grid.dimensions = np.array(values.shape) + 1
         grid.origin = (0, 0, 0)  # The bottom left corner of the data set
@@ -285,7 +284,7 @@ if __name__ == '__main__':
     # model.get_flow_equations()
     # print(model.get_matrix(sparse=False)[0])
     # print(model.get_matrix(sparse=True)[0].toarray())
-    model.solve(sparse=False)
+    model.solve(sparse=True, check_MB=False)
     #model.plot('pressures')
     model.plot_grid()
     # Comp
@@ -298,5 +297,3 @@ if __name__ == '__main__':
     # print(model.__doc__)
     # print('- repr', repr(model))
     # model.report()
-
-# %%

@@ -72,7 +72,7 @@ class Grid1D(Base):
     Grid class to create a grid using numpy arrays. 1D grids are stored as 1 column with multiple rows which represent x-direction.  
     '''
     name = '1D Grid'
-    def __init__(self, shape, dx, dy, dz, z=None, phi=None, k=None, comp=None, comp_type=None, dtype='double', unit='us'):
+    def __init__(self, shape, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='us'):
         """
         
         """
@@ -93,8 +93,42 @@ class Grid1D(Base):
         self.dx = self.blocks * dx
         self.dy = self.blocks * dy
         self.dz = self.blocks * dz
-        self.area = self.dy * self.dz
-        self.set_properties(phi, k, z, comp, comp_type)
+        self.get_area() # self.area
+        self.set_properties(phi, k, z, comp)
+        self.get_G() # self.G
+
+
+    def get_is_homogeneous(self):
+        if  all(self.dx[1:-1] == self.dx[1]) & \
+            all(self.dy[1:-1] == self.dy[1]) & \
+            all(self.dz[1:-1] == self.dz[1]) & \
+            all(self.k[1:-1] == self.k[1]) & \
+            all(self.porosity[1:-1] == self.porosity[1]):
+            self.is_homogeneous = True # homogeneous
+        else:
+            self.is_homogeneous = False # heterogeneous
+
+
+    def mean(self, property, type='geometric'):
+        if self.is_homogeneous:
+            return property[1:]
+        else:
+            if type == 'geometric':
+                return (property[:-1] + property[1:])/2
+            else:
+                return (property[:-1] + property[1:])/2
+
+
+    def get_G(self):
+        if self.is_homogeneous:
+            self.G = self.factors['transmissibility conversion'] * \
+                self.mean(self.k) * self.mean(self.area) / self.mean(self.dx)
+        else:
+            self.G = 2 * self.factors['transmissibility conversion'] / \
+                (
+                    (self.dx[:-1] / (self.area[:-1] * self.k[:-1])) + \
+                    (self.dx[1:] / (self.area[1:] * self.k[1:]))
+                )
 
 
     def set_porosity(self, phi, i=None):
@@ -105,6 +139,7 @@ class Grid1D(Base):
             self.porosity = self.phi = self.blocks * phi # np.zeros(self.shape) + phi
         else:
             self.porosity[i] = phi
+            self.get_is_homogeneous()
     set_phi = set_porosity
 
 
@@ -115,7 +150,8 @@ class Grid1D(Base):
         if not i:
             self.permeability = self.k = self.blocks * k # np.zeros(self.shape) + k
         else:
-            self.permeability[i] = k  
+            self.permeability[i] = k
+            self.get_is_homogeneous()
     set_k = set_permeability
 
     
@@ -130,7 +166,7 @@ class Grid1D(Base):
     set_z = set_tops
 
 
-    def set_properties(self, phi=None, k=None, z=None, comp=None, comp_type=None, i=None):
+    def set_properties(self, phi=None, k=None, z=None, comp=None, i=None):
         """
         
         """
@@ -142,18 +178,19 @@ class Grid1D(Base):
             self.set_tops(z, i)
         if comp != None:
             self.set_compressibility(comp)
+        # Set default values if not defined:
         if not hasattr(self, 'tops'):
             self.set_tops(0)
         if not hasattr(self, 'compressibility'):
             self.set_compressibility(0)
+        if not hasattr(self, 'is_homogeneous'):
+            self.get_is_homogeneous()
     set_props = set_properties
 
 
-    # def set_boundaries_dict(self, loc, d):
-    #     self.boundaries_dict[loc] = 
-        
-            
-    # set_b_dict = set_boundaries_dict
+    def get_area(self):
+        self.area = self.A = self.dy * self.dz
+    get_A = get_area
 
 
     def get_boundaries(self, i=None):
@@ -198,6 +235,7 @@ if __name__ == '__main__':
     print(grid.__doc__)
     # Setters:
     grid.set_comp(1e-6)
+    grid.set_permeability(200, 1)
     # grid.set_props(0.3, 11)
     # grid.set_phi(0.2)
     # grid.set_k(10)
