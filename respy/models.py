@@ -259,13 +259,43 @@ class Model(base.Base):
 
 
     def plot_grid(self):
-        values = self.pressures[1:-1].reshape(4, 1, 1)
+        cbar_opt = dict(height=0.0, 
+                        vertical=True, 
+                        position_x=0.05, 
+                        position_y=0.05,
+                        fmt="%.f",
+                        #interactive=True,
+        )
+        # annotations = {
+        #     self.pressures[0]: 'Boundary',
+        #     self.wells[4]['pwf']: "Pwf",
+        # }
+        values = self.pressures[1:-1].reshape(self.grid.nx, self.grid.ny, self.grid.nz)
         grid = pv.UniformGrid()
         grid.dimensions = np.array(values.shape) + 1
         grid.origin = (0, 0, 0)  # The bottom left corner of the data set
-        grid.spacing = (self.grid.dx[0], self.grid.dx[0], self.grid.dz[0])  # These are the cell sizes along each axis
-        grid.cell_data["values"] = values#.flatten(order="F")  # Flatten the array!
-        grid.plot(show_edges=True)
+        grid.spacing = (self.grid.dx[0], self.grid.dy[0], self.grid.dz[0])  # These are the cell sizes along each axis
+        grid.cell_data["Pressures"] = values
+        pl = pv.Plotter()
+        pl.add_mesh(grid, 
+                    # scalars='Pressures', 
+                    scalar_bar_args=cbar_opt, 
+                    # annotations=annotations,
+        )
+        for w in self.wells:
+            x = self.grid.dx[1:w].sum() + self.grid.dx[w]//2
+            y = self.grid.dy[w]//2
+            z = 100
+            well_center = (x, y, z)
+            well = pv.Cylinder(center=well_center, height=y, radius=self.wells[w]['r'], direction=(0,0,1))
+            pl.add_mesh(well)
+        pl.camera_position = 'xy'
+        #p.show_bounds(grid='front', location='outer', all_edges=True)
+        #_ = p.update_scalar_bar_range(0, self.pressures.max())
+        pl.show_grid()
+        pl.show_axes()
+        pl.set_background('black') #, top='white')
+        pl.show()
 
 
 if __name__ == '__main__':
