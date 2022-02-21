@@ -1,7 +1,6 @@
-# Python Reservoir Simulator - respy
+# Python Petroleum Reservoir Simulator - respy
 
 ## Introduction
-
 
 ## Reference
 
