@@ -21,3 +21,6 @@
    * [Speeding up Python and NumPy: C++ing the Way.](https://medium.com/coding-with-clarity/speeding-up-python-and-numpy-c-ing-the-way-3b9658ed78f4)
 3. Git Workflow:
    * [git - the simple guide](http://rogerdudler.github.io/git-guide/)
+   * [An introduction to Git: what it is, and how to use it](https://www.freecodecamp.org/news/what-is-git-and-how-to-use-it-c341b049ae61)
+   * [How to become a Git expert](https://www.freecodecamp.org/news/how-to-become-a-git-expert-e7c38bf54826)
+   * [Book: Git Pro](https://git-scm.com/book/en/v2)
