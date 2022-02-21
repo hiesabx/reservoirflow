@@ -12,7 +12,7 @@ grid.k[3] = 10 # change permeability in grid 3
 fluid = fluids.Fluid(mu=0.5 , B=1, dtype='double', unit='field')
 # Step 3: create a model
 model = models.Model(grid, fluid, dtype='double')
-# Step 4: define well locations
+# Step 4: add wells
 #       : method 1 (directly using model method)
 model.set_well(i=4, q=-600, s=1.5, r=3.5) # well 1 (Producer)
 #       : method 2 (using wells module)
@@ -25,8 +25,9 @@ model.set_boundaries({
 # Step 6: run the model (single time step)
 model.solve(sparse=False, check_MB=True, verbose=False)
 # Step 7: show pressures in 3D grid
+#       : method 1 (directly using model method)
 model.plot_grid(property='pressures', show_boundary=False)
-#       : same but using plots module
+#       : method 2 (using wells module)
 plots.plot_grid(model, property='pressures', show_boundary=False)
 # Step 8: show report
 model.report()
