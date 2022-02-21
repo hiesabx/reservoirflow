@@ -19,3 +19,5 @@
    * [3D Visualization](https://docs.pyvista.org/examples/00-load/create-uniform-grid.html)
 2. Improve Performance:
    * [Speeding up Python and NumPy: C++ing the Way.](https://medium.com/coding-with-clarity/speeding-up-python-and-numpy-c-ing-the-way-3b9658ed78f4)
+3. Git Workflow:
+   * [git - the simple guide](http://rogerdudler.github.io/git-guide/)
