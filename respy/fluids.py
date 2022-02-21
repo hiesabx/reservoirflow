@@ -9,7 +9,7 @@ class Fluid(Base):
     Fluid class to create a fluid.
     '''
     name = 'Single Phase Fluid'
-    def __init__(self, mu=None, B=None, rho=None, comp=None, comp_type=None, dtype='double', unit='us'):
+    def __init__(self, mu=None, B=None, rho=None, comp=None, comp_type=None, dtype='double', unit='field'):
         # super().__init__(unit)
         self.set_properties(mu, B, rho, comp, comp_type)
 
