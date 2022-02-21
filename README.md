@@ -1,7 +1,18 @@
-# Python Reservoir Simulator - respy
+# Python Petroleum Reservoir Simulator - respy
 
 ## Introduction
 
+
+## Toturial
+
+### Example 1:
+
+- Code:
+![](images/example_1_code.png)
+- Visualization:
+![](images/example_1_3d.png)
+
+- Terminal Report:
 
 ## Reference
 

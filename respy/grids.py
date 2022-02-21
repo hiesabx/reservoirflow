@@ -1,6 +1,7 @@
 #%% 1. Import Statements:
 from respy.base import Base
 import numpy as np
+import pyvista as pv
 
 
 #%% 2. Grid Class: 
@@ -21,7 +22,7 @@ class Grid1D(Base):
     Grid class to create a grid using numpy arrays. 1D grids are stored as 1 column with multiple rows which represent x-direction.  
     '''
     name = '1D Grid'
-    def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='us'):
+    def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='field'):
         """
         
         """
@@ -44,9 +45,54 @@ class Grid1D(Base):
         self.dx = self.blocks * dx
         self.dy = self.blocks * dy
         self.dz = self.blocks * dz
+        self.meshgrid = np.meshgrid(self.dx[:self.nx], self.dy[:self.ny], self.dz[:self.nz])
+        # self.get_pv_grid()
         self.get_area() # self.area
         self.set_properties(phi, k, z, comp)
         self.get_G() # self.G
+
+
+    def get_corners(self, show_boundary, verbose=False):
+        xcorn = np.insert(self.dx.cumsum(), 0, 0) # or np.append([0],arr) or np.concatenate([0],arr)
+        if show_boundary:
+            i = 2
+        else:
+            i = 0
+            xcorn = xcorn[1:-1]
+        xcorn = np.repeat(xcorn, 2)
+        xcorn = xcorn[1:-1]
+        xcorn = np.tile(xcorn, 4*self.ny*self.nz)
+        
+        ycorn = np.arange(0, (self.ny+1)*self.dy[1], self.dy[1])
+        ycorn = np.repeat(ycorn, 2)
+        ycorn = ycorn[1:-1]
+        ycorn = np.tile(ycorn, (2*(self.nx+i), 2*self.nz))
+        ycorn = np.transpose(ycorn)
+        ycorn = ycorn.flatten()
+
+        zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])
+        zcorn = np.repeat(zcorn, 2)
+        zcorn = zcorn[1:-1]
+        zcorn = np.repeat(zcorn, (4*(self.nx+i)*self.ny))
+        if verbose: print(xcorn.shape, ycorn.shape, zcorn.shape)
+        corners = np.stack((xcorn, ycorn, zcorn))
+        self.corners = corners.transpose()
+        return self.corners
+
+    
+    def get_pv_grid(self, show_boundary, method=2, verbose=False):
+        if show_boundary:
+            dims = np.array((self.nx+2,self.ny,self.nz))+1
+        else:
+            dims = np.array((self.nx,self.ny,self.nz))+1
+        if method == 1:
+            self.pv_grid = pv.UniformGrid(dims=dims)
+            self.pv_grid.spacing = (self.dx[0], self.dy[0], self.dz[0])
+        else:
+            self.pv_grid = pv.ExplicitStructuredGrid(dims, self.get_corners(show_boundary))
+            #self.pv_grid = self.pv_grid.compute_connectivity()
+        if verbose: print(self.pv_grid)
+        return self.pv_grid
 
 
     def get_is_homogeneous(self):
@@ -150,7 +196,7 @@ class Grid1D(Base):
 
     
     def get_shape(self):
-        self.shape = (self.nx, self.ny, self.nz)
+        self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
     get_s = get_shape
 
 
@@ -202,7 +248,7 @@ class Grid1D(Base):
 #%%
 if __name__ == '__main__':
     # Define:
-    grid = Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270)
+    grid = Grid1D(nx=10, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270)
     # Doc:
     print(grid.__doc__)
     # Setters:

@@ -3,7 +3,7 @@ from tabulate import tabulate
 class Base():
     name = None
     units_dict = {
-        'us':
+        'field':
             {
                 'transmissibility': 'STB/D-psi',
                 'error': 'STB/D',
@@ -16,7 +16,7 @@ class Base():
             }
     }
     factors_dict = {
-        'us':
+        'field':
             {
                 'transmissibility conversion': 0.001127,
                 'gravity conversion': 0.21584*10**-3,
@@ -31,15 +31,15 @@ class Base():
         
     }
     
-    unit = 'us'
+    unit = 'field'
     units = units_dict[unit]
     factors = factors_dict[unit]
 
-    def __init__(self, unit='us'):
+    def __init__(self, unit='field'):
         self.set_units(unit)
 
 
-    def set_units(self, unit='us'):
+    def set_units(self, unit='field'):
         if unit in self.units_dict.keys():
             self.unit = unit
             self.units = self.units_dict[unit]

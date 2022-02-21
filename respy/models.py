@@ -1,11 +1,10 @@
 #%% 1. Import Statements:
-from respy import base, grids, fluids, wells
+from respy import base, grids, fluids, wells, plots
 import numpy as np
 import sympy as sym
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
 import matplotlib.pyplot as plt
-import pyvista as pv
 
 
 #%% 2. Model Class: 
@@ -14,7 +13,7 @@ class Model(base.Base):
     Model class to create a model.
     '''
     name = 'Model'
-    def __init__(self, grid, fluid, dtype='single', unit='us'):
+    def __init__(self, grid, fluid, dtype='single', unit='field'):
         '''
         dd
         '''
@@ -46,10 +45,13 @@ class Model(base.Base):
         return 0.14*(self.grid.dx[i]**2 + self.grid.dy[i]**2)**0.5
 
 
-    def set_well(self, i, well=None, q=None, pwf=None, r=None, s=None):
+    def set_well(self, i=None, well=None, q=None, pwf=None, r=None, s=None):
         if well != None:
+            if i == None:
+                i = well.i
             self.wells[i] = vars(well)
-        else: 
+        else:
+            assert i != None, "i must be defined"
             if not i in self.wells.keys():
                 self.wells[i] = {}
             if q != None:
@@ -61,7 +63,7 @@ class Model(base.Base):
             if s != None:
                 self.wells[i]['s'] = s
         if 'q' in self.wells[i]:
-            self.rates[i] = q
+            self.rates[i] = self.wells[i]['q']
         self.wells[i]['r_eq'] = self.get_well_r_eq(i)
         self.wells[i]['G'] = self.get_well_G(i)
 
@@ -258,18 +260,13 @@ class Model(base.Base):
         plt.show()
 
 
-    def plot_grid(self):
-        values = self.pressures[1:-1].reshape(4, 1, 1)
-        grid = pv.UniformGrid()
-        grid.dimensions = np.array(values.shape) + 1
-        grid.origin = (0, 0, 0)  # The bottom left corner of the data set
-        grid.spacing = (self.grid.dx[0], self.grid.dx[0], self.grid.dz[0])  # These are the cell sizes along each axis
-        grid.cell_data["values"] = values#.flatten(order="F")  # Flatten the array!
-        grid.plot(show_edges=True)
-
+    def plot_grid(self, property, show_boundary):
+        plots.plot_grid(self, property=property, show_boundary=show_boundary)
 
 if __name__ == '__main__':
-    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=300, dz=40, phi=0.27, k=270, dtype='double')
+    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270, dtype='double')
+    grid.dx[2]=600
+    #grid.get_pv_grid()
     fluid = fluids.Fluid(mu=0.5 , B=1, dtype='double')
     model = Model(grid, fluid, dtype='single')
     model.set_well(i=4, q=-600, s=1.5, r=3.5) # model.set_well(i=4, wells.Well(i=4, q=-600, s=0, r=3.5))
@@ -287,7 +284,8 @@ if __name__ == '__main__':
     # print(model.get_matrix(sparse=True)[0].toarray())
     model.solve(sparse=False, check_MB=True, verbose=False)
     #model.plot('pressures')
-    model.plot_grid()
+    # model.plot_grid()
+    plots.plot_grid(model, property='pressures', show_boundary=False)
     # Comp
     # model.set_compressibility(10) # to do: this method should not be exposed!
     
