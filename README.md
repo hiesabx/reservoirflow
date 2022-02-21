@@ -2,6 +2,18 @@
 
 ## Introduction
 
+
+## Toturial
+
+### Example 1:
+
+- Code:
+![](images/example_1_code.png)
+- Visualization:
+![](images/example_1_3d.png)
+
+- Terminal Report:
+
 ## Reference
 
 1. Create a Python Libraries:
