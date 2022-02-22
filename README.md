@@ -1,8 +1,8 @@
-# Petroleum Reservoir Simulation Using Scientific Computing and Machine Learning With Python - respy
+# Open Reservoir Simulation Using Scientific Computing and Machine Learning With Python - openresim
 
 ## Introduction
 
-__respy__ is a modern open-source python library that helps reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
+__openresim__ is a modern open-source python library that helps reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
 
 ## Capabilities
 
