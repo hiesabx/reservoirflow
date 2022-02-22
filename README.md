@@ -5,29 +5,41 @@ __respy__ is a modern open-source python library that helps reservoir engineers 
 
 ## Cababilities
    ### Flow
-      #### Dimentsion
-         - 1D
-         - 2D
-         - 3D
+   #### Dimentsion
+   - 1D
+   - 2D
+   - 3D
    ### Grid
-      #### Type
-      - Cartesian
-      - Radial
-      #### Compressibility
-      - Incompressible
-      - compressible
+   #### Type
+   - Cartesian
+   - Radial
+   #### Compressibility
+   - Incompressible
+   - compressible
    ### Fluid
-      #### Phases
-         - Single Phase
-         - Two Phases
-         - Three Phases
-         - Compositional
-      #### Compressibility
-      - Incompressible
-      - Compressible
+   #### Phases
+   - Single Phase
+   - Two Phases
+   - Three Phases
+   - Compositional
+   #### Compressibility
+   - Incompressible
+   - Compressible
 
 ## Installation
+### Install python
 
+### Install the python library
+      #### git clone https://github.com/zakgrin/respy.git
+      #### cd respy
+### Setup a python environment
+      #### python -m venv .venv
+      #### (for windows)
+      #### source .venv/Scripts/activate
+      #### (for Linux or Mac)
+      #### source .venv/Scripts/activate
+      #### pip install -r requirements.txt
+      #### pip install .
 
 ## Tutorials
    ### Example 1
