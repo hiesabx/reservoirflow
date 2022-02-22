@@ -30,16 +30,17 @@ __respy__ is a modern open-source python library that helps reservoir engineers 
 ### Install python
 
 ### Install the python library
-      #### git clone https://github.com/zakgrin/respy.git
-      #### cd respy
+      git clone https://github.com/zakgrin/respy.git
+      cd respy
 ### Setup a python environment
-      #### python -m venv .venv
-      #### (for windows)
-      #### source .venv/Scripts/activate
-      #### (for Linux or Mac)
-      #### source .venv/Scripts/activate
-      #### pip install -r requirements.txt
-      #### pip install .
+      python -m venv .venv
+      # Choose one option: 
+      # 1. For windows
+      source .venv/Scripts/activate
+      # 2. For Linux or Mac
+      source .venv/Scripts/activate
+      pip install -r requirements.txt
+      pip install .
 
 ## Tutorials
    ### Example 1
