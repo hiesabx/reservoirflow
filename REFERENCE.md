@@ -8,9 +8,11 @@ This file contains some references that are used to improve the project.
 
 - [pyresim](https://github.com/yohanesnuwara/pyresim)
 - [pyMRST](https://github.com/yohanesnuwara/pyMRST)
+- [resimpy](https://github.com/scuervo91/resimpy)
 
 ## Create a Python Libraries
 
+- [Packaging Python Projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
 - [How to create a Python library.](https://medium.com/analytics-vidhya/how-to-create-a-python-library-7d5aea80cc3f)
 - [3D Visualization](https://docs.pyvista.org/examples/00-load/create-uniform-grid.html)
 
