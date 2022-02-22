@@ -4,8 +4,24 @@
 __respy__ is a modern open-source python library that helps reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
 
 ## Cababilities
-(Table)
-
+## Flow Dimentsion
+   - 1D
+   - 2D
+   - 3D
+## Grid
+   # Type
+   - Cartesian
+   - Radial
+   # Compressibility
+   - Incompressible
+   - compressible
+## Fluid
+   ### Type
+   - Black-Oil
+   - Compositional
+   ### Compressibility
+   - Incompressible
+   - Compressible
 
 ## Installation
 
