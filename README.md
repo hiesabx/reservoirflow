@@ -1,7 +1,7 @@
-# Python Petroleum Reservoir Simulator - respy
+# Petroleum Reservoir Simulation Using Scientific Computing and Machine Learning With Python - respy (Python Library)
 
 ## Introduction
-
+__respy__ is a modern open-source python library that helps reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
 
 ## Tutorials
 
