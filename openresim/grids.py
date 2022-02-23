@@ -315,5 +315,3 @@ if __name__ == '__main__':
     print(*grid.get_boundaries(1), '1', *grid.get_neighbors(1))
     print(grid) # or grid.report()
 
-
-# %%
