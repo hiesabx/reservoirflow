@@ -46,8 +46,8 @@ __openresim__ is a modern open-source python library that helps reservoir engine
 
 ### Install the python library
 
-      git clone https://github.com/zakgrin/respy.git
-      cd respy
+      git clone https://github.com/zakgrin/openresim.git
+      cd openresim
 
 ### Setup a python environment
 

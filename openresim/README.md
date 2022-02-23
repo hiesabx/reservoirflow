@@ -1,4 +1,4 @@
-# ResPy Classes
+# openresim Classes
 
 ## Grid Class
 

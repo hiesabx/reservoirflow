@@ -3,8 +3,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'respy',
-    packages = find_packages(include=['respy']),
+    name = 'openresim',
+    packages = find_packages(include=['openresim']),
     version='0.0.1',
     description='The Pythonic Petroleum Reservoir Simulator',
     author='Zakariya AbuGrin',

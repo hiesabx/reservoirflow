@@ -1,7 +1,7 @@
-from respy import models, grids, fluids, wells, plots
+from openresim import models, grids, fluids, wells, plots
 '''
 This is a 1D Model for single-phase incompressible fluid
-The workflow of respy library consists of 8 steps as following:
+The workflow of openresim library consists of 8 steps as following:
 '''
 # Step 1: Define 1D grid
 grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, 

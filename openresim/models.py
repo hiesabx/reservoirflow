@@ -1,5 +1,5 @@
 #%% 1. Import Statements:
-from respy import base, grids, fluids, wells, plots
+from openresim import base, grids, fluids, wells, plots
 import numpy as np
 import sympy as sym
 import scipy.sparse as ss

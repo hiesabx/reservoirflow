@@ -1,4 +1,4 @@
-from respy import grids, fluids, models
+from openresim import grids, fluids, models
 import numpy as np
 import unittest
 
