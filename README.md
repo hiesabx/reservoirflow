@@ -1,23 +1,68 @@
-# Python Petroleum Reservoir Simulator - respy
+# Open Reservoir Simulation Using Scientific Computing and Machine Learning With Python - openresim
 
 ## Introduction
 
+__openresim__ is a modern open-source python library that helps reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
 
-## Toturial
+## Capabilities
+
+### Flow
+
+#### Dimentsion
+
+- 1D
+- 2D
+- 3D
+
+### Grid
+
+#### Type
+
+- Cartesian
+- Radial
+
+#### Compressibility
+
+- Incompressible
+- compressible
+
+### Fluid
+
+#### Phases
+
+- Single Phase
+- Two Phases
+- Three Phases
+- Compositional
+
+#### Compressibility
+
+- Incompressible
+- Compressible
+
+## Installation
+
+### Install python
+
+### Install the python library
+
+      git clone https://github.com/zakgrin/openresim.git
+      cd openresim
+
+### Setup a python environment
+
+      python -m venv .venv
+      # Choose one option: 
+      # 1. For windows
+      source .venv/Scripts/activate
+      # 2. For Linux or Mac
+      source .venv/Scripts/activate
+      pip install -r requirements.txt
+      pip install .
+
+## Tutorials
 
 ### Example 1
 
-- Code:
 ![](images/example_1_code.png)
-- Visualization:
 ![](images/example_1_3d.png)
-
-## Reference
-
-1. Create a Python Libraries:
-   * [How to create a Python library.](https://medium.com/analytics-vidhya/how-to-create-a-python-library-7d5aea80cc3f)
-   * [3D Visualization](https://docs.pyvista.org/examples/00-load/create-uniform-grid.html)
-2. Improve Performance:
-   * [Speeding up Python and NumPy: C++ing the Way.](https://medium.com/coding-with-clarity/speeding-up-python-and-numpy-c-ing-the-way-3b9658ed78f4)
-3. Git Workflow:
-   * [git - the simple guide](http://rogerdudler.github.io/git-guide/)
