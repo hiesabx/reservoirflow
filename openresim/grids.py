@@ -70,7 +70,7 @@ class Grid1D(Base):
 
     def set_properties(self, phi=None, k=None, z=None, comp=None, i=None):
         """
-        
+        Set properties
         """
         # Set user defined properties:
         if phi != None:
@@ -92,6 +92,7 @@ class Grid1D(Base):
 
 
     def get_properties(self):
+        
         self.get_shape() # > self.shape
         self.get_order(type='natural') # > self.order
         self.get_boundaries() # > self.boundaries, self.b
@@ -99,6 +100,7 @@ class Grid1D(Base):
         self.get_area() # self.area
         self.get_G() # > self.G
         self.get_is_homogeneous() # > self.is_homogeneous
+        self.get_centers()
 
 
     def set_porosity(self, phi, i=None):
@@ -199,21 +201,24 @@ class Grid1D(Base):
     get_b = get_boundaries
 
 
-    def get_neighbors(self, i):
+    def get_neighbors(self, i, from_pv_grid=False):
         '''
         Arguments:
             - i: index in x-direction.
         '''
-        assert i > 0 and i <= self.nx, 'grid index is out of range.'
-        if self.nx == 1:
-            return []
+        if from_pv_grid:
+            return self.pv_grid.neighbors(i, rel='topological')
         else:
-            if i == 1:
-                return [i+1]
-            if i == self.nx:
-                return [i-1]
+            assert i > 0 and i <= self.nx, 'grid index is out of range.'
+            if self.nx == 1:
+                return []
             else:
-                return [i-1, i+1]
+                if i == 1:
+                    return [i+1]
+                if i == self.nx:
+                    return [i-1]
+                else:
+                    return [i-1, i+1]
     get_n = get_neighbors
 
 
@@ -245,7 +250,7 @@ class Grid1D(Base):
                 raise ValueError('Unknown mean type')
 
     
-    def get_pv_grid(self, show_boundary=False, verbose=False):
+    def get_pv_grid(self, show_boundary=True, verbose=False):
         '''
         
         '''
@@ -261,7 +266,7 @@ class Grid1D(Base):
         return self.pv_grid
 
 
-    def get_corners(self, show_boundary, verbose=False):
+    def get_corners(self, show_boundary=True, verbose=False):
         '''
         
         '''
@@ -294,10 +299,15 @@ class Grid1D(Base):
         return corners
 
 
+    def get_centers(self):
+        self.centers = self.pv_grid.cell_centers().points
+        return self.centers
+
+
 #%%
 if __name__ == '__main__':
     # Define:
-    grid = Grid1D(nx=10, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270)
+    grid = Grid1D(nx=2, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270)
     
     # Doc:
     # print(grid.__doc__)
@@ -311,7 +321,10 @@ if __name__ == '__main__':
     grid.set_tops(10)
 
     # Getters:
-    print(grid.get_boundaries())
-    print(*grid.get_boundaries(1), '1', *grid.get_neighbors(1))
-    print(grid) # or grid.report()
+    # print(grid.get_boundaries())
+    # print(*grid.get_boundaries(1), '1', *grid.get_neighbors(1))
+    # print(grid) # or grid.report()
+    print('neighbors:', grid.get_neighbors(0, from_pv_grid=True))
 
+
+# %%
