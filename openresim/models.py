@@ -1,4 +1,5 @@
 #%% 1. Import Statements:
+from tabnanny import verbose
 from openresim import base, grids, fluids, wells, plots
 import numpy as np
 import sympy as sym
@@ -107,16 +108,27 @@ class Model(base.Base):
 
 
     def get_i_flow_equation(self, i, verbose=False):
+        # ToDo: look at trans!
         i_neighbors = self.grid.get_neighbors(i)
         i_boundaries = self.grid.get_boundaries(i)
+
         if verbose: print(f'i: {i} - Neighbors: {i_neighbors} - Boundaries: {i_boundaries}')
+        
         exec(f"p{i}=sym.Symbol('p{i}')")
+        # ToDo: keep pressure constant at specific cell (requires A adjust)
+        # if not np.isnan(self.pressures[i]):
+            # exec(f"p{i} = {self.pressures[i]}")
         terms = []
+
         # 1. Flow from grid neighbors:
         for neighbor in i_neighbors:
             exec(f"p{neighbor} = sym.Symbol('p{neighbor}')")
+            # To Do: keep pressure constant at specific cell (requires A adjust)
+            # if not np.isnan(self.pressures[neighbor]):
+                # exec(f"p{neighbor} = {self.pressures[neighbor]}")
             exec(f"n_term = self.trans[{neighbor}] * ((p{neighbor} - p{i}) - (self.fluid.g * (self.grid.z[{neighbor}]-self.grid.z[{i}])))")
             terms.append(locals()['n_term'])
+
         # 2. Flow from grid boundaries:
         for boundary in i_boundaries:
             exec(f"p{boundary}=sym.Symbol('p{boundary}')")
@@ -126,6 +138,7 @@ class Model(base.Base):
             else:
                 exec(f"b_term = self.rates[{boundary}]")
             terms.append(locals()['b_term'])
+
         # 3. Flow from grid well:
         if i in self.wells:
             if 'q' in self.wells[i]:
@@ -134,18 +147,21 @@ class Model(base.Base):
                 exec(f"w_term = - self.wells[{i}]['G'] / (self.fluid.B*self.fluid.mu) * (p{i} - self.wells[{i}]['pwf'])")
                 terms.append(locals()['w_term'])
         if verbose: print('terms:', terms)
+
         # 4. Overall grid flow equation:
         i_flow_equation = sym.Eq(sum(terms), self.RHS)
         if i_flow_equation.lhs.as_coefficients_dict()[1] != 0:
             i_flow_equation = i_flow_equation.simplify()
+
         # 5. Find lhs and rhs:
         i_lhs = dict(sorted(i_flow_equation.lhs.as_coefficients_dict().items(), key=lambda x: str(x[0])))
         i_rhs = i_flow_equation.rhs
+
         return i_lhs, i_rhs
 
 
     def get_flow_equations(self):
-        for i in self.grid.order[self.grid.iBlocks.astype('bool')]:
+        for i in self.grid.order[self.grid.i_blocks.astype('bool')]:
             i_lhs, i_rhs = self.get_i_flow_equation(i)
             print(f'Grid {i}: {i_lhs}, {i_rhs}')
 
@@ -156,10 +172,12 @@ class Model(base.Base):
         i_lhs, i_rhs = self.get_i_flow_equation(i)
         i_lhs = list(i_lhs.values())
         d[i-1] = np.array(i_rhs).astype(self.dtype)
+        
         if i < 3:
             start = 0
         else: 
             start = i - 2
+        
         if i+len(i_lhs) >= n: 
             end = n
         else:
@@ -169,11 +187,13 @@ class Model(base.Base):
             array = A[i-1,start:end].toarray()[0]
         else:
             array = A[i-1,start:end]
+        
         assert array.shape[0] == len(i_lhs), 'lhs of grid {} does not match the coefficients matrix'.format(i)
         A[i-1,start:end] = i_lhs # pass by reference
     
 
-    def get_matrix(self, sparse, plot=False):
+    def get_matrix(self, sparse, plot=True, verbose=False):
+        
         if self.grid.D == 1:
             n = self.grid.nx
             if sparse:
@@ -191,26 +211,37 @@ class Model(base.Base):
                 rng = np.arange(n-1)
                 A[rng, rng+1] = self.trans[1:-1] # east trans for interior blocks To Do: confirm if this is right
                 A[rng+1, rng] = self.trans[:-2] # west trans for interior blocks except last.To Do: confirm if this is right
+            
             # check if there is pressure or flow in 'west' boundary:
             if not np.isnan(self.pressures[0]) or self.rates[0] != 0:
                 self.update_matrix(1, A, d, sparse)
+            
             # check if there is pressure or flow in 'east' boundary:
-            elif not np.isnan(self.pressures[-1]) or self.rates[-1] != 0:
+            if not np.isnan(self.pressures[-1]) or self.rates[-1] != 0:
                 self.update_matrix(-2, A, d, sparse)
-            # check if there is a well in iBlocks:
+            
+            # check if there is a well in i_blocks:
             for i in self.wells.keys():
                 self.update_matrix(i, A, d, sparse)
+            
             if plot: 
                 if sparse:
                     plt.imshow(A.toarray())
                 else:
                     plt.imshow(A)
+            
+            if verbose:
+                if sparse:
+                    print('- A:\n', A.toarray()), print('- d:\n', d.toarray())
+                else:
+                    print('- A:\n', A), print('- d:\n', d)
+
             return A, d
 
 
     def solve(self, sparse=True, check_MB=True, verbose=False):
-        self.A, self.d = self.get_matrix(sparse)
-        if verbose: print('- A:\n', self.A), print('- d:\n', self.d)
+        self.A, self.d = self.get_matrix(sparse, verbose=verbose)
+
         if sparse:
             pressures = ssl.spsolve(self.A.tocsc(), self.d)
         else:
@@ -227,6 +258,7 @@ class Model(base.Base):
                 if 'pwf' in self.wells[i]:
                     self.wells[i]['q'] =  - self.wells[i]['G'] / (self.fluid.B*self.fluid.mu) * \
                                               (self.pressures[i] - self.wells[i]['pwf'])
+                    self.rates[i] = self.wells[i]['q']
             # Update boundaries:
             for boundary in self.grid.boundaries:
                 i = 1 if boundary==0 else boundary-1
