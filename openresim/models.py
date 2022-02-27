@@ -299,8 +299,8 @@ class Model(base.Base):
         plt.show()
 
 
-    def plot_grid(self, property:str, show_centers=True, show_boundary=False):
-        plots.plot_grid(self, property=property, show_centers=show_centers, show_boundary=show_boundary)
+    def show_grid(self, property:str, show_centers=True, show_boundary=False):
+        plots.show_grid(self, property=property, show_centers=show_centers, show_boundary=show_boundary)
 
 if __name__ == '__main__':
     grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=400, phi=0.27, k=270, dtype='double')
@@ -324,7 +324,7 @@ if __name__ == '__main__':
     model.solve(sparse=False, check_MB=True, verbose=False)
     #model.plot('pressures')
     # model.plot_grid()
-    plots.plot_grid(model, property='pressures', show_centers=True, show_boundary=False)
+    plots.show_grid(model, property='pressures', show_centers=True, show_boundary=False)
     # Comp
     # model.set_compressibility(10) # to do: this method should not be exposed!
     

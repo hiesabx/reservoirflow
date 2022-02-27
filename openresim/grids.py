@@ -1,5 +1,4 @@
 #%% Import Statements:
-from msilib.schema import Property
 from openresim.base import Base
 import numpy as np
 import pyvista as pv
@@ -292,6 +291,7 @@ class Grid1D(Base):
         ycorn = ycorn.flatten()
 
         zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])
+        # zcorn = zcorn + self.z
         zcorn = np.repeat(zcorn, 2)
         zcorn = zcorn[1:-1]
         zcorn = np.repeat(zcorn, (4*(self.nx+i)*self.ny))
@@ -330,5 +330,3 @@ if __name__ == '__main__':
     # print(grid) # or grid.report()
     print('neighbors:', grid.get_neighbors(0, from_pv_grid=True))
 
-
-# %%

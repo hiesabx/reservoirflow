@@ -20,7 +20,7 @@ from openresim import models
 #     model.wells[4]['pwf']: "Pwf",
 # }
 
-def plot_grid(model: models, property:str, show_centers=True, show_boundary=False):
+def show_grid(model: models, property:str, show_centers=True, show_boundary=False):
     # Extract property values:
     try:
         local_dict = locals()
