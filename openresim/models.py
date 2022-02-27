@@ -72,7 +72,7 @@ class Model(base.Base):
     def set_boundary(self, i, cond, v):
         if cond in ['rate', 'q']:
             self.rates[i] = v
-        if cond in ['gradient', 'grad']:
+        if cond in ['pressure gradient', 'press grad', 'gradient', 'grad', 'pg', 'g']:
             self.rates[i] = self.trans[i] * self.grid.dx[i] * v
         if cond in ['pressure', 'press', 'p']:
             self.pressures[i] = v
@@ -109,6 +109,10 @@ class Model(base.Base):
 
     def get_i_flow_equation(self, i, verbose=False):
         # ToDo: look at trans!
+        # if i < 0:
+        #     i = self.grid.nx + 2 + i
+        assert i > 0 and i <= self.grid.nx, 'grid index is out of range.'
+
         i_neighbors = self.grid.get_neighbors(i)
         i_boundaries = self.grid.get_boundaries(i)
 
@@ -117,7 +121,7 @@ class Model(base.Base):
         exec(f"p{i}=sym.Symbol('p{i}')")
         # ToDo: keep pressure constant at specific cell (requires A adjust)
         # if not np.isnan(self.pressures[i]):
-            # exec(f"p{i} = {self.pressures[i]}")
+        #     exec(f"p{i} = {self.pressures[i]}")
         terms = []
 
         # 1. Flow from grid neighbors:
@@ -125,7 +129,7 @@ class Model(base.Base):
             exec(f"p{neighbor} = sym.Symbol('p{neighbor}')")
             # To Do: keep pressure constant at specific cell (requires A adjust)
             # if not np.isnan(self.pressures[neighbor]):
-                # exec(f"p{neighbor} = {self.pressures[neighbor]}")
+            #     exec(f"p{neighbor} = {self.pressures[neighbor]}")
             exec(f"n_term = self.trans[{neighbor}] * ((p{neighbor} - p{i}) - (self.fluid.g * (self.grid.z[{neighbor}]-self.grid.z[{i}])))")
             terms.append(locals()['n_term'])
 
@@ -192,7 +196,7 @@ class Model(base.Base):
         A[i-1,start:end] = i_lhs # pass by reference
     
 
-    def get_matrix(self, sparse, plot=True, verbose=False):
+    def get_matrix(self, sparse, plot=False, verbose=False):
         
         if self.grid.D == 1:
             n = self.grid.nx
@@ -218,8 +222,8 @@ class Model(base.Base):
             
             # check if there is pressure or flow in 'east' boundary:
             if not np.isnan(self.pressures[-1]) or self.rates[-1] != 0:
-                self.update_matrix(-2, A, d, sparse)
-            
+                self.update_matrix(self.grid.nx, A, d, sparse) # at last grid: self.grid.nx or -2
+
             # check if there is a well in i_blocks:
             for i in self.wells.keys():
                 self.update_matrix(i, A, d, sparse)
@@ -229,6 +233,7 @@ class Model(base.Base):
                     plt.imshow(A.toarray())
                 else:
                     plt.imshow(A)
+                plt.show()
             
             if verbose:
                 if sparse:
@@ -264,6 +269,8 @@ class Model(base.Base):
                 i = 1 if boundary==0 else boundary-1
                 if not np.isnan(self.pressures[boundary]):
                     self.rates[boundary] = self.trans[min(i,boundary)] * 2 * ((self.pressures[boundary] - self.pressures[i]) - (self.fluid.g * (self.grid.z[boundary]-self.grid.z[i])))
+                else:
+                    pass
         
         if check_MB:
             self.check_MB(verbose)

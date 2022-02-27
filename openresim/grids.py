@@ -187,6 +187,8 @@ class Grid1D(Base):
             self.boundaries = self.b = [0, self.nx + 1]
             return self.boundaries
         else:
+            if i < 0:
+                i = self.nx + 2 + i
             assert i > 0 and i <= self.nx, 'grid index is out of range(1, {}).'.format(self.nx + 1)
 
         if self.nx == 1:
@@ -209,6 +211,8 @@ class Grid1D(Base):
         if from_pv_grid:
             return self.pv_grid.neighbors(i, rel='topological')
         else:
+            if i < 0:
+                i = self.nx + 2 + i
             assert i > 0 and i <= self.nx, 'grid index is out of range.'
             if self.nx == 1:
                 return []
