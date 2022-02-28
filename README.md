@@ -1,44 +1,27 @@
-# Open Reservoir Simulation Using Scientific Computing and Machine Learning With Python - openresim
+# Open Reservoir Simulation (openresim)
+
+> Petroleum Reservoir Simulation using Scientific Computing and Machine Learning With Python
 
 ## Introduction
 
-__openresim__ is a modern open-source python library that helps reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
+Open Reservoir Simulation (__openresim__) is a modern open-source python library that helps petroleum reservoir engineers to be proficient data scientists who are able to express their practical and scientific knowledge by coding.
 
 ## Capabilities
 
-### Flow
 
-#### Dimentsion
-
-- 1D
-- 2D
-- 3D
-
-### Grid
-
-#### Type
-
-- Cartesian
-- Radial
-
-#### Compressibility
-
-- Incompressible
-- compressible
-
-### Fluid
-
-#### Phases
-
-- Single Phase
-- Two Phases
-- Three Phases
-- Compositional
-
-#### Compressibility
-
-- Incompressible
-- Compressible
+| **Feature**         | **Type**       | **Support** |
+| --------------------- | ---------------- | ------------- |
+| **Grid Type**       | Cartesian      | Yes         |
+|                     | Radial         | No          |
+| **Dimension**       | 1D             | Yes         |
+|                     | 2D             | No          |
+|                     | 3D             | No          |
+| **Phases**          | Single Phase   | Yes         |
+|                     | Two Phases     | No          |
+|                     | Three Phases   | No          |
+|                     | Compositional  | No          |
+| **Compressibility** | Incompressible | Yes         |
+|                     | Compressible   | No          |
 
 ## Installation
 
@@ -46,19 +29,33 @@ __openresim__ is a modern open-source python library that helps reservoir engine
 
 ### Install the python library
 
-      git clone https://github.com/zakgrin/openresim.git
-      cd openresim
+```bash
+git clone https://github.com/zakgrin/openresim.git
+cd openresim
+```
+
 
 ### Setup a python environment
 
-      python -m venv .venv
-      # Choose one option: 
-      # 1. For windows
-      source .venv/Scripts/activate
-      # 2. For Linux or Mac
-      source .venv/Scripts/activate
-      pip install -r requirements.txt
-      pip install .
+```bash
+python -m venv .venv
+```
+
+# Choose one option:
+
+# 1. For windows
+
+```bash
+source .venv/Scripts/activate
+```
+
+# 2. For Linux or Mac
+
+```bash
+source .venv/Scripts/activate
+pip install -r requirements.txt
+pip install .
+```
 
 ## Tutorials
 
