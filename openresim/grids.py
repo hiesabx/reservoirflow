@@ -97,6 +97,7 @@ class Grid1D(Base):
         self.get_boundaries() # > self.boundaries, self.b
         self.get_pv_grid() # > pv_grid
         self.get_area() # self.area
+        self.get_volume() # self.volume
         self.get_G() # > self.G
         self.get_is_homogeneous() # > self.is_homogeneous
         self.get_centers()
@@ -153,6 +154,12 @@ class Grid1D(Base):
         self.area = self.A = self.dy * self.dz
         return self.area
     get_A = get_area
+
+
+    def get_volume(self):
+        self.volume = self.V = self.dx * self.dy * self.dz
+        return self.volume
+    get_V = get_volume
 
 
     def get_dimension(self):
@@ -306,7 +313,10 @@ class Grid1D(Base):
     def get_centers(self):
         self.centers = self.pv_grid.cell_centers().points
         return self.centers
-
+    
+    # todo: copy functionality
+    # def copy(self):
+    #     return self
 
 #%%
 if __name__ == '__main__':

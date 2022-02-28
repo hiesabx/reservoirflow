@@ -21,12 +21,14 @@ class Base():
                 'transmissibility conversion': 0.001127,
                 'gravity conversion': 0.21584*10**-3,
                 'gravitational acceleration': 32.174,
+                'volume conversion': 5.614583
             },
         'metric':
             {
                 'transmissibility conversion': 0,
                 'gravity conversion': 0,
                 'gravitational acceleration': 0,
+                'volume conversion': 1
             }
         
     }

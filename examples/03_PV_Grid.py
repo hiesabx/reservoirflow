@@ -8,7 +8,7 @@ subset = dem.extract_subset((500, 900, 400, 800, 0, 0), (5,5,1))
 # subset.plot(cpos="xy")
 terrain = subset.warp_by_scalar()
 print(terrain.points)
-z_cells = np.array([10, 100, 10])
+z_cells = np.array([10, 100, 100, 100])
 print(np.cumsum(z_cells).reshape((1, 1, -1)))
 
 xx = np.repeat(terrain.x, len(z_cells), axis=-1)

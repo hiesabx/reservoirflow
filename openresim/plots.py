@@ -20,7 +20,7 @@ from openresim import models
 #     model.wells[4]['pwf']: "Pwf",
 # }
 
-def show_grid(model: models, property:str, show_centers=True, show_boundary=False):
+def show_grid(model: models, property:str, show_centers=True, show_boundary=False, show_bounds=False):
     # Extract property values:
     try:
         local_dict = locals()
@@ -102,6 +102,7 @@ def show_grid(model: models, property:str, show_centers=True, show_boundary=Fals
     #p.show_bounds(grid='front', location='outer', all_edges=True)
     #_ = p.update_scalar_bar_range(0, model.pressures.max())
     pl.show_axes()
-    pl.show_bounds(grid='front', location='outer', all_edges=True) # or pl.show_axes() # or pl.show_grid()
+    if show_bounds:
+        pl.show_bounds(grid='front', location='outer', all_edges=True) # or pl.show_axes() # or pl.show_grid()
     pl.set_background('black', top='gray')
     pl.show(full_screen=True)
