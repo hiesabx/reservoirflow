@@ -274,9 +274,9 @@ class Model(base.Base):
         self.A, self.d = self.get_matrix(sparse, verbose=verbose)
 
         if sparse:
-            pressures = ssl.spsolve(self.A.tocsc(), self.d).flatten()
+            pressures = ssl.spsolve(self.A.tocsc(), self.d)
         else:
-            pressures = np.linalg.solve(self.A, self.d).flatten() # same as: np.dot(np.linalg.inv(A),d)
+            pressures = np.linalg.solve(self.A, self.d).flatten() # same as: np.dot(np.linalg.inv(self.A), self.d)
         
         if self.grid.D == 1:
             # Update pressures:
@@ -303,7 +303,9 @@ class Model(base.Base):
         if check_MB:
             self.check_MB(verbose)
         
-        if verbose: print('- Pressures:\n', self.pressures), print('- rates:\n', self.rates)
+        if verbose: 
+            print('- Pressures:\n', self.pressures)
+            print('- rates:\n', self.rates)
 
         return pressures
     

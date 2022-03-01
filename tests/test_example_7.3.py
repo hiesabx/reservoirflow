@@ -15,7 +15,6 @@ class TestApp(unittest.TestCase):
         pressures_sparse = model.solve(sparse=True, update=False, check_MB=False)
         pressures_not_sparse = model.solve(sparse=False, update=False, check_MB=False)
         pressures_desired = np.array([3989.437537513856, 3968.3126125415683, 3947.1876875692815, 3926.0627625969946])
-        # np.testing.assert_array_equal(pressures_sparse, pressures_not_sparse)
         np.testing.assert_almost_equal(pressures_sparse, pressures_not_sparse, decimal=5)
         np.testing.assert_almost_equal(pressures_sparse, pressures_desired, decimal=5)
 
