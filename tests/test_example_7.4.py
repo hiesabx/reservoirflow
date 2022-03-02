@@ -12,15 +12,16 @@ class TestApp(unittest.TestCase):
 
     def test_pressures(self):
         model = create_model()
-        pressures_sparse = model.solve(sparse=True, update=False, check_MB=False)
-        pressures_not_sparse = model.solve(sparse=False, update=False, check_MB=False)
+        pressures_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        model = create_model()
+        pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
         pressures_desired = np.array([3959.4367684962185, 3878.3103054886546, 3797.1838424810912, 3716.057379473528])
         np.testing.assert_almost_equal(pressures_sparse, pressures_not_sparse, decimal=5)
         np.testing.assert_almost_equal(pressures_sparse, pressures_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
-        model.solve(sparse=True, update=True, check_MB=False)
+        model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.wells[4]['q'], -600, decimal=5)
         np.testing.assert_almost_equal(model.wells[4]['r_eq'], 64.53681120105021, decimal=5)
         np.testing.assert_almost_equal(model.wells[4]['G'], 11.08453575337366, decimal=5)
@@ -28,7 +29,7 @@ class TestApp(unittest.TestCase):
 
     def test_rates(self):
         model = create_model()
-        model.solve(sparse=True, update=True, check_MB=False)
+        model.solve(sparse=True, update=True, check_MB=True)
         rates_desired = np.array([2304.0239999999912, 0.0, 0.0, 0.0, -600.0000000000036, -1704.0240000000003])
         np.testing.assert_almost_equal(model.rates, rates_desired, decimal=5)
 

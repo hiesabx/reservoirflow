@@ -188,7 +188,7 @@ class Model(base.Base):
             print(f'Grid {i}: {i_lhs}, {i_rhs}')
 
 
-    def update_matrix(self, i, A, d, sparse, verbose=False):
+    def update_matrix(self, i, A, d, sparse=True, verbose=False):
         # arrays are passed by reference
         n = self.grid.nx
         i_lhs, i_rhs = self.get_i_flow_equation(i, verbose)
@@ -214,7 +214,7 @@ class Model(base.Base):
         A[i-1,start:end] = i_lhs # pass by reference
     
 
-    def get_matrix(self, sparse, plot=False, verbose=False):
+    def get_matrix(self, sparse=True, plot=False, verbose=False):
         
         if self.grid.D == 1:
             n = self.grid.nx
@@ -276,7 +276,8 @@ class Model(base.Base):
         if sparse:
             pressures = ssl.spsolve(self.A.tocsc(), self.d)
         else:
-            pressures = np.linalg.solve(self.A, self.d).flatten() # same as: np.dot(np.linalg.inv(self.A), self.d)
+            pressures = np.linalg.solve(self.A, self.d).flatten() 
+            # same as: np.dot(np.linalg.inv(self.A), self.d)
         
         if self.grid.D == 1:
             # Update pressures:
@@ -300,8 +301,8 @@ class Model(base.Base):
                     else:
                         pass
         
-        if check_MB:
-            self.check_MB(verbose)
+            if check_MB:
+                self.check_MB(verbose)
         
         if verbose: 
             print('- Pressures:\n', self.pressures)
@@ -310,7 +311,7 @@ class Model(base.Base):
         return pressures
     
     
-    def check_MB(self, verbose, error=0.1):
+    def check_MB(self, verbose=False, error=0.1):
         """Material Balance Check
         
         """
@@ -318,8 +319,8 @@ class Model(base.Base):
             self.error = self.rates.sum() # must add up to 0
 
         if self.comp_type == 'compressible':
-            # Check MB error over a time step: 
-            self.incremental_error = self.RHS.sum() / self.rates.sum()
+            # Check MB error over a time step:
+            self.incremental_error = np.sum(self.RHS[1:-1] * (self.pressures[1:-1] - self.pi)) / self.rates.sum()
             # Check MB error from initial state to current time step: (less accurate)
             # self.cumulative_error = self.RHS.sum() * self.dt / (self.rates.sum())
             self.error = abs(self.incremental_error - 1)
