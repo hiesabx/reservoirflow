@@ -1,12 +1,13 @@
 #%% 1. Import Statements:
-from tabnanny import verbose
+# from tabnanny import verbose
+import time
 from openresim import base, grids, fluids, wells, plots
 import numpy as np
 import sympy as sym
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
 import matplotlib.pyplot as plt
-# import copy
+from tqdm import tqdm
 
 
 #%% 2. Model Class: 
@@ -21,14 +22,18 @@ class Model(base.Base):
         '''
         #super().__init__(unit)
         self.dt = dt
+        self.tstep = 0
+        self.nsteps = 1
         self.dtype = dtype # np.single, np.double
         self.grid = grid # composition
         self.fluid = fluid # composition
-        self.pressures = (self.grid.blocks * np.nan).astype(self.dtype)
+        self.pressures = {}
+        self.pressures[0] = (self.grid.blocks * np.nan).astype(self.dtype)
         self.pi = pi
         if pi != None:
-            self.pressures[1:-1] = pi
-        self.rates = np.zeros(grid.nx + 2, dtype=self.dtype)
+            self.pressures[0][1:-1] = pi
+        self.rates = {}
+        self.rates[0] = np.zeros(grid.nx + 2, dtype=self.dtype)
         self.wells = {}
         if well != None:
             self.set_well(well)
@@ -70,18 +75,18 @@ class Model(base.Base):
             if s != None:
                 self.wells[i]['s'] = s
         if 'q' in self.wells[i]:
-            self.rates[i] = self.wells[i]['q']
+            self.rates[0][i] = self.wells[i]['q']
         self.wells[i]['r_eq'] = self.get_well_r_eq(i)
         self.wells[i]['G'] = self.get_well_G(i)
 
 
     def set_boundary(self, i, cond, v):
         if cond in ['rate', 'q']:
-            self.rates[i] = v
+            self.rates[0][i] = v
         if cond in ['pressure gradient', 'press grad', 'gradient', 'grad', 'pg', 'g']:
-            self.rates[i] = self.trans[i] * self.grid.dx[i] * v
+            self.rates[0][i] = self.trans[i] * self.grid.dx[i] * v
         if cond in ['pressure', 'press', 'p']:
-            self.pressures[i] = v
+            self.pressures[0][i] = v
 
 
     def set_boundaries(self, b_dict):
@@ -128,27 +133,27 @@ class Model(base.Base):
         
         exec(f"p{i}=sym.Symbol('p{i}')")
         # ToDo: keep pressure constant at specific cell (requires A adjust)
-        # if not np.isnan(self.pressures[i]):
-        #     exec(f"p{i} = {self.pressures[i]}")
+        # if not np.isnan(self.pressures[self.tstep][i]):
+        #     exec(f"p{i} = {self.pressures[self.tstep][i]}")
         terms = []
 
         # 1. Flow from grid neighbors:
         for neighbor in i_neighbors:
             exec(f"p{neighbor} = sym.Symbol('p{neighbor}')")
             # To Do: keep pressure constant at specific cell (requires A adjust)
-            # if not np.isnan(self.pressures[neighbor]):
-            #     exec(f"p{neighbor} = {self.pressures[neighbor]}")
+            # if not np.isnan(self.pressures[self.tstep][neighbor]):
+            #     exec(f"p{neighbor} = {self.pressures[self.tstep][neighbor]}")
             exec(f"n_term = self.trans[{neighbor}] * ((p{neighbor} - p{i}) - (self.fluid.g * (self.grid.z[{neighbor}]-self.grid.z[{i}])))")
             terms.append(locals()['n_term'])
 
         # 2. Flow from grid boundaries:
         for boundary in i_boundaries:
             exec(f"p{boundary}=sym.Symbol('p{boundary}')")
-            if not np.isnan(self.pressures[boundary]):
+            if not np.isnan(self.pressures[self.tstep][boundary]):
                 exec(f"b_term = self.trans[{min(boundary,i)}] * 2 * ((p{boundary} - p{i}) - (self.fluid.g * (self.grid.z[{boundary}]-self.grid.z[{i}])))")
-                exec(f"b_term = b_term.subs(p{boundary}, {self.pressures[boundary]})")
+                exec(f"b_term = b_term.subs(p{boundary}, {self.pressures[self.tstep][boundary]})")
             else:
-                exec(f"b_term = self.rates[{boundary}]")
+                exec(f"b_term = self.rates[self.tstep][{boundary}]")
             terms.append(locals()['b_term'])
 
         # 3. Flow from grid well:
@@ -165,7 +170,7 @@ class Model(base.Base):
             exec(f"accumulation = 0")
         else:
             try:
-                exec(f"accumulation = self.RHS[{i}] * (p{i} - {self.pressures[i]})")
+                exec(f"accumulation = self.RHS[{i}] * (p{i} - {self.pressures[self.tstep][i]})")
             except:
                 raise Exception("Initial pressure (pi) must be specified")
         a_term = locals()['accumulation']
@@ -222,7 +227,7 @@ class Model(base.Base):
                 d = np.zeros((n,1), dtype=self.dtype)
             else: 
                 try:
-                    d = (-self.RHS[1:-1] * self.pressures[1:-1]).reshape(-1, 1)
+                    d = (-self.RHS[1:-1] * self.pressures[self.tstep][1:-1]).reshape(-1, 1)
                 except:
                     raise Exception("Initial pressure (pi) must be specified")
             if sparse:
@@ -243,11 +248,11 @@ class Model(base.Base):
                 A[rng+1, rng] = self.trans[:-2] # west trans for interior blocks except last.To Do: confirm if this is right
 
             # Update matrix if there is pressure or flow in 'west' boundary:
-            if not np.isnan(self.pressures[0]) or self.rates[0] != 0:
+            if not np.isnan(self.pressures[self.tstep][0]) or self.rates[self.tstep][0] != 0:
                 self.update_matrix(1, A, d, sparse, verbose)
             
             # Update matrix if there is pressure or flow in 'east' boundary:
-            if not np.isnan(self.pressures[-1]) or self.rates[-1] != 0:
+            if not np.isnan(self.pressures[self.tstep][-1]) or self.rates[self.tstep][-1] != 0:
                 self.update_matrix(self.grid.nx, A, d, sparse, verbose) # at last grid: self.grid.nx or -2
 
             # Update matrix in wells i_blocks:
@@ -282,55 +287,75 @@ class Model(base.Base):
         if self.grid.D == 1:
             # Update pressures:
             if update:
-                self.pressures[1:-1] = pressures
+                self.tstep += 1
+                self.pressures[self.tstep] = self.pressures[self.tstep-1].copy()
+                self.pressures[self.tstep][1:-1] = pressures
+                self.rates[self.tstep] = self.rates[self.tstep-1].copy()
 
                 # Update wells:
                 for i in self.wells.keys():
                     if 'q' in self.wells[i]:
-                        self.wells[i]['pwf'] = self.pressures[i] + \
+                        self.wells[i]['pwf'] = self.pressures[self.tstep][i] + \
                                                 (self.wells[i]['q']*self.fluid.B*self.fluid.mu/self.wells[i]['G'])
                     if 'pwf' in self.wells[i]:
                         self.wells[i]['q'] =  - self.wells[i]['G'] / (self.fluid.B*self.fluid.mu) * \
-                                                (self.pressures[i] - self.wells[i]['pwf'])
-                        self.rates[i] = self.wells[i]['q']
+                                                (self.pressures[self.tstep][i] - self.wells[i]['pwf'])
+                        self.rates[self.tstep][i] = self.wells[i]['q']
                 # Update boundaries:
                 for boundary in self.grid.boundaries:
                     i = 1 if boundary==0 else boundary-1
-                    if not np.isnan(self.pressures[boundary]):
-                        self.rates[boundary] = self.trans[min(i,boundary)] * 2 * ((self.pressures[boundary] - self.pressures[i]) - (self.fluid.g * (self.grid.z[boundary]-self.grid.z[i])))
+                    if not np.isnan(self.pressures[self.tstep][boundary]):
+                        self.rates[self.tstep][boundary] = self.trans[min(i,boundary)] * 2 * ((self.pressures[self.tstep][boundary] - self.pressures[self.tstep][i]) - (self.fluid.g * (self.grid.z[boundary]-self.grid.z[i])))
                     else:
                         pass
-        
-            if check_MB:
-                self.check_MB(verbose)
+
+                if check_MB:
+                    self.check_MB(verbose)
         
         if verbose: 
-            print('- Pressures:\n', self.pressures)
-            print('- rates:\n', self.rates)
+            print('- Pressures:\n', self.pressures[self.tstep])
+            print('- rates:\n', self.rates[self.tstep])
 
         return pressures
     
     
+    def run(self, nsteps=10, sparse=True, check_MB=True, verbose=True):
+        self.nsteps = nsteps
+        start_time = time.time()
+        for _ in tqdm(range(1, nsteps+1), unit='steps', colour='green'):
+            self.solve(sparse, check_MB, update=True, verbose=False)
+        duration = round(time.time() - start_time, 2)
+        if verbose: 
+            print(f'Simulation run of {nsteps} steps is finished in {duration} seconds')
+
+
     def check_MB(self, verbose=False, error=0.1):
         """Material Balance Check
         
         """
+        if verbose: 
+            print(f'Error in step {self.tstep}')
         if self.comp_type == 'incompressible':
-            self.error = self.rates.sum() # must add up to 0
+            self.error = self.rates[self.tstep].sum() # must add up to 0
+            if verbose:
+                print(f"    - Error: {self.error}")
 
         if self.comp_type == 'compressible':
             # Check MB error over a time step:
-            self.incremental_error = np.sum(self.RHS[1:-1] * (self.pressures[1:-1] - self.pi)) / self.rates.sum()
+            self.incremental_error = np.sum(self.RHS[1:-1] * (self.pressures[self.tstep][1:-1] - self.pressures[self.tstep-1][1:-1])) / self.rates[self.tstep].sum()
             # Check MB error from initial state to current time step: (less accurate)
-            # self.cumulative_error = self.RHS.sum() * self.dt / (self.rates.sum())
+            self.cumulative_error = np.sum(self.RHS[1:-1] * self.dt * (self.pressures[self.tstep][1:-1] - self.pressures[0][1:-1])) / (self.dt * self.tstep * np.sum([self.rates[tstep].sum() for tstep in self.rates]))
             self.error = abs(self.incremental_error - 1)
+            if verbose:
+                print(f"    - Incremental Error: {self.incremental_error}")
+                print(f"    -  Cumulative Error: {self.cumulative_error}")
+                print(f"    -       Total Error: {self.incremental_error+self.cumulative_error}")
+
 
         assert abs(self.error) < error, 'Material balance error ({}) higher than the allowed error ({}).'.format(self.error, error)
-        if verbose: print(f"- Solved with an acceptable MB Error of {self.error} {self.units['error']}")
-
 
     def plot(self, property:str):
-        exec(f"plt.imshow(self.{property}[1:-1][np.newaxis, :])")
+        exec(f"plt.imshow(self.{property}[self.tstep][1:-1][np.newaxis, :])")
         plt.colorbar(label=f'{property} ({self.units[property[:-1]]})')
         plt.yticks([])
         plt.xlabel('Grid (i)')
@@ -353,28 +378,29 @@ class Model(base.Base):
 
 
 if __name__ == '__main__':
-    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=400, phi=0.27, k=270, dtype='double')
-    grid.dx[2]=600
-    #grid.get_pv_grid()
-    fluid = fluids.Fluid(mu=0.5 , B=1, dtype='double')
-    model = Model(grid, fluid, dtype='single')
-    model.set_well(i=4, q=-600, s=1.5, r=3.5) # model.set_well(i=4, wells.Well(i=4, q=-600, s=0, r=3.5))
-    model.set_well(i=1, q=-600, s=1.5, r=3.5)
+    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270, comp=1*10**-6, dtype='double')
+    fluid = fluids.Fluid(mu=0.5 , B=1, rho=50, comp=1*10**-5, dtype='double')
+    model = Model(grid, fluid, pi=4000, dtype='double')
+    model.set_well(i=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: {'pressure': 4000}, -1: {'rate': 0}})
-    # print(model.pressures)
+
     # A, d = model.get_matrix(sparse=True)
     # print(A.toarray())
     # print(d.toarray())
     # A, d = model.get_matrix(sparse=False)
     # print(A)
     # print(d)
+
     # model.get_flow_equations()
     # print(model.get_matrix(sparse=False)[0])
     # print(model.get_matrix(sparse=True)[0].toarray())
-    model.solve(sparse=False, check_MB=True, verbose=False)
-    #model.plot('pressures')
+    # model.solve(sparse=False, check_MB=True, verbose=False)
+    model.run(nsteps=2, sparse=False, check_MB=True, verbose=False)
+    print(model.pressures)
+    # print(model.pressures)
+    # model.plot('pressures')
     # model.plot_grid()
-    plots.show_grid(model, property='pressures', show_centers=True, show_boundary=False)
+    # plots.show_grid(model, property='pressures', show_centers=True, show_boundary=False)
     # Comp
     # model.set_compressibility(10) # to do: this method should not be exposed!
     
