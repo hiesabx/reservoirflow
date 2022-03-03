@@ -27,13 +27,15 @@ class Model(base.Base):
         self.dtype = dtype # np.single, np.double
         self.grid = grid # composition
         self.fluid = fluid # composition
-        self.pressures = {}
-        self.pressures[0] = (self.grid.blocks * np.nan).astype(self.dtype)
+        self.pressures = np.ones((1, self.grid.nx+2), dtype=self.dtype) * np.nan # (nsteps, nx)
+        # self.pressures = {}
+        # self.pressures[0] = (self.grid.blocks * np.nan).astype(self.dtype)
         self.pi = pi
         if pi != None:
             self.pressures[0][1:-1] = pi
-        self.rates = {}
-        self.rates[0] = np.zeros(grid.nx + 2, dtype=self.dtype)
+        # self.rates = {}
+        # self.rates[0] = np.zeros(grid.nx + 2, dtype=self.dtype)
+        self.rates = np.zeros((1, self.grid.nx+2), dtype=self.dtype)
         self.wells = {}
         if well != None:
             self.set_well(well)
@@ -288,9 +290,11 @@ class Model(base.Base):
             # Update pressures:
             if update:
                 self.tstep += 1
-                self.pressures[self.tstep] = self.pressures[self.tstep-1].copy()
+                self.pressures = np.vstack([self.pressures.copy(),self.pressures[-1].copy()])
+                # self.pressures[self.tstep] = self.pressures[self.tstep-1].copy()
                 self.pressures[self.tstep][1:-1] = pressures
-                self.rates[self.tstep] = self.rates[self.tstep-1].copy()
+                self.rates = np.vstack([self.rates.copy(), self.rates[-1].copy()])
+                # self.rates[self.tstep] = self.rates[self.tstep-1].copy()
 
                 # Update wells:
                 for i in self.wells.keys():
@@ -344,7 +348,7 @@ class Model(base.Base):
             # Check MB error over a time step:
             self.incremental_error = np.sum(self.RHS[1:-1] * (self.pressures[self.tstep][1:-1] - self.pressures[self.tstep-1][1:-1])) / self.rates[self.tstep].sum()
             # Check MB error from initial state to current time step: (less accurate)
-            self.cumulative_error = np.sum(self.RHS[1:-1] * self.dt * (self.pressures[self.tstep][1:-1] - self.pressures[0][1:-1])) / (self.dt * self.tstep * np.sum([self.rates[tstep].sum() for tstep in self.rates]))
+            self.cumulative_error = np.sum(self.RHS[1:-1] * self.dt * (self.pressures[self.tstep][1:-1] - self.pressures[0][1:-1])) / (self.dt * self.tstep * self.rates.sum())
             self.error = abs(self.incremental_error - 1)
             if verbose:
                 print(f"    - Incremental Error: {self.incremental_error}")
@@ -395,8 +399,9 @@ if __name__ == '__main__':
     # print(model.get_matrix(sparse=False)[0])
     # print(model.get_matrix(sparse=True)[0].toarray())
     # model.solve(sparse=False, check_MB=True, verbose=False)
-    model.run(nsteps=2, sparse=False, check_MB=True, verbose=False)
+    model.run(nsteps=100, sparse=True, check_MB=False, verbose=True)
     print(model.pressures)
+    print(model.rates)
     # print(model.pressures)
     # model.plot('pressures')
     # model.plot_grid()
@@ -411,3 +416,5 @@ if __name__ == '__main__':
     # print(model.__doc__)
     # print('- repr', repr(model))
     # model.report()
+
+# %%
