@@ -1,6 +1,7 @@
 import numpy as np
 import pyvista as pv
 from openresim import models
+import time
 
 
 
@@ -20,27 +21,29 @@ from openresim import models
 #     model.wells[4]['pwf']: "Pwf",
 # }
 
-def show_grid(model: models, property:str, show_centers=True, show_boundary=False, show_bounds=False):
+def show_grid(model:models.Model, property:str, show_centers=True, show_boundary=False, show_bounds=False):
     # Extract property values:
-    try:
-        local_dict = locals()
-        exec(f"values = model.{property}", local_dict)
-        values = local_dict['values'].reshape(model.grid.nx+2, model.grid.ny, model.grid.nz)
-    except:
-        props = list(vars(model))
-        raise ValueError(f"""Unknown property. 
-                            Available properties are : {props}""")
+    props = list(vars(model))
+    assert property in props, f"""Unknown property! Available properties are : {props}"""
+    local_dict = locals()
+    exec(f"values = model.{property}", local_dict)
+    values = local_dict['values'].reshape(model.nsteps, model.grid.nx+2)#, model.grid.ny, model.grid.nz)
+    
+    # Show boundary: 
     if not show_boundary:
-        values = values[1:-1]
+        values = values[:, 1:-1]
+        
     # Define limits: 
-    max_v = max(values)
-    min_v = min(values)
+    max_v = np.nanmax(values)
+    min_v = np.nanmin(values)
     limits = [min_v, max_v] # [min_v - (min_v*0.2), max_v + (max_v*0.2)]
+    
     # Number Format: 
     if min_v < 1:
         fmt="%.2f"
     else:
         fmt="%.f"
+        
     # Color bar options:
     cbar_opt = dict(height=0.07,
                     width=0.7,
@@ -54,13 +57,15 @@ def show_grid(model: models, property:str, show_centers=True, show_boundary=Fals
     )
 
     grid = model.grid.get_pv_grid(show_boundary)
-    grid.cell_data[property] = values
+    grid.cell_data[property] = values[1]
+    
     # Setup plotter:
     pl = pv.Plotter()
     pl.add_camera_orientation_widget()
     pl.enable_fly_to_right_click()
     # pl.enable_zoom_style()
-    # pl.add_mesh(grid0)
+    
+    # Show grid:
     pl.add_mesh(grid,
         clim=limits,
         # style='wireframe',
@@ -72,14 +77,16 @@ def show_grid(model: models, property:str, show_centers=True, show_boundary=Fals
         colormap='Blues',
         label=property,
         categories=True,
-        #nan_color='gray',
+        # nan_color='gray',
         nan_opacity=0.7,
         # use_transparency=True,
-        # scalars='Pressures', 
+        scalars=values[-1], # or str 'pressures'
         scalar_bar_args=cbar_opt, 
         show_scalar_bar=True,
         # annotations=annotations,
     )
+    
+    # Show centers: 
     if show_centers:
         pl.add_points(grid.cell_centers(),
             point_size=10, 
@@ -87,6 +94,8 @@ def show_grid(model: models, property:str, show_centers=True, show_boundary=Fals
             show_edges=True, 
             color='black'
         )
+    
+    # Show wells:
     for w in model.wells:
         # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
         # y = model.grid.dy[w]//2
@@ -98,11 +107,45 @@ def show_grid(model: models, property:str, show_centers=True, show_boundary=Fals
         well_cell_center[2] = height//2
         well = pv.Cylinder(center=well_cell_center, height=height, radius=model.wells[w]['r'], direction=(0,0,1))
         pl.add_mesh(well)
+        
+    # Plot configuration: 
     pl.camera_position = 'xz'
     #p.show_bounds(grid='front', location='outer', all_edges=True)
-    #_ = p.update_scalar_bar_range(0, model.pressures.max())
+    #_ = p.update_scalar_bar_range(0, model.pressures.max())    
     pl.show_axes()
     if show_bounds:
         pl.show_bounds(grid='front', location='outer', all_edges=True) # or pl.show_axes() # or pl.show_grid()
     pl.set_background('black', top='gray')
     pl.show(full_screen=True)
+    
+    pl = pv.Plotter(notebook=False, off_screen=True)
+    pl.add_mesh(grid,
+        clim=limits,
+        # style='wireframe',
+        show_edges=True,
+        opacity=0.7,
+        lighting=True,
+        ambient=0.2,
+        n_colors=5,
+        colormap='Blues',
+        label=property,
+        categories=True,
+        # nan_color='gray',
+        nan_opacity=0.7,
+        # use_transparency=True,
+        scalars=values[-1], # or str 'pressures'
+        scalar_bar_args=cbar_opt, 
+        show_scalar_bar=True,
+        # annotations=annotations,
+    )
+    
+    pl.open_gif("images/grid.gif")
+
+    pts = grid.points.copy()
+    for step in range(model.nsteps):
+        pl.update_coordinates(pts, render=False)
+        pl.update_scalars(values[step], render=False)
+        pl.render()
+        pl.write_frame()
+
+    pl.close()

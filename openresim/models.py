@@ -245,16 +245,10 @@ class Model(base.Base):
         self.d[i-1] = np.array(i_rhs).astype(self.dtype)
 
         if i == 1: 
-            start = i - 1
-            end = i + 1
             self.A[i-1, i-1:i+1] = i_lhs
         elif i == self.grid.nx:
-            start = i - 2
-            end = i
             self.A[i-1, i-2:i] = i_lhs
         else:
-            start = i - 2
-            end = i + 1
             self.A[i-1, i-2:i+1] = i_lhs
         
         # if sparse:
@@ -297,7 +291,7 @@ class Model(base.Base):
             
         
     # @lru_cache(maxsize=None)
-    def get_matrix(self, sparse=True, verbose=False, plot=False):
+    def get_matrix(self, sparse=True, verbose=False):
         '''Create coefficient matrix (A) and result vector (d).
         '''
         if self.grid.D == 1:
@@ -340,19 +334,13 @@ class Model(base.Base):
             for i in self.wells.keys():
                 self.update_matrix(i, sparse, verbose)
 
-            if plot:
-                if sparse:
-                    plt.imshow(self.A.toarray())
-                else:
-                    plt.imshow(self.A)
-                plt.show()
-
             if verbose:
                 if sparse:
                     print('- A:\n', self.A.toarray())
                     print('- d:\n', self.d.toarray())
                 else:
-                    print('- A:\n', self.A), print('- d:\n', self.d)
+                    print('- A:\n', self.A)
+                    print('- d:\n', self.d)
 
             return self.A, self.d
 
@@ -407,7 +395,7 @@ class Model(base.Base):
         return pressures
 
     def run(self, nsteps=10, sparse=True, check_MB=True, verbose=True):
-        self.nsteps = nsteps
+        self.nsteps += nsteps
         start_time = time.time()
         for _ in tqdm(range(1, nsteps+1), unit='steps', colour='green'):
             self.solve(sparse, check_MB, update=True, verbose=False)
@@ -416,7 +404,7 @@ class Model(base.Base):
             print(
                 f'Simulation run of {nsteps} steps is finished in {duration} seconds.')
 
-    def check_MB(self, verbose=False, error=0.1):
+    def check_MB(self, verbose=False, error_threshold=0.1):
         """Material Balance Check
 
         """
@@ -426,8 +414,7 @@ class Model(base.Base):
             self.error = self.rates[self.tstep].sum()  # must add up to 0
             if verbose:
                 print(f"    - Error: {self.error}")
-
-        if self.comp_type == 'compressible':
+        elif self.comp_type == 'compressible':
             # Check MB error over a time step:
             self.incremental_error = (self.RHS[1:-1] * (self.pressures[self.tstep][1:-1] -
                                       self.pressures[self.tstep-1][1:-1])).sum() / self.rates[self.tstep].sum()
@@ -440,30 +427,36 @@ class Model(base.Base):
                 print(f"    -  Cumulative Error: {self.cumulative_error}")
                 print(f"    -       Total Error: {self.incremental_error+self.cumulative_error}")
 
-        assert abs(self.error) < error, 'Material balance error ({}) higher than the allowed error ({}).'.format(
-            self.error, error)
+        assert abs(self.error) < error_threshold, 'Material balance error ({}) higher than the allowed error ({}).'.format(
+            self.error, error_threshold)
 
-    def plot(self, i=None, tstep=None):
+    def plot(self, property:str='pressures', i:int=None, tstep:int=None):      
+        
+        if tstep is None: 
+            tstep = self.tstep
+        
         if i is not None:
-            plt.plot(self.pressures[:, i].flatten())
+            exec(f"plt.plot(self.{property}[:, i].flatten())")
             plt.xlabel('Days')
-        if tstep is not None:
-            plt.plot(self.rates[tstep, :].flatten())
+        elif tstep is not None:
+            exec(f"plt.plot(self.{property}[tstep, :].flatten())")
             plt.xlabel('Grid (i)')
             plt.xticks(ticks=range(0, self.grid.nx+2))
-        # plt.xticks(ticks=range(0, 4), labels=range(1, 5))
         plt.grid()
         plt.show()
 
-    def plot_grid(self, property: str = 'pressures'):
-        exec(f"plt.imshow(self.{property}[self.tstep][1:-1][np.newaxis, :])")
-        plt.colorbar(label=f'{property} ({self.units[property[:-1]]})')
+    def plot_grid(self, property:str='pressures', tstep:int=None):
+        if tstep is None: 
+            tstep = self.tstep
+        exec(f"plt.imshow(self.{property}[tstep][1:-1][np.newaxis, :])")
+        plt.colorbar(label=f'{property.capitalize()} ({self.units[property[:-1]]})')
+        plt.title(f'{property.capitalize()} Distribution')
         plt.yticks([])
         plt.xlabel('Grid (i)')
         plt.xticks(ticks=range(0, 4), labels=range(1, 5))
         plt.show()
 
-    def show_grid(self, property: str, show_centers=True, show_boundary=False, show_bounds=False):
+    def show_grid(self, property:str, show_centers=True, show_boundary=False, show_bounds=False):
         plots.show_grid(self, property, show_centers,
                         show_boundary, show_bounds)
 
@@ -503,14 +496,11 @@ if __name__ == '__main__':
     # print(model.get_matrix(sparse=False)[0])
     # print(model.get_matrix(sparse=True)[0].toarray())
     # model.solve(sparse=False, check_MB=True, verbose=False)
-    model.run(nsteps=100, sparse=False, check_MB=True, verbose=True)
-    model.plot(i=4)
-    # print(model.pressures)
-    # print(model.rates)
-    # print(model.pressures)
-    # model.plot('pressures')
-    # model.plot_grid()
-    # plots.show_grid(model, property='pressures', show_centers=True, show_boundary=False)
+    model.run(nsteps=6, sparse=False, check_MB=True, verbose=True)
+    # model.plot(tstep=5)
+    model.plot(i=4, property='pressures')
+    model.plot_grid()
+    plots.show_grid(model, property='pressures', show_centers=True, show_boundary=False)
     # Comp
     # model.set_compressibility(10) # to do: this method should not be exposed!
 
@@ -521,5 +511,3 @@ if __name__ == '__main__':
     # print(model.__doc__)
     # print('- repr', repr(model))
     # model.report()
-
-# %%
