@@ -72,13 +72,13 @@ class Grid1D(Base):
         Set properties
         """
         # Set user defined properties:
-        if phi != None:
+        if phi is not None:
             self.set_porosity(phi, i)
-        if k != None:
+        if k is not None:
             self.set_permeability(k, i)
-        if z != None:
+        if z is not None:
             self.set_tops(z, i)
-        if comp != None:
+        if comp is not None:
             self.set_compressibility(comp)
         # Set default values if not defined:
         if not hasattr(self, 'tops'):

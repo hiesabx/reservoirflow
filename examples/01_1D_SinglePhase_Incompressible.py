@@ -11,7 +11,7 @@ grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40,
 grid.dx[2] = 600    # change dx in grid 2
 grid.k[3] = 10      # change permeability in grid 3
 # Step 2: Define a fluid (single phase incompressible fluid)
-fluid = fluids.Fluid(mu=0.5, B=1)
+fluid = fluids.SinglePhaseFluid(mu=0.5, B=1)
 # Step 3: Create a model
 model = models.Model(grid, fluid)
 # Step 4: Add wells

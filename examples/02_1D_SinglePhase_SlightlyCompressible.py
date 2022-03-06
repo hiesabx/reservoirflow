@@ -8,7 +8,7 @@ The workflow of openresim library consists of 8 steps as following:
 grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, 
                     phi=0.27, k=270, comp=1*10**-6)
 # Step 2: Define a fluid (single phase incompressible fluid)
-fluid = fluids.Fluid(mu=0.5, B=1, rho=50, comp=1*10**-5)
+fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, rho=50, comp=1*10**-5)
 # Step 3: Create a model
 model = models.Model(grid, fluid, pi=4000)
 # Step 4: Add a well
@@ -21,6 +21,6 @@ model.set_boundaries({
 model.solve(sparse=False, check_MB=False, verbose=True)
 # print(model)
 # # Step 7: Show pressures in 3D grid
-# model.show_grid(property='pressures', show_boundary=False)
-# # Step 8: Show report
+model.show_grid(property='pressures', show_boundary=False)
+# Step 8: Show report
 # model.report()

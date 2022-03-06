@@ -79,18 +79,24 @@ class TestApp(unittest.TestCase):
         
         cumulative_error_desired = 0.28973
         np.testing.assert_almost_equal(model.cumulative_error, cumulative_error_desired, decimal=5)
-        # print(model.incremental_error)
-        # print(model.cumulative_error)
 
 
 if __name__ == '__main__':
     def create_model():
-        grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270, comp=1*10**-6, dtype='double')
-        fluid = fluids.SinglePhaseFluid(mu=0.5 , B=1, rho=50, comp=1*10**-5, dtype='double')
-        model = models.Model(grid, fluid, pi=4000, dtype='double')
-        model.set_well(i=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries({0: {'pressure': 4000}, -1: {'rate': 0}})
+        dx = np.array([400, 400, 300, 150, 200, 250, 250])
+        phi = np.array([0.21, 0.21, 0.17, 0.10, 0.25, 0.13, 0.13])
+        k = np.array([273, 273, 248, 127, 333, 198, 198])
+        grid = grids.Grid1D(nx=5, ny=1, nz=1, dx=dx, dy=500, dz=50, phi=phi, k=k, comp=0, dtype='double')
+        fluid = fluids.SinglePhaseFluid(mu=1.5, B=1, rho=50, comp=2.5*10**-5, dtype='double')
+        model = models.Model(grid, fluid, pi=3000, dt=5, dtype='double')
+        model.set_well(i=4, q=-400, pwf=1500, s=0, r=3.5)
+        model.set_boundaries({0: {'rate': 0}, -1: {'rate': 0}})
         return model
-    unittest.main()
+    model = create_model() 
+    model.solve(sparse=True, check_MB=False, verbose=True)
+    # model.run(nsteps=1000, sparse=False)
+    print(model.pressures)
+    # print(model)
+    # unittest.main()
 
     

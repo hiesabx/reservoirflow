@@ -43,7 +43,7 @@ if __name__ == '__main__':
     def create_model():
         z = np.array([3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62])
         grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, z=z, phi=0.27, k=270, dtype='double')
-        fluid = fluids.Fluid(mu=0.5, B=1, rho=50, dtype='double')
+        fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, rho=50, dtype='double')
         model = models.Model(grid, fluid, dtype='double')
 
         # model.grid.pv_grid.points = model.grid.get_pv_grid(show_boundary=True) += z
