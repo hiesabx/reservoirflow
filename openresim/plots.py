@@ -1,7 +1,7 @@
 import numpy as np
 import pyvista as pv
 from openresim import models
-import time
+# import time
 
 
 
@@ -21,7 +21,7 @@ import time
 #     model.wells[4]['pwf']: "Pwf",
 # }
 
-def show_grid(model:models.Model, property:str, show_centers=True, show_boundary=False, show_bounds=False):
+def show_grid(model, property:str, show_centers=True, show_boundary=False, show_bounds=False):
     # Extract property values:
     props = list(vars(model))
     assert property in props, f"""Unknown property! Available properties are : {props}"""
@@ -149,3 +149,6 @@ def show_grid(model:models.Model, property:str, show_centers=True, show_boundary
         pl.write_frame()
 
     pl.close()
+    
+    # To show time with 3D
+    # https://docs.pyvista.org/api/plotting/plotting.html
