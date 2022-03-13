@@ -169,8 +169,8 @@ class Model(base.Base):
                 # To Do: keep pressure constant at specific cell (requires A adjust)
                 # if not np.isnan(self.pressures[self.tstep][neighbor]):
                 #     exec(f"p{neighbor} = {self.pressures[self.tstep][neighbor]}")
-                exec(f"""n_term = self.trans[{min(neighbor,i)}] * ((p{neighbor} 
-                                - p{i}) - (self.fluid.g * (self.grid.z[{neighbor}] - self.grid.z[{i}])))
+                exec(f"""n_term = self.trans[{min(neighbor,i)}] * ((p{neighbor} - p{i})
+                                - (self.fluid.g * (self.grid.z[{neighbor}] - self.grid.z[{i}])))
                 """)
                 terms.append(locals()['n_term'])
 
@@ -191,9 +191,7 @@ class Model(base.Base):
                 if 'q' in self.wells[i]:
                     terms.append(self.wells[i]['q'])
                 else:
-                    exec(f"""w_term = - self.wells[{i}]['G'] / (self.fluid.B*self.fluid.mu) 
-                                    * (p{i} - self.wells[{i}]['pwf'])
-                    """)
+                    exec(f"""w_term = - self.wells[{i}]['G'] / (self.fluid.B*self.fluid.mu) * (p{i} - self.wells[{i}]['pwf'])""")
                     terms.append(locals()['w_term'])
                     
             if verbose:
@@ -465,39 +463,13 @@ class Model(base.Base):
 
 
 if __name__ == '__main__':
-    grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350,
+    grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350,
                         dz=40, phi=0.27, k=270, comp=1*10**-6, dtype='single')
     fluid = fluids.SinglePhaseFluid(
         mu=0.5, B=1, rho=50, comp=1*10**-5, dtype='single')
     model = Model(grid, fluid, pi=4000, dtype='single')
     model.set_well(i=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: {'pressure': 4000}, -1: {'rate': 0}})
-
-    # A, d = model.get_matrix(sparse=True)
-    # print(A.toarray())
-    # print(d.toarray())
-    # A, d = model.get_matrix(sparse=False)
-    # print(A)
-    # print(d)
-
-    # model.get_flow_equations()
-    # print(model.get_matrix(sparse=False)[0])
-    # print(model.get_matrix(sparse=True)[0].toarray())
-    # model.solve(sparse=False, check_MB=True, verbose=False)
-    model.run(nsteps=100, sparse=False, check_MB=True, verbose=False)
+    model.run(nsteps=6, sparse=False, check_MB=True, verbose=False)
     print(model.pressures)
     print(model.rates)
-    # model.plot(tstep=5)
-    # model.plot(i=4, property='pressures')
-    # model.plot_grid()
-    # plots.show_grid(model, property='pressures', show_centers=True, show_boundary=False)
-    # Comp
-    # model.set_compressibility(10) # to do: this method should not be exposed!
-
-    # Units:
-    # model.set_units('metric')
-
-    # Reporting:
-    # print(model.__doc__)
-    # print('- repr', repr(model))
-    # model.report()

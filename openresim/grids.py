@@ -1,4 +1,6 @@
 #%% Import Statements:
+from logging import raiseExceptions
+from types import DynamicClassAttribute
 from openresim.base import Base
 import numpy as np
 import pyvista as pv
@@ -12,14 +14,47 @@ class Grid(Base):
         2. columns for dy. 2D grids are stored as a table where rows refer to x-direction while columns refere to y-direction. 
         3. layers for dz. 3D grids are stored as cubes where rows refer to x-direction, columns to y-direction, and layers for z-direction.
     '''
-    def __init__(self):
-        pass
+    def __init__(self, nx, ny, nz, dtype, unit):
+        super().__init__(unit)
+        self.type = 'cartesian'
+        self.dtype = dtype # np.single, np.double
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.get_dimension() # > self.dimension, self.D
+        
+    def get_dimension(self):
+        self.dimension = self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
+        return self.dimension
+    get_D = get_dimension
+    
+    def get_shape(self):
+        self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
+        return self.shape
+    get_s = get_shape
+    
+    def get_area(self):
+        if self.D == 1:
+            self.area = self.A = self.dy * self.dz
+            return self.area
+        else:
+            return None
+    get_A = get_area
 
+    def get_volume(self):
+        if self.D == 1:
+            self.volume = self.V = self.dx * self.dy * self.dz
+            return self.volume
+        else:
+            return None
+    get_V = get_volume
+        
 
 #%% 1D Grid Class: 
-class Grid1D(Base):
-    '''
-    Grid class to create a grid using numpy arrays. 1D grids are stored as 1 column with multiple rows which represent x-direction.  
+class CartGrid(Grid):
+    '''CartGrid class to create a explicit structured grid.
+     
+    1D grids are stored as 1 column with multiple rows which represent x-direction. Flow only allowed in x-direction.
     Parameters
     nx: int
         number of grids in x-direction.
@@ -42,30 +77,44 @@ class Grid1D(Base):
     unit: str of ['field', 'metric'] (Default: field)
         grid properties' unit.
     '''
-    name = '1D Grid'
+    name = 'CartGrid'
     def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='field'):
         """
         
         """
-        # super().__init__(unit)
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
-        self.get_dimension() # > self.dimension, self.D
-        assert self.D <= 1, 'Geometry higher than 1D is not allowed using Grid1D class.'
-        self.dtype = dtype # np.single, np.double
-        self.type = 'cartesian'
-        self.blocks = np.ones(self.nx + 2, dtype='int')
+        super().__init__(nx, ny, nz, dtype, unit)
+        
+        self.nx_b = self.nx + 2
+        if self.D == 1:
+            self.ny_b = self.ny
+            self.nz_b = self.nz
+        elif self.D in [2,3]:
+            self.ny_b = self.ny + 2
+            self.nz_b = self.nz # no boundaries in z-direction
+        else:
+            raise ValueError('Geometry higher than 3D is not allowed using CartGrid class.')
+                
+        self.blocks = np.ones(self.nx_b, dtype='int')
         self.i_blocks = self.blocks.copy()
         self.i_blocks[[0, -1]] = 0
-        self.b_blocks = np.zeros(self.nx + 2, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
-        self.b_blocks[[0, -1]] = 1            
-        self.dx = self.blocks * dx
-        self.dy = self.blocks * dy
-        self.dz = self.blocks * dz
+        self.b_blocks = np.zeros(self.nx_b, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
+        self.b_blocks[[0, -1]] = 1
+        
+        self.dx = np.ones(self.nx_b, dtype='int') * dx
+        if self.D == 1: 
+            self.dy = np.ones(self.nx_b, dtype='int') * dy
+            self.dz = np.ones(self.nx_b, dtype='int') * dz
+        elif self.D == 2:
+            self.dy = np.ones(self.ny_b, dtype='int') * dy
+            self.dz = np.ones(self.nx_b, dtype='int') * dz
+        elif self.D == 3:   
+            self.dy = np.ones(self.ny_b, dtype='int') * dy
+            self.dz = np.ones(self.nz_b, dtype='int') * dz
+        else:
+            raise ValueError('Geometry higher than 3D is not allowed using CartGrid class.')
+            
         self.set_properties(phi, k, z, comp)
-        self.get_properties()
-
+        self.__get_properties__()
 
     def set_properties(self, phi=None, k=None, z=None, comp=None, i=None):
         """
@@ -89,9 +138,7 @@ class Grid1D(Base):
             self.get_is_homogeneous()
     set_props = set_properties
 
-
-    def get_properties(self):
-        
+    def __get_properties__(self):
         self.get_shape() # > self.shape
         self.get_order(type='natural') # > self.order
         self.get_boundaries() # > self.boundaries, self.b
@@ -150,33 +197,9 @@ class Grid1D(Base):
         return self.is_homogeneous
 
 
-    def get_area(self):
-        self.area = self.A = self.dy * self.dz
-        return self.area
-    get_A = get_area
-
-
-    def get_volume(self):
-        self.volume = self.V = self.dx * self.dy * self.dz
-        return self.volume
-    get_V = get_volume
-
-
-    def get_dimension(self):
-        self.dimension = self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
-        return self.dimension
-    get_D = get_dimension
-
-    
-    def get_shape(self):
-        self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
-        return self.shape
-    get_s = get_shape
-
-
     def get_order(self, type='natural'):
         if type == 'natural':
-            self.order = np.arange(self.nx + 2) # natural order: 0, -1 are boundaries.
+            self.order = np.arange(self.nx_b) # natural order: 0, -1 are boundaries.
         else:
             raise ValueError("""Order type is not supported.\n
                             Supported order types: ['natural']""")
@@ -194,7 +217,7 @@ class Grid1D(Base):
             return self.boundaries
         else:
             if i < 0:
-                i = self.nx + 2 + i
+                i = self.nx_b + i
             assert i > 0 and i <= self.nx, 'grid index is out of range(1, {}).'.format(self.nx + 1)
 
         if self.nx == 1:
@@ -218,7 +241,7 @@ class Grid1D(Base):
             return self.pv_grid.neighbors(i, rel='topological')
         else:
             if i < 0:
-                i = self.nx + 2 + i
+                i = self.nx_b + i
             assert i > 0 and i <= self.nx, 'grid index is out of range.'
             if self.nx == 1:
                 return []
@@ -236,16 +259,19 @@ class Grid1D(Base):
         '''
         Grid geometry factor. 
         '''
-        if self.is_homogeneous:
-            self.G = self.factors['transmissibility conversion'] * \
-                self.mean(self.k) * self.mean(self.area) / self.mean(self.dx)
+        if self.D == 1:
+            if self.is_homogeneous:
+                self.G = self.factors['transmissibility conversion'] * \
+                    self.mean(self.k) * self.mean(self.area) / self.mean(self.dx)
+            else:
+                self.G = 2 * self.factors['transmissibility conversion'] / \
+                    (
+                        (self.dx[:-1] / (self.area[:-1] * self.k[:-1])) + \
+                        (self.dx[1:] / (self.area[1:] * self.k[1:]))
+                    )
+            return self.G
         else:
-            self.G = 2 * self.factors['transmissibility conversion'] / \
-                (
-                    (self.dx[:-1] / (self.area[:-1] * self.k[:-1])) + \
-                    (self.dx[1:] / (self.area[1:] * self.k[1:]))
-                )
-        return self.G
+            return None
 
     
     def mean(self, property, type='geometric'):
@@ -265,7 +291,7 @@ class Grid1D(Base):
         
         '''
         if show_boundary:
-            dims = np.array((self.nx+2,self.ny,self.nz))+1
+            dims = np.array((self.nx_b,self.ny_b,self.nz_b))+1
         else:
             dims = np.array((self.nx,self.ny,self.nz))+1
 
@@ -280,33 +306,57 @@ class Grid1D(Base):
         '''
         
         '''
-        xcorn = np.insert(self.dx.cumsum(), 0, 0) # or np.append([0],arr) or np.concatenate([0],arr)
+        # Cumulative sum: 
+        # also: np.append([0],arr), np.concatenate([0],arr)
+        xcorn = np.insert(self.dx.cumsum(), 0, 0)
+        
+        if self.D == 1:
+            ycorn = np.arange(0, (self.ny+1)*self.dy[1], self.dy[1])
+            zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])    
+        elif self.D == 2:
+            ycorn = np.insert(self.dy.cumsum(), 0, 0)
+            zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])
+        elif self.D == 3:
+            ycorn = np.insert(self.dy.cumsum(), 0, 0)
+            zcorn = np.insert(self.dz.cumsum(), 0, 0)
+        
+        # Show boundary:
         if show_boundary:
-            i = 2
+            ix = 2
+            if self.D == 1:
+                iy = 0
+            else:
+                iy = ix
         else:
-            i = 0
+            ix = 0
+            iy = 0
             xcorn = xcorn[1:-1]
+            if self.D >= 2:
+                ycorn = ycorn[1:-1]
+            
+        # X corners:
         xcorn = np.repeat(xcorn, 2)
         xcorn = xcorn[1:-1]
-        xcorn = np.tile(xcorn, 4*self.ny*self.nz)
+        xcorn = np.tile(xcorn, 4*(self.ny+iy)*self.nz)
         
-        ycorn = np.arange(0, (self.ny+1)*self.dy[1], self.dy[1])
+        # Y corners:
         ycorn = np.repeat(ycorn, 2)
         ycorn = ycorn[1:-1]
-        ycorn = np.tile(ycorn, (2*(self.nx+i), 2*self.nz))
+        ycorn = np.tile(ycorn, (2*(self.nx+ix), 2*self.nz))
         ycorn = np.transpose(ycorn)
         ycorn = ycorn.flatten()
 
-        zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])
-        # zcorn = zcorn + self.z
+        # Z corners:
         zcorn = np.repeat(zcorn, 2)
         zcorn = zcorn[1:-1]
-        zcorn = np.repeat(zcorn, (4*(self.nx+i)*self.ny))
+        zcorn = np.repeat(zcorn, (4*(self.nx+ix)*(self.ny+iy)))
 
         if verbose: print(xcorn.shape, ycorn.shape, zcorn.shape)
 
+        # Combine corners:
         corners = np.stack((xcorn, ycorn, zcorn))
         corners = corners.transpose()
+        
         return corners
 
 
@@ -314,29 +364,61 @@ class Grid1D(Base):
         self.centers = self.pv_grid.cell_centers().points
         return self.centers
     
+    '''Todo:
+    def set_d(self, d, n):
+        if isinstance(d, (list, tuple, np.ndarray)):
+            if len(d) == n + 2:
+                return self.blocks * d
+            elif len(d) == n:
+                d_array = np.insert(d, 0, d[0])
+                d_array = np.append(d, d[-1])
+                return d_array
+        elif isinstance(d, (int, float)):
+            return self.blocks * d
+        else:
+            pass
+        
+    def get_geometry(self, dx, dy, dz):        
+        
+        for c in range(self.pv_grid.n_cells):
+            bounds = np.array(self.pv_grid.cell_bounds(c))
+            dx, dy, dz = bounds[1::2] - bounds[::2]
+            self.dx[c] = dx
+            self.dy[c] = dy
+            self.dz[c] = dz
     # todo: copy functionality
     # def copy(self):
     #     return self
-
+    '''
+    
 #%%
 if __name__ == '__main__':
     # Define:
-    grid = Grid1D(nx=2, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270)
-    
+    dx = np.array([100,100,200,300,400,400])
+    dy = np.array([100,100,200,300,400,400])
+    dz = np.array([100,200,300,400])
+    grid = CartGrid(nx=4, ny=4, nz=4, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    # CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, k=270, dtype='double')
     # Doc:
     # print(grid.__doc__)
     
     # Setters:
-    grid.set_comp(1e-6)
-    grid.set_permeability(200, 1)
-    grid.set_props(0.3, 11)
-    grid.set_phi(0.2)
-    grid.set_k(10)
-    grid.set_tops(10)
+    # grid.set_comp(1e-6)
+    # grid.set_permeability(200, 1)
+    # grid.set_props(0.3, 11)
+    # grid.set_phi(0.2)
+    # grid.set_k(10)
+    # grid.set_tops(10)
 
     # Getters:
     # print(grid.get_boundaries())
     # print(*grid.get_boundaries(1), '1', *grid.get_neighbors(1))
     # print(grid) # or grid.report()
-    print('neighbors:', grid.get_neighbors(0, from_pv_grid=True))
-
+    # print('neighbors:', grid.get_neighbors(0, from_pv_grid=True))
+    
+    
+    # Generate dx, dy, dz
+    grid.get_pv_grid(show_boundary=False)
+    grid.pv_grid.plot(show_edges=True)
+    grid.get_pv_grid(show_boundary=True)
+    grid.pv_grid.plot(show_edges=True)

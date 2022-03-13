@@ -57,5 +57,3 @@ if __name__ == '__main__':
     fluid.set_units('metric')
     fluid.set_density(10)
     print(fluid)
-
-# %%

@@ -5,7 +5,7 @@ The workflow of openresim library consists of 8 steps as following:
 (default: dtype='double', unit='field')
 '''
 # Step 1: Define 1D grid (default dtype: 'double')
-grid = grids.Grid1D(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, 
+grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, 
                     phi=0.27, k=270, comp=1*10**-6)
 # Step 2: Define a fluid (single phase incompressible fluid)
 fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, rho=50, comp=1*10**-5)
