@@ -61,9 +61,6 @@ def show_grid(model, property:str, show_centers=True, show_boundary=False, show_
     
     # Setup plotter:
     pl = pv.Plotter()
-    pl.add_camera_orientation_widget()
-    pl.enable_fly_to_right_click()
-    # pl.enable_zoom_style()
     
     # Show grid:
     pl.add_mesh(grid,
@@ -111,11 +108,15 @@ def show_grid(model, property:str, show_centers=True, show_boundary=False, show_
     # Plot configuration: 
     pl.camera_position = 'xz'
     #p.show_bounds(grid='front', location='outer', all_edges=True)
-    #_ = p.update_scalar_bar_range(0, model.pressures.max())    
+    #_ = p.update_scalar_bar_range(0, model.pressures.max())  
+    pl.add_camera_orientation_widget()
+    pl.enable_fly_to_right_click()
+    # pl.enable_zoom_style()  
     pl.show_axes()
+    pl.set_background('black', top='gray')
     if show_bounds:
         pl.show_bounds(grid='front', location='outer', all_edges=True) # or pl.show_axes() # or pl.show_grid()
-    pl.set_background('black', top='gray')
+
     pl.show(full_screen=True)
     
     pl = pv.Plotter(notebook=False, off_screen=True)

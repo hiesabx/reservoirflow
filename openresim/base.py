@@ -83,7 +83,7 @@ class Base():
     def report(self, prop=None, ifmt=0):
         props = vars(self)
         tablefmt = ["pipe", "plain", "simple", "fancy_grid", "presto", "orgtbl"]
-        ignore_lst = ['units', 'factors', 'pv_grid', 'corners']
+        ignore_lst = ['units', 'factors', 'pv_grid', 'corners', 'centers']
         if prop == None:
             print(f'{self.name} Information: \n')
             table = tabulate([(str(k),str(v)) for k, v in props.items() if k not in ignore_lst], 

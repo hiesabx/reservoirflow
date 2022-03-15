@@ -2,6 +2,7 @@ from re import S
 from numpy import size
 from openresim import grids
 import pyvista as pv
+import numpy as np
 
 z = [3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62]
 grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, z=z, phi=0.27, k=270)
@@ -10,12 +11,16 @@ pv_grid = grid.get_pv_grid()
 pv_grid.cell_data['dx'] = grid.dx
 
 # https://docs.pyvista.org/api/core/_autosummary/pyvista.DataSet.html
+print('cell_data:', pv_grid.cell_data)
 print('dx:', pv_grid.cell_data['dx']) # or pv_grid.cell_arrays['dx']
-print('n_cells:', pv_grid.n_cells)
-print('n_points:', pv_grid.n_points)
-print('number of points for cell 0:', pv_grid.cell_n_points(0))
 print('n_arrays:', pv_grid.n_arrays)
-print('centers:', pv_grid.center)
+
+print('n_cells:', pv_grid.n_cells)
+print('cells_id', np.arange(pv_grid.n_cells))
+print('n_points:', pv_grid.n_points)
+print('cell indecies:', pv_grid)
+print('number of points for cell 0:', pv_grid.cell_n_points(0))
+print('center:', pv_grid.center)
 print('cell_centers points:', pv_grid.cell_centers().points)
 print('points:', pv_grid.points)
 print('cell points of cell 0:', pv_grid.cell_points(0))
