@@ -21,8 +21,9 @@ class Grid(Base):
         self.ny = ny
         self.nz = nz
         self.get_dimension() # > self.dimension, self.D
+        self.get_shape() # > self.shape
         
-        
+
     def get_dimension(self):
         self.dimension = self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
         return self.dimension
@@ -51,16 +52,6 @@ class Grid(Base):
         else:
             return None
     get_V = get_volume
-    
-    
-
-
-        # if cell_id==0:
-        #     return 0,0,0
-        # k=math.ceil(cell_id/(self.nx*self.ny))-1
-        # j=math.ceil((cell_id-(self.nx*self.ny)*k)/self.nx)-1
-        # i=math.ceil(cell_id-(self.nx*self.ny*k)-self.nx*j)
-        # return i,j,k
 
 
 #%% CartGrid Class: 
@@ -94,8 +85,7 @@ class CartGrid(Grid):
     
     def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='field'):
         super().__init__(nx, ny, nz, dtype, unit)
-        self.get_shape()
-        self.get_flow_direction()
+        self.get_flow_direction() # > self.flowdir
         
         if self.D == 1:
             if self.flowdir == 'x':
@@ -192,6 +182,7 @@ class CartGrid(Grid):
 
 
     def __get_properties__(self):
+        # self.get_dimension() # > self.dimension, self.D
         # self.get_shape() # > self.shape
         self.get_order(type='natural') # > self.order
         self.get_boundaries() # > self.boundaries, self.b
@@ -401,27 +392,29 @@ class CartGrid(Grid):
         '''
         
         '''
-        # Cumulative sum: 
-        # also: np.append([0],arr), np.concatenate([0],arr)
-        if 'x' in self.flowdir:
-            xcorn = np.insert(self.dx.cumsum(), 0, 0)
-        else:
-            xcorn = np.arange(0, (self.nx+1)*self.dx[0], self.dx[0])
-        
+
         if self.D == 1:
             if self.flowdir == 'x':
+                xcorn = np.insert(self.dx.cumsum(), 0, 0)
                 ycorn = np.arange(0, (self.ny+1)*self.dy[1], self.dy[1])
                 zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])
-            else:
-                ycorn = np.arange(0, (self.ny+1)*self.dy[0], self.dy[0])
+            if self.flowdir == 'y':
+                xcorn = np.arange(0, (self.nx+1)*self.dx[0], self.dx[0])
+                ycorn = np.insert(self.dy.cumsum(), 0, 0)
                 zcorn = np.arange(0, (self.nz+1)*self.dz[0], self.dz[0])
+            if self.flowdir == 'z':
+                xcorn = np.arange(0, (self.nx+1)*self.dx[0], self.dx[0])
+                ycorn = np.arange(0, (self.ny+1)*self.dy[1], self.dy[1])
+                zcorn = np.insert(self.dz.cumsum(), 0, 0)
         elif self.D == 2:
+            xcorn = np.insert(self.dx.cumsum(), 0, 0)
             ycorn = np.insert(self.dy.cumsum(), 0, 0)
             zcorn = np.arange(0, (self.nz+1)*self.dz[1], self.dz[1])
         elif self.D == 3:
+            xcorn = np.insert(self.dx.cumsum(), 0, 0)
             ycorn = np.insert(self.dy.cumsum(), 0, 0)
             zcorn = np.insert(self.dz.cumsum(), 0, 0)
-        
+            
         # Show boundary:
         if show_boundary:
             if 'x' in self.flowdir:
@@ -606,7 +599,7 @@ class CartGrid(Grid):
         pl.add_camera_orientation_widget()
         pl.enable_fly_to_right_click()
         pl.show_axes()
-        pl.camera_position = 'xy'
+        pl.camera_position = 'xz'
         pl.set_background('black', top='gray')
         pl.show(full_screen=True)
         
@@ -614,10 +607,10 @@ class CartGrid(Grid):
 #%%
 if __name__ == '__main__':
     # Canvas:
-    dx = 100 # np.array([20,40,60,10,70,80,10])
-    dy = 100 # np.array([40,60,10,70])
-    dz = 100 # np.array([20,40])
-    grid = CartGrid(nx=3, ny=1, nz=2, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    dx = np.array([60,10,70,80,10])
+    dy = np.array([40,40,60,10,70])
+    dz = np.array([20,40, 60])
+    grid = CartGrid(nx=3, ny=3, nz=3, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
     
     # indecies:
     # print(grid.cell_id(2,1,0))
