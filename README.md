@@ -10,7 +10,7 @@ Open Reservoir Simulation Library, shortly `openresim`, is a modern open-source 
 
 This library is designed based on the modern Python stack for data science and scientific computing. Hence, this library is directly integrated with AI and ML Python frameworks and libraries.
 
-`openresim` is designed to achieve the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples for the problems that will be tackled in future:
+`openresim` is designed to open the door towards achieving the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples for the problems that will be tackled in future:
 
 - History matching using machine learning.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).
