@@ -57,7 +57,7 @@ Any open-source tool requires resources that cost both time and money. Although 
 
 To reach a stable and production level, we will need enough investment to develop, upgrade, and maintain this tool. Here comes the role of oil&gas companies (i.e. especially operation companies) who may benefit a lot from this tool to [Sponsorship](https://www.patreon.com/zakgrin) this project. This will help us as a community to dedicate more resources and to add new features (i.e. let it be Quantum Computing!) or fix some bugs.
 
-If you are an individual who may benefit from this work, consider supporting this project by [Sponsorship](https://www.patreon.com/zakgrin) or by any means. Even by just starting using this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to keep this tool 100% free and open-source.
+If you are an individual who may benefit from this work, consider supporting this project by [Sponsorship](https://www.patreon.com/zakgrin) or by any means. Even by just starting using this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to always keep this tool 100% free and open-source.
 
 ## How Can I support This Project?
 
