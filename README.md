@@ -49,19 +49,19 @@ The author believes that this sad reality has to be changed as soon as possible.
 
 This sad reality can be changed if reservoir engineers are trained to express their scientific and engineering knowledge with coding. In addition, this will bring more excitements and job satisfaction. Those who learn to do reservoir simulation in Python should be familiar with the scientific computing and machine learning stack in Python. Therefore, it will be easy for them to change careers and work as data scientists, data analysts, or ML engineer in other industries.
 
-On a larger scale, an open-source reservoir simulation library within Python eco-system will be very important to students, universities, researches or even service companies who can use this tool for commercial studies and applications. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil&gas community that we try to create. However, this brings us to the next topic of **Sponsorship**.
+On a larger scale, an open-source reservoir simulation library within Python eco-system will be very important to students, universities, researches or even service companies who can use this tool for commercial studies and applications. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil&gas community that we try to create. However, this brings us to the next topic of [Sponsorship](#sponsorship).
 
 ## Sponsorship
 
 Any open-source tool requires resources that cost both time and money. Although much of open-source work is driven by the good intension of having an accessible and reproducible research, open-source have also proved to be a very successful business model especially when the tool grows to a production level. Compare for example Python with other commercial tools (e.g. Matlab). Python is open-source but also much more successful!
 
-To reach a stable and production level, we will need enough investment to develop, upgrade, and maintain this tool. Here comes the role of oil&gas companies (i.e. especially operation companies) who may benefit a lot from this tool to [Sponsorship](https://www.patreon.com/zakgrin) this project. This will help us as a community to dedicate more resources and to add new features (i.e. let it be Quantum Computing!) or fix some bugs.
+To reach a stable and production level, we will need enough investment to develop, upgrade, and maintain this tool. Here comes the role of oil&gas companies (i.e. especially operation companies) who may benefit a lot from this tool to [Sponsorship on Patreon](https://www.patreon.com/zakgrin) this project. This will help us as a community to dedicate more resources and to add new features (i.e. let it be Quantum Computing!) or fix some bugs.
 
-If you are an individual who may benefit from this work, consider supporting this project by [Sponsorship](https://www.patreon.com/zakgrin) or by any means. Even by just starting using this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to always keep this tool 100% free and open-source.
+If you are an individual who may benefit from this work, consider supporting this project by [Sponsorship on Patreon](https://www.patreon.com/zakgrin) or by any means. Even by just starting using this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to always keep this tool 100% free and open-source.
 
 ## How Can I support This Project?
 
-There are two ways to support this project. One way is by [Sponsorship](https://www.patreon.com/zakgrin). The other way is to offer some technical support as explained below.
+There are two ways to support this project. One way is by [Sponsorship](#sponsorship). The other way is to offer some technical support as explained below.
 
 **Normal Users:**
 
@@ -78,14 +78,14 @@ As normal user, you can support this project in many ways:
 If you are a developer or want to be one, you need additionally to:
 
 - [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
-- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project [Convention](#convention-and-rules).
+- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project [Convention and Rules](#convention-and-rules).
 
 **Companies:**
 
-If you are a company who may use this tool for commercial application, then the best way is to [Sponsorship](https://www.patreon.com/zakgrin) this project. Additionally you can do the following:
+If you are a company who may use this tool for commercial application, then the best way is to [Sponsorship](#sponsorship) this project. Additionally you can do the following:
 
 - Use this tool for your internal projects.
-- In case new features are needed, then open a new request under [issues](https://github.com/zakgrin/openresim/issues). In contrast, we also expect some [Sponsorship](https://www.patreon.com/zakgrin) so we have the required resources to develop this feature specifically for you. 
+- In case new features are needed, then open a new request under [issues](https://github.com/zakgrin/openresim/issues). In contrast, we also expect some [Sponsorship](#sponsorship) so we have the required resources to develop this feature specifically for you. 
 - Encourage your RE teams to participate in this project as developers and not only as normal users. If you do not have any, hire one who can do so.
 - Use our future offers that we will announce latter once the community grow enough (i.e. trainings, consultation, special use cases etc).
 
