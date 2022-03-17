@@ -17,28 +17,26 @@ This library is designed based on the modern Python stack for data science and s
 
 ## Version
 
-[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until a stable version is reached.
+[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until a stable version is reached. The first version `v0.1.0` was released on April 1, 2022. Current version is `v0.1.0`. Supported capabilities are shown below:
 
-The first version `v0.1.0` was released on April 1, 2022. Current version is `v0.1.0`. Supported capabilities are shown below:
-
-| **Feature**         | **Type**       | **Support** | **Starting From** |
+| **Feature**          | **Type**       | **Support** | **Starting From** |
 | --------------------- | ---------------- | ----------- | ------------- |
-| **Grid Type**       | Cartesian      | Yes         | `v0.1.0`    |
-|                     | Radial         | No          | `-`         |
-| **Dimension**       | 1D             | Yes         | `v0.1.0`    |
-|                     | 2D             | No          | `v0.1.0`    |
-|                     | 3D             | No          | `v0.1.0`    |
-| **Phases**          | Single Phase   | Yes         | `v0.1.0`    |
-|                     | Two Phases     | No          | `-`         |
-|                     | Three Phases   | No          | `-`         |
-|                     | Compositional  | No          | `-`         |
-| **Compressibility** | Incompressible | Yes         | `v0.1.0`    |
-|                     | Compressible   | No          | `v0.1.0`    |
-| **Experiments**     | Core-Flooding  | No          | `-`         |
-|                     | Slim-Tube      | No          | `-`         |
-| **History Matching**| Conventional   | No          | `-`         |
-|                     | Machine Learning | No        | `-`         |
-| **Optimization**    |Reinforcement Learning | No   | `-`         |
+| **Grid Type**        | Cartesian      | Yes         | `v0.1.0`    |
+|                      | Radial         | No          | `-`         |
+| **Dimension**        | 1D             | Yes         | `v0.1.0`    |
+|                      | 2D             | Yes         | `v0.1.0`    |
+|                      | 3D             | Yes         | `v0.1.0`    |
+| **Phases**           | Single Phase   | Yes         | `v0.1.0`    |
+|                      | Two Phases     | No          | `-`         |
+|                      | Three Phases   | No          | `-`         |
+|                      | Compositional  | No          | `-`         |
+| **Compressibility**  | Incompressible | Yes         | `v0.1.0`    |
+|                      | Compressible   | No          | `v0.1.0`    |
+| **Experiments**      | Core-Flooding  | No          | `-`         |
+|                      | Slim-Tube      | No          | `-`         |
+| **History Matching** | Conventional   | No          | `-`         |
+|                      | Machine Learning | No        | `-`         |
+| **Optimization**     |Reinforcement Learning | No   | `-`         |
 | **Quantum Computing**|                | No         | `-`         |
 
 ## Motivation
@@ -91,9 +89,9 @@ If you are a company who may use this tool for commercial application, then the 
 
 ## Installation
 
-### Install python
+### Install Python
 
-### Install the python library
+### Install `openresim`
 
 ```bash
 git clone https://github.com/zakgrin/openresim.git
@@ -122,13 +120,6 @@ source .venv/Scripts/activate
 pip install -r requirements.txt
 pip install .
 ```
-
-## Tutorials
-
-### Example 1
-
-![](images/example_1_code.png)
-![](images/example_1_3d.png)
 
 ## Convention
 
