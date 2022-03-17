@@ -12,8 +12,10 @@ This library is designed based on the modern Python stack for data science and s
 
 `openresim` is designed to achieve the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples for the problems that will be tackled in future:
 
-- Reinforcement Learning to achieve better production strategies.
-- Deep Learning to perform history matching.
+- History matching using machine learning.
+- Reinforcement learning to achieve better production strategies to achieve specific goals (e.g. maximize recovery, accelerate production).
+- Physics-informed neural networks and deep learning models.
+- Advanced computing such as: GPU Computing, Quantum Computing, and Cluod Computing. 
 
 ## Version
 
