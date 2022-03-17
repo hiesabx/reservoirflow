@@ -67,18 +67,18 @@ There are two ways to support this project. One way is by [Sponsorship](https://
 
 As normal user, you can support this project in many ways by:
 
-- Give a star in GitHub for [`openresim`](https://github.com/zakgrin/openresim). You may need to open GitHub Account.
-- Starting using it for your projects or thesis.
-- Compare with other commercial tools and share your report.
-- Share your progress and experience in LinkedIn or any other platfrom. Try to use `#openresim` so the community can interact with your work. Or mention my name [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin-45306987/) so I can provide you with a quick feedback.
+- Give a star in GitHub for [`openresim`](https://github.com/zakgrin/openresim) (you may need to open GitHub Account).
+- Start using `openresim` for your projects or thesis.
+- Compare `openresim` with other commercial tools and share your feedback.
+- Share your progress and experience in [LinkedIn](https://www.linkedin.com/feed/) or any other platfrom. Try to use `#openresim` so the community can interact with your work. Or mention my name [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin-45306987/) so I can provide you with a quick feedback.
 - Report some issues you face under [Issues](https://github.com/zakgrin/openresim/issues).
 
 **Developers:**
 
 If you are a developer or want to be one, you need additionally to:
 
-- Fork this repository in your machine and start learning about the source-code.
-- Make [Pull requests](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project convention and rules.
+- [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
+- [Submit a pull request to the project owner](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project convention and rules.
 
 **Companies:**
 
