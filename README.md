@@ -17,7 +17,7 @@ This library is designed based on the modern Python stack for data science and s
 - Physics-informed neural networks and deep learning models.
 - Advanced computing such as: GPU Computing, Quantum Computing, and Cluod Computing. 
 
-The author aims first to create an open-source community for oil&gas industry and perhaps form a start-up that take this duty as business mention.
+The author aims first to create an open-source community for oil&gas industry and perhaps form a start-up that can take this duty as a business mention.
 
 ## Version
 
