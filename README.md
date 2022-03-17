@@ -39,7 +39,7 @@ This library is designed based on the modern Python stack for data science and s
 | **History Matching** | Conventional   | No          | `-`         |
 |                      | Machine Learning | No        | `-`         |
 | **Optimization**     |Reinforcement Learning | No   | `-`         |
-| **Quantum Computing**|                | No         | `-`         |
+| **Quantum Computing**|                | No          | `-`         |
 
 ## Motivation
 
@@ -65,12 +65,12 @@ There are two ways to support this project. One way is by [Sponsorship](https://
 
 **Normal Users:**
 
-As normal user, you can support this project in many ways by:
+As normal user, you can support this project in many ways:
 
-- Give a star in GitHub for [`openresim`](https://github.com/zakgrin/openresim) (you may need to open GitHub Account).
+- Give a star in GitHub for [`openresim`](https://github.com/zakgrin/openresim) (you need a GitHub Account).
 - Start using `openresim` for your projects or thesis.
-- Compare `openresim` with other commercial tools and share your feedback.
-- Share your progress and experience in [LinkedIn](https://www.linkedin.com/feed/) or any other platfrom. Try to use `#openresim` so the community can interact with your work. Or mention my name [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin-45306987/) so I can provide you with a quick feedback.
+- Compare `openresim` with other commercial tools and openly share your feedback.
+- Share your progress and experience in [LinkedIn](https://www.linkedin.com/feed/) or any other platfrom. Use `#openresim` hashtag so the community can interact with your work. Mention [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin-45306987/) the author can give you a quick feedback.
 - Report some issues you face under [Issues](https://github.com/zakgrin/openresim/issues).
 
 **Developers:**
@@ -78,16 +78,16 @@ As normal user, you can support this project in many ways by:
 If you are a developer or want to be one, you need additionally to:
 
 - [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
-- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project convention and rules.
+- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project [Convention](#convention-and-rules).
 
 **Companies:**
 
 If you are a company who may use this tool for commercial application, then the best way is to [Sponsorship](https://www.patreon.com/zakgrin) this project. Additionally you can do the following:
 
 - Use this tool for your internal projects.
-- In case new features are needed, then open a new request under [issues](https://github.com/zakgrin/openresim/issues). In contrast, we also expect some [Sponsorship](https://www.patreon.com/zakgrin) so we have the required resources to develop this feature. 
+- In case new features are needed, then open a new request under [issues](https://github.com/zakgrin/openresim/issues). In contrast, we also expect some [Sponsorship](https://www.patreon.com/zakgrin) so we have the required resources to develop this feature specifically for you. 
 - Encourage your RE teams to participate in this project as developers and not only as normal users. If you do not have any, hire one who can do so.
-- Use our future offers that we will announce latter once to community grow enough (i.e. Trainings, consultation, etc).
+- Use our future offers that we will announce latter once the community grow enough (i.e. trainings, consultation, special use cases etc).
 
 ## Installation
 
@@ -123,7 +123,7 @@ pip install -r requirements.txt
 pip install .
 ```
 
-## Convention
+## Convention and Rules
 
 An excellent library needs two things: a clean code and a clean documentation. The author tried to follow most of Python enhancement proposals mentioned in [PEP0](https://peps.python.org/pep-0000/). Mainly:
 
