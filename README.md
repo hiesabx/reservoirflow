@@ -78,7 +78,7 @@ As normal user, you can support this project in many ways by:
 If you are a developer or want to be one, you need additionally to:
 
 - [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
-- [Submit a pull request to the project owner](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project convention and rules.
+- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project convention and rules.
 
 **Companies:**
 
