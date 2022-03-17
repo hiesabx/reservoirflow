@@ -17,6 +17,8 @@ This library is designed based on the modern Python stack for data science and s
 - Physics-informed neural networks and deep learning models.
 - Advanced computing such as: GPU Computing, Quantum Computing, and Cluod Computing. 
 
+The author aims first to create an open-source community for oil&gas industry and perhaps form a start-up that take this duty as business mention.
+
 ## Version
 
 [Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until a stable version is reached. The first version `v0.1.0` was released on April 1, 2022. Current version is `v0.1.0`. Supported capabilities are shown below:
