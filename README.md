@@ -6,7 +6,7 @@ Petroleum Reservoir Simulation using Scientific Computing and Machine Learning W
 
 ## Introduction
 
-Open Reservoir Simulation Library, shortly `openresim`, is a modern open-source python library created by [Zakariya ABUGRIN](https://github.com/zakgrin). `openresim` helps petroleum reservoir engineers to be proficient scientists and engineers who are able to express their practical and scientific knowledge by coding.
+Open Reservoir Simulation Library, shortly `openresim`, is a modern open-source python library created by [Zakariya ABUGRIN](https://github.com/zakgrin). `openresim` helps reservoir engineers to be proficient scientists and engineers who are able to express their practical and scientific knowledge by coding.
 
 This library is designed based on the modern Python stack for data science and scientific computing. Hence, this library is directly integrated with AI and ML Python frameworks and libraries.
 
