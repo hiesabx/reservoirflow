@@ -15,7 +15,7 @@ This library is designed based on the modern Python stack for data science and s
 - History matching using machine learning.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).
 - Physics-informed neural networks and deep learning models.
-- Advanced computing such as: GPU Computing, Quantum Computing, and Cluod Computing. 
+- Advanced computing such as: GPU Computing, Quantum Computing, and Cloud Computing.
 
 The author aims first to create an open-source community for oil&gas industry and perhaps form a start-up that can take this duty as a business mention.
 
