@@ -15,9 +15,10 @@ This library is designed based on the modern Python stack for data science and s
 - History matching using machine learning.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).
 - Physics-informed neural networks and deep learning models.
-- Advanced computing such as: GPU Computing, Quantum Computing, and Cloud Computing.
+- Advanced computing such as: GPU Computing, and Quantum Computing.
+- Real-time reservoir management and production optimization using Cloud Computing and IoT.
 
-The author aims first to create an open-source community for oil&gas industry and perhaps form a start-up that can take this duty as a business mention.
+The author aims to create an open-source community for oil&gas industry and to form a start-up that can take this duty as a business mention. A company that can provide cutting-edge software and engineering solutions as __open-source__ and then can profit from other services such as training or consultation. If your company is interested in having this option, then please get in touch. Crating such a company, will put the oil&gas industry in the right direction for many years to come.
 
 ## Version
 
@@ -72,7 +73,7 @@ As normal user, you can support this project in many ways:
 - Give a star in GitHub for [`openresim`](https://github.com/zakgrin/openresim) (you need a GitHub Account).
 - Start using `openresim` for your projects or thesis.
 - Compare `openresim` with other commercial tools and openly share your feedback.
-- Share your progress and experience in [LinkedIn](https://www.linkedin.com/feed/) or any other platfrom. Use `#openresim` hashtag so the community can interact with your work. Mention [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin-45306987/) the author can give you a quick feedback.
+- Share your progress and experience in [LinkedIn](https://www.linkedin.com/feed/) or any other platfrom. Use `#openresim` hashtag so the community can interact with your work. Mention [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin-45306987/) so the author can give you a quick feedback.
 - Report some issues you face under [Issues](https://github.com/zakgrin/openresim/issues).
 
 **Developers:**
@@ -80,7 +81,7 @@ As normal user, you can support this project in many ways:
 If you are a developer or want to be one, you need additionally to:
 
 - [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
-- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project [Convention and Rules](#convention-and-rules).
+- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/openresim/pulls) to add features or solve bugs under [Issues](https://github.com/zakgrin/openresim/issues). Please keep in mind that you need stick with the project [Convention and Rules](#convention-and-rules).
 
 **Companies:**
 
