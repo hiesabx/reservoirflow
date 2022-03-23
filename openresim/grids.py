@@ -86,81 +86,33 @@ class CartGrid(Grid):
     def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='field'):
         super().__init__(nx, ny, nz, dtype, unit)
         self.get_flow_direction() # > self.flowdir
-        
-        if self.flowdir == 'x':
-            self.nx_b = self.nx + 2
-            self.ny_b = self.ny
-            self.nz_b = self.nz
-            flowshape = self.nx_b
-        elif self.flowdir == 'y':
-            self.nx_b = self.nx
-            self.ny_b = self.ny + 2
-            self.nz_b = self.nz
-            flowshape = self.ny_b
-        elif self.flowdir == 'z':
-            self.nx_b = self.nx
-            self.ny_b = self.ny
-            self.nz_b = self.nz + 2 
-            flowshape = self.nz_b
-        elif self.flowdir == 'xy':
-            self.nx_b = self.nx + 2
-            self.ny_b = self.ny + 2
-            self.nz_b = self.nz
-            flowshape = self.nx_b
-        elif self.flowdir == 'xz':
-            self.nx_b = self.nx + 2
-            self.ny_b = self.ny
-            self.nz_b = self.nz + 2 # new
-            flowshape = self.nx_b
-        elif self.flowdir == 'yz':
-            self.nx_b = self.nx
-            self.ny_b = self.ny + 2
-            self.nz_b = self.nz + 2 # new
-            flowshape = self.nz_b
-        elif self.flowdir == 'xz+':
-            self.nx_b = self.nx + 2
-            self.ny_b = self.ny + 2
-            self.nz_b = self.nz + 2 # new
-            flowshape = self.nx_b
-        elif self.flowdir == 'yz+':
-            self.nx_b = self.nx + 2
-            self.ny_b = self.ny + 2
-            self.nz_b = self.nz + 2 # new
-            flowshape = self.nz_b
-        elif self.flowdir == 'xyz':
-            self.nx_b = self.nx + 2
-            self.ny_b = self.ny + 2
-            self.nz_b = self.nz + 2 # new
-            flowshape = self.nx_b
-        else:
-            raise ValueError('Geometry higher than 3D is not allowed using CartGrid class.')
+        self.get_boundary_n() # > self.nx_b, self.ny_b, self.nz_b
+
+        self.max_n_b = max(self.nx_b, self.ny_b, self.nz_b)
         self.get_flow_shape() # > self.flow_shape
         
-        self.blocks = np.ones(flowshape, dtype='int')
+        self.blocks = np.ones(self.max_n_b, dtype='int')
         self.i_blocks = self.blocks.copy()
         self.i_blocks[[0, -1]] = 0
-        self.b_blocks = np.zeros(flowshape, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
+        self.b_blocks = np.zeros(self.max_n_b, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
         self.b_blocks[[0, -1]] = 1
         
-        if self.D == 1:
-            self.dx = np.ones(flowshape, dtype='int') * dx
-            self.dy = np.ones(flowshape, dtype='int') * dy
-            self.dz = np.ones(flowshape, dtype='int') * dz
-        elif self.D == 2:
+        # dx = self.fix_boundary(dx)
+        # dy = self.fix_boundary(dy)
+        # dz = self.fix_boundary(dz)
+        
+        if 'x' in self.flowdir:
             self.dx = np.ones(self.nx_b, dtype='int') * dx
+        else:
+            self.dx = np.ones(self.max_n_b, dtype='int') * dx
+        if 'y' in self.flowdir:
             self.dy = np.ones(self.ny_b, dtype='int') * dy
-            if self.flowdir == 'xy':
-                self.dz = np.ones(self.nx_b, dtype='int') * dz
-            elif self.flowdir == 'xz':
-                self.dz = np.ones(self.nz_b, dtype='int') * dz
-            elif self.flowdir == 'yz':
-                self.dz = np.ones(self.nz_b, dtype='int') * dz               
-        elif self.D == 3:  
-            self.dx = np.ones(self.nx_b, dtype='int') * dx
-            self.dy = np.ones(self.ny_b, dtype='int') * dy
+        else:
+            self.dy = np.ones(self.max_n_b, dtype='int') * dy
+        if 'z' in self.flowdir:
             self.dz = np.ones(self.nz_b, dtype='int') * dz
         else:
-            raise ValueError('Geometry higher than 3D is not allowed using CartGrid class.')
+            self.dz = np.ones(self.max_n_b, dtype='int') * dz
             
         self.pv_grid_b = self.get_pv_grid(boundary=True)
         self.pv_grid = self.get_pv_grid(boundary=False)
@@ -169,6 +121,13 @@ class CartGrid(Grid):
         self.__get_properties__()
 
 
+    def fix_boundary(self, d):
+        if isinstance(d, [list, tuple, np.array]):
+            if len(d) == self.max_n_b - 2:
+                d = np.concatenate((d[0], d, d[-1]))
+        return d
+    
+    
     def set_properties(self, phi=None, k=None, z=None, comp=None, i=None):
         """
         Set properties
@@ -202,7 +161,7 @@ class CartGrid(Grid):
         self.get_volume() # self.volume
         self.get_G() # > self.G
         self.get_is_homogeneous() # > self.is_homogeneous
-        self.get_centers()
+        self.centers()
         # self.get_flow_direction()
 
 
@@ -268,18 +227,18 @@ class CartGrid(Grid):
             - i: index in x-direction.
         '''
         if from_pv_grid:
-            self.cells_ids = np.arange(self.pv_grid_b.n_cells).reshape(self.flow_shape)
+            self.cells_id = np.arange(self.pv_grid_b.n_cells).reshape(self.flow_shape)
             if self.D == 1:
-                self.boundaries = self.cells_ids[[0,-1]].flatten()
+                self.boundaries = self.cells_id[[0,-1]].flatten()
             elif self.D == 2:
                 self.boundaries = np.sort(np.concatenate([
-                    self.cells_ids[[0,-1],:].flatten(),
-                    self.cells_ids[1:-1, [0,-1]].flatten()
+                    self.cells_id[[0,-1],:].flatten(),
+                    self.cells_id[1:-1, [0,-1]].flatten()
                 ]))
             elif self.D == 3:
                 self.boundaries = np.sort(np.concatenate([
-                    self.cells_ids[:,[0,-1],:].flatten(),
-                    self.cells_ids[:, 1:-1, [0,-1]].flatten(),
+                    self.cells_id[:,[0,-1],:].flatten(),
+                    self.cells_id[:, 1:-1, [0,-1]].flatten(),
                 ]))
             if i == None:
                 return self.boundaries
@@ -460,7 +419,9 @@ class CartGrid(Grid):
 
 
     def get_flow_direction(self):
-        if self.D == 1:
+        if self.D == 0:
+            self.flowdir = '-'
+        elif self.D == 1:
             flowdir_id = np.argmax(self.shape)
             if flowdir_id == 0:
                 self.flowdir = 'x'
@@ -476,14 +437,31 @@ class CartGrid(Grid):
                 self.flowdir = 'xz'
             elif flowdir_id == 0:
                 self.flowdir = 'yz'
-        else: # elif self.D == 3:
+        elif self.D == 3:
             self.flowdir = 'xyz'
         print(f'- flowdir is set to {self.flowdir}.')
         return self.flowdir
     
 
+    def get_boundary_n(self):
+        if 'x' in self.flowdir:
+            self.nx_b = self.nx + 2
+        else:
+            self.nx_b = self.nx
+        if 'y' in self.flowdir:
+            self.ny_b = self.ny + 2
+        else:
+            self.ny_b = self.ny
+        if 'z' in self.flowdir:
+            self.nz_b = self.nz + 2
+        else:
+            self.nz_b = self.nz
+        return (self.nx_b, self.ny_b, self.nz_b)
+            
     def get_flow_shape(self):
-        if self.flowdir == 'x':
+        if self.flowdir == '-':
+            self.flow_shape = (1,)
+        elif self.flowdir == 'x':
             self.flow_shape = (self.nx_b,)
         elif self.flowdir == 'y':
             self.flow_shape = (self.ny_b,)
@@ -495,73 +473,82 @@ class CartGrid(Grid):
             self.flow_shape = (self.nz_b, self.nx_b)
         elif self.flowdir == 'yz':
             self.flow_shape = (self.nz_b, self.ny_b)
-        elif self.flowdir == 'xz+':
-            self.flow_shape = (self.nz_b, self.nx_b, 3)
-        elif self.flowdir == 'yz+':
-            self.flow_shape = (self.nz_b, self.ny_b, 3)
+        # elif self.flowdir == 'xz+':
+        #     self.flow_shape = (self.nz_b, self.nx_b, 3)
+        # elif self.flowdir == 'yz+':
+        #     self.flow_shape = (self.nz_b, self.ny_b, 3)
         elif self.flowdir == 'xyz':
             self.flow_shape = (self.nz_b, self.ny_b, self.nx_b)
         print(f'- flow_shape is set to {self.flow_shape}')
         return self.flow_shape
     
     
-    def get_centers(self, boundary=True):
+    def centers(self, boundary=True):
         flow_shape = self.flow_shape + (3,)
-        self.centers = self.pv_grid_b.cell_centers().points.reshape(flow_shape)
+        centers = self.pv_grid_b.cell_centers().points.reshape(flow_shape)
         if boundary:
-            return self.centers.flatten()
+            return centers.flatten()
         else:
-            if self.D == 1: # and self.flowdir != 'z':
-                return self.centers[1:-1,:].flatten()       
+            if self.D == 0:
+                return centers.flatten()
+            elif self.D == 1: # and self.flowdir != 'z':
+                return centers[1:-1,:].flatten()       
             elif self.D == 2 and 'z' not in self.flowdir:
-                return self.centers[1:-1,1:-1,:].flatten()
+                return centers[1:-1,1:-1,:].flatten()
             elif self.D == 2 and self.flowdir == 'xz':
-                return self.centers[1:-1,1:-1].flatten()
+                return centers[1:-1,1:-1].flatten()
             elif self.D == 2 and self.flowdir == 'yz':
-                return self.centers[1:-1,1:-1].flatten()
+                return centers[1:-1,1:-1].flatten()
             elif self.D == 2 and self.flowdir == 'xz+':
-                return self.centers[1:-1,2:-2,:].flatten()
+                return centers[1:-1,2:-2,:].flatten()
             elif self.D == 2 and self.flowdir == 'yz+':
-                return self.centers[1:-1,1:-1,1:-1].flatten()
+                return centers[1:-1,1:-1,1:-1].flatten()
             elif self.D == 3:
-                return self.centers[1:-1,1:-1,1:-1,:].flatten()
-
-    
-    def get_cells_ids(self, boundary=True):  
-        self.cells_ids = np.arange(self.pv_grid_b.n_cells).reshape(self.flow_shape)
-        if boundary:
-            return self.cells_ids.flatten()
-        else:
-            if self.D == 1 and self.flowdir != 'z':
-                return self.cells_ids[1:-1].flatten()
-            elif self.D == 1 and self.flowdir == 'z':
-                return self.cells_ids[1:-1].flatten()
-            elif self.D == 2 and 'z' not in self.flowdir:
-                return self.cells_ids[1:-1,1:-1].flatten()
-            elif self.D == 2 and self.flowdir == 'xz':
-                return self.cells_ids[1:-1,1:-1].flatten()
-            elif self.D == 2 and self.flowdir == 'yz':
-                return self.cells_ids[1:-1,1:-1].flatten()
-            elif self.D == 2 and self.flowdir == 'xz+':
-                return self.cells_ids[1:-1,2:-2,:].flatten()
-            elif self.D == 2 and self.flowdir == 'yz+':
-                return self.cells_ids[1:-1,1:-1,1:-1].flatten()
-            elif self.D == 3:
-                return self.cells_ids[1:-1,1:-1,1:-1].flatten()
+                return centers[1:-1,1:-1,1:-1,:].flatten()
     
     
-    def get_cell_id(self, i,j,k, boundary=False):
+    def cell_id(self, i,j,k, boundary=False):
         if boundary:
             return self.pv_grid_b.cell_id((i,j,k))
         else:
             return self.pv_grid.cell_id((i,j,k))
 
 
-    def get_cell_ijk(self, cell_id, boundary=False):
+    def cell_coords(self, id, boundary=False):
         if boundary:
-            return self.pv_grid_b.cell_coords(cell_id)
+            return self.pv_grid_b.cell_coords(id)
         else:
-            return self.pv_grid.cell_coords(cell_id)
+            return self.pv_grid.cell_coords(id)
+        
+        
+    def cells_id(self, boundary=True):  
+        cells_id = np.arange(self.pv_grid_b.n_cells).reshape(self.flow_shape)
+        if boundary:
+            return cells_id.flatten()
+        else:
+            if self.D == 0:
+                return cells_id.flatten()
+            elif self.D == 1 and self.flowdir != 'z':
+                return cells_id[1:-1].flatten()
+            elif self.D == 1 and self.flowdir == 'z':
+                return cells_id[1:-1].flatten()
+            elif self.D == 2 and 'z' not in self.flowdir:
+                return cells_id[1:-1,1:-1].flatten()
+            elif self.D == 2 and self.flowdir == 'xz':
+                return cells_id[1:-1,1:-1].flatten()
+            elif self.D == 2 and self.flowdir == 'yz':
+                return cells_id[1:-1,1:-1].flatten()
+            elif self.D == 2 and self.flowdir == 'xz+':
+                return cells_id[1:-1,2:-2,:].flatten()
+            elif self.D == 2 and self.flowdir == 'yz+':
+                return cells_id[1:-1,1:-1,1:-1].flatten()
+            elif self.D == 3:
+                return cells_id[1:-1,1:-1,1:-1].flatten()
+    
+
+    def cells_coords(self, boundary=True):
+        cells_id = self.cells_id(boundary)
+        return self.pv_grid_b.cell_coords(cells_id)
     
     '''Todo:
     def set_d(self, d, n):
@@ -590,7 +577,15 @@ class CartGrid(Grid):
     #     return self
     '''
     
-    def show(self, show_lables=False, show_centers=True, boundary=True):
+    def show(self, 
+            boundary=False,
+            points=False, 
+            centers=False, 
+            centers_label='coords',
+            ):
+        '''
+        - centers_label: str ('coords', 'id')
+        '''
         if boundary:
             pv_grid = self.pv_grid_b
         else:
@@ -604,19 +599,22 @@ class CartGrid(Grid):
             opacity=0.8,
         )
         
-        if show_lables:
-            points = pv_grid.points
-            mask = points[:,1] == 0
+        if points:
+            points_lst = pv_grid.points
+            mask = points_lst[:,1] == 0
             pl.add_point_labels(
-                points[mask], 
-                points[mask].tolist(), 
+                points_lst[mask], 
+                points_lst[mask].tolist(), 
                 point_size=10, 
                 font_size=10,
             )
         
-        if show_centers:
-            labels = self.get_cells_ids(boundary)
-            centers = self.get_centers(boundary)
+        if centers:
+            if centers_label == 'coords':
+                labels = self.cells_coords(boundary)
+            elif centers_label == 'id':
+                labels = self.cells_id(boundary)
+            centers = self.centers(boundary)
             pl.add_point_labels(
                 points=centers,
                 labels=labels,
@@ -635,67 +633,75 @@ class CartGrid(Grid):
         pl.show_axes()
         pl.camera_position = 'xz'
         pl.set_background('black', top='gray')
-        pl.show(title=title, window_size=[1000,1000], full_screen=True)
+        pl.show(title=title, window_size=[1920,1280], 
+                # full_screen=True
+                )
         
     
 #%%
 if __name__ == '__main__':
     # Canvas:
-    dx = np.array([60,10,70,80,10])
-    dy = np.array([40,40,60,10,70])
-    dz = np.array([10,10,100,10,10])
+    dx = 100
+    dy = 100
+    dz = 50
+    grid = CartGrid(nx=3, ny=1, nz=4, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    grid.show(boundary=False, centers=True)
+    # b_ids = grid.get_boundaries(from_pv_grid=True)
+    # b_coords = grid.cell_coords(b_ids)
+    # print('- boundaries:', b_ids, b_coords)
     
-    grid = CartGrid(nx=3, ny=3, nz=3, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
-    grid.show(boundary=True)
-    grid.show(boundary=False)
-        
-    # indices:    
-    # cells:
-    # without boundary:
-    print('cell_id(0,0,0):', grid.get_cell_id(0,0,0, boundary=False))
-    print('cell_ijk(0):', grid.get_cell_ijk(0, boundary=False))
     
-    print('cell_id(0,0,2):', grid.get_cell_id(0,0,2, boundary=False))
-    print('cell_ijk(18):', grid.get_cell_ijk(18, boundary=False))
-    
-    print('cell_id(2,0,0):', grid.get_cell_id(2,0,0, boundary=False))
-    print('cell_ijk(2):', grid.get_cell_ijk(2, boundary=False))
-    
-    print('cell_id(0,2,0):', grid.get_cell_id(0,2,0, boundary=False))
-    print('cell_ijk(6):', grid.get_cell_ijk(6, boundary=False))
-    
-    print('cell_id(2,2,0):', grid.get_cell_id(2,2,0, boundary=False))
-    print('cell_ijk(8):', grid.get_cell_ijk(8, boundary=False))
-    
-    print('cell_id(2,2,2):', grid.get_cell_id(2,2,2, boundary=False))
-    print('cell_ijk(26):', grid.get_cell_ijk(26, boundary=False))
-    
-    # with boundary:
-    print('cell_id(1,1,1):', grid.get_cell_id(1,1,1, boundary=True))
-    print('cell_ijk(31):', grid.get_cell_ijk(31, boundary=True))
-    
-    print('cell_id(1,1,3):', grid.get_cell_id(1,1,3, boundary=True))
-    print('cell_ijk(81):', grid.get_cell_ijk(81, boundary=True))
-    
-    print('cell_id(3,1,1):', grid.get_cell_id(3,1,1, boundary=True))
-    print('cell_ijk(33):', grid.get_cell_ijk(33, boundary=True))
-    
-    print('cell_id(1,3,1):', grid.get_cell_id(1,3,1, boundary=True))
-    print('cell_ijk(41):', grid.get_cell_ijk(41, boundary=True))
-    
-    print('cell_id(3,3,1):', grid.get_cell_id(3,3,1, boundary=True))
-    print('cell_ijk(43):', grid.get_cell_ijk(43, boundary=True))
-    
-    print('cell_id(3,3,3):', grid.get_cell_id(3,3,3, boundary=True))
-    print('cell_ijk(93):', grid.get_cell_ijk(93, boundary=True))
-    
-    print(grid.get_cells_ids(boundary=True))
-    # print(grid.get_cells_ids())
-    # print('- boundaries:', grid.get_boundaries(from_pv_grid=True))
+    # grid = CartGrid(nx=1, ny=1, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=2, ny=1, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=1, ny=2, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=1, ny=1, nz=2, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=2, ny=2, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=2, ny=1, nz=2, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=1, ny=2, nz=2, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=2, ny=2, nz=2, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=3, ny=1, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=1, ny=3, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=1, ny=1, nz=3, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=3, ny=3, nz=1, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=3, ny=1, nz=3, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=1, ny=3, nz=3, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
+    # grid = CartGrid(nx=3, ny=3, nz=3, dx=10, dy=10, dz=10, phi=0.27, k=270)
+    # grid.show(boundary=True, centers=True)
+    # grid.show(boundary=False, centers=True)
     
     # Neighbors:
     # print('Neighbors:')
-    # print('1:', grid.get_neighbors(1))
+    id = grid.get_neighbors(5)
+    coords = grid.cell_coords(id)
+    print('1:', id, coords)
     # print(grid.get_neighbors(1, from_pv_grid=True)) # connectivity, geometric, topological
     # print('2:', grid.get_neighbors(2))
     # print(grid.get_neighbors(2, from_pv_grid=True))
