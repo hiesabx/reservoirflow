@@ -87,7 +87,6 @@ class CartGrid(Grid):
         super().__init__(nx, ny, nz, dtype, unit)
         self.get_flow_direction() # > self.flowdir
         self.get_boundary_n() # > self.nx_b, self.ny_b, self.nz_b
-
         self.max_n_b = max(self.nx_b, self.ny_b, self.nz_b)
         self.get_flow_shape() # > self.flow_shape
         
@@ -117,6 +116,7 @@ class CartGrid(Grid):
         self.pv_grid_b = self.get_pv_grid(boundary=True)
         self.pv_grid = self.get_pv_grid(boundary=False)
         
+        
         self.set_properties(phi, k, z, comp)
         self.__get_properties__()
 
@@ -128,17 +128,17 @@ class CartGrid(Grid):
         return d
     
     
-    def set_properties(self, phi=None, k=None, z=None, comp=None, i=None):
+    def set_properties(self, phi=None, k=None, z=None, comp=None, id=None):
         """
         Set properties
         """
         # Set user defined properties:
         if phi is not None:
-            self.set_porosity(phi, i)
+            self.set_porosity(phi, id)
         if k is not None:
-            self.set_permeability(k, i)
+            self.set_permeability(k, id)
         if z is not None:
-            self.set_tops(z, i)
+            self.set_tops(z, id)
         if comp is not None:
             self.set_compressibility(comp)
         # Set default values if not defined:
@@ -155,7 +155,7 @@ class CartGrid(Grid):
         # self.get_dimension() # > self.dimension, self.D
         # self.get_shape() # > self.shape
         self.get_order(type='natural') # > self.order
-        self.get_boundaries() # > self.boundaries, self.b
+        self.boundaries() # > self.boundaries, self.b
         # self.get_pv_grid(boundary=True) # > pv_grid
         self.get_area() # self.area
         self.get_volume() # self.volume
@@ -165,38 +165,38 @@ class CartGrid(Grid):
         # self.get_flow_direction()
 
 
-    def set_porosity(self, phi, i=None):
+    def set_porosity(self, phi, id=None):
         """
         
         """
-        if not i:
+        if not id:
             self.porosity = self.phi = self.blocks * phi # np.zeros(self.shape) + phi
         else:
-            self.porosity[i] = phi
+            self.porosity[id] = phi
             self.get_is_homogeneous()
     set_phi = set_porosity
 
 
-    def set_permeability(self, k, i=None):
+    def set_permeability(self, k, id=None):
         """
         
         """
-        if not i:
+        if not id:
             self.permeability = self.k = self.blocks * k # np.zeros(self.shape) + k
         else:
-            self.permeability[i] = k
+            self.permeability[id] = k
             self.get_is_homogeneous()
     set_k = set_permeability
 
     
-    def set_tops(self, z=None, i=None):
+    def set_tops(self, z=None, id=None):
         '''
         
         '''
-        if not i:
+        if not id:
             self.tops = self.z = self.blocks * z
         else:
-            self.tops[i] = z
+            self.tops[id] = z
     set_z = set_tops
 
 
@@ -220,85 +220,6 @@ class CartGrid(Grid):
                             Supported order types: ['natural']""")
         return self.order
     
-
-    def get_boundaries(self, i=None, from_pv_grid=False):
-        '''
-        Arguments:
-            - i: index in x-direction.
-        '''
-        if from_pv_grid:
-            self.cells_id = np.arange(self.pv_grid_b.n_cells).reshape(self.flow_shape)
-            if self.D == 1:
-                self.boundaries = self.cells_id[[0,-1]].flatten()
-            elif self.D == 2:
-                self.boundaries = np.sort(np.concatenate([
-                    self.cells_id[[0,-1],:].flatten(),
-                    self.cells_id[1:-1, [0,-1]].flatten()
-                ]))
-            elif self.D == 3:
-                self.boundaries = np.sort(np.concatenate([
-                    self.cells_id[:,[0,-1],:].flatten(),
-                    self.cells_id[:, 1:-1, [0,-1]].flatten(),
-                ]))
-            if i == None:
-                return self.boundaries
-            else:
-                print('not finished')
-                
-        if self.D == 1:
-            if i == None:
-                self.boundaries = self.b = [0, self.nx + 1]
-                return self.boundaries
-            else:
-                if i < 0:
-                    i = self.nx_b + i
-                assert i > 0 and i <= self.nx, 'grid index is out of range(1, {}).'.format(self.nx + 1)
-            if self.nx == 1:
-                return [0, 2]
-            else:
-                if i == 1:
-                    return [0]
-                if i == self.nx:
-                    return [self.nx + 1]
-                else:
-                    return []
-        elif self.D == 2:
-            print('not ready')
-        elif self.D == 3:
-            print('not ready')
-    get_b = get_boundaries
-
-
-    def get_neighbors(self, i, from_pv_grid=True):
-        '''
-        Arguments:
-            - i: index in x-direction.
-        '''
-        if from_pv_grid:
-                lst = self.pv_grid.neighbors(i, rel='connectivity') # topological, connectivity, geometric
-                if self.D == 1:
-                    if self.flowdir == 'x' and i == self.nx:
-                        lst.remove(self.nx+1)
-                    elif self.flowdir == 'y' and i == self.ny:
-                        lst.remove(self.ny+1)
-                    elif self.flowdir == 'z' and i == self.nz:
-                        lst.remove(self.nz+1)
-                return lst
-        else:
-            if i < 0:
-                i = self.nx_b + i
-            assert i > 0 and i <= self.nx, 'grid index is out of range.'
-            if self.nx == 1:
-                return []
-            else:
-                if i == 1:
-                    return [i+1]
-                if i == self.nx:
-                    return [i-1]
-                else:
-                    return [i-1, i+1]
-    get_n = get_neighbors
-
 
     def get_G(self):
         '''
@@ -516,9 +437,9 @@ class CartGrid(Grid):
 
     def cell_coords(self, id, boundary=False):
         if boundary:
-            return self.pv_grid_b.cell_coords(id)
+            return [tuple(x) for x in self.pv_grid_b.cell_coords(id)]
         else:
-            return self.pv_grid.cell_coords(id)
+            return [tuple(x) for x in self.pv_grid.cell_coords(id)]
         
         
     def cells_id(self, boundary=True):  
@@ -528,9 +449,7 @@ class CartGrid(Grid):
         else:
             if self.D == 0:
                 return cells_id.flatten()
-            elif self.D == 1 and self.flowdir != 'z':
-                return cells_id[1:-1].flatten()
-            elif self.D == 1 and self.flowdir == 'z':
+            elif self.D == 1:
                 return cells_id[1:-1].flatten()
             elif self.D == 2 and 'z' not in self.flowdir:
                 return cells_id[1:-1,1:-1].flatten()
@@ -636,16 +555,113 @@ class CartGrid(Grid):
         pl.show(title=title, window_size=[1920,1280], 
                 # full_screen=True
                 )
-        
     
+    def cell_neighbors(self, id=None, coords=None, boundary=False):
+        lst = []
+        if id is not None:
+            cells_id = self.cells_id(boundary=boundary)
+            if self.D >= 1:
+                lst = lst + [id-1, id+1]
+            if self.D >= 2:
+                lst = lst + [id-self.max_n_b, id+self.max_n_b]
+            if self.D >= 3:
+                lst = lst + [id-(self.nx_b*self.ny_b), id+(self.nx_b*self.ny_b)]
+            assert id in cells_id, 'cell id is out of range.'
+            return [n for n in lst if n in cells_id]
+        elif coords is not None:
+            cells_coords = self.cells_coords(boundary=boundary)
+            i,j,k = coords
+            if 'x' in self.flowdir:
+                lst = lst + [(i-1,j,k), (i+1,j,k)]
+            if 'y' in self.flowdir:
+                lst = lst + [(i,j-1,k), (i,j+1,k)]
+            if 'z' in self.flowdir:
+                lst = lst + [(i,j,k-1), (i,j,k+1)]
+            assert coords in cells_coords, 'cell coords are out of range'
+            return [n for n in lst if n in cells_coords]
+        else:
+            raise ValueError('at least id or coords argument must be defined.')
+
+    
+    def cell_boundaries(self, id=None, coords=None):
+        
+        if id is not None:
+            cells_id = self.cells_id(boundary=True)
+            assert id in cells_id, 'cell id is out of range.'
+            boundaries = self.boundaries_id
+            cell_neighbors = self.cell_neighbors(id=id, boundary=True)
+        elif coords is not None:
+            cells_coords = self.cells_coords(boundary=True)
+            assert coords in cells_coords, 'cell coords are out of range'
+            boundaries = self.boundaries_coords
+            cell_neighbors = self.cell_neighbors(coords=coords, boundary=True)
+        else:
+            raise ValueError('at least id or coords argument must be defined.')
+        return list(set(cell_neighbors).intersection(set(boundaries)))
+         
+    
+    def boundaries(self, ids=True):
+        '''
+        Arguments:
+            - i: index in x-direction.
+        '''
+        cells_id = np.arange(self.pv_grid_b.n_cells).reshape(self.flow_shape)
+        
+        if self.D == 1:
+            self.boundaries_id = cells_id[[0,-1]].flatten()
+        elif self.D == 2:
+            self.boundaries_id = np.sort(np.concatenate([
+                cells_id[[0,-1],:].flatten(),
+                cells_id[1:-1, [0,-1]].flatten()
+            ]))
+        elif self.D == 3:
+            self.boundaries_id = np.sort(np.concatenate([
+                cells_id[:,[0,-1],:].flatten(),
+                cells_id[:, 1:-1, [0,-1]].flatten(),
+                cells_id[[0,-1], 1:-1, 1:-1].flatten(),
+            ]))
+            
+        self.boundaries_coords = self.cell_coords(self.boundaries_id, boundary=True)
+        
+        if ids:
+            return self.boundaries_id
+        else:
+            return self.boundaries_coords
+
+
 #%%
 if __name__ == '__main__':
     # Canvas:
     dx = 100
     dy = 100
     dz = 50
-    grid = CartGrid(nx=3, ny=1, nz=4, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
-    grid.show(boundary=False, centers=True)
+    grid = CartGrid(nx=10, ny=1, nz=1, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    coords = (1,0,0)
+    print('- coords:',coords)
+    neighbors = grid.cell_neighbors(coords=coords)
+    print('- neighbors:', neighbors)
+    
+    boundaries = grid.cell_boundaries(coords=coords)
+    print('- boundaries:', boundaries)
+    
+    
+    print(grid.cells_id(False))
+    
+    id = 10
+    print('- id:',id)
+    neighbors = grid.cell_neighbors(id=id)
+    print('- neighbors:', neighbors)
+    
+    boundaries = grid.cell_boundaries(id=id)
+    print('- boundaries:', boundaries)
+
+    grid.show(boundary=True, centers=True, centers_label='coords')
+    # id = grid.get_neighbors(1)
+    # coords = grid.cell_coords(id)
+    # print('1:', id, coords)
+    
+    # grid.show(boundary=True, centers=True, centers_label='coords')
+    
     # b_ids = grid.get_boundaries(from_pv_grid=True)
     # b_coords = grid.cell_coords(b_ids)
     # print('- boundaries:', b_ids, b_coords)
@@ -699,9 +715,6 @@ if __name__ == '__main__':
     
     # Neighbors:
     # print('Neighbors:')
-    id = grid.get_neighbors(5)
-    coords = grid.cell_coords(id)
-    print('1:', id, coords)
     # print(grid.get_neighbors(1, from_pv_grid=True)) # connectivity, geometric, topological
     # print('2:', grid.get_neighbors(2))
     # print(grid.get_neighbors(2, from_pv_grid=True))
