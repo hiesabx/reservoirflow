@@ -467,7 +467,7 @@ class CartGrid(Grid):
 
     def cells_coords(self, boundary=True):
         cells_id = self.cells_id(boundary)
-        return self.pv_grid_b.cell_coords(cells_id)
+        return [tuple(x) for x in self.pv_grid_b.cell_coords(cells_id)]
     
     '''Todo:
     def set_d(self, d, n):
@@ -559,7 +559,7 @@ class CartGrid(Grid):
     def cell_neighbors(self, id=None, coords=None, boundary=False):
         lst = []
         if id is not None:
-            cells_id = self.cells_id(boundary=boundary)
+            cells_id = self.cells_id(boundary)
             if self.D >= 1:
                 lst = lst + [id-1, id+1]
             if self.D >= 2:
@@ -569,7 +569,7 @@ class CartGrid(Grid):
             assert id in cells_id, 'cell id is out of range.'
             return [n for n in lst if n in cells_id]
         elif coords is not None:
-            cells_coords = self.cells_coords(boundary=boundary)
+            cells_coords = self.cells_coords(boundary)
             i,j,k = coords
             if 'x' in self.flowdir:
                 lst = lst + [(i-1,j,k), (i+1,j,k)]
@@ -620,7 +620,7 @@ class CartGrid(Grid):
                 cells_id[:, 1:-1, [0,-1]].flatten(),
                 cells_id[[0,-1], 1:-1, 1:-1].flatten(),
             ]))
-            
+        
         self.boundaries_coords = self.cell_coords(self.boundaries_id, boundary=True)
         
         if ids:
@@ -635,10 +635,10 @@ if __name__ == '__main__':
     dx = 100
     dy = 100
     dz = 50
-    grid = CartGrid(nx=10, ny=1, nz=1, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
-    coords = (1,0,0)
+    grid = CartGrid(nx=2, ny=2, nz=2, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    coords = (1,1,1)
     print('- coords:',coords)
-    neighbors = grid.cell_neighbors(coords=coords)
+    neighbors = grid.cell_neighbors(coords=coords, boundary=False)
     print('- neighbors:', neighbors)
     
     boundaries = grid.cell_boundaries(coords=coords)
@@ -647,9 +647,9 @@ if __name__ == '__main__':
     
     print(grid.cells_id(False))
     
-    id = 10
+    id = 21
     print('- id:',id)
-    neighbors = grid.cell_neighbors(id=id)
+    neighbors = grid.cell_neighbors(id=id, boundary=False)
     print('- neighbors:', neighbors)
     
     boundaries = grid.cell_boundaries(id=id)
