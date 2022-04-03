@@ -25,15 +25,16 @@ class Grid(Base):
         
 
     def get_dimension(self):
-        self.dimension = self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
-        return self.dimension
+        if not hasattr(self, 'D'):
+            self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
+        return self.D
     get_D = get_dimension
     
     
     def get_shape(self):
-        self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
+        if not hasattr(self, 'shape'):
+            self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
         return self.shape
-    get_s = get_shape
     
     
     def get_area(self):
@@ -43,15 +44,6 @@ class Grid(Base):
         else:
             return None
     get_A = get_area
-
-
-    def get_volume(self):
-        if self.D == 1:
-            self.volume = self.V = self.dx * self.dy * self.dz
-            return self.volume
-        else:
-            return None
-    get_V = get_volume
 
 
 #%% CartGrid Class: 
@@ -115,10 +107,16 @@ class CartGrid(Grid):
             
         self.pyvista_grid_b = self.get_pyvista_grid(boundary=True)
         self.pyvista_grid = self.get_pyvista_grid(boundary=False)
-        self.get_cells_coords() # > ce
+        self.get_cells_coords() # > cells_coords_b, cells_coords
         
         self.set_properties(phi, k, z, comp)
-        self.__get_properties__()
+        self.get_order(type='natural') # > self.order
+        self.get_boundaries() # > self.boundaries_id, self.boundaries_coords
+        self.get_area() # self.area
+        self.get_volume() # self.volume
+        self.get_G() # > self.G
+        self.get_is_homogeneous() # > self.is_homogeneous
+        self.get_cells_center()
 
 
     def fix_boundary(self, d):
@@ -149,21 +147,7 @@ class CartGrid(Grid):
         if not hasattr(self, 'is_homogeneous'):
             self.get_is_homogeneous()
     set_props = set_properties
-
-
-    def __get_properties__(self):
-        # self.get_dimension() # > self.dimension, self.D
-        # self.get_shape() # > self.shape
-        self.get_order(type='natural') # > self.order
-        self.get_boundaries() # > self.boundaries_id, self.boundaries_coords
-        # self.get_pv_grid(boundary=True) # > pv_grid
-        self.get_area() # self.area
-        self.get_volume() # self.volume
-        self.get_G() # > self.G
-        self.get_is_homogeneous() # > self.is_homogeneous
-        self.get_centers()
-        # self.get_flow_direction()
-
+    
 
     def set_porosity(self, phi, id=None):
         """
@@ -340,27 +324,28 @@ class CartGrid(Grid):
 
 
     def get_flow_dir(self):
-        if self.D == 0:
-            self.flow_dir = '-'
-        elif self.D == 1:
-            flowdir_id = np.argmax(self.shape)
-            if flowdir_id == 0:
-                self.flow_dir = 'x'
-            elif flowdir_id == 1:
-                self.flow_dir = 'y'
-            elif flowdir_id == 2:
-                self.flow_dir = 'z'
-        elif self.D == 2:
-            flowdir_id = np.argmin(self.shape)
-            if flowdir_id == 2:
-                self.flow_dir = 'xy'
-            elif flowdir_id == 1:
-                self.flow_dir = 'xz'
-            elif flowdir_id == 0:
-                self.flow_dir = 'yz'
-        elif self.D == 3:
-            self.flow_dir = 'xyz'
-        print(f'- flowdir is set to {self.flow_dir}.')
+        if not hasattr(self, 'flow_dir'):
+            if self.D == 0:
+                self.flow_dir = '-'
+            elif self.D == 1:
+                flowdir_id = np.argmax(self.shape)
+                if flowdir_id == 0:
+                    self.flow_dir = 'x'
+                elif flowdir_id == 1:
+                    self.flow_dir = 'y'
+                elif flowdir_id == 2:
+                    self.flow_dir = 'z'
+            elif self.D == 2:
+                flowdir_id = np.argmin(self.shape)
+                if flowdir_id == 2:
+                    self.flow_dir = 'xy'
+                elif flowdir_id == 1:
+                    self.flow_dir = 'xz'
+                elif flowdir_id == 0:
+                    self.flow_dir = 'yz'
+            elif self.D == 3:
+                self.flow_dir = 'xyz'
+            print(f'- flowdir is set to {self.flow_dir}.')
         return self.flow_dir
     
 
@@ -405,61 +390,51 @@ class CartGrid(Grid):
         return self.flow_shape
 
 
-    def get_centers(self, boundary=True):
-        flow_shape = self.flow_shape + (3,)
-        centers = self.pyvista_grid_b.cell_centers().points.reshape(flow_shape)
+    def get_cells_center(self, boundary=True):
+        if not hasattr(self, 'cells_center_b'):
+            flow_shape = self.flow_shape + (3,)
+            self.cells_center_b = self.pyvista_grid_b.cell_centers().points.reshape(flow_shape)
+        if not hasattr(self, 'cells_center'):
+            self.cells_center = self.remove_boundaries(self.cells_center_b)
         if boundary:
-            return centers.flatten()
+            return self.cells_center_b
         else:
-            if self.D == 0:
-                return centers.flatten()
-            elif self.D == 1: # and self.flowdir != 'z':
-                return centers[1:-1,:].flatten()       
-            elif self.D == 2 and 'z' not in self.flow_dir:
-                return centers[1:-1,1:-1,:].flatten()
-            elif self.D == 2 and self.flow_dir == 'xz':
-                return centers[1:-1,1:-1].flatten()
-            elif self.D == 2 and self.flow_dir == 'yz':
-                return centers[1:-1,1:-1].flatten()
-            elif self.D == 2 and self.flow_dir == 'xz+':
-                return centers[1:-1,2:-2,:].flatten()
-            elif self.D == 2 and self.flow_dir == 'yz+':
-                return centers[1:-1,1:-1,1:-1].flatten()
-            elif self.D == 3:
-                return centers[1:-1,1:-1,1:-1,:].flatten()
+            return self.cells_center
 
 
-    def get_grid_volume(self, boundary=True):
-        if not hasattr(self, 'grid_volume'):
-            self.grid_volume_b = self.pyvista_grid_b.volume
-        
+    def get_volume(self, boundary=True):
+        if not hasattr(self, 'volume_b'):
+            self.volume_b = self.pyvista_grid_b.volume
+        if not hasattr(self, 'volume'):
+            self.volume = self.pyvista_grid.volume
         if boundary:
             return self.pyvista_grid_b.volume
         else:
             return self.pyvista_grid.volume
         
         
-    def get_cell_volume(self, boundary=True):
-        pass 
-    
-    
-    def get_cells_volume(self, boundary=True):
-        cells_volume = self.pyvista_grid_b.compute_cell_sizes()['Volume']
-        cells_volume = cells_volume.reshape(self.flow_shape).round()
+    def get_cell_volume(self, id=None, coords=None, boundary=True):     
+        if id is not None:
+            pass
+        elif coords is not None:
+            pass
+        else:
+            raise ValueError('at least id or coords argument must be defined.')
+            
+            
+    def get_cells_volume(self, boundary=True, round_int=2):
+        if not hasattr(self, 'cells_volume_b'):
+            self.cells_volume_b = self.pyvista_grid_b.compute_cell_sizes()['Volume']
+            self.cells_volume_b = self.cells_volume_b.round(round_int).reshape(self.flow_shape)
+        if not hasattr(self, 'cells_volume'):
+            self.cells_volume = self.remove_boundaries(self.cells_volume_b)
         if boundary:
-            return cells_volume.flatten()
-        else: 
-            if self.D == 0:
-                return cells_volume.flatten()
-            elif self.D == 1:
-                return cells_volume[1:-1].flatten()
-            elif self.D == 2:
-                return cells_volume[1:-1,1:-1].flatten()
-            elif self.D == 3:
-                return cells_volume[1:-1,1:-1,1:-1].flatten()
+            return self.cells_volume_b
+        else:
+            return self.cells_volume
     
     
-    @lru_cache(maxsize=None)
+    # @lru_cache(maxsize=None)
     def get_cell_id(self, coords, boundary=True):
         if boundary:
             return self.pyvista_grid_b.cell_id(coords)
@@ -467,26 +442,49 @@ class CartGrid(Grid):
             return self.pyvista_grid.cell_id(coords)
 
 
+    def isin(self, arr, coords):
+        for x in arr:
+            if tuple(x) == coords:
+                return True
+        return False
+    
+    
+    def remove_boundaries(self, in_array):
+        if self.D == 0:
+            return in_array
+        elif self.D == 1:
+            return in_array[1:-1]
+        elif self.D == 2:
+            return in_array[1:-1,1:-1]
+        elif self.D == 3:
+            return in_array[1:-1,1:-1,1:-1]
+        # if self.D == 0:
+        #     self.cells_center = self.cells_center_b
+        # elif self.D == 1: # and self.flowdir != 'z':
+        #     self.cells_center = self.cells_center_b[1:-1,:]    
+        # elif self.D == 2 and 'z' not in self.flow_dir:
+        #     self.cells_center = self.cells_center_b[1:-1,1:-1,:]
+        # elif self.D == 2 and self.flow_dir == 'xz':
+        #     self.cells_center = self.cells_center_b[1:-1,1:-1]
+        # elif self.D == 2 and self.flow_dir == 'yz':
+        #     self.cells_center = self.cells_center_b[1:-1,1:-1]
+        # elif self.D == 2 and self.flow_dir == 'xz+':
+        #     self.cells_center = self.cells_center_b[1:-1,2:-2,:]
+        # elif self.D == 2 and self.flow_dir == 'yz+':
+        #     self.cells_center = self.cells_center_b[1:-1,1:-1,1:-1]
+        # elif self.D == 3:
+        #     self.cells_center = self.cells_center_b[1:-1,1:-1,1:-1,:]
+        
+        
     def get_cells_id(self, boundary=True):
-        
+        if not hasattr(self, 'cells_id_b'):
+            self.cells_id_b = np.arange(self.pyvista_grid_b.n_cells).reshape(self.flow_shape)
         if not hasattr(self, 'cells_id'):
-            self.cells_id = np.arange(self.pyvista_grid_b.n_cells).reshape(self.flow_shape)
-        
+            self.cells_id = self.remove_boundaries(self.cells_id_b)
         if boundary:
-            return self.cells_id.flatten()
+            return self.cells_id_b
         else:
-            if self.D == 0:
-                return self.cells_id.flatten()
-            elif self.D == 1:
-                return self.cells_id[1:-1].flatten()
-            elif self.D == 2:
-                return self.cells_id[1:-1,1:-1].flatten()
-            # elif self.D == 2 and self.flow_dir == 'xz+':
-            #     return self.cells_id[1:-1,2:-2,:].flatten()
-            # elif self.D == 2 and self.flow_dir == 'yz+':
-            #     return self.cells_id[1:-1,1:-1,1:-1].flatten()
-            elif self.D == 3:
-                return self.cells_id[1:-1,1:-1,1:-1].flatten()
+            return self.cells_id
 
 
     def get_cell_coords(self, id, boundary=True):
@@ -503,11 +501,12 @@ class CartGrid(Grid):
 
 
     def get_cells_coords(self, boundary=True):
+        # needs reshape!
         if not hasattr(self, 'cells_coords_b'):
-            cells_id_b = self.get_cells_id(boundary=True)
+            cells_id_b = self.get_cells_id(boundary=True).flatten()
             self.cells_coords_b = [tuple(x) for x in self.pyvista_grid_b.cell_coords(cells_id_b)]
         if not hasattr(self, 'cells_coords'):
-            cells_id = self.get_cells_id(boundary=False)
+            cells_id = self.get_cells_id(boundary=False).flatten()
             self.cells_coords = [tuple(x) for x in self.pyvista_grid_b.cell_coords(cells_id)]
         if boundary:
             return self.cells_coords_b
@@ -515,44 +514,42 @@ class CartGrid(Grid):
             return self.cells_coords
 
 
-    @lru_cache(maxsize=None)
+    # @lru_cache(maxsize=None)
     def get_cell_neighbors(self, id=None, coords=None, boundary=False):
-        lst = []
+        cell_neighbors = []
         if id is not None:
-            cells_id = self.get_cells_id(boundary)
+            cells_id = self.get_cells_id(boundary).flatten()
             if self.D >= 1:
-                lst = lst + [id-1, id+1]
+                cell_neighbors = cell_neighbors + [id-1, id+1]
             if self.D >= 2:
-                lst = lst + [id-self.max_nb, id+self.max_nb]
+                cell_neighbors = cell_neighbors + [id-self.max_nb, id+self.max_nb]
             if self.D >= 3:
-                lst = lst + [id-(self.nx_b*self.ny_b), id+(self.nx_b*self.ny_b)]
+                cell_neighbors = cell_neighbors + [id-(self.nx_b*self.ny_b), id+(self.nx_b*self.ny_b)]
             assert id in cells_id, f'cell id is out of range {cells_id}.'
-            return [n for n in lst if n in cells_id]
+            return [n for n in cell_neighbors if n in cells_id]
         elif coords is not None:
             cells_coords = self.get_cells_coords(boundary)
             i,j,k = coords
             if 'x' in self.flow_dir:
-                lst = lst + [(i-1,j,k), (i+1,j,k)]
+                cell_neighbors = cell_neighbors + [(i-1,j,k), (i+1,j,k)]
             if 'y' in self.flow_dir:
-                lst = lst + [(i,j-1,k), (i,j+1,k)]
+                cell_neighbors = cell_neighbors + [(i,j-1,k), (i,j+1,k)]
             if 'z' in self.flow_dir:
-                lst = lst + [(i,j,k-1), (i,j,k+1)]
+                cell_neighbors = cell_neighbors + [(i,j,k-1), (i,j,k+1)]
             assert coords in cells_coords, f'cell coords are out of range {cells_coords}.'
-            return [n for n in lst if n in cells_coords]
+            return [n for n in cell_neighbors if n in cells_coords]
         else:
             raise ValueError('at least id or coords argument must be defined.')
 
 
-    @lru_cache(maxsize=None)
+    # @lru_cache(maxsize=None)
     def get_cell_boundaries(self, id=None, coords=None):
-        # cell_boundaries by id:
         if id is not None:
-            cells_id = self.get_cells_id(boundary=True)
-            assert id in cells_id, f'cell id is out of range {cells_id}.'
+            cells_id_b = self.get_cells_id(boundary=True).flatten()
+            assert id in cells_id_b, f'cell id is out of range {cells_id_b}.'
             cell_neighbors = self.get_cell_neighbors(id=id, boundary=True)
             return list(set(cell_neighbors).intersection(set(self.boundaries_id)))
         elif coords is not None:
-            # cell_boundaries by coords:
             cells_coords = self.get_cells_coords(boundary=True)
             assert coords in cells_coords, f'cell coords are out of range {cells_coords}.'
             cell_neighbors = self.get_cell_neighbors(coords=coords, boundary=True)
@@ -566,29 +563,26 @@ class CartGrid(Grid):
         Arguments:
             - i: index in x-direction.
         '''
-        # boundaries_id: boundaries by id
         if not hasattr(self, 'boundaries_id'):
-            if not hasattr(self, 'cells_id'):
-                self.get_cells_id() # > self.cells_id
+            cells_id_b = self.get_cells_id(boundary=True) # or self.cells_id_b
             if self.D == 0:
-                self.boundaries_id = self.cells_id.flatten()
+                self.boundaries_id = cells_id_b.flatten()
             elif self.D == 1:
-                self.boundaries_id = self.cells_id[[0,-1]].flatten()
+                self.boundaries_id = cells_id_b[[0,-1]].flatten()
             elif self.D == 2:
-                self.boundaries_id = np.sort(np.concatenate([
-                    self.cells_id[[0,-1],:].flatten(),
-                    self.cells_id[1:-1, [0,-1]].flatten()
+                self.boundaries_id = np.sort(
+                    np.concatenate([
+                        cells_id_b[[0,-1],:].flatten(),
+                        cells_id_b[1:-1, [0,-1]].flatten()
                 ]))
             elif self.D == 3:
                 self.boundaries_id = np.sort(np.concatenate([
-                    self.cells_id[:,[0,-1],:].flatten(),
-                    self.cells_id[:, 1:-1, [0,-1]].flatten(),
-                    self.cells_id[[0,-1], 1:-1, 1:-1].flatten(),
+                    cells_id_b[:,[0,-1],:].flatten(),
+                    cells_id_b[:, 1:-1, [0,-1]].flatten(),
+                    cells_id_b[[0,-1], 1:-1, 1:-1].flatten(),
                 ]))
-        # boundaries_coords: boundaries by coordinates
         if not hasattr(self, 'boundaries_coords'):
             self.boundaries_coords = self.get_cell_coords(self.boundaries_id, boundary=True)
-        # return:
         if ids:
             return self.boundaries_id
         else:
@@ -633,13 +627,18 @@ class CartGrid(Grid):
             pv_grid = self.pyvista_grid_b
         else:
             pv_grid = self.pyvista_grid
+        
+        if self.max_nb > 12:
+            opacity = 1
+        else:
+            opacity = 0.8
             
         pl = pv.Plotter()
         pl.add_mesh(
             pv_grid, 
             show_edges=True, 
             color="white",
-            opacity=0.8,
+            opacity=opacity,
         )
         
         if points:
@@ -653,14 +652,13 @@ class CartGrid(Grid):
             )
         
         if centers is not None:
-            centers = 'volume'
             if centers == 'coords':
                 labels = self.get_cells_coords(boundary)
             elif centers == 'id':
-                labels = self.get_cells_id(boundary)
+                labels = self.get_cells_id(boundary).flatten()
             elif centers == 'volume':
-                labels = self.get_cells_volume(boundary)
-            centers = self.get_centers(boundary)
+                labels = self.get_cells_volume(boundary).flatten()
+            centers = self.get_cells_center(boundary).flatten()
             pl.add_point_labels(
                 points=centers,
                 labels=labels,
@@ -685,15 +683,12 @@ class CartGrid(Grid):
 #%%
 if __name__ == '__main__':
     # Canvas:
-    dx = [10,20,30,40]
-    dy = [10,10,10,10]
-    dz = [10,10,10,10]
+    dx = 10 #[10,20,30,40]
+    dy = 10 #[10,10,10,10]
+    dz = 5 #[10,10,10,10]
     grid = CartGrid(nx=2, ny=2, nz=2, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
-
-    sizes = grid.pyvista_grid_b.compute_cell_sizes()
-    print(sizes.array_names)
-    print(sizes['Volume'].reshape(grid.flow_shape))
-    print(grid.pyvista_grid_b.volume)
+    
+    grid.show(boundary=False, centers='coords')
 
     # grid.show(boundary=False, centers='coords')
     # grid.show(boundary=False, centers='id')
