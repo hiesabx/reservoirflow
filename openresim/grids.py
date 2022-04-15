@@ -7,50 +7,24 @@ from functools import lru_cache
 
 #%% Grid Class: 
 class Grid(Base):
+    '''Grid class to create a grid using numpy arrays and pyvista grids.
     '''
-    Grid class to create a grid using numpy arrays. Note that the following conventions are used: 
-        1. rows for dx. 1D grids are stored as 1 column with multiple rows.  
-        2. columns for dy. 2D grids are stored as a table where rows refer to x-direction while columns refere to y-direction. 
-        3. layers for dz. 3D grids are stored as cubes where rows refer to x-direction, columns to y-direction, and layers for z-direction.
-    '''
-    def __init__(self, nx, ny, nz, dtype, unit):
+    def __init__(self, dtype, unit):
         super().__init__(unit)
-        self.type = 'cartesian'
         self.dtype = dtype # np.single, np.double
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
-        self.get_dimension() # > self.dimension, self.D
-        self.get_shape() # > self.shape
-        
-
-    def get_dimension(self):
-        if not hasattr(self, 'D'):
-            self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
-        return self.D
-    get_D = get_dimension
-    
-    
-    def get_shape(self):
-        if not hasattr(self, 'shape'):
-            self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
-        return self.shape
-    
-    
-    def get_area(self):
-        if self.D == 1:
-            self.area = self.A = self.dy * self.dz
-            return self.area
-        else:
-            return None
-    get_A = get_area
 
 
 #%% CartGrid Class: 
 class CartGrid(Grid):
     '''CartGrid class to create a explicit structured grid.
-     
+    
+    Note that the following conventions are used: 
+        1. rows for dx. 1D grids are stored as 1 column with multiple rows.  
+        2. columns for dy. 2D grids are stored as a table where rows refer to x-direction while columns refere to y-direction. 
+        3. layers for dz. 3D grids are stored as cubes where rows refer to x-direction, columns to y-direction, and layers for z-direction.
+    
     1D grids are stored as 1 column with multiple rows which represent x-direction. Flow only allowed in x-direction.
+    
     Parameters
     nx: int
         number of grids in x-direction.
@@ -76,11 +50,20 @@ class CartGrid(Grid):
     name = 'CartGrid'
     
     def __init__(self, nx, ny, nz, dx, dy, dz, z=None, phi=None, k=None, comp=None, dtype='double', unit='field'):
-        super().__init__(nx, ny, nz, dtype, unit)
+        super().__init__(dtype, unit)
+        self.type = 'cartesian'
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.get_dimension() # > self.D
+        self.get_shape() # > self.shape
         self.get_flow_dir() # > self.flow_dir
-        self.get_n_b() # > self.nxb, self.nyb, self.nzb
-        self.max_nb = max(self.nx_b, self.ny_b, self.nz_b)
+        self.get_n_b() # > self.nx_b, self.ny_b, self.n_zb
         self.get_flow_shape() # > self.flow_shape
+        self.get_n_cells() # > self.n_cells_b, self.n_cells
+        self.get_order(type='natural') # > self.order_b, self.order
+        
+        self.max_nb = max(self.nx_b, self.ny_b, self.nz_b)
         
         self.blocks = np.ones(self.max_nb, dtype='int')
         self.i_blocks = self.blocks.copy()
@@ -110,7 +93,6 @@ class CartGrid(Grid):
         self.get_cells_coords() # > cells_coords_b, cells_coords
         
         self.set_properties(phi, k, z, comp)
-        self.get_order(type='natural') # > self.order
         self.get_boundaries() # > self.boundaries_id, self.boundaries_coords
         self.get_area() # self.area
         self.get_volume() # self.volume
@@ -119,6 +101,122 @@ class CartGrid(Grid):
         self.get_cells_center()
 
 
+    def get_dimension(self):
+        if not hasattr(self, 'D'):
+            self.D = sum([1 if n>1 else 0 for n in (self.nx, self.ny, self.nz)])
+            print(f'- D (dimension) is set to {self.D}.')
+        return self.D
+    
+    
+    def get_shape(self):
+        if not hasattr(self, 'shape'):
+            self.shape = np.array((self.nx, self.ny, self.nz), dtype='int')
+            print(f'- shape is set to {self.shape}.')
+        return self.shape
+    
+
+    def get_flow_dir(self):
+        if not hasattr(self, 'flow_dir'):
+            if self.D == 0:
+                self.flow_dir = '-'
+            elif self.D == 1:
+                flowdir_id = np.argmax(self.shape)
+                if flowdir_id == 0:
+                    self.flow_dir = 'x'
+                elif flowdir_id == 1:
+                    self.flow_dir = 'y'
+                elif flowdir_id == 2:
+                    self.flow_dir = 'z'
+            elif self.D == 2:
+                flowdir_id = np.argmin(self.shape)
+                if flowdir_id == 2:
+                    self.flow_dir = 'xy'
+                elif flowdir_id == 1:
+                    self.flow_dir = 'xz'
+                elif flowdir_id == 0:
+                    self.flow_dir = 'yz'
+            elif self.D == 3:
+                self.flow_dir = 'xyz'
+            print(f'- flow_dir is set to {self.flow_dir}.')
+        return self.flow_dir
+    
+    
+    def get_n_b(self):
+        if 'x' in self.flow_dir:
+            self.nx_b = self.nx + 2
+        else:
+            self.nx_b = self.nx
+        if 'y' in self.flow_dir:
+            self.ny_b = self.ny + 2
+        else:
+            self.ny_b = self.ny
+        if 'z' in self.flow_dir:
+            self.nz_b = self.nz + 2
+        else:
+            self.nz_b = self.nz
+        return (self.nx_b, self.ny_b, self.nz_b)
+
+
+    def get_flow_shape(self):
+        if self.flow_dir == '-':
+            self.flow_shape = (1,)
+        elif self.flow_dir == 'x':
+            self.flow_shape = (self.nx_b,)
+        elif self.flow_dir == 'y':
+            self.flow_shape = (self.ny_b,)
+        elif self.flow_dir == 'z':
+            self.flow_shape = (self.nz_b,)
+        elif self.flow_dir == 'xy':
+            self.flow_shape = (self.ny_b, self.nx_b)
+        elif self.flow_dir == 'xz':
+            self.flow_shape = (self.nz_b, self.nx_b)
+        elif self.flow_dir == 'yz':
+            self.flow_shape = (self.nz_b, self.ny_b)
+        # elif self.flowdir == 'xz+':
+        #     self.flow_shape = (self.nz_b, self.nx_b, 3)
+        # elif self.flowdir == 'yz+':
+        #     self.flow_shape = (self.nz_b, self.ny_b, 3)
+        elif self.flow_dir == 'xyz':
+            self.flow_shape = (self.nz_b, self.ny_b, self.nx_b)
+        print(f'- flow_shape is set to {self.flow_shape}')
+        return self.flow_shape
+
+
+    def get_n_cells(self, boundary=True):
+        if not hasattr(self, 'n_cells_b'):
+            self.n_cells_b = self.nx_b * self.ny_b * self.nz_b
+        if not hasattr(self, 'n_cells'):
+            self.n_cells = self.nx * self.ny * self.nz
+        if boundary:
+            return self.n_cells_b
+        else:
+            return self.n_cells
+    
+    
+    def get_order(self, type='natural', boundary=True):
+        if type == 'natural':
+            if not hasattr(self, 'order_b'):
+                self.order_b = np.arange(self.n_cells_b) # .reshape(self.flow_shape)
+            if not hasattr(self, 'order'):
+                self.order = np.arange(self.n_cells) # .reshape(self.flow_shape)
+        else:
+            raise ValueError("""Order type is not supported.\n
+                            Supported order types: ['natural']""")
+        if boundary:
+            return self.order_b
+        else:
+            return self.order
+    
+    
+    def get_area(self):
+        if self.D == 1:
+            self.area = self.A = self.dy * self.dz
+            return self.area
+        else:
+            return None
+    get_A = get_area
+    
+    
     def fix_boundary(self, d):
         if isinstance(d, [list, tuple, np.array]):
             if len(d) == self.max_nb - 2:
@@ -194,15 +292,6 @@ class CartGrid(Grid):
         else:
             self.is_homogeneous = False # heterogeneous
         return self.is_homogeneous
-
-
-    def get_order(self, type='natural'):
-        if type == 'natural':
-            self.order = np.arange(self.nx_b) # natural order: 0, -1 are boundaries.
-        else:
-            raise ValueError("""Order type is not supported.\n
-                            Supported order types: ['natural']""")
-        return self.order
     
 
     def get_G(self):
@@ -323,73 +412,6 @@ class CartGrid(Grid):
         return corners
 
 
-    def get_flow_dir(self):
-        if not hasattr(self, 'flow_dir'):
-            if self.D == 0:
-                self.flow_dir = '-'
-            elif self.D == 1:
-                flowdir_id = np.argmax(self.shape)
-                if flowdir_id == 0:
-                    self.flow_dir = 'x'
-                elif flowdir_id == 1:
-                    self.flow_dir = 'y'
-                elif flowdir_id == 2:
-                    self.flow_dir = 'z'
-            elif self.D == 2:
-                flowdir_id = np.argmin(self.shape)
-                if flowdir_id == 2:
-                    self.flow_dir = 'xy'
-                elif flowdir_id == 1:
-                    self.flow_dir = 'xz'
-                elif flowdir_id == 0:
-                    self.flow_dir = 'yz'
-            elif self.D == 3:
-                self.flow_dir = 'xyz'
-            print(f'- flowdir is set to {self.flow_dir}.')
-        return self.flow_dir
-    
-
-    def get_n_b(self):
-        if 'x' in self.flow_dir:
-            self.nx_b = self.nx + 2
-        else:
-            self.nx_b = self.nx
-        if 'y' in self.flow_dir:
-            self.ny_b = self.ny + 2
-        else:
-            self.ny_b = self.ny
-        if 'z' in self.flow_dir:
-            self.nz_b = self.nz + 2
-        else:
-            self.nz_b = self.nz
-        return (self.nx_b, self.ny_b, self.nz_b)
-
-
-    def get_flow_shape(self):
-        if self.flow_dir == '-':
-            self.flow_shape = (1,)
-        elif self.flow_dir == 'x':
-            self.flow_shape = (self.nx_b,)
-        elif self.flow_dir == 'y':
-            self.flow_shape = (self.ny_b,)
-        elif self.flow_dir == 'z':
-            self.flow_shape = (self.nz_b,)
-        elif self.flow_dir == 'xy':
-            self.flow_shape = (self.ny_b, self.nx_b)
-        elif self.flow_dir == 'xz':
-            self.flow_shape = (self.nz_b, self.nx_b)
-        elif self.flow_dir == 'yz':
-            self.flow_shape = (self.nz_b, self.ny_b)
-        # elif self.flowdir == 'xz+':
-        #     self.flow_shape = (self.nz_b, self.nx_b, 3)
-        # elif self.flowdir == 'yz+':
-        #     self.flow_shape = (self.nz_b, self.ny_b, 3)
-        elif self.flow_dir == 'xyz':
-            self.flow_shape = (self.nz_b, self.ny_b, self.nx_b)
-        print(f'- flow_shape is set to {self.flow_shape}')
-        return self.flow_shape
-
-
     def get_cells_center(self, boundary=True):
         if not hasattr(self, 'cells_center_b'):
             flow_shape = self.flow_shape + (3,)
@@ -478,7 +500,8 @@ class CartGrid(Grid):
         
     def get_cells_id(self, boundary=True):
         if not hasattr(self, 'cells_id_b'):
-            self.cells_id_b = np.arange(self.pyvista_grid_b.n_cells).reshape(self.flow_shape)
+            # self.cells_id_b = np.arange(self.pyvista_grid_b.n_cells).reshape(self.flow_shape)
+            self.cells_id_b = self.order_b.reshape(self.flow_shape)
         if not hasattr(self, 'cells_id'):
             self.cells_id = self.remove_boundaries(self.cells_id_b)
         if boundary:
@@ -500,11 +523,12 @@ class CartGrid(Grid):
                 return tuple(self.pyvista_grid.cell_coords(id))
 
 
-    def get_cells_coords(self, boundary=True):
-        # needs reshape!
+    def get_cells_coords(self, boundary=True, asarray=True):
         if not hasattr(self, 'cells_coords_b'):
             cells_id_b = self.get_cells_id(boundary=True).flatten()
             self.cells_coords_b = [tuple(x) for x in self.pyvista_grid_b.cell_coords(cells_id_b)]
+            # needs reshape!
+            # arr = np.array(self.cells_coords_b).reshape(self.flow_shape+(3,))
         if not hasattr(self, 'cells_coords'):
             cells_id = self.get_cells_id(boundary=False).flatten()
             self.cells_coords = [tuple(x) for x in self.pyvista_grid_b.cell_coords(cells_id)]
@@ -514,48 +538,98 @@ class CartGrid(Grid):
             return self.cells_coords
 
 
-    # @lru_cache(maxsize=None)
-    def get_cell_neighbors(self, id=None, coords=None, boundary=False):
-        cell_neighbors = []
+    def get_cell_neighbors(self, id=None, coords=None, boundary=False, fmt='dict'):
+        cell_neighbors = {'x': [], 'y': [], 'z': []}
         if id is not None:
+            # coords = self.get_cell_coords(id, boundary=True)
             cells_id = self.get_cells_id(boundary).flatten()
-            if self.D >= 1:
-                cell_neighbors = cell_neighbors + [id-1, id+1]
-            if self.D >= 2:
-                cell_neighbors = cell_neighbors + [id-self.max_nb, id+self.max_nb]
-            if self.D >= 3:
-                cell_neighbors = cell_neighbors + [id-(self.nx_b*self.ny_b), id+(self.nx_b*self.ny_b)]
             assert id in cells_id, f'cell id is out of range {cells_id}.'
-            return [n for n in cell_neighbors if n in cells_id]
+            if self.D >= 1:
+                neighbors = [n for n in [id-1, id+1] if n in cells_id]
+                cell_neighbors[self.flow_dir[0]] =  neighbors
+            if self.D >= 2:
+                neighbors = [n for n in [id-self.max_nb, id+self.max_nb] if n in cells_id]
+                cell_neighbors[self.flow_dir[1]] = neighbors
+            if self.D >= 3:
+                neighbors =  [n for n in [id-(self.nx_b*self.ny_b), id+(self.nx_b*self.ny_b)] if n in cells_id]
+                cell_neighbors[self.flow_dir[2]] = neighbors
         elif coords is not None:
             cells_coords = self.get_cells_coords(boundary)
+            assert coords in cells_coords, f'cell coords are out of range {cells_coords}.'
             i,j,k = coords
             if 'x' in self.flow_dir:
-                cell_neighbors = cell_neighbors + [(i-1,j,k), (i+1,j,k)]
+                neighbors = [n for n in [(i-1,j,k), (i+1,j,k)] if n in cells_coords]
+                cell_neighbors['x'] = neighbors
             if 'y' in self.flow_dir:
-                cell_neighbors = cell_neighbors + [(i,j-1,k), (i,j+1,k)]
+                neighbors = [n for n in [(i,j-1,k), (i,j+1,k)] if n in cells_coords]
+                cell_neighbors['y'] = neighbors
             if 'z' in self.flow_dir:
-                cell_neighbors = cell_neighbors + [(i,j,k-1), (i,j,k+1)]
-            assert coords in cells_coords, f'cell coords are out of range {cells_coords}.'
-            return [n for n in cell_neighbors if n in cells_coords]
+                neighbors = [n for n in [(i,j,k-1), (i,j,k+1)] if n in cells_coords]
+                cell_neighbors['z'] = neighbors
         else:
             raise ValueError('at least id or coords argument must be defined.')
+        
+        if fmt == 'dict':
+            return cell_neighbors
+        elif fmt == 'list':
+            return sum(cell_neighbors.values(), [])
+        else: 
+            raise ValueError("format argument must be either 'dict' or 'list'.")
+        
+        
+    # @lru_cache(maxsize=None)
+    # def get_cell_neighbors(self, id=None, coords=None, boundary=False):
+    #     cell_neighbors = []
+    #     if id is not None:
+    #         cells_id = self.get_cells_id(boundary).flatten()
+    #         assert id in cells_id, f'cell id is out of range {cells_id}.'
+    #         if self.D >= 1:
+    #             cell_neighbors = cell_neighbors + [id-1, id+1]
+    #         if self.D >= 2:
+    #             cell_neighbors = cell_neighbors + [id-self.max_nb, id+self.max_nb]
+    #         if self.D >= 3:
+    #             cell_neighbors = cell_neighbors + [id-(self.nx_b*self.ny_b), id+(self.nx_b*self.ny_b)]
+    #         return [n for n in cell_neighbors if n in cells_id]
+    #     elif coords is not None:
+    #         cells_coords = self.get_cells_coords(boundary)
+    #         assert coords in cells_coords, f'cell coords are out of range {cells_coords}.'
+    #         i,j,k = coords
+    #         if 'x' in self.flow_dir:
+    #             cell_neighbors = cell_neighbors + [(i-1,j,k), (i+1,j,k)]
+    #         if 'y' in self.flow_dir:
+    #             cell_neighbors = cell_neighbors + [(i,j-1,k), (i,j+1,k)]
+    #         if 'z' in self.flow_dir:
+    #             cell_neighbors = cell_neighbors + [(i,j,k-1), (i,j,k+1)]
+    #         return [n for n in cell_neighbors if n in cells_coords]
+    #     else:
+    #         raise ValueError('at least id or coords argument must be defined.')
 
 
     # @lru_cache(maxsize=None)
-    def get_cell_boundaries(self, id=None, coords=None):
+    def get_cell_boundaries(self, id=None, coords=None, fmt='dict'):
         if id is not None:
+            boundaries = self.boundaries_id
             cells_id_b = self.get_cells_id(boundary=True).flatten()
             assert id in cells_id_b, f'cell id is out of range {cells_id_b}.'
-            cell_neighbors = self.get_cell_neighbors(id=id, boundary=True)
-            return list(set(cell_neighbors).intersection(set(self.boundaries_id)))
+            cell_neighbors = self.get_cell_neighbors(id=id, boundary=True, fmt=fmt)
         elif coords is not None:
+            boundaries = self.boundaries_coords
             cells_coords = self.get_cells_coords(boundary=True)
             assert coords in cells_coords, f'cell coords are out of range {cells_coords}.'
-            cell_neighbors = self.get_cell_neighbors(coords=coords, boundary=True)
-            return list(set(cell_neighbors).intersection(set(self.boundaries_coords)))
+            cell_neighbors = self.get_cell_neighbors(coords=coords, boundary=True, fmt=fmt)
         else:
             raise ValueError('at least id or coords argument must be defined.')
+        
+        if fmt == 'dict':
+            cell_boundaries = {}
+            cell_boundaries['x'] = list(set(cell_neighbors['x']).intersection(set(boundaries)))
+            cell_boundaries['y'] = list(set(cell_neighbors['y']).intersection(set(boundaries)))
+            cell_boundaries['z'] = list(set(cell_neighbors['z']).intersection(set(boundaries)))
+            return cell_boundaries
+        elif fmt == 'list':
+            return list(set(cell_neighbors).intersection(set(boundaries)))
+        else:
+            raise ValueError("format argument must be either 'dict' or 'list'.")
          
     
     def get_boundaries(self, ids=True):
@@ -686,10 +760,18 @@ if __name__ == '__main__':
     dx = 10 #[10,20,30,40]
     dy = 10 #[10,10,10,10]
     dz = 5 #[10,10,10,10]
-    grid = CartGrid(nx=2, ny=2, nz=2, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
-    
-    grid.show(boundary=False, centers='coords')
-
+    grid = CartGrid(nx=3, ny=3, nz=3, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    # coords=(2,0,0)
+    # id = grid.get_cell_id(coords)
+    # print(id)
+    # coords = grid.get_cell_coords(id)
+    # print(coords)
+    print(grid.get_cell_neighbors(id=31, boundary=False))
+    print(grid.get_cell_boundaries(id=31))
+    # grid.show(boundary=True, centers='id')
+    print(grid.get_cell_neighbors(coords=(1,1,1), boundary=False))
+    print(grid.get_cell_boundaries(coords=(1,1,1)))
+    # grid.show(boundary=True, centers='coords')
     # grid.show(boundary=False, centers='coords')
     # grid.show(boundary=False, centers='id')
     
