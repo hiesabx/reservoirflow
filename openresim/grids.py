@@ -62,39 +62,17 @@ class CartGrid(Grid):
         self.get_flow_shape() # > self.flow_shape
         self.get_n_cells() # > self.n_cells_b, self.n_cells
         self.get_order(type='natural') # > self.order_b, self.order
-        
         self.max_nb = max(self.nx_b, self.ny_b, self.nz_b)
+        self.get_cells_dims(dx, dy, dz)
+        self.get_cells_area()
+        self.get_cells_volume_()
         
-        self.blocks = np.ones(self.max_nb, dtype='int')
-        self.i_blocks = self.blocks.copy()
-        self.i_blocks[[0, -1]] = 0
-        self.b_blocks = np.zeros(self.max_nb, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
-        self.b_blocks[[0, -1]] = 1
-        
-        # dx = self.fix_boundary(dx)
-        # dy = self.fix_boundary(dy)
-        # dz = self.fix_boundary(dz)
-        
-        if 'x' in self.flow_dir:
-            self.dx = np.ones(self.nx_b, dtype='int') * dx
-        else:
-            self.dx = np.ones(self.max_nb, dtype='int') * dx
-        if 'y' in self.flow_dir:
-            self.dy = np.ones(self.ny_b, dtype='int') * dy
-        else:
-            self.dy = np.ones(self.max_nb, dtype='int') * dy
-        if 'z' in self.flow_dir:
-            self.dz = np.ones(self.nz_b, dtype='int') * dz
-        else:
-            self.dz = np.ones(self.max_nb, dtype='int') * dz
-            
         self.pyvista_grid_b = self.get_pyvista_grid(boundary=True)
         self.pyvista_grid = self.get_pyvista_grid(boundary=False)
         self.get_cells_coords() # > cells_coords_b, cells_coords
         
         self.set_properties(phi, k, z, comp)
         self.get_boundaries() # > self.boundaries_id, self.boundaries_coords
-        self.get_area() # self.area
         self.get_volume() # self.volume
         self.get_G() # > self.G
         self.get_is_homogeneous() # > self.is_homogeneous
@@ -208,14 +186,94 @@ class CartGrid(Grid):
             return self.order
     
     
-    def get_area(self):
-        if self.D == 1:
-            self.area = self.A = self.dy * self.dz
-            return self.area
+    def get_cells_dims(self, dx, dy, dz):
+        self.blocks = np.ones(self.max_nb, dtype='int')
+        self.i_blocks = self.blocks.copy()
+        self.i_blocks[[0, -1]] = 0
+        self.b_blocks = np.zeros(self.max_nb, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
+        self.b_blocks[[0, -1]] = 1
+        
+        m_list = []
+        if 'x' in self.flow_dir:
+            self.dxx = np.ones(self.nx_b, dtype='int') * dx
+            m_list.append(self.dxx)
         else:
-            return None
-    get_A = get_area
+            self.dxx = np.ones(self.max_nb, dtype='int') * dx
+            m_list.append(dx)
+        if 'y' in self.flow_dir:
+            self.dyy = np.ones(self.ny_b, dtype='int') * dy
+            m_list.append(self.dyy)
+        else:
+            self.dyy = np.ones(self.max_nb, dtype='int') * dy
+            m_list.append(dy)
+        if 'z' in self.flow_dir:
+            self.dzz = np.ones(self.nz_b, dtype='int') * dz
+            m_list.append(self.dzz)
+        else:
+            self.dzz = np.ones(self.max_nb, dtype='int') * dz
+            m_list.append(dz)
+        
+        self.dx, self.dy, self.dz = np.meshgrid(*m_list, copy=False)
+        self.dx = np.transpose(self.dx, axes=(0,2,1))
+        self.dy = np.transpose(self.dy, axes=(2,0,1))
+        self.dz = np.transpose(self.dz, axes=(2,1,0))
+        
+        
+    def get_cells_area(self, dir=None, boundary=True):
+        if not hasattr(self, 'area_x'):
+            self.area_x_b = (self.dy.flatten() * self.dz.flatten()).reshape(self.flow_shape)
+            self.area_x = self.remove_boundaries(self.area_x_b)
+        if not hasattr(self, 'area_y'):
+            self.area_y_b = (self.dx.flatten() * self.dz.flatten()).reshape(self.flow_shape)
+            self.area_y = self.remove_boundaries(self.area_y_b)
+        if not hasattr(self, 'area_z'):
+            self.area_z_b = (self.dx.flatten() * self.dy.flatten()).reshape(self.flow_shape)
+            self.area_z = self.remove_boundaries(self.area_z_b)
+        if not hasattr(self, 'area'):
+            self.area_b = {'x': self.area_x_b, 'y': self.area_y_b, 'z': self.area_z_b}
+            self.area = {'x': self.area_x, 'y': self.area_y, 'z': self.area_z}
+        if dir == 'x':
+            if boundary:
+                return self.area_x_b
+            else:
+                return self.area_x
+        elif dir == 'y':
+            if boundary:
+                return self.area_y_b
+            else:
+                return self.area_y
+        elif dir == 'z':
+            if boundary:
+                return self.area_z_b
+            else:
+                return self.area_z
+        else:
+            if boundary:
+                return self.area_b
+            else:
+                return self.area
     
+    
+    def get_cells_area_x(self, boundary=True):
+        return self.get_cells_area(dir='x', boundary=boundary)
+    def get_cells_area_y(self, boundary=True):
+        return self.get_cells_area(dir='y', boundary=boundary)
+    def get_cells_area_z(self, boundary=True):
+        return self.get_cells_area(dir='z', boundary=boundary)
+    
+    
+    def get_cells_volume_(self, boundary=True):
+        if not hasattr(self, 'cells_volume_b'):
+            self.cells_volume_b = (self.dx.flatten() * 
+                                   self.dy.flatten() * 
+                                   self.dz.flatten()).reshape(self.flow_shape)
+        if not hasattr(self, 'cells_volume'):
+            self.cells_volume = self.remove_boundaries(self.cells_volume_b)
+        if boundary:
+            return self.cells_volume_b
+        else:
+            return self.cells_volume
+        
     
     def fix_boundary(self, d):
         if isinstance(d, [list, tuple, np.array]):
@@ -283,9 +341,9 @@ class CartGrid(Grid):
 
 
     def get_is_homogeneous(self):
-        if  all(self.dx[1:-1] == self.dx[0]) & \
-            all(self.dy[1:-1] == self.dy[0]) & \
-            all(self.dz[1:-1] == self.dz[0]) & \
+        if  all(self.dxx[1:-1] == self.dxx[0]) & \
+            all(self.dyy[1:-1] == self.dyy[0]) & \
+            all(self.dzz[1:-1] == self.dzz[0]) & \
             all(self.k[1:-1] == self.k[0]) & \
             all(self.porosity[1:-1] == self.porosity[0]):
             self.is_homogeneous = True # homogeneous
@@ -301,18 +359,18 @@ class CartGrid(Grid):
         if self.D == 1:
             if self.is_homogeneous:
                 if 'x' in self.flow_dir:
-                    d = self.dx
+                    d = self.dxx
                 elif 'y' in self.flow_dir:
-                    d = self.dy
+                    d = self.dyy
                 elif 'z' in self.flow_dir:
-                    d = self.dz
+                    d = self.dzz
                 self.G = self.factors['transmissibility conversion'] * \
                     self.get_mean(self.k) * self.get_mean(self.area) / self.get_mean(d)
             else:
                 self.G = 2 * self.factors['transmissibility conversion'] / \
                     (
-                        (self.dx[:-1] / (self.area[:-1] * self.k[:-1])) + \
-                        (self.dx[1:] / (self.area[1:] * self.k[1:]))
+                        (self.dxx[:-1] / (self.area[:-1] * self.k[:-1])) + \
+                        (self.dxx[1:] / (self.area[1:] * self.k[1:]))
                     )
             return self.G
         else:
@@ -356,19 +414,19 @@ class CartGrid(Grid):
         '''
 
         if 'x' in self.flow_dir:
-            xcorn = np.insert(self.dx.cumsum(), 0, 0)
+            xcorn = np.insert(self.dxx.cumsum(), 0, 0)
         else:
-            xcorn = np.arange(0, (self.nx+1)*self.dx[0], self.dx[0])
+            xcorn = np.arange(0, (self.nx+1)*self.dxx[0], self.dxx[0])
             
         if 'y' in self.flow_dir:
-            ycorn = np.insert(self.dy.cumsum(), 0, 0)
+            ycorn = np.insert(self.dyy.cumsum(), 0, 0)
         else:
-            ycorn = np.arange(0, (self.ny+1)*self.dy[0], self.dy[0])
+            ycorn = np.arange(0, (self.ny+1)*self.dyy[0], self.dyy[0])
             
         if 'z' in self.flow_dir:
-            zcorn = np.insert(self.dz.cumsum(), 0, 0)
+            zcorn = np.insert(self.dzz.cumsum(), 0, 0)
         else:
-            zcorn = np.arange(0, (self.nz+1)*self.dz[0], self.dz[0])
+            zcorn = np.arange(0, (self.nz+1)*self.dzz[0], self.dzz[0])
             
         # Show boundary:
         if boundary:
@@ -435,11 +493,69 @@ class CartGrid(Grid):
             return self.pyvista_grid.volume
         
         
-    def get_cell_volume(self, id=None, coords=None, boundary=True):     
+    def get_cells_d(self, dir, boundary=True):
+        if dir == 'x':
+            cells_d = self.dx
+        elif dir == 'y':
+            cells_d = self.dy
+        elif dir == 'z':
+            cells_d = self.dz
+        if boundary:
+            return cells_d
+        else:
+            return self.remove_boundaries(cells_d)
+    
+    
+    def get_cells_dx(self, boundary=True):
+        return self.get_cells_d(dir='x', boundary=boundary)
+    def get_cells_dy(self, boundary=True):
+        return self.get_cells_d(dir='y', boundary=boundary)
+    def get_cells_dz(self, boundary=True):
+        return self.get_cells_d(dir='z', boundary=boundary)
+    
+    
+    def get_cell_d(self, dir, id=None, coords=None):
+        cells_d = self.get_cells_d(dir=dir, boundary=True)
         if id is not None:
-            pass
+            return cells_d.flatten()[id]
         elif coords is not None:
-            pass
+            return cells_d[coords[2],coords[1],coords[0]]
+        else:
+            raise ValueError('at least id or coords argument must be defined.')
+        
+        
+    def get_cell_dx(self, id=None, coords=None):
+        return self.get_cell_d(dir='x', id=id, coords=coords)
+    def get_cell_dy(self, id=None, coords=None):
+        return self.get_cell_d(dir='y', id=id, coords=coords)
+    def get_cell_dz(self, id=None, coords=None):
+        return self.get_cell_d(dir='z', id=id, coords=coords)
+        
+        
+    def get_cell_area(self, dir, id=None, coords=None):
+        cells_area = self.get_cells_area(dir=dir, boundary=True)  
+        if id is not None:
+            return cells_area.flatten()[id]
+        elif coords is not None:
+            return cells_area[coords[2],coords[1],coords[0]]
+        else:
+            raise ValueError('at least id or coords argument must be defined.')
+        
+
+    def get_cell_area_x(self, id=None, coords=None):
+        return self.get_cell_area(dir='x', id=id, coords=coords)
+    def get_cell_area_y(self, id=None, coords=None):
+        return self.get_cell_area(dir='y', id=id, coords=coords)
+    def get_cell_area_z(self, id=None, coords=None):
+        return self.get_cell_area(dir='z', id=id, coords=coords)
+    
+        
+    def get_cell_volume(self, id=None, coords=None):   
+        cells_volume = self.get_cells_volume_(boundary=True)  
+        if id is not None:
+            return cells_volume.flatten()[id]
+        elif coords is not None:
+            return cells_volume[coords[2],coords[1],coords[0]]
         else:
             raise ValueError('at least id or coords argument must be defined.')
             
@@ -732,16 +848,30 @@ class CartGrid(Grid):
                 labels = self.get_cells_id(boundary).flatten()
             elif centers == 'volume':
                 labels = self.get_cells_volume(boundary).flatten()
-            centers = self.get_cells_center(boundary).flatten()
+            elif centers == 'vol':
+                labels = self.get_cells_volume_(boundary).flatten()
+            elif centers == 'dx':
+                labels = self.get_cells_dx(boundary).flatten()
+            elif centers == 'dy':
+                labels = self.get_cells_dy(boundary).flatten()
+            elif centers == 'dz':
+                labels = self.get_cells_dz(boundary).flatten()
+            elif centers == 'area_x':
+                labels = self.get_cells_area_x(boundary).flatten()
+            elif centers == 'area_y':
+                labels = self.get_cells_area_y(boundary).flatten()
+            elif centers == 'area_z':
+                labels = self.get_cells_area_z(boundary).flatten()
+            points = self.get_cells_center(boundary).flatten()
             pl.add_point_labels(
-                points=centers,
+                points=points,
                 labels=labels,
                 point_size=10,
                 font_size=10,
             )
         
         s = 'with boundary' if boundary else 'without boundary'
-        title = f'{self.D}D model (flow at {self.flow_dir}-direction {s})'
+        title = f'{centers} for {self.D}D model (flow at {self.flow_dir}-direction {s})'
         pl.add_title(title, 
                      font='courier', 
                      color='white',
@@ -757,23 +887,24 @@ class CartGrid(Grid):
 #%%
 if __name__ == '__main__':
     # Canvas:
-    dx = 10 #[10,20,30,40]
-    dy = 10 #[10,10,10,10]
-    dz = 5 #[10,10,10,10]
-    grid = CartGrid(nx=3, ny=3, nz=3, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
-    # coords=(2,0,0)
-    # id = grid.get_cell_id(coords)
-    # print(id)
-    # coords = grid.get_cell_coords(id)
-    # print(coords)
-    print(grid.get_cell_neighbors(id=31, boundary=False))
-    print(grid.get_cell_boundaries(id=31))
-    # grid.show(boundary=True, centers='id')
-    print(grid.get_cell_neighbors(coords=(1,1,1), boundary=False))
-    print(grid.get_cell_boundaries(coords=(1,1,1)))
+    dx = [11,21,31,41]
+    dy = [12,22,32,42]
+    dz = [13,23,33,43]
+    grid = CartGrid(nx=2, ny=2, nz=2, dx=dx, dy=dy, dz=dz, phi=0.27, k=270)
+    print('(1,1,1):',grid.get_cell_d(dir='y', coords=(1,1,1)))
+    print('(2,1,1):',grid.get_cell_d(dir='y', coords=(2,1,1)))
+    print('(1,2,1):',grid.get_cell_d(dir='y', coords=(1,2,1)))
+    print('(1,1,2):',grid.get_cell_d(dir='y', coords=(1,1,2)))
+    print('(2,2,2):',grid.get_cell_d(dir='y', coords=(2,2,2)))
+    # grid.show(boundary=True, centers='dx')
+    # grid.show(boundary=True, centers='dy')
+    # grid.show(boundary=True, centers='dz')
+    # grid.show(boundary=True, centers='area_x')
+    # grid.show(boundary=True, centers='area_y')
+    # grid.show(boundary=True, centers='area_z')
     # grid.show(boundary=True, centers='coords')
-    # grid.show(boundary=False, centers='coords')
-    # grid.show(boundary=False, centers='id')
+    grid.show(boundary=True, centers='area_x')
+    # grid.show(boundary=True, centers='volume')
     
     # Doc and reporting:
     # print(grid.__doc__)
