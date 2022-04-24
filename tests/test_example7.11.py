@@ -86,7 +86,7 @@ if __name__ == '__main__':
         dx = np.array([400, 400, 300, 150, 200, 250, 250])
         phi = np.array([0.21, 0.21, 0.17, 0.10, 0.25, 0.13, 0.13])
         k = np.array([273, 273, 248, 127, 333, 198, 198])
-        grid = grids.CartGrid(nx=5, ny=1, nz=1, dx=dx, dy=500, dz=50, phi=phi, k=k, comp=0, dtype='double')
+        grid = grids.CartGrid(nx=5, ny=1, nz=1, dx=dx, dy=500, dz=50, phi=phi, kx=k, comp=0, dtype='double')
         fluid = fluids.SinglePhaseFluid(mu=1.5, B=1, rho=50, comp=2.5*10**-5, dtype='double')
         model = models.Model(grid, fluid, pi=3000, dt=5, dtype='double')
         model.set_well(i=4, q=-400, pwf=1500, s=0, r=3.5)

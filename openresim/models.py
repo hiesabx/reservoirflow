@@ -464,7 +464,7 @@ class Model(base.Base):
 
 if __name__ == '__main__':
     grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350,
-                        dz=40, phi=0.27, k=270, comp=1*10**-6, dtype='single')
+                        dz=40, phi=0.27, kx=270, comp=1*10**-6, dtype='single')
     fluid = fluids.SinglePhaseFluid(
         mu=0.5, B=1, rho=50, comp=1*10**-5, dtype='single')
     model = Model(grid, fluid, pi=4000, dtype='single')

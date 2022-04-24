@@ -86,7 +86,7 @@ class TestApp(unittest.TestCase):
 if __name__ == '__main__':
     def create_model():
         
-        grid = grids.CartGrid(nx=2, ny=2, nz=1, dx=350, dy=250, dz=30, phi=0.27, k=150, comp=1*10**-6, dtype='double')
+        grid = grids.CartGrid(nx=2, ny=2, nz=1, dx=350, dy=250, dz=30, phi=0.27, kx=150, comp=1*10**-6, dtype='double')
         fluid = fluids.SinglePhaseFluid(mu=3.5 , B=1, rho=50, comp=1*10**-5, dtype='double')
         model = models.Model(grid, fluid, pi=4000, dtype='double')
         model.set_well(i=4, q=-600, s=1.5, r=3.5)

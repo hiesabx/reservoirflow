@@ -6,9 +6,9 @@ The workflow of openresim library consists of 8 steps as following:
 '''
 # Step 1: Define 1D grid (default dtype: 'double')
 grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, 
-                    phi=0.27, k=270)
+                    phi=0.27, kx=270)
 #       : change specific grid properties to add some heterogeneity
-grid.dx[2] = 600    # change dx in grid 2
+grid.dxx[2] = 600    # change dx in grid 2
 grid.k[3] = 10      # change permeability in grid 3
 # Step 2: Define a fluid (single phase incompressible fluid)
 fluid = fluids.SinglePhaseFluid(mu=0.5, B=1)
