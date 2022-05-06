@@ -151,7 +151,7 @@ By this, engineers should remember that `rs` refers to __Reservoir Simulation__ 
 
 This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Detailed license can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 
-## License Disclaimer
+### License Disclaimer
 
 The current license does not allow commercial use. The author would like to change the license to
 [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. 
