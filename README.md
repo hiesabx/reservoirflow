@@ -146,3 +146,7 @@ import openresim as rs
 ```
 
 By this, engineers should remember that `rs` refers to __Reservoir Simulation__ and it is the official shortname for `openresim`.
+
+## License
+
+This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Detailed license can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
