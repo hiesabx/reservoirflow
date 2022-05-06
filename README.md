@@ -18,7 +18,7 @@ This library is designed based on the modern Python stack for data science and s
 - Advanced computing such as: GPU Computing, and Quantum Computing.
 - Real-time reservoir management and production optimization using Cloud Computing and IoT.
 
-The author aims to create an open-source community for oil&gas industry and to form a start-up that can take this duty as a business mention. A company that can provide cutting-edge software and engineering solutions as __open-source__ and then can profit from other services such as training or consultation. If your company is interested in having this option, then please get in touch. Crating such a company, will put the oil&gas industry in the right direction for many years to come.
+The author aims to create an open-source community for oil&gas industry and to form a start-up that can take this duty as a business mention. A company that can provide cutting-edge software and engineering solutions as __open-source__ and then can profit from these softwares and provide more services such as training or consultation. If your company is interested in having this option, then please get in touch. Crating such a company, will put the oil&gas industry in the right direction for many years to come.
 
 ## Version
 
