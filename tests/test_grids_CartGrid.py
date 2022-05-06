@@ -26,7 +26,10 @@ if __name__ == "__main__":
 
     def test_grid(nx, ny, nz):
         grid = grids.CartGrid(
-            nx=nx, ny=ny, nz=nz, dx=10, dy=10, dz=10, phi=0.27, kx=270, ky=270, kz=270
+            nx=nx, ny=ny, nz=nz, 
+            dx=10, dy=10, dz=10, 
+            kx=270, ky=270, kz=270,
+            phi=0.27, 
         )
         grid.show(boundary=True, label="id")
         grid.show(boundary=False, label="id")
