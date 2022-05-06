@@ -5,6 +5,12 @@ import numpy as np
 
 #%% 2. Fluid Class: 
 class Fluid(Base):
+
+    def __init__(self):
+        pass
+
+
+class SinglePhaseFluid(Fluid):
     '''
     Fluid class to create a fluid.
     '''
@@ -47,9 +53,7 @@ class Fluid(Base):
 
 
 if __name__ == '__main__':
-    fluid = Fluid(mu=0.5 , B=1, rho=1, unit='metric')
+    fluid = SinglePhaseFluid(mu=0.5 , B=1, rho=1, unit='metric')
     fluid.set_units('metric')
     fluid.set_density(10)
     print(fluid)
-
-# %%

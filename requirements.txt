@@ -20,12 +20,13 @@ Pillow==9.0.1
 pyparsing==3.0.7
 python-dateutil==2.8.2
 pyvista==0.33.2
-# -e git+https://github.com/zakgrin/openresim.git@b688f6b7e5ae3a6031b567bc1d415358de1f376f#egg=openresim
+-e git+https://github.com/zakgrin/openresim.git@1955ea7d96dc771d9cd085b0df81a22265fb8eb6#egg=openresim
 scipy==1.7.3
 scooby==0.5.11
 six==1.16.0
 sympy==1.9
 tabulate==0.8.9
+tqdm==4.63.0
 typing_extensions==4.1.1
 vtk==9.1.0
 wslink==1.4.1

@@ -1,33 +1,37 @@
-# This file is just for testing and not 
-# part of the library.
 import numpy as np
+
 import pyvista as pv
 
-ni, nj, nk = 4, 1, 1
-si, sj, sk = 20, 10, 10
+x = np.arange(-10, 10, 0.25)
+y = np.arange(-10, 10, 0.25)
+x, y = np.meshgrid(x, y)
+r = np.sqrt(x ** 2 + y ** 2)
+z = np.sin(r)
 
-xcorn = np.arange(0, (ni+1)*si, si)
-xcorn = np.repeat(xcorn, 2)
-xcorn = xcorn[1:-1]
-xcorn = np.tile(xcorn, 4*nj*nk)
+# Create and structured surface
+grid = pv.StructuredGrid(x, y, z)
 
-ycorn = np.arange(0, (nj+1)*sj, sj)
-ycorn = np.repeat(ycorn, 2)
-ycorn = ycorn[1:-1]
-ycorn = np.tile(ycorn, (2*ni, 2*nk))
-ycorn = np.transpose(ycorn)
-ycorn = ycorn.flatten()
+# Create a plotter object and set the scalars to the Z height
+plotter = pv.Plotter(notebook=False, off_screen=True)
+plotter.add_mesh(grid, scalars=z.ravel(), smooth_shading=True)
 
-zcorn = np.arange(0, (nk+1)*sk, sk)
-zcorn = np.repeat(zcorn, 2)
-zcorn = zcorn[1:-1]
-zcorn = np.repeat(zcorn, (4*ni*nj))
+# Open a gif
+plotter.open_gif("wave.gif")
 
-corners = np.stack((xcorn, ycorn, zcorn))
-corners = corners.transpose()
+pts = grid.points.copy()
 
-if pv._vtk.VTK9:
-    dims = np.asarray((ni, nj, nk))+1
-    grid = pv.ExplicitStructuredGrid(dims, corners)
-    grid = grid.compute_connectivity()
-    grid.plot(show_edges=True)
+# Update Z and write a frame for each updated position
+nframe = 15
+for phase in np.linspace(0, 2 * np.pi, nframe + 1)[:nframe]:
+    z = np.sin(r + phase)
+    pts[:, -1] = z.ravel()
+    plotter.update_coordinates(pts, render=False)
+    plotter.update_scalars(z.ravel(), render=False)
+
+    # must update normals when smooth shading is enabled
+    plotter.mesh.compute_normals(cell_normals=False, inplace=True)
+    plotter.render()
+    plotter.write_frame()
+
+# Closes and finalizes movie
+plotter.close()
