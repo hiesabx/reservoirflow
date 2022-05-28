@@ -7,7 +7,7 @@ import numpy as np
 z = [3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62]
 grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, z=z, phi=0.27, kx=270)
 
-pv_grid = grid.get_pv_grid()
+pv_grid = grid.get_pyvista_grid()
 pv_grid.cell_data['dx'] = grid.dxx
 
 # https://docs.pyvista.org/api/core/_autosummary/pyvista.DataSet.html

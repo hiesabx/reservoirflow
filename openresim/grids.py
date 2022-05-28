@@ -1,53 +1,59 @@
-#%% Import Statements:
-from multiprocessing.sharedctypes import Value
-from turtle import shape
+"""
+Grid classes for reservoir simulation models.
 
-from sympy import true
+This module contains all grid classes that are required to build the 
+Model class. Grid class represents both the rock geometry and the rock 
+properties that are required for fluid flow calculations.
+
+"""
+import warnings
 from openresim.base import Base
 import numpy as np
+import scipy.sparse as ss
 import pyvista as pv
-from functools import lru_cache
+from openresim.utils import _lru_cache
+from openresim import utils
 
 
-#%% Grid Class:
 class Grid(Base):
-    """Grid class to create a grid using numpy arrays and pyvista grids."""
+    """Create a Grid class.
 
-    def __init__(self, dtype, unit):
-        super().__init__(unit)
-        self.dtype = dtype  # np.single, np.double
-
-
-#%% CartGrid Class:
-class CartGrid(Grid):
-    """Create a cartesian explicit structured grid.
-
-    Note that the following conventions are used:
-        1. rows for dx. 1D grids are stored as 1 column with multiple rows.
-        2. columns for dy. 2D grids are stored as a table where rows refer to x-direction while columns refere to y-direction.
-        3. layers for dz. 3D grids are stored as cubes where rows refer to x-direction, columns to y-direction, and layers for z-direction.
+    Grid class holds grid and rock properties using numpy arrays
+    including pyvista object for visualization.
 
     Parameters
-    nx: int
-        number of grids in x-direction.
-    ny: int
-        number of grids in y-direction.
-    nz: int
-        number of grids in z-direction.
-    dx: int, list, or array
-        grid width in x-direction.
-    dy: int, list, or array
-        grid width in y-direction.
-    dz: int, list, or array
-        grid width in z-direction.
-    z: int, list, or array (Default: 0)
-    phi:
-    k:
-    comp:
-    dtype: data type str or np.dtype  (Default: double)
-        array data type.
-    unit: str of ['field', 'metric'] (Default: field)
-        grid properties' unit.
+    ----------
+    Base : class
+        Base class with universal settings.
+    """
+
+    def __init__(self, dtype, unit, unify, verbose):
+        super().__init__(unit)
+        self.dtype = dtype  # np.single, np.double
+        self.unify = unify
+        self.verbose = verbose
+
+
+class CartGrid(Grid):
+    """Cartesian grid class with explicit structure. Parameters can be
+    defined as `unit='field'` (by default) or `unit='metric'`. `units`
+    can be accessed from this class or base class `CartGrid.units` or
+    `Grid.units`.
+
+    Parameters
+    ----------
+    Grid : class
+        parent grid class with universal grid settings.
+
+    Returns
+    -------
+    CartGrid
+        cartesian grid object.
+
+    Raises
+    ------
+    ValueError
+        _description_
     """
 
     name = "CartGrid"
@@ -55,23 +61,112 @@ class CartGrid(Grid):
 
     def __init__(
         self,
-        nx, ny, nz,
-        dx, dy, dz,
-        kx=None, ky=None, kz=None,
-        phi=None, z=None, comp=None,
-        dtype="double", unit="field",
+        nx,
+        ny,
+        nz,
+        dx,
+        dy,
+        dz,
+        kx=None,
+        ky=None,
+        kz=None,
+        phi=None,
+        z=0,
+        comp=None,
+        dtype="double",
+        unit="field",
+        unify=False,
+        verbose=True,
     ):
-        super().__init__(dtype, unit)
+        """Return cartesian grid object with explicit structure.
+        Parameters can be defined as `unit='field'` (by default) or
+        `unit='metric'`. `units` can be accessed from this class with
+        `CartGrid.units` or from or the base class with `Grid.units`.
+
+        Parameters
+        ----------
+        nx : int
+            number of grids in x-direction and must be >= 1.
+        ny : int
+            number of grids in y-direction and must be >= 1.
+        nz : int
+            number of grids in z-direction and must be >= 1.
+        dx : int, float, array-like
+            grid dimension in x-direction. In case of a list or array,
+            the length should be equal to nx+2 for all cells including
+            boundary cells. Vales should be in natural order (i.e. from
+            left to right).
+        dy : int, float, array-like
+            grid dimension in y-direction. In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            front to back).
+        dz : int, float, array-like
+            grid dimension in z-direction. In case of a list or array,
+            the length should be equal to nz+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            down to up).
+        kx : int, float, array-like, optional, by default None
+            permeability in x-direction (relevant only if 'x' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            left to right).
+        ky : int, float, array-like, optional, by default None
+            permeability in x-direction (relevant only if 'y' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g.from
+            front to back).
+        kz : int, float, array-like, optional, by default None
+            permeability in x-direction (relevant only if 'z' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to nz+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            down to up).
+        phi : float, array-like, optional, by default None
+            porosity. In case of an array, the shape should be equal to
+            grid.shape with boundaries. Vales should be in natural
+            order.
+        z : int, float, array-like, optional, by default 0.
+            depth of grid tops (NOT FULLY IMPLEMENTED).
+        comp : float, optional, by default None
+            compressibility.
+        dtype : str or `np.dtype`, optional, by default 'double'
+            data type used in all arrays.
+        unit : str ('field', 'metric'), optional, by default 'field'
+            units used in input and output.
+        unify : bool, optional, by default False
+            unify arrays' shape to be always 3D as (nz, ny, nx) when set
+            to True. False option refers to a not unified flow shape
+            which includes only the number of girds in flow direction as
+            tuple. This option is only relevant in case of 1D or 2D flow.
+            This option may be required to make 1D and 2D shapes shapes
+            of this class more consistent with each other or with 3D
+            shape.
+            Warning: True option is not yet fully compatible.
+        verbose : bool, optional, by default True
+            print information for debugging.
+
+        ToDo
+        ----
+        Complete unify feature to be compatible with all class
+        components.
+        """
+        super().__init__(dtype, unit, unify, verbose)
+        assert nx >= 1, "nx must be 1 or larger."
+        assert ny >= 1, "ny must be 1 or larger."
+        assert nz >= 1, "nz must be 1 or larger."
         self.nx, self.ny, self.nz = nx, ny, nz
-        self.get_D()  # > self.D
-        self.get_shape()  # > self.shape
-        self.get_flow_dir()  # > self.flowdir
-        self.get_n_b()  # > self.nx_b, self.ny_b, self.n_zb
-        self.get_fshape()  # > self.fshape
-        self.get_n_cells()  # > self.n_cells
-        self.get_order(type="natural")  # > self.order
-        self.get_blocks()  # > self.blocks
-        self.max_nb = max(self.nx_b, self.ny_b, self.nz_b)
+        # self.get_D()  # > self.D
+        # self.get_shape()  # > self.shape
+        # self.get_flow_dir()  # > self.flowdir
+        # self.get_n(True)  # > self.nx_b, self.ny_b, self.n_zb
+        # self.get_fshape(True, False)  # > self.fshape
+        # self.get_n_cells()  # > self.n_cells
+        # self.get_order(type="natural")  # > self.order
+        # self.get_ones(True, False)  # > self.blocks
+        # self.get_n_max(True)  #
         self.get_cells_dims(dx, dy, dz)
         self.get_cells_area_x()
         self.get_cells_area_y()
@@ -86,28 +181,62 @@ class CartGrid(Grid):
         self.get_Gz()  # > self.Gz
         self.get_cells_center()
 
-    @lru_cache(maxsize=1)
-    def get_D(self):
-        self.D = sum([1 if n > 1 else 0 for n in (self.nx, self.ny, self.nz)])
-        print(f"- Dimension (D) is set to {self.D}.")
-        # self.dimension = self.D
-        return self.D
-    # get_dimension = get_D
+    # -------------------------------------------------------------------------
+    # Basic:
+    # -------------------------------------------------------------------------
 
-    @lru_cache(maxsize=2)
+    @_lru_cache(maxsize=1)
+    def get_D(self):
+        """Return the grid dimension as int.
+
+        Returns
+        -------
+        int
+            number of dimensions higher than 1.
+        """
+        self.D = sum([1 if n > 1 else 0 for n in (self.nx, self.ny, self.nz)])
+
+        if self.verbose:
+            print(f"- Dimension (D) is set to {self.D}.")
+
+        return self.D
+
+    @_lru_cache(maxsize=2)
     def get_shape(self, boundary=False):
-        if boundary:
-            self.get_n_b()
-            self.shape = np.array((self.nx_b, self.ny_b, self.nz_b),
-                                  dtype="int")
-        else:
-            self.shape = np.array((self.nx, self.ny, self.nz), dtype="int")
-        print(f"- Shape is set to {self.shape}.")
+        """Return the grid shape in x, y, z as ndarray.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        ndarray
+            number of cells as np.array([nx, ny, nz]).
+        """
+        n = self.get_n(boundary)
+        self.shape = np.array(n, dtype="int")
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"- Shape {s} is set to {self.shape}.")
+
         return self.shape
 
-    @lru_cache(maxsize=1)
+    @_lru_cache(maxsize=1)
     def get_flow_dir(self):
+        """Return the flow direction as str.
+
+        Returns
+        -------
+        str
+            contains one or more of ('-','x','y','z') based on the grid
+            dimensions that are higher than 1.
+        """
         self.get_D()
+        self.get_shape(False)
+
         if self.D == 0:
             self.flow_dir = "-"
         elif self.D == 1:
@@ -128,91 +257,192 @@ class CartGrid(Grid):
                 self.flow_dir = "yz"
         elif self.D == 3:
             self.flow_dir = "xyz"
-        print(f"- Flow direction (flowdir) is set to {self.flow_dir}.")
+
+        if self.verbose:
+            print(f"- Flow direction (flow_dir) is set to {self.flow_dir}.")
+
         return self.flow_dir
 
-    @lru_cache(maxsize=1)
-    def get_n_b(self):
-        self.get_flow_dir()
-        if "x" in self.flow_dir:
-            self.nx_b = self.nx + 2
-        else:
-            self.nx_b = self.nx
-        if "y" in self.flow_dir:
-            self.ny_b = self.ny + 2
-        else:
-            self.ny_b = self.ny
-        if "z" in self.flow_dir:
-            self.nz_b = self.nz + 2
-        else:
-            self.nz_b = self.nz
-        return (self.nx_b, self.ny_b, self.nz_b)
+    @_lru_cache(maxsize=2)
+    def get_n(self, boundary=False):
+        """Return the number of grids in x, y, and z as tuple.
 
-    @lru_cache(maxsize=1)
-    def get_fshape(self):
-        self.get_flow_dir()
-        if self.flow_dir == "-":
-            self.fshape = (1,)
-        elif self.flow_dir == "x":
-            self.fshape = (self.nx_b,)
-        elif self.flow_dir == "y":
-            self.fshape = (self.ny_b,)
-        elif self.flow_dir == "z":
-            self.fshape = (self.nz_b,)
-        elif self.flow_dir == "xy":
-            self.fshape = (self.ny_b, self.nx_b)
-        elif self.flow_dir == "xz":
-            self.fshape = (self.nz_b, self.nx_b)
-        elif self.flow_dir == "yz":
-            self.fshape = (self.nz_b, self.ny_b)
-        elif self.flow_dir == "xyz":
-            self.fshape = (self.nz_b, self.ny_b, self.nx_b)
-        print(f"- Flow shape (fshape) is set to {self.fshape}")
+        Parameters
+        ----------
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        tuple
+            the number of grids as (nx, ny, nz).
         """
-        - in case of unified 3d shape:
-        # if self.flow_dir == "-":
-        #     self.fshape = (1, 1, 1)
-        # elif self.flow_dir == "x":
-        #     self.fshape = (1, 1, self.nx_b)
-        # elif self.flow_dir == "y":
-        #     self.fshape = (1, self.ny_b, 1)
-        # elif self.flow_dir == "z":
-        #     self.fshape = (self.nz_b, 1, 1)
-        # elif self.flow_dir == "xy":
-        #     self.fshape = (1, self.ny_b, self.nx_b)
-        # elif self.flow_dir == "xz":
-        #     self.fshape = (self.nz_b, 1, self.nx_b)
-        # elif self.flow_dir == "yz":
-        #     self.fshape = (self.nz_b, self.ny_b, 1)
-        
-        - in case of 2D but also with boundary conditions:
-            elif self.flowdir == 'xz+':
+        if boundary:
+            self.get_flow_dir()
+            if "x" in self.flow_dir:
+                self.nx_b = self.nx + 2
+            else:
+                self.nx_b = self.nx
+            if "y" in self.flow_dir:
+                self.ny_b = self.ny + 2
+            else:
+                self.ny_b = self.ny
+            if "z" in self.flow_dir:
+                self.nz_b = self.nz + 2
+            else:
+                self.nz_b = self.nz
+            self.n = (self.nx_b, self.ny_b, self.nz_b)
+        else:
+            self.n = (self.nx, self.ny, self.nz)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"- N-cells {s} is {self.n}.")
+
+        return self.n
+
+    @_lru_cache(maxsize=2)
+    def get_n_max(self, boundary=True):
+        """Return the maximum number of grids as int.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        int
+            maximum number of grids as max(nx, ny, nz).
+        """
+        n = self.get_n(boundary)
+        self.n_max = max(n)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"- Maximum number of cells {s} is {self.n_max}.")
+
+        return self.n_max
+
+    @_lru_cache(maxsize=2)
+    def get_fshape(self, boundary=True, unify=False):
+        """Return flow shape as tuple.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+            Warning: True option is required.
+        unify : bool, optional, by default False
+            unify shape to be always tuple of 3 as (nz, ny, nx) when set
+            (True). When set to False, shape includes only the number
+            of girds in flow direction as tuple. This option is only
+            relevant in case of 1D or 2D flow.
+            Warning: True option is not yet fully compatible.
+
+        Returns
+        -------
+        tuple
+            number of grids at flow directions in z, y, x order.
+
+        ToDo
+        ----
+        add usage with boundary=False.
+        add optional boundaries for 2D models:
+            if self.flowdir == 'xz+':
                 self.fshape = (self.nz_b, self.nx_b, 3)
-            elif self.flowdir == 'yz+':
+            if self.flowdir == 'yz+':
                 self.fshape = (self.nz_b, self.ny_b, 3)
         """
-        # self.flow_shape = self.fshape
-        return self.fshape
-    # get_flow_shape = get_fshape
+        assert boundary == True, "False option with boundary is not permitted."
+        utils.fshape_warn(self.unify, unify)
 
-    @lru_cache(maxsize=2)
-    def get_n_cells(self, boundary=True):
-        if boundary:
-            self.get_n_b()
-            self.n_cells = self.nx_b * self.ny_b * self.nz_b
+        nx, ny, nz = self.get_n(boundary)  # Includes self.get_flow_dir()
+
+        if self.flow_dir == "xyz":
+            self.fshape = (nz, ny, nx)
         else:
-            self.n_cells = self.nx * self.ny * self.nz
+            if not unify:
+                if self.flow_dir == "-":
+                    self.fshape = (1,)
+                elif self.flow_dir == "x":
+                    self.fshape = (nx,)
+                elif self.flow_dir == "y":
+                    self.fshape = (ny,)
+                elif self.flow_dir == "z":
+                    self.fshape = (nz,)
+                elif self.flow_dir == "xy":
+                    self.fshape = (ny, nx)
+                elif self.flow_dir == "xz":
+                    self.fshape = (nz, nx)
+                elif self.flow_dir == "yz":
+                    self.fshape = (nz, ny)
+                else:
+                    raise ValueError("unknown flow_dir value.")
+            else:
+                if self.flow_dir == "-":
+                    self.fshape = (1, 1, 1)
+                elif self.flow_dir == "x":
+                    self.fshape = (1, 1, nx)
+                elif self.flow_dir == "y":
+                    self.fshape = (1, ny, 1)
+                elif self.flow_dir == "z":
+                    self.fshape = (nz, 1, 1)
+                elif self.flow_dir == "xy":
+                    self.fshape = (1, ny, nx)
+                elif self.flow_dir == "xz":
+                    self.fshape = (nz, 1, nx)
+                elif self.flow_dir == "yz":
+                    self.fshape = (nz, ny, 1)
+                else:
+                    raise ValueError("unknown flow_dir value.")
+
+        if self.verbose:
+            print(f"- Flow shape (fshape) is set to {self.fshape}.")
+
+        return self.fshape
+
+    @_lru_cache(maxsize=2)
+    def get_n_cells(self, boundary=True):
+        """Return total number of grid cells as int.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        int
+            total number of cells.
+        """
+        n = self.get_n(boundary)
+        self.n_cells = np.prod(n)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"- Number of cells {s} is {self.n_cells}.")
+
         return self.n_cells
 
-    @lru_cache(maxsize=4)
-    def get_order(
-        self, 
-        type="natural", 
-        boundary=True, 
-        fshape=False, 
-        verbose=True
-        ):
+    @_lru_cache(maxsize=4)
+    def get_order(self, type="natural", boundary=True, fshape=False):
+        """Return grid order as ndarray.
 
+        Parameters
+        ----------
+        type : str, optional, by default "natural"
+            order type in which grids are numbered.
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            gird order as array.
+        """
         if type == "natural":
             self.order = np.arange(self.get_n_cells(True))
         else:
@@ -227,78 +457,337 @@ class CartGrid(Grid):
         if not boundary:
             self.order = self.remove_boundaries(self.order)
 
-        if verbose:
+        if self.verbose:
             s1, s2 = self.get_verbose_str(boundary, fshape)
             print(f"- Cells order (order) was computed ({s1} - {s2}).")
+
         return self.order
 
-    def get_blocks(self):
-        self.blocks = np.ones(self.fshape, dtype="int")
-        # self.i_blocks = self.blocks.copy()
-        # self.i_blocks[[0, -1]] = 0
-        # self.b_blocks = np.zeros(self.max_nb, dtype='int') #ss.lil_matrix(self.shape, dtype='int')
-        # self.b_blocks[[0, -1]] = 1
-        
-            
-    """
-    Cells id and coordinates:
-    """
+    @_lru_cache(maxsize=1)
+    def get_ones(self, boundary=True, sparse=False):
+        """Return array of ones in flow shape.
 
-    @lru_cache(maxsize=None)
-    def get_cell_id(self, coords, boundary=True):
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        sparse : bool, optional, by default False
+            values as sparse matrix (True) or as ndarray (False).
+
+        Returns
+        -------
+        array
+            array in flow shape filled with ones.
+        """
+
+        assert boundary == True, "False boundary option is not allowed."
+        assert sparse == False, "True sparse option is not allowed."
+
+        self.get_fshape(boundary, False)
+        if not sparse:
+            self.ones = np.ones(self.fshape, dtype="int")
+        else:
+            self.ones = ss.lil_matrix(self.shape, dtype="int")
+
+        if self.verbose:
+            print(f"- Ones array (ones) was computed.")
+
+        return self.ones
+
+    # -------------------------------------------------------------------------
+    # Cells id and coordinates:
+    # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=None)
+    def get_cell_id(self, coords=[], boundary=True):
+        """Return cell/cells id based on natural as int/list.
+
+        Parameters
+        ----------
+        coords : tuple of int, tuple of tuples of int
+            cell coordinates (i,j,k) as a tuple of int. For multiple
+            cells, tuple of tuples of int as ((i,j,k),(i,j,k),..).
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        int/list
+            cell id based on natural order as int for a single cell
+            coords or as list of int for multiple cells coords.
+        """
         pyvista_grid = self.get_pyvista_grid(boundary)
-        return pyvista_grid.cell_id(coords)
+        if all(isinstance(c, tuple) for c in coords):
+            return [pyvista_grid.cell_id(c) for c in coords]
+        else:
+            return pyvista_grid.cell_id(coords)
 
-    @lru_cache(maxsize=4)
-    def get_cells_id(self, boundary=True, fshape=True, verbose=True):
-        self.cells_id = self.get_order("natural", boundary, fshape, False)
-        if verbose:
+    @_lru_cache(maxsize=4)
+    def get_cells_id(self, boundary=True, fshape=False):
+        """Return all cells id based on natural order as ndarray.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default True
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            cells id in natural order as array.
+        """
+        self.cells_id = self.get_order("natural", boundary, fshape)
+        if self.verbose:
             s1, s2 = self.get_verbose_str(boundary, fshape)
             print(f"- Cells id (cells_id) was computed ({s1} - {s2}).")
         return self.cells_id
 
-    # @lru_cache(maxsize=None): does not work
+    @_lru_cache(maxsize=None)
     def get_cell_coords(self, id, boundary=True):
+        """Return cell/cells coordinates as tuple/list of tuples.
+
+        Parameters
+        ----------
+        id : int, tuple of int
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            Warning: passing list or arrays instead of tuples does not
+            work with cache decorator used in this method since lists
+            and np.ndarray are both unhashable.
+        boundary : bool, optional, by default True
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        tuple/list of tuples
+            cell/cells coordinates as tuple/list of tuples.
+        """
         pyvista_grid = self.get_pyvista_grid(boundary)
         if isinstance(id, (list, tuple, np.ndarray)):
-            cell_coords = [tuple(x) for x in 
-                            pyvista_grid.cell_coords(id)]
+            return [tuple(x) for x in pyvista_grid.cell_coords(id)]
         else:
-            cell_coords = tuple(pyvista_grid.cell_coords(id))
-        return cell_coords
+            return tuple(pyvista_grid.cell_coords(id))
 
-    @lru_cache(maxsize=4)
-    def get_cells_coords(self, boundary=True, fshape=False, verbose=True):
-        cells_id = self.get_cells_id(boundary, False, False)
+    @_lru_cache(maxsize=4)
+    def get_cells_coords(self, boundary=True, fshape=False):
+        """Return all cells coords based on (i,j,k) as ndarray.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            cells coords in (i,j,k) as array.
+        """
+        cells_id = self.get_cells_id(boundary, False)
         pyvista_grid = self.get_pyvista_grid(True)
-        self.cells_coords = [tuple(x) for x in 
-                             pyvista_grid.cell_coords(cells_id)]
+        self.cells_coords = pyvista_grid.cell_coords(cells_id)
 
         if fshape:
-            self.cells_coords = self.cells_coords.reshape(self.fshape)
+            coords_fshape = self.fshape + (3,)
+            self.cells_coords = self.cells_coords.reshape(coords_fshape)
 
-        if verbose:
+        if self.verbose:
             s1, s2 = self.get_verbose_str(boundary, fshape)
             print(f"- Cells coords (cells_coords) was computed ({s1} - {s2}).")
 
         return self.cells_coords
 
-    def get_cell_icoords(self, coords):
-        if self.D <= 2:
+    @_lru_cache(maxsize=None)
+    def get_cell_icoords(self, coords, unify=False):
+        """Convert coords in (i,j,k) into icoords (k,j,i).
+
+        This method is required to create icoords based on (k,j,i) which
+        can be used to access ndarrays in this class. icoords is not
+        compatible with pyvista grid which use coords based on (i,j,k).
+
+        Parameters
+        ----------
+        coords : tuple of int, tuple of tuples of int
+            cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..).
+        unify : bool, optional, by default False
+            unify shape to be always tuple of 3 as (k, j, i) when set
+            (True). When set to False, shape includes only the number
+            of girds in flow direction as tuple. This option is only
+            relevant in case of 1D or 2D flow.
+            Warning: True option is not yet fully compatible.
+
+        Returns
+        -------
+        tuple/list of tuples
+            internal coords (icoords)
+
+        ToDo
+        ----
+        add tuple of tuples for coords as input.
+        set unify as None.
+        """
+        cells_coords = self.get_cells_coords(True, False)
+        shape_bool = cells_coords.shape == (self.get_n_cells(True), 3)
+        assert shape_bool, "coords should include boundary and be flatten."
+        assert utils.isin(coords, cells_coords), "coords are out of range."
+        utils.fshape_warn(self.unify, unify)
+
+        if not unify and self.D <= 2:
             icoords = tuple(c for c in coords[::-1] if c > 0)
+            assert len(icoords) == self.get_D(), "icoords is not compatible"
         else:
             icoords = tuple(c for c in coords[::-1])
+
         return icoords
 
-    def add_boundary(self, d):
-        if isinstance(d, [list, tuple, np.array]):
-            if len(d) == self.max_nb - 2:
-                d = np.concatenate((d[0], d, d[-1]))
-        return d
+    # -------------------------------------------------------------------------
+    # Neighbors:
+    # -------------------------------------------------------------------------
 
-    """
-    Properties:
-    """
+    @_lru_cache(maxsize=None)
+    def get_cell_neighbors(self, id=None, coords=None, boundary=False, fmt="dict"):
+        cell_neighbors = {"x": [], "y": [], "z": []}
+        if id is not None:
+            # coords = self.get_cell_coords(id, boundary=True)
+            cells_id = self.get_cells_id(boundary, False)
+            assert id in cells_id, f"cell id is out of range {cells_id}."
+            if self.D >= 1:
+                neighbors = [i for i in [id - 1, id + 1] if i in cells_id]
+                cell_neighbors[self.flow_dir[0]] = neighbors
+            if self.D >= 2:
+                self.get_n_max(True)
+                neighbors = [
+                    i for i in [id - self.n_max, id + self.n_max] if i in cells_id
+                ]
+                cell_neighbors[self.flow_dir[1]] = neighbors
+            if self.D >= 3:
+                neighbors = [
+                    i
+                    for i in [
+                        id - (self.nx_b * self.ny_b),
+                        id + (self.nx_b * self.ny_b),
+                    ]
+                    if i in cells_id
+                ]
+                cell_neighbors[self.flow_dir[2]] = neighbors
+        elif coords is not None:
+            cells_coords = self.get_cells_coords(boundary, False)
+            assert utils.isin(
+                coords, cells_coords
+            ), f"cell coords are out of range {cells_coords}."
+            i, j, k = coords
+            if "x" in self.flow_dir:
+                neighbors = [
+                    c
+                    for c in [(i - 1, j, k), (i + 1, j, k)]
+                    if utils.isin(c, cells_coords)
+                ]
+                cell_neighbors["x"] = neighbors
+            if "y" in self.flow_dir:
+                neighbors = [
+                    c for c in [(i, j - 1, k), (i, j + 1, k)] if c in cells_coords
+                ]
+                cell_neighbors["y"] = neighbors
+            if "z" in self.flow_dir:
+                neighbors = [
+                    c for c in [(i, j, k - 1), (i, j, k + 1)] if c in cells_coords
+                ]
+                cell_neighbors["z"] = neighbors
+        else:
+            raise ValueError("at least id or coords argument must be defined.")
+
+        if fmt == "dict":
+            return cell_neighbors
+        elif fmt == "list":
+            return sum(cell_neighbors.values(), [])
+        else:
+            raise ValueError("format argument must be either 'dict' or 'list'.")
+
+    # -------------------------------------------------------------------------
+    # Boundaries
+    # -------------------------------------------------------------------------
+
+    # @_lru_cache(maxsize=None)
+    def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
+        if id is not None:
+            boundaries = self.boundaries_id
+            cells_id_b = self.get_cells_id(True, False)
+            assert id in cells_id_b, f"cell id is out of range {cells_id_b}."
+            cell_neighbors = self.get_cell_neighbors(id=id, boundary=True, fmt=fmt)
+        elif coords is not None:
+            boundaries = self.boundaries_coords
+            cells_coords = self.get_cells_coords(True, False)
+            assert (
+                coords in cells_coords
+            ), f"cell coords are out of range {cells_coords}."
+            cell_neighbors = self.get_cell_neighbors(
+                coords=coords, boundary=True, fmt=fmt
+            )
+        else:
+            raise ValueError("at least id or coords argument must be defined.")
+
+        if fmt == "dict":
+            cell_boundaries = {}
+            cell_boundaries["x"] = list(
+                set(cell_neighbors["x"]).intersection(set(boundaries))
+            )
+            cell_boundaries["y"] = list(
+                set(cell_neighbors["y"]).intersection(set(boundaries))
+            )
+            cell_boundaries["z"] = list(
+                set(cell_neighbors["z"]).intersection(set(boundaries))
+            )
+            return cell_boundaries
+        elif fmt == "list":
+            return list(set(cell_neighbors).intersection(set(boundaries)))
+        else:
+            raise ValueError("format argument must be either 'dict' or 'list'.")
+
+    @_lru_cache(maxsize=2)
+    def get_boundaries(self, ids=True):
+        """
+        Arguments:
+            - i: index in x-direction.
+        """
+        cells_id = self.get_cells_id(True, True)  # or self.cells_id
+        if self.D == 0:
+            self.boundaries_id = cells_id.flatten()
+        elif self.D == 1:
+            self.boundaries_id = cells_id[[0, -1]].flatten()
+        elif self.D == 2:
+            self.boundaries_id = np.sort(
+                np.concatenate(
+                    [
+                        cells_id[[0, -1], :].flatten(),
+                        cells_id[1:-1, [0, -1]].flatten(),
+                    ]
+                )
+            )
+        elif self.D == 3:
+            self.boundaries_id = np.sort(
+                np.concatenate(
+                    [
+                        cells_id[:, [0, -1], :].flatten(),
+                        cells_id[:, 1:-1, [0, -1]].flatten(),
+                        cells_id[[0, -1], 1:-1, 1:-1].flatten(),
+                    ]
+                )
+            )
+        self.boundaries_id = tuple(self.boundaries_id)
+        self.boundaries_coords = self.get_cell_coords(self.boundaries_id, boundary=True)
+        if ids:
+            return self.boundaries_id
+        else:
+            return self.boundaries_coords
+
+    # -------------------------------------------------------------------------
+    # Properties
+    # -------------------------------------------------------------------------
 
     def set_props(
         self,
@@ -340,7 +829,8 @@ class CartGrid(Grid):
     def set_phi(self, phi, id=None, coords=None):
         """ """
         if id is None and coords is None:
-            self.phi = self.blocks * phi
+            self.get_ones(True, False)
+            self.phi = self.ones * phi
             # self.porosity = self.phi
             # np.zeros(self.shape) + phi
             s = "all cells"
@@ -351,11 +841,13 @@ class CartGrid(Grid):
             s = "cell " + str(coords)
             # self.get_is_homogeneous()
         print(f"- Porosity (phi) is set to {phi} for {s}.")
+
     # set_porosity = set_phi
 
     def set_kx(self, kx, id=None, coords=None):
         if id is None and coords is None:
-            self.kx = self.blocks * kx
+            self.get_ones(True, False)
+            self.kx = self.ones * kx
             # self.permeability_x = self.kx
             s = "all cells"
         else:
@@ -369,11 +861,13 @@ class CartGrid(Grid):
             s = "cell " + str(coords)
             self.get_is_homogeneous()
         print(f"- Permeability at x-direction (kx) is set to {kx} for {s}.")
+
     # set_permeability_x = set_kx
 
     def set_ky(self, ky, id=None, coords=None):
         if id is None and coords is None:
-            self.ky = self.blocks * ky
+            self.get_ones(True, False)
+            self.ky = self.ones * ky
             # self.permeability_y = self.ky
             s = "all cells"
         else:
@@ -386,12 +880,14 @@ class CartGrid(Grid):
                 self.ky[icoords] = ky
             s = "cell " + str(coords)
             self.get_is_homogeneous()
-        print(f"- Permeability at y direction (ky) is set to {ky} for {s}.")
+        print(f"- Permeability at y-direction (ky) is set to {ky} for {s}.")
+
     # set_permeability_y = set_ky
 
     def set_kz(self, kz, id=None, coords=None):
         if id is None and coords is None:
-            self.kz = self.blocks * kz
+            self.get_ones(True, False)
+            self.kz = self.ones * kz
             # self.permeability_z = self.kz
             s = "all cells"
         else:
@@ -404,11 +900,14 @@ class CartGrid(Grid):
                 self.kz[icoords] = kz
             s = "cell " + str(coords)
             self.get_is_homogeneous()
-        print(f"- Permeability at z direction (kz) is set to {kz} for {s}.")
+        print(f"- Permeability at z-direction (kz) is set to {kz} for {s}.")
+
     # set_permeability_z = set_kz
 
-    @lru_cache(maxsize=6)
+    @_lru_cache(maxsize=6)
     def get_k(self, dir, boundary=True):
+        self.get_flow_dir()
+        assert dir in self.flow_dir, f"k{dir} is not in flow direction"
         if dir == "x":
             k = self.kx
         elif dir == "y":
@@ -424,12 +923,14 @@ class CartGrid(Grid):
             return k
         else:
             return self.remove_boundaries(k)
+
     # get_permeability = get_k
 
     def set_z(self, z=None, id=None, coords=None):
         """ """
         if id is None and coords is None:
-            self.z = self.blocks * z
+            self.get_ones(True, False)
+            self.z = self.ones * z
             # self.tops = self.z
             s = "all cells"
         else:
@@ -442,39 +943,77 @@ class CartGrid(Grid):
                 self.z[icoords] = z
             s = "cell " + str(coords)
         print(f"- Tops (z) is set to {z} for {s}.")
+
     set_tops = set_z
 
     def get_is_homogeneous(self):
-        if (
-            np.all(self.kx[1:-1] == self.kx[0])
-            & np.all(self.ky[1:-1] == self.kx[0])
-            & np.all(self.kz[1:-1] == self.kx[0])
-            & np.all(self.phi[1:-1] == self.phi[0])
-        ):
+        self.get_flow_dir()
+        lst = []
+
+        phi = self.remove_boundaries(self.phi, False).flatten()
+        if np.all(phi == self.phi[0]):
+            is_homogeneous_phi = True
+        else:
+            is_homogeneous_phi = True
+        lst.append(is_homogeneous_phi)
+
+        if "x" in self.flow_dir:
+            kx = self.remove_boundaries(self.kx, False).flatten()
+            if np.all(kx == self.kx[0]):
+                is_homogeneous_x = True
+            else:
+                is_homogeneous_x = False
+            lst.append(is_homogeneous_x)
+
+        if "y" in self.flow_dir:
+            ky = self.remove_boundaries(self.ky, False).flatten()
+            if np.all(ky == self.ky[0]):
+                is_homogeneous_y = True
+            else:
+                is_homogeneous_y = False
+            lst.append(is_homogeneous_y)
+
+        if "z" in self.flow_dir:
+            kz = self.remove_boundaries(self.kz, False).flatten()
+            if np.all(kz == self.kz[0]):
+                is_homogeneous_z = True
+            else:
+                is_homogeneous_z = False
+            lst.append(is_homogeneous_z)
+
+        if all(lst):
             self.is_homogeneous = True
         else:
             self.is_homogeneous = False
         print(f"- Flag is_homogeneous is set to {self.is_homogeneous}.")
         return self.is_homogeneous
 
+    # -------------------------------------------------------------------------
+    # Properties - G
+    # -------------------------------------------------------------------------
+
     def get_G(self, dir):
-        k = self.get_k(dir=dir, boundary=True)
-        area = self.get_cells_area(dir=dir, boundary=True)
-        d = self.get_cells_d(dir=dir, boundary=True)
-        if self.is_homogeneous:
-            G = (
-                self.factors["transmissibility conversion"]
-                * self.get_G_homo_mean(k)
-                * self.get_G_homo_mean(area)
-                / self.get_G_homo_mean(d)
-            )
+        self.get_flow_dir()
+        if dir in self.flow_dir:
+            k = self.get_k(dir=dir, boundary=True)
+            area = self.get_cells_area(dir=dir, boundary=True)
+            d = self.get_cells_d(dir=dir, boundary=True)
+            if self.is_homogeneous:
+                G = (
+                    self.factors["transmissibility conversion"]
+                    * self.get_G_homo_mean(k)
+                    * self.get_G_homo_mean(area)
+                    / self.get_G_homo_mean(d)
+                )
+            else:
+                G = (
+                    2
+                    * self.factors["transmissibility conversion"]
+                    / self.get_G_hetro_denom(d, area, k)
+                )
+            return G
         else:
-            G = (
-                2
-                * self.factors["transmissibility conversion"]
-                / self.get_G_hetro_denom(d, area, k)
-            )
-        return G
+            print(f"- G{dir} is not in flow_dir of {self.flow_dir}.")
 
     def get_Gx(self):
         """
@@ -499,16 +1038,17 @@ class CartGrid(Grid):
 
     def get_G_hetro_denom(self, dx, area, k):
         if self.D == 0:
-            return (dx / (area * k))
+            return dx / (area * k)
         elif self.D == 1:
-            return  (dx[:-1] / (area[:-1] * k[:-1])) + \
-                    (dx[1:]  / (area[1:]  * k[1:]))
+            return (dx[:-1] / (area[:-1] * k[:-1])) + (dx[1:] / (area[1:] * k[1:]))
         elif self.D == 2:
-            return  (dx[:-1, :-1] / (area[:-1, :-1] * k[:-1, :-1])) + \
-                    (dx[1:, 1:]   / (area[1:, 1:]   * k[1:, 1:]))
+            return (dx[:-1, :-1] / (area[:-1, :-1] * k[:-1, :-1])) + (
+                dx[1:, 1:] / (area[1:, 1:] * k[1:, 1:])
+            )
         elif self.D == 3:
-            return (dx[:-1,:-1,:-1]/(area[:-1,:-1,:-1]*k[:-1,:-1,:-1])) + \
-                   (dx[1:, 1:, 1:] /(area[1:, 1:, 1:] *k[1:, 1:, 1:]))
+            return (dx[:-1, :-1, :-1] / (area[:-1, :-1, :-1] * k[:-1, :-1, :-1])) + (
+                dx[1:, 1:, 1:] / (area[1:, 1:, 1:] * k[1:, 1:, 1:])
+            )
 
     def get_G_homo_mean(self, property, type="geometric"):
         """ """
@@ -532,43 +1072,12 @@ class CartGrid(Grid):
             else:
                 raise ValueError("Unknown mean type")
 
-    
-    """
-    Geometry and dimensions
-    """
-    
-    def get_cells_dims(self, dx, dy, dz, verbose=True):
-        self.get_n_b()
-        m_list = []
-        if "x" in self.flow_dir:
-            self.dxx = np.ones(self.nx_b, dtype="int") * dx
-            m_list.append(self.dxx)
-        else:
-            self.dxx = np.ones(self.max_nb, dtype="int") * dx
-            m_list.append(dx)
-        if "y" in self.flow_dir:
-            self.dyy = np.ones(self.ny_b, dtype="int") * dy
-            m_list.append(self.dyy)
-        else:
-            self.dyy = np.ones(self.max_nb, dtype="int") * dy
-            m_list.append(dy)
-        if "z" in self.flow_dir:
-            self.dzz = np.ones(self.nz_b, dtype="int") * dz
-            m_list.append(self.dzz)
-        else:
-            self.dzz = np.ones(self.max_nb, dtype="int") * dz
-            m_list.append(dz)
+    # -------------------------------------------------------------------------
+    # Pyvista
+    # -------------------------------------------------------------------------
 
-        self.dx, self.dy, self.dz = np.meshgrid(*m_list, copy=False)
-        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(self.fshape)
-        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(self.fshape)
-        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(self.fshape)
-
-        if verbose:
-            print(f"- Cells dims (dx, dy, dz) were computed.")
-            
-    @lru_cache(maxsize=2)
-    def get_pyvista_grid(self, boundary=True, verbose=True):
+    @_lru_cache(maxsize=2)
+    def get_pyvista_grid(self, boundary=True):
         """
         https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
         """
@@ -577,17 +1086,17 @@ class CartGrid(Grid):
         else:
             dims = np.array((self.nx, self.ny, self.nz)) + 1
 
-        corners = self.get_corners(boundary, verbose)
+        corners = self.get_corners(boundary)
         pyvista_grid = pv.ExplicitStructuredGrid(dims, corners)
 
-        if verbose:
+        if self.verbose:
             s = "with boundary" if boundary else "without boundary"
             print(f"- Pyvista grid (pyvista_grid) {s} was created.")
-        
+
         return pyvista_grid
 
-    @lru_cache(maxsize=2)
-    def get_corners(self, boundary=True, verbose=True):
+    @_lru_cache(maxsize=2)
+    def get_corners(self, boundary=True):
         """
 
         (Reference: https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html)
@@ -641,12 +1150,16 @@ class CartGrid(Grid):
         zcorn = zcorn[1:-1]
         zcorn = np.repeat(zcorn, 4 * (self.nx + ix) * (self.ny + iy))
 
-        if verbose:
+        if self.verbose:
             s = "with boundary" if boundary else "without boundary"
             print(f"- Grid corners {s} were calculated.")
-            print("    - xcorn shape:", xcorn.shape,
-                "- ycorn shape:", ycorn.shape,
-                "- zcorn shape:", zcorn.shape
+            print(
+                "    - xcorn shape:",
+                xcorn.shape,
+                "- ycorn shape:",
+                ycorn.shape,
+                "- zcorn shape:",
+                zcorn.shape,
             )
 
         # Combine corners:
@@ -655,71 +1168,42 @@ class CartGrid(Grid):
 
         return corners
 
-    def get_verbose_str(self, boundary, fshape):
-        s1 = "with fshape" if fshape else "without fshape"
-        s2 = "with boundary" if boundary else "without boundary"
-        return s1, s2
+    # -------------------------------------------------------------------------
+    # Dimensions
+    # -------------------------------------------------------------------------
 
-    @lru_cache(maxsize=4)
-    def get_cells_center(self, boundary=True, fshape=False, verbose=True):
-        pyvista_grid = self.get_pyvista_grid(True)
-        self.cells_center = pyvista_grid.cell_centers().points
+    def get_cells_dims(self, dx, dy, dz, verbose=True):
+        self.get_n_max(True)
+        self.get_fshape(True, False)
+        m_list = []
+        if "x" in self.flow_dir:
+            self.dxx = np.ones(self.nx_b, dtype="int") * dx
+            m_list.append(self.dxx)
+        else:
+            self.dxx = np.ones(self.n_max, dtype="int") * dx
+            m_list.append(dx)
+        if "y" in self.flow_dir:
+            self.dyy = np.ones(self.ny_b, dtype="int") * dy
+            m_list.append(self.dyy)
+        else:
+            self.dyy = np.ones(self.n_max, dtype="int") * dy
+            m_list.append(dy)
+        if "z" in self.flow_dir:
+            self.dzz = np.ones(self.nz_b, dtype="int") * dz
+            m_list.append(self.dzz)
+        else:
+            self.dzz = np.ones(self.n_max, dtype="int") * dz
+            m_list.append(dz)
 
-        if fshape:
-            flow_shape = self.fshape + (3,)
-            self.cells_center = self.cells_center.reshape(flow_shape)
-
-        if not boundary:
-            self.cells_center = self.remove_boundaries(self.cells_center, True)
+        self.dx, self.dy, self.dz = np.meshgrid(*m_list, copy=False)
+        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(self.fshape)
+        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(self.fshape)
+        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(self.fshape)
 
         if verbose:
-            s1, s2 = self.get_verbose_str(boundary, fshape)
-            print(f"- Cells center (cells_center) was computed ({s1} - {s2}).")
+            print(f"- Cells dims (dx, dy, dz) were computed.")
 
-        return self.cells_center
-
-    """
-    Volume Calculations:
-    """
-
-    @lru_cache(maxsize=2)
-    def get_volume(self, boundary=True):
-        pyvista_grid = self.get_pyvista_grid(boundary)
-        self.V = pyvista_grid.volume
-        return self.V
-
-    @lru_cache(maxsize=6)
-    def get_cells_volume(self, boundary=True, fshape=False, pyvista=False):
-
-        if pyvista:
-            pyvista_grid = self.get_pyvista_grid(True)
-            self.cells_V = pyvista_grid.compute_cell_sizes()["Volume"]
-            self.cells_V = self.cells_V.round(2)
-        else:
-            self.cells_V = self.dx.flatten() * self.dy.flatten() * self.dz.flatten()
-        if fshape:
-            self.cells_V = self.cells_V.reshape(self.fshape)
-        if not boundary:
-            self.cells_V = self.remove_boundaries(self.cells_V)
-        print("- Cells volumes (cells_V) was computed.")
-        return self.cells_V
-
-    @lru_cache(maxsize=None)
-    def get_cell_volume(self, id=None, coords=None):
-        if id is not None:
-            cells_volume = self.get_cells_volume(True, False)
-            return cells_volume.flatten()[id]
-        elif coords is not None:
-            cells_volume = self.get_cells_volume(True, True)
-            return cells_volume[coords[2], coords[1], coords[0]]
-        else:
-            raise ValueError("at least id or coords argument must be defined.")
-
-    """
-    Cells Dimensions (dx, dy, dz) Calculations:
-    """
-
-    @lru_cache(maxsize=5)
+    @_lru_cache(maxsize=5)
     def get_cells_d(self, dir, boundary=True, fshape=True):
         if dir == "x":
             cells_d = self.dx
@@ -734,19 +1218,19 @@ class CartGrid(Grid):
             cells_d = self.remove_boundaries(cells_d)
         return cells_d
 
-    @lru_cache(maxsize=2)
+    @_lru_cache(maxsize=2)
     def get_cells_dx(self, boundary=True, fshape=True):
         return self.get_cells_d("x", boundary, fshape)
 
-    @lru_cache(maxsize=2)
+    @_lru_cache(maxsize=2)
     def get_cells_dy(self, boundary=True, fshape=True):
         return self.get_cells_d("y", boundary, fshape)
 
-    @lru_cache(maxsize=2)
+    @_lru_cache(maxsize=2)
     def get_cells_dz(self, boundary=True, fshape=True):
         return self.get_cells_d("z", boundary, fshape)
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_d(self, dir, id=None, coords=None):
         cells_d = self.get_cells_d(dir=dir, boundary=True, fshape=True)
         if id is not None:
@@ -757,23 +1241,61 @@ class CartGrid(Grid):
         else:
             raise ValueError("at least id or coords argument must be defined.")
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_dx(self, id=None, coords=None):
         return self.get_cell_d("x", id, coords)
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_dy(self, id=None, coords=None):
         return self.get_cell_d("y", id, coords)
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_dz(self, id=None, coords=None):
         return self.get_cell_d("z", id, coords)
 
-    """
-    Area calculations:
-    """
+    # -------------------------------------------------------------------------
+    # Helpers
+    # -------------------------------------------------------------------------
 
-    @lru_cache(maxsize=4)
+    def get_verbose_str(self, boundary, fshape):
+        s1 = "with fshape" if fshape else "without fshape"
+        s2 = "with boundary" if boundary else "without boundary"
+        return s1, s2
+
+    def add_boundary(self, d):
+        if isinstance(d, [list, tuple, np.array]):
+            self.get_n_max(True)
+            if len(d) == self.n_max - 2:
+                d = np.concatenate((d[0], d, d[-1]))
+        return d
+
+    # -------------------------------------------------------------------------
+    # Centers
+    # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=4)
+    def get_cells_center(self, boundary=True, fshape=False):
+        pyvista_grid = self.get_pyvista_grid(True)
+        self.cells_center = pyvista_grid.cell_centers().points
+
+        if fshape:
+            flow_shape = self.fshape + (3,)
+            self.cells_center = self.cells_center.reshape(flow_shape)
+
+        if not boundary:
+            self.cells_center = self.remove_boundaries(self.cells_center, True)
+
+        if self.verbose:
+            s1, s2 = self.get_verbose_str(boundary, fshape)
+            print(f"- Cells center (cells_center) was computed ({s1} - {s2}).")
+
+        return self.cells_center
+
+    # -------------------------------------------------------------------------
+    # Area
+    # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=4)
     def get_cells_area_x(self, boundary=True, fshape=True):
         self.area_x = self.dy.flatten() * self.dz.flatten()
         if fshape:
@@ -782,7 +1304,7 @@ class CartGrid(Grid):
             self.area_x = self.remove_boundaries(self.area_x)
         return self.area_x
 
-    @lru_cache(maxsize=4)
+    @_lru_cache(maxsize=4)
     def get_cells_area_y(self, boundary=True, fshape=True):
         self.area_y = self.dx.flatten() * self.dz.flatten()
         if fshape:
@@ -791,7 +1313,7 @@ class CartGrid(Grid):
             self.area_y = self.remove_boundaries(self.area_y)
         return self.area_y
 
-    @lru_cache(maxsize=4)
+    @_lru_cache(maxsize=4)
     def get_cells_area_z(self, boundary=True, fshape=True):
         self.area_z = self.dx.flatten() * self.dy.flatten()
         if fshape:
@@ -800,7 +1322,7 @@ class CartGrid(Grid):
             self.area_z = self.remove_boundaries(self.area_z)
         return self.area_z
 
-    @lru_cache(maxsize=8)
+    @_lru_cache(maxsize=8)
     def get_cells_area(self, dir=None, boundary=True, fshape=True):
         if dir == "x":
             return self.get_cells_area_x(boundary, fshape)
@@ -822,7 +1344,7 @@ class CartGrid(Grid):
                 "['x','y','z','all', None]"
             )
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_area(self, dir, id=None, coords=None):
         if id is not None:
             cells_area = self.get_cells_area(dir, True, False)
@@ -833,23 +1355,58 @@ class CartGrid(Grid):
         else:
             raise ValueError("At least id or coords argument must be defined.")
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_area_x(self, id=None, coords=None):
         return self.get_cell_area("x", id, coords)
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_area_y(self, id=None, coords=None):
         return self.get_cell_area("y", id, coords)
 
-    @lru_cache(maxsize=None)
+    @_lru_cache(maxsize=None)
     def get_cell_area_z(self, id=None, coords=None):
         return self.get_cell_area("z", id, coords)
 
-    def isin(self, arr, coords):
-        for x in arr:
-            if tuple(x) == coords:
-                return True
-        return False
+    # -------------------------------------------------------------------------
+    # Volume
+    # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=2)
+    def get_volume(self, boundary=True):
+        pyvista_grid = self.get_pyvista_grid(boundary)
+        self.V = pyvista_grid.volume
+        return self.V
+
+    @_lru_cache(maxsize=6)
+    def get_cells_volume(self, boundary=True, fshape=False, pyvista=False):
+
+        if pyvista:
+            pyvista_grid = self.get_pyvista_grid(True)
+            self.cells_V = pyvista_grid.compute_cell_sizes()["Volume"]
+            self.cells_V = self.cells_V.round(2)
+        else:
+            self.cells_V = self.dx.flatten() * self.dy.flatten() * self.dz.flatten()
+        if fshape:
+            self.cells_V = self.cells_V.reshape(self.fshape)
+        if not boundary:
+            self.cells_V = self.remove_boundaries(self.cells_V)
+        print("- Cells volumes (cells_V) was computed.")
+        return self.cells_V
+
+    @_lru_cache(maxsize=None)
+    def get_cell_volume(self, id=None, coords=None):
+        if id is not None:
+            cells_volume = self.get_cells_volume(True, False)
+            return cells_volume.flatten()[id]
+        elif coords is not None:
+            cells_volume = self.get_cells_volume(True, True)
+            return cells_volume[coords[2], coords[1], coords[0]]
+        else:
+            raise ValueError("at least id or coords argument must be defined.")
+
+    # -------------------------------------------------------------------------
+    # Remove Boundaries
+    # -------------------------------------------------------------------------
 
     def remove_boundaries(self, in_data, points=False):
         if not isinstance(in_data, dict):
@@ -910,143 +1467,6 @@ class CartGrid(Grid):
         # elif self.D == 3:
         #     self.cells_center = self.cells_center_b[1:-1,1:-1,1:-1,:]
 
-    @lru_cache(maxsize=None)
-    def get_cell_neighbors(self, id=None, coords=None, boundary=False, fmt="dict"):
-        cell_neighbors = {"x": [], "y": [], "z": []}
-        if id is not None:
-            # coords = self.get_cell_coords(id, boundary=True)
-            cells_id = self.get_cells_id(boundary).flatten()
-            assert id in cells_id, f"cell id is out of range {cells_id}."
-            if self.D >= 1:
-                neighbors = [n for n in [id - 1, id + 1] if n in cells_id]
-                cell_neighbors[self.flow_dir[0]] = neighbors
-            if self.D >= 2:
-                neighbors = [
-                    n for n in [id - self.max_nb, id + self.max_nb] if n in cells_id
-                ]
-                cell_neighbors[self.flow_dir[1]] = neighbors
-            if self.D >= 3:
-                neighbors = [
-                    n for n in [
-                        id - (self.nx_b * self.ny_b),
-                        id + (self.nx_b * self.ny_b),
-                    ] if n in cells_id
-                ]
-                cell_neighbors[self.flow_dir[2]] = neighbors
-        elif coords is not None:
-            cells_coords = self.get_cells_coords(boundary=boundary, fshape=False)
-            assert (
-                coords in cells_coords
-            ), f"cell coords are out of range {cells_coords}."
-            i, j, k = coords
-            if "x" in self.flow_dir:
-                neighbors = [
-                    n for n in [
-                        (i - 1, j, k), 
-                        (i + 1, j, k)
-                    ] if n in cells_coords
-                ]
-                cell_neighbors["x"] = neighbors
-            if "y" in self.flow_dir:
-                neighbors = [
-                    n for n in [
-                        (i, j - 1, k), 
-                        (i, j + 1, k)
-                    ] if n in cells_coords
-                ]
-                cell_neighbors["y"] = neighbors
-            if "z" in self.flow_dir:
-                neighbors = [
-                    n for n in [
-                        (i, j, k - 1), 
-                        (i, j, k + 1)
-                    ] if n in cells_coords
-                ]
-                cell_neighbors["z"] = neighbors
-        else:
-            raise ValueError("at least id or coords argument must be defined.")
-
-        if fmt == "dict":
-            return cell_neighbors
-        elif fmt == "list":
-            return sum(cell_neighbors.values(), [])
-        else:
-            raise ValueError("format argument must be either 'dict' or 'list'.")
-
-    # @lru_cache(maxsize=None)
-    def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
-        if id is not None:
-            boundaries = self.boundaries_id
-            cells_id_b = self.get_cells_id(boundary=True).flatten()
-            assert id in cells_id_b, f"cell id is out of range {cells_id_b}."
-            cell_neighbors = self.get_cell_neighbors(id=id, boundary=True, fmt=fmt)
-        elif coords is not None:
-            boundaries = self.boundaries_coords
-            cells_coords = self.get_cells_coords(boundary=True, fshape=False)
-            assert (
-                coords in cells_coords
-            ), f"cell coords are out of range {cells_coords}."
-            cell_neighbors = self.get_cell_neighbors(
-                coords=coords, boundary=True, fmt=fmt
-            )
-        else:
-            raise ValueError("at least id or coords argument must be defined.")
-
-        if fmt == "dict":
-            cell_boundaries = {}
-            cell_boundaries["x"] = list(
-                set(cell_neighbors["x"]).intersection(set(boundaries))
-            )
-            cell_boundaries["y"] = list(
-                set(cell_neighbors["y"]).intersection(set(boundaries))
-            )
-            cell_boundaries["z"] = list(
-                set(cell_neighbors["z"]).intersection(set(boundaries))
-            )
-            return cell_boundaries
-        elif fmt == "list":
-            return list(set(cell_neighbors).intersection(set(boundaries)))
-        else:
-            raise ValueError("format argument must be either 'dict' or 'list'.")
-
-    @lru_cache(maxsize=2)
-    def get_boundaries(self, ids=True):
-        """
-        Arguments:
-            - i: index in x-direction.
-        """
-        cells_id = self.get_cells_id(True, True)  # or self.cells_id
-        if self.D == 0:
-            self.boundaries_id = cells_id.flatten()
-        elif self.D == 1:
-            self.boundaries_id = cells_id[[0, -1]].flatten()
-        elif self.D == 2:
-            self.boundaries_id = np.sort(
-                np.concatenate(
-                    [
-                        cells_id[[0, -1], :].flatten(),
-                        cells_id[1:-1, [0, -1]].flatten(),
-                    ]
-                )
-            )
-        elif self.D == 3:
-            self.boundaries_id = np.sort(
-                np.concatenate(
-                    [
-                        cells_id[:, [0, -1], :].flatten(),
-                        cells_id[:, 1:-1, [0, -1]].flatten(),
-                        cells_id[[0, -1], 1:-1, 1:-1].flatten(),
-                    ]
-                )
-            )
-        self.boundaries_coords = self.get_cell_coords(
-            self.boundaries_id, boundary=True
-        )
-        if ids:
-            return self.boundaries_id
-        else:
-            return self.boundaries_coords
-
     def show(
         self,
         boundary=False,
@@ -1056,9 +1476,10 @@ class CartGrid(Grid):
         """
         - centers_label: str ('coords', 'id')
         """
+        self.get_n_max(True)
         pyvista_grid = self.get_pyvista_grid(boundary)
 
-        if self.max_nb > 12:
+        if self.n_max > 12:
             opacity = 1
         else:
             opacity = 0.8
@@ -1117,8 +1538,10 @@ class CartGrid(Grid):
             )
 
         s = "with boundary" if boundary else "without boundary"
-        title = f"{self.D}D model by {label}" + \
-                f"(flow at {self.flow_dir}-direction {s})"
+        title = "{}D model by {} (flow at {}-direction {})".format(
+            self.D, label, self.flow_dir, s
+        )
+
         pl.add_title(title, font="courier", color="white", font_size=8)
         pl.add_camera_orientation_widget()
         pl.enable_fly_to_right_click()
@@ -1127,37 +1550,50 @@ class CartGrid(Grid):
         pl.set_background("black", top="gray")
         pl.show(title="openresim 3D show", full_screen=True)
 
+    # get_flow_shape = get_fshape
+    # self.flow_shape = self.fshape
+    # get_dimension = get_D
+    # self.dimension = self.D
 
-#%%
+
 if __name__ == "__main__":
-    # Canvas:
+
     dx = 11  # [11,21,31,41]
     dy = 12  # [12,22,32,42]
     dz = 13  # [13,23,33,43]
     grid = CartGrid(
-        nx=2, ny=2, nz=1,
-        dx=dx, dy=dy, dz=dz,
-        kx=270, ky=10, kz=20,
+        nx=2,
+        ny=1,
+        nz=1,
+        dx=dx,
+        dy=dy,
+        dz=dz,
+        kx=270,
+        ky=10,
+        kz=20,
         phi=0.27,
     )
 
-    id = grid.get_cell_coords(3, True)
-    # print(id)
-    
+    print("Test 1:")
+    coords = (1, 0, 0)
+    neighbors = grid.get_cell_neighbors(id=1, boundary=False, fmt="list")
+    print("Neighbors:", neighbors)
+
+    # grid.show(boundary=False, label="coords")
+
     # grid.set_kx(kx=10, coords=(1,1,1))
     # print(grid.kx)
     # print(grid.get_cells_id())
     # print(grid.kx.shape)
     # print(grid.cells_volume_b.shape)
-    grid.show(boundary=True, label="id", corners=False)
-    grid.show(boundary=False, label="id", corners=False)
+    # grid.show(boundary=True, label="id", corners=False)
+    # grid.show(boundary=False, label="id", corners=False)
     # grid.show(boundary=True, label="dy")
     # grid.show(boundary=True, label="dz")
     # grid.show(boundary=True, label="area_x")
     # grid.show(boundary=True, label="area_y")
     # grid.show(boundary=True, label="area_z")
 
-    # grid.show(boundary=True, centers='coords')
     # grid.show(boundary=True, centers='volume')
 
     # Doc and reporting:
