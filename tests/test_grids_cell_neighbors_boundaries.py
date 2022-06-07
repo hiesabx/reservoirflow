@@ -4,34 +4,35 @@ import unittest
 
 
 class Test_2D_XY(unittest.TestCase):
-    """_summary_
-
-    ToDo:
-    ----------
-    test 2d
-    """
-
     def test_cell_id(self):
         id = 6
+
         coords = grid_2d_xy.get_cell_coords(id)
         self.assertEqual(coords, (1, 1, 0))
+
         neighbors = grid_2d_xy.get_cell_neighbors(id=id, boundary=False, fmt="list")
         self.assertEqual(neighbors, [7, 11])
+
         neighbors = grid_2d_xy.get_cell_neighbors(id=id, boundary=False, fmt="dict")
         self.assertEqual(neighbors, {"x": [7], "y": [11], "z": []})
+
         boundaries = grid_2d_xy.get_cell_boundaries(id=id, fmt="list")
         self.assertEqual(boundaries, [1, 5])
+
         boundaries = grid_2d_xy.get_cell_boundaries(id=id, fmt="dict")
         self.assertEqual(boundaries, {"x": [5], "y": [1], "z": []})
 
     def test_cell_coords(self):
         coords = (1, 1, 0)
+
         id = grid_2d_xy.get_cell_id(coords)
         self.assertEqual(id, 6)
+
         neighbors = grid_2d_xy.get_cell_neighbors(
             coords=coords, boundary=False, fmt="list"
         )
         self.assertEqual(neighbors, [(2, 1, 0), (1, 2, 0)])
+
         neighbors = grid_2d_xy.get_cell_neighbors(
             coords=coords, boundary=False, fmt="dict"
         )
@@ -39,19 +40,97 @@ class Test_2D_XY(unittest.TestCase):
 
         boundaries = grid_2d_xy.get_cell_boundaries(coords=coords, fmt="list")
         self.assertEqual(boundaries, [(1, 0, 0), (0, 1, 0)])
+
         boundaries = grid_2d_xy.get_cell_boundaries(coords=coords, fmt="dict")
         self.assertEqual(boundaries, {"x": [(0, 1, 0)], "y": [(1, 0, 0)], "z": []})
 
 
+class Test_2D_XZ(unittest.TestCase):
+    def test_cell_id(self):
+        id = 6
+
+        coords = grid_2d_xz.get_cell_coords(id)
+        self.assertEqual(coords, (1, 0, 1))
+
+        neighbors = grid_2d_xz.get_cell_neighbors(id=id, boundary=False, fmt="list")
+        self.assertEqual(neighbors, [7, 11])
+
+        neighbors = grid_2d_xz.get_cell_neighbors(id=id, boundary=False, fmt="dict")
+        self.assertEqual(neighbors, {"x": [7], "y": [], "z": [11]})
+
+        boundaries = grid_2d_xz.get_cell_boundaries(id=id, fmt="list")
+        self.assertEqual(boundaries, [1, 5])
+
+        boundaries = grid_2d_xz.get_cell_boundaries(id=id, fmt="dict")
+        self.assertEqual(boundaries, {"x": [5], "y": [], "z": [1]})
+
+    def test_cell_coords(self):
+        coords = (1, 0, 1)
+
+        id = grid_2d_xz.get_cell_id(coords)
+        self.assertEqual(id, 6)
+
+        neighbors = grid_2d_xz.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="list"
+        )
+        self.assertEqual(neighbors, [(2, 0, 1), (1, 0, 2)])
+
+        neighbors = grid_2d_xz.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="dict"
+        )
+        self.assertEqual(neighbors, {"x": [(2, 0, 1)], "y": [], "z": [(1, 0, 2)]})
+
+        boundaries = grid_2d_xz.get_cell_boundaries(coords=coords, fmt="list")
+        self.assertEqual(boundaries, [(1, 0, 0), (0, 0, 1)])
+
+        boundaries = grid_2d_xz.get_cell_boundaries(coords=coords, fmt="dict")
+        self.assertEqual(boundaries, {"x": [(0, 0, 1)], "y": [], "z": [(1, 0, 0)]})
+
+
+class Test_2D_YZ(unittest.TestCase):
+    def test_cell_id(self):
+        id = 6
+
+        coords = grid_2d_yz.get_cell_coords(id)
+        self.assertEqual(coords, (0, 1, 1))
+
+        neighbors = grid_2d_yz.get_cell_neighbors(id=id, boundary=False, fmt="list")
+        self.assertEqual(neighbors, [7, 11])
+
+        neighbors = grid_2d_yz.get_cell_neighbors(id=id, boundary=False, fmt="dict")
+        self.assertEqual(neighbors, {"x": [], "y": [7], "z": [11]})
+
+        boundaries = grid_2d_yz.get_cell_boundaries(id=id, fmt="list")
+        self.assertEqual(boundaries, [1, 5])
+
+        boundaries = grid_2d_yz.get_cell_boundaries(id=id, fmt="dict")
+        self.assertEqual(boundaries, {"x": [], "y": [5], "z": [1]})
+
+    def test_cell_coords(self):
+        coords = (0, 1, 1)
+
+        id = grid_2d_yz.get_cell_id(coords)
+        self.assertEqual(id, 6)
+
+        neighbors = grid_2d_yz.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="list"
+        )
+        self.assertEqual(neighbors, [(0, 2, 1), (0, 1, 2)])
+
+        neighbors = grid_2d_yz.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="dict"
+        )
+        self.assertEqual(neighbors, {"x": [], "y": [(0, 2, 1)], "z": [(0, 1, 2)]})
+
+        boundaries = grid_2d_yz.get_cell_boundaries(coords=coords, fmt="list")
+        self.assertEqual(boundaries, [(0, 1, 0), (0, 0, 1)])
+
+        boundaries = grid_2d_yz.get_cell_boundaries(coords=coords, fmt="dict")
+        self.assertEqual(boundaries, {"x": [], "y": [(0, 0, 1)], "z": [(0, 1, 0)]})
+
+
 class Test_3D(unittest.TestCase):
-    """_summary_
-
-    ToDo:
-    ----------
-    test 2d
-    """
-
-    def test_cell_id_3d_xyz(self):
+    def test_cell_id(self):
         id = 31
         coords = grid_3d.get_cell_coords(id)
         self.assertEqual(coords, (1, 1, 1))
@@ -64,7 +143,7 @@ class Test_3D(unittest.TestCase):
         boundaries = grid_3d.get_cell_boundaries(id=id, fmt="dict")
         self.assertEqual(boundaries, {"x": [30], "y": [26], "z": [6]})
 
-    def test_cell_coords_3d_xyz(self):
+    def test_cell_coords(self):
         coords = (1, 1, 1)
         id = grid_3d.get_cell_id(coords)
         self.assertEqual(id, 31)

@@ -74,9 +74,15 @@ if __name__ == "__main__":
     dy = [12, 22, 32, 42]
     dz = [13, 23, 33, 43]
     grid = grids.CartGrid(
-        nx=2, ny=2, nz=2, 
-        dx=dx, dy=dy, dz=dz, 
-        kx=270, ky=270, kz=270,
-        phi=0.27, 
+        nx=2,
+        ny=2,
+        nz=2,
+        dx=dx,
+        dy=dy,
+        dz=dz,
+        kx=270,
+        ky=270,
+        kz=270,
+        phi=0.27,
     )
     unittest.main()

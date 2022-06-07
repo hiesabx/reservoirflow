@@ -161,7 +161,7 @@ class CartGrid(Grid):
         # self.get_shape()  # > self.shape
         # self.get_flow_dir()  # > self.flowdir
         # self.get_n(True)  # > self.nx_b, self.ny_b, self.n_zb
-        # self.get_fshape(True, False)  # > self.fshape
+        # self.get_fshape(True, False, False)  # > self.fshape
         # self.get_n_cells()  # > self.n_cells
         # self.get_order(type="natural")  # > self.order
         # self.get_ones(True, False)  # > self.blocks
@@ -324,7 +324,7 @@ class CartGrid(Grid):
         return self.n_max
 
     @_lru_cache(maxsize=2)
-    def get_fshape(self, boundary=True, unify=False):
+    def get_fshape(self, boundary=True, points=False, unify=False):
         """Return flow shape as tuple.
 
         Parameters
@@ -332,6 +332,10 @@ class CartGrid(Grid):
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
             Warning: True option is required.
+        points : bool, optional, by default False
+            include tuples of len 3 for points in i,j,k system
+            when set to True. In case of False, fshape refers to
+            scaler values where each value is not a point.
         unify : bool, optional, by default False
             unify shape to be always tuple of 3 as (nz,ny,nx) when set
             to True. When set to False, shape includes only the number
@@ -396,6 +400,9 @@ class CartGrid(Grid):
                 else:
                     raise ValueError("unknown flow_dir value.")
 
+        if points:
+            self.fshape = self.fshape + (3,)
+
         if self.verbose:
             print(f"- Flow shape (fshape) is set to {self.fshape}.")
 
@@ -451,7 +458,8 @@ class CartGrid(Grid):
             )
 
         if fshape:
-            self.order = self.order.reshape(self.fshape)
+            shape = self.get_fshape(boundary, False, False)
+            self.order = self.order.reshape(shape)
 
         if not boundary:
             self.order = self.remove_boundaries(self.order)
@@ -482,12 +490,12 @@ class CartGrid(Grid):
         assert boundary == True, "False boundary option is not allowed."
         assert sparse == False, "True sparse option is not allowed."
 
-        self.get_fshape(boundary, False)
+        fshape = self.get_fshape(boundary, False, False)
 
         if not sparse:
-            self.ones = np.ones(self.fshape, dtype="int")
+            self.ones = np.ones(fshape, dtype="int")
         else:
-            self.ones = ss.lil_matrix(self.shape, dtype="int")
+            self.ones = ss.lil_matrix(fshape, dtype="int")
 
         if self.verbose:
             print(f"- Ones array (ones) was computed.")
@@ -594,7 +602,7 @@ class CartGrid(Grid):
         self.cells_coords = pyvista_grid.cell_coords(cells_id)
 
         if fshape:
-            coords_fshape = self.fshape + (3,)
+            coords_fshape = self.get_fshape(boundary, True, False)
             self.cells_coords = self.cells_coords.reshape(coords_fshape)
 
         if self.verbose:
@@ -665,7 +673,7 @@ class CartGrid(Grid):
 
         This method returns cell neighbors by id or coords. If
         neighbors are desired by id, then id argument should be used.
-        The same applies coords arguments. This method will raise
+        The same applies coords argument. This method will raise
         ValueError if none of id or coords arguments were defined or if
         undefined fmt argument was used.
 
@@ -686,7 +694,7 @@ class CartGrid(Grid):
         fmt : str, optional, by default 'dict'
             output format as str fom ['dict', 'list']. Use 'dict' to
             output neighbors in x,y,z directions as keys. Use 'list' for
-            list of neighbors when direction is not needed.
+            list of neighbors when directions are not needed.
 
         Returns
         -------
@@ -710,25 +718,21 @@ class CartGrid(Grid):
             cells_id = self.get_cells_id(boundary, False)
             assert id in cells_id, f"cell id is out of range {cells_id}."
             if self.D >= 1:
-                neighbors = [i for i in [id - 1, id + 1] if i in cells_id]
+                n_lst = [id - 1, id + 1]
+                neighbors = [i for i in n_lst if i in cells_id]
                 cell_neighbors[self.flow_dir[0]] = neighbors
             if self.D >= 2:
                 nx, ny, _ = self.get_n(True)
                 if "x" in self.flow_dir:
-                    n = nx
+                    n_lst = [id - nx, id + nx]
                 elif "y" in self.flow_dir:
-                    n = ny
-                neighbors = [i for i in [id - n, id + n] if i in cells_id]
+                    n_lst = [id - ny, id + ny]
+                neighbors = [i for i in n_lst if i in cells_id]
                 cell_neighbors[self.flow_dir[1]] = neighbors
             if self.D >= 3:
-                neighbors = [
-                    i
-                    for i in [
-                        id - (self.nx_b * self.ny_b),
-                        id + (self.nx_b * self.ny_b),
-                    ]
-                    if i in cells_id
-                ]
+                nx_ny_b = self.nx_b * self.ny_b
+                n_lst = [id - nx_ny_b, id + nx_ny_b]
+                neighbors = [i for i in n_lst if i in cells_id]
                 cell_neighbors[self.flow_dir[2]] = neighbors
         elif coords is not None:
             cells_coords = self.get_cells_coords(boundary, False)
@@ -737,25 +741,16 @@ class CartGrid(Grid):
             ), f"cell coords are out of range {cells_coords}."
             i, j, k = coords
             if "x" in self.flow_dir:
-                neighbors = [
-                    c
-                    for c in [(i - 1, j, k), (i + 1, j, k)]
-                    if utils.isin(c, cells_coords)
-                ]
+                n_lst = [(i - 1, j, k), (i + 1, j, k)]
+                neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
                 cell_neighbors["x"] = neighbors
             if "y" in self.flow_dir:
-                neighbors = [
-                    c
-                    for c in [(i, j - 1, k), (i, j + 1, k)]
-                    if utils.isin(c, cells_coords)
-                ]
+                n_lst = [(i, j - 1, k), (i, j + 1, k)]
+                neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
                 cell_neighbors["y"] = neighbors
             if "z" in self.flow_dir:
-                neighbors = [
-                    c
-                    for c in [(i, j, k - 1), (i, j, k + 1)]
-                    if utils.isin(c, cells_coords)
-                ]
+                n_lst = [(i, j, k - 1), (i, j, k + 1)]
+                neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
                 cell_neighbors["z"] = neighbors
         else:
             raise ValueError("at least id or coords argument must be defined.")
@@ -767,8 +762,131 @@ class CartGrid(Grid):
         else:
             raise ValueError("format argument must be either 'dict' or 'list'.")
 
-    def keep_boundaries(self, in_data, points, fmt="tuple"):
+    def remove_boundaries(self, in_data, points=False):
+        """Remove boundary cells from input data.
+
+        Parameters
+        ----------
+        in_data : ndarray, dict of ndarray
+            input data where boundaries need to be removed. Input data
+            must be an ndarray with boundaries. Input data as dict with
+            keys for these arrays is also possible.
+        points : bool, optional, by default False
+            include tuples of len 3 for points in i,j,k system
+            when set to True. In case of False, fshape refers to
+            scaler values where each value is not a point.
+
+        Returns
+        -------
+        ndarray, dict
+            array with boundaries removed.
+
+        Raises
+        ------
+        ValueError
+            _description_
+        ValueError
+            _description_
+
+        See Also
+        --------
+        keep_boundaries: keep only boundary cells from input data.
+        """
         if not isinstance(in_data, dict):
+            fshape = self.get_fshape(True, points, False)
+
+            if in_data.shape != fshape:
+                try:
+                    in_data = in_data.reshape(fshape)
+                    flatten = True
+                except:
+                    print(
+                        "in_data shape:",
+                        in_data.shape,
+                        "- required shape:",
+                        fshape,
+                    )
+                    raise ValueError("array must have all cells to remove boundaries!")
+            else:
+                flatten = False
+
+            if self.D == 0:
+                out_data = in_data
+            elif self.D == 1:
+                out_data = in_data[1:-1]
+            elif self.D == 2:
+                out_data = in_data[1:-1, 1:-1]
+            elif self.D == 3:
+                out_data = in_data[1:-1, 1:-1, 1:-1]
+            else:
+                out_data = in_data[1:-1, 1:-1, 1:-1]
+
+            if flatten:
+                if not points:
+                    out_data = out_data.flatten()
+                else:
+                    out_data = out_data.reshape((-1, 3))
+
+            return out_data
+
+        elif isinstance(in_data, dict):
+            for k, v in in_data.items():
+                in_data[k] = self.remove_boundaries(v)
+            return in_data
+        else:
+            raise ValueError("dtype is unknown.")
+
+    def keep_boundaries(self, in_data, points=False, fmt="tuple"):
+        """Keep only boundary cells from input data.
+
+        Parameters
+        ----------
+        in_data : ndarray
+            input array must contain all cells including boundary cell.
+            Both flatten or flow shape arrays are accepted.
+        points : bool, optional, by default False
+            include tuples of len 3 for points in i,j,k system
+            when set to True. In case of False, fshape refers to
+            scaler values where each value is not a point.
+        fmt : str, optional, by default "tuple"
+            format of output data as str in ['tuple', 'list', 'set',
+            'array']. Options 'tuple' and 'list' give the same output.
+
+        Returns
+        -------
+        ndarray, list, set
+            output data based on fmt argument.
+
+        Raises
+        ------
+        ValueError
+            'fmt is unknown' when fmt is not in ['tuple','list','array']
+        ValueError
+            'dtype must be ndarray' when in_data is not numpy array.
+
+        See Also
+        --------
+        remove_boundaries: remove boundary cells from input data.
+
+        ToDo
+        ----
+        The fshape might be checked automatically based on the provided data.
+        """
+        if isinstance(in_data, np.ndarray):
+            fshape = self.get_fshape(True, points, False)
+
+            if in_data.shape != fshape:
+                try:
+                    in_data = in_data.reshape(fshape)
+                except:
+                    print(
+                        "in_data shape:",
+                        in_data.shape,
+                        "- required shape:",
+                        fshape,
+                    )
+                    raise ValueError("array must have all cells to remove boundaries!")
+
             if self.D == 0:
                 out_data = in_data
             elif self.D == 1:
@@ -789,44 +907,29 @@ class CartGrid(Grid):
                     ]
                 )
             else:
-                out_data = in_data[1:-1, 1:-1, 1:-1]
+                out_data = in_data[1:-1, 1:-1, 1:-1].flatten()
 
             if not points:
                 out_data = np.sort(out_data.flatten())
             else:
                 out_data = out_data.reshape((-1, 3))
 
-            if fmt == "tuple":
+            if fmt in ("list", "tuple"):
                 if points:
                     return [tuple(a) for a in out_data]
                 else:
                     return list(out_data)
-            elif fmt == "list":
+            elif fmt == "set":
                 if points:
-                    return [list(a) for a in out_data]
+                    return set(tuple(a) for a in out_data)
                 else:
-                    return list(out_data)
+                    return set(out_data)
             elif fmt == "array":
                 return out_data
             else:
                 raise ValueError("fmt is unknown.")
-
-        elif isinstance(in_data, dict):
-            for k, v in in_data.items():
-                in_data[k] = self.keep_boundaries(v)
-            return in_data
         else:
-            raise ValueError("dtype is unknown.")
-
-    def get_boundaries_id(self, fmt="tuple"):
-        cells_id = self.get_cells_id(True, True)
-        self.boundaries_id = self.keep_boundaries(cells_id, False, fmt)
-        return self.boundaries_id
-
-    def get_boundaries_coords(self, fmt="tuple"):
-        cells_coords = self.get_cells_coords(True, True)
-        self.boundaries_coords = self.keep_boundaries(cells_coords, True, fmt)
-        return self.boundaries_coords
+            raise ValueError("dtype must be ndarray.")
 
     @_lru_cache(maxsize=2)
     def get_boundaries(self, by="id", fmt="tuple"):
@@ -837,34 +940,40 @@ class CartGrid(Grid):
         by : str, optional, by default 'id'
             output boundaries as 'id' or 'coords'. Other undefined str
             values will raise ValueError.
+        fmt : str, optional, by default "tuple"
+            format of output data as str in ['tuple', 'list', 'set',
+            'array']. Options 'tuple' and 'list' give the same output.
 
         Returns
         -------
-        _type_
-            _description_
+        ndarray, list, set
+            boundaries by id or coords based on fmt argument.
 
         Raises
         ------
         ValueError
             by argument must be either 'id' or 'coords'.
         """
-
         if by == "id":
-            return self.get_boundaries_id(fmt)
+            cells_id = self.get_cells_id(True, True)
+            self.boundaries_id = self.keep_boundaries(cells_id, False, fmt)
+            return self.boundaries_id
         elif by == "coords":
-            return self.get_boundaries_coords(fmt)
+            cells_coords = self.get_cells_coords(True, True)
+            self.boundaries_coords = self.keep_boundaries(cells_coords, True, fmt)
+            return self.boundaries_coords
         else:
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
 
     # @_lru_cache(maxsize=None)
     def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
         if id is not None:
-            boundaries = self.get_boundaries_id(fmt="tuple")
+            boundaries = self.get_boundaries("id", "set")
             cells_id_b = self.get_cells_id(True, False)
             assert id in cells_id_b, f"cell id is out of range {cells_id_b}."
             cell_neighbors = self.get_cell_neighbors(id=id, boundary=True, fmt=fmt)
         elif coords is not None:
-            boundaries = self.get_boundaries_coords(fmt="tuple")
+            boundaries = self.get_boundaries("coords", "set")
             cells_coords = self.get_cells_coords(True, False)
             assert (
                 coords in cells_coords
@@ -878,82 +987,19 @@ class CartGrid(Grid):
         if fmt == "dict":
             cell_boundaries = {}
             cell_boundaries["x"] = list(
-                set(cell_neighbors["x"]).intersection(set(boundaries))
+                set(cell_neighbors["x"]).intersection(boundaries)
             )
             cell_boundaries["y"] = list(
-                set(cell_neighbors["y"]).intersection(set(boundaries))
+                set(cell_neighbors["y"]).intersection(boundaries)
             )
             cell_boundaries["z"] = list(
-                set(cell_neighbors["z"]).intersection(set(boundaries))
+                set(cell_neighbors["z"]).intersection(boundaries)
             )
             return cell_boundaries
         elif fmt == "list":
-            return list(set(cell_neighbors).intersection(set(boundaries)))
+            return list(set(cell_neighbors).intersection(boundaries))
         else:
             raise ValueError("format argument must be either 'dict' or 'list'.")
-
-    # -------------------------------------------------------------------------
-    # Remove Boundaries
-    # -------------------------------------------------------------------------
-
-    def remove_boundaries(self, in_data, points=False):
-        if not isinstance(in_data, dict):
-            if points:
-                fshape = self.fshape + (3,)
-            else:
-                fshape = self.fshape
-
-            if in_data.shape != fshape:
-                try:
-                    in_data = in_data.reshape(fshape)
-                    flatten = True
-                except:
-                    print(
-                        "in_data shape:",
-                        in_data.shape,
-                        "- required shape:",
-                        self.fshape,
-                    )
-                    raise ValueError("array must have all cells to remove boundaries!")
-            else:
-                flatten = False
-            if self.D == 0:
-                out_data = in_data
-            elif self.D == 1:
-                out_data = in_data[1:-1]
-            elif self.D == 2:
-                out_data = in_data[1:-1, 1:-1]
-            elif self.D == 3:
-                out_data = in_data[1:-1, 1:-1, 1:-1]
-            else:
-                out_data = in_data[1:-1, 1:-1, 1:-1]
-            if flatten and not points:
-                out_data = out_data.flatten()
-            if flatten and points:
-                out_data = out_data.reshape((-1, 3))
-            return out_data
-        elif isinstance(in_data, dict):
-            for k, v in in_data.items():
-                in_data[k] = self.remove_boundaries(v)
-            return in_data
-        else:
-            raise ValueError("dtype is unknown.")
-        # if self.D == 0:
-        #     self.cells_center = self.cells_center_b
-        # elif self.D == 1: # and self.flowdir != 'z':
-        #     self.cells_center = self.cells_center_b[1:-1,:]
-        # elif self.D == 2 and 'z' not in self.flow_dir:
-        #     self.cells_center = self.cells_center_b[1:-1,1:-1,:]
-        # elif self.D == 2 and self.flow_dir == 'xz':
-        #     self.cells_center = self.cells_center_b[1:-1,1:-1]
-        # elif self.D == 2 and self.flow_dir == 'yz':
-        #     self.cells_center = self.cells_center_b[1:-1,1:-1]
-        # elif self.D == 2 and self.flow_dir == 'xz+':
-        #     self.cells_center = self.cells_center_b[1:-1,2:-2,:]
-        # elif self.D == 2 and self.flow_dir == 'yz+':
-        #     self.cells_center = self.cells_center_b[1:-1,1:-1,1:-1]
-        # elif self.D == 3:
-        #     self.cells_center = self.cells_center_b[1:-1,1:-1,1:-1,:]
 
     # -------------------------------------------------------------------------
     # Properties
@@ -1024,7 +1070,8 @@ class CartGrid(Grid):
             if id is not None:
                 kx_f = self.kx.flatten()
                 kx_f[id] = kx
-                self.kx = kx_f.reshape(self.fshape)
+                fshape = self.get_fshape(True, False, False)
+                self.kx = kx_f.reshape(fshape)
             if coords is not None:
                 icoords = self.get_cell_icoords(coords)
                 self.kx[icoords] = kx
@@ -1044,7 +1091,8 @@ class CartGrid(Grid):
             if id is not None:
                 ky_f = self.ky.flatten()
                 ky_f[id] = ky
-                self.ky = ky_f.reshape(self.fshape)
+                fshape = self.get_fshape(True, False, False)
+                self.ky = ky_f.reshape(fshape)
             if coords is not None:
                 icoords = self.get_cell_icoords(coords)
                 self.ky[icoords] = ky
@@ -1064,7 +1112,8 @@ class CartGrid(Grid):
             if id is not None:
                 kz_f = self.kz.flatten()
                 kz_f[id] = kz
-                self.kz = kz_f.reshape(self.fshape)
+                fshape = self.get_fshape(True, False, False)
+                self.kz = kz_f.reshape(fshape)
             if coords is not None:
                 icoords = self.get_cell_icoords(coords)
                 self.kz[icoords] = kz
@@ -1107,7 +1156,8 @@ class CartGrid(Grid):
             if id is not None:
                 z_f = self.z.flatten()
                 z_f[id] = z
-                self.z = z_f.reshape(self.fshape)
+                fshape = self.get_fshape(True, False, False)
+                self.z = z_f.reshape(fshape)
             if coords is not None:
                 icoords = self.get_cell_icoords(coords)
                 self.z[icoords] = z
@@ -1344,7 +1394,7 @@ class CartGrid(Grid):
 
     def get_cells_dims(self, dx, dy, dz, verbose=True):
         self.get_n_max(True)
-        self.get_fshape(True, False)
+        self.get_fshape(True, False, False)
         m_list = []
         if "x" in self.flow_dir:
             self.dxx = np.ones(self.nx_b, dtype="int") * dx
@@ -1366,9 +1416,10 @@ class CartGrid(Grid):
             m_list.append(dz)
 
         self.dx, self.dy, self.dz = np.meshgrid(*m_list, copy=False)
-        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(self.fshape)
-        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(self.fshape)
-        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(self.fshape)
+        fshape = self.get_fshape(True, False, False)
+        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(fshape)
+        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(fshape)
+        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(fshape)
 
         if verbose:
             print(f"- Cells dims (dx, dy, dz) were computed.")
@@ -1383,7 +1434,8 @@ class CartGrid(Grid):
             cells_d = self.dz
 
         if fshape:
-            cells_d = cells_d.reshape(self.fshape)
+            shape = self.get_fshape(boundary, False, False)
+            cells_d = cells_d.reshape(shape)
         if not boundary:
             cells_d = self.remove_boundaries(cells_d)
         return cells_d
@@ -1449,8 +1501,8 @@ class CartGrid(Grid):
         self.cells_center = pyvista_grid.cell_centers().points
 
         if fshape:
-            flow_shape = self.fshape + (3,)
-            self.cells_center = self.cells_center.reshape(flow_shape)
+            shape = self.get_fshape(boundary, True, False)
+            self.cells_center = self.cells_center.reshape(shape)
 
         if not boundary:
             self.cells_center = self.remove_boundaries(self.cells_center, True)
@@ -1469,7 +1521,8 @@ class CartGrid(Grid):
     def get_cells_area_x(self, boundary=True, fshape=True):
         self.area_x = self.dy.flatten() * self.dz.flatten()
         if fshape:
-            self.area_x = self.area_x.reshape(self.fshape)
+            shape = self.get_fshape(boundary, False, False)
+            self.area_x = self.area_x.reshape(shape)
         if not boundary:
             self.area_x = self.remove_boundaries(self.area_x)
         return self.area_x
@@ -1478,7 +1531,8 @@ class CartGrid(Grid):
     def get_cells_area_y(self, boundary=True, fshape=True):
         self.area_y = self.dx.flatten() * self.dz.flatten()
         if fshape:
-            self.area_y = self.area_y.reshape(self.fshape)
+            shape = self.get_fshape(boundary, False, False)
+            self.area_y = self.area_y.reshape(shape)
         if not boundary:
             self.area_y = self.remove_boundaries(self.area_y)
         return self.area_y
@@ -1487,7 +1541,8 @@ class CartGrid(Grid):
     def get_cells_area_z(self, boundary=True, fshape=True):
         self.area_z = self.dx.flatten() * self.dy.flatten()
         if fshape:
-            self.area_z = self.area_z.reshape(self.fshape)
+            shape = self.get_fshape(boundary, False, False)
+            self.area_z = self.area_z.reshape(shape)
         if not boundary:
             self.area_z = self.remove_boundaries(self.area_z)
         return self.area_z
@@ -1556,8 +1611,10 @@ class CartGrid(Grid):
             self.cells_V = self.cells_V.round(2)
         else:
             self.cells_V = self.dx.flatten() * self.dy.flatten() * self.dz.flatten()
+
         if fshape:
-            self.cells_V = self.cells_V.reshape(self.fshape)
+            shape = self.get_fshape(boundary, False, False)
+            self.cells_V = self.cells_V.reshape(shape)
         if not boundary:
             self.cells_V = self.remove_boundaries(self.cells_V)
         print("- Cells volumes (cells_V) was computed.")
@@ -1576,9 +1633,9 @@ class CartGrid(Grid):
 
     def show(
         self,
+        label=None,  # 'coords' or 'id',
         boundary=False,
         corners=False,
-        label=None,  # 'coords' or 'id',
     ):
         """
         - centers_label: str ('coords', 'id')
@@ -1691,15 +1748,17 @@ if __name__ == "__main__":
     )
 
     print("Test 1:")
-    coords = (1, 1, 0)
-    id = 6
-    # neighbors = grid.get_cell_neighbors(coords=coords, boundary=False, fmt="list")
-    # print("Neighbors:", neighbors)
-    # print(grid.get_boundaries_id())
-    # print(grid.get_boundaries_coords())
-    print(grid.get_cell_boundaries(coords=(3, 3, 0), fmt="list"))
+    cells = grid.get_cells_coords(True, False)
+    print(cells)
+    # print(grid.keep_boundaries(cells, True, "tuple"))
+    # print(grid.keep_boundaries(cells, True, "set"))
+    # print(grid.keep_boundaries(cells, True, "array"))
+    b1 = grid.keep_boundaries(cells, True, "array")
+    b2 = np.array([(0, 1, 0), (4, 1, 0)])
+    print(utils.intersection(b1, b2, "list"))
+    # print(grid.get_cell_boundaries(coords=(3, 3, 0), fmt="list"))
 
-    grid.show(boundary=True, label="coords")
+    # grid.show(boundary=True, label="coords")
     # boundaries = grid.get_cell_boundaries(coords=coords, fmt="list")
     # print("Neighbors:", boundaries)
 
