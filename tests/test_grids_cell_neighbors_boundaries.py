@@ -3,6 +3,132 @@ import numpy as np
 import unittest
 
 
+class Test_1D_X(unittest.TestCase):
+    def test_cell_id(self):
+        id = 1
+
+        coords = grid_1d_x.get_cell_coords(id)
+        self.assertEqual(coords, (1, 0, 0))
+
+        neighbors = grid_1d_x.get_cell_neighbors(id=id, boundary=False, fmt="list")
+        self.assertEqual(neighbors, [2])
+
+        neighbors = grid_1d_x.get_cell_neighbors(id=id, boundary=False, fmt="dict")
+        self.assertEqual(neighbors, {"x": [2], "y": [], "z": []})
+
+        boundaries = grid_1d_x.get_cell_boundaries(id=id, fmt="list")
+        self.assertEqual(boundaries, [0])
+
+        boundaries = grid_1d_x.get_cell_boundaries(id=id, fmt="dict")
+        self.assertEqual(boundaries, {"x": [0], "y": [], "z": []})
+
+    def test_cell_coords(self):
+        coords = (1, 0, 0)
+
+        id = grid_1d_x.get_cell_id(coords)
+        self.assertEqual(id, 1)
+
+        neighbors = grid_1d_x.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="list"
+        )
+        self.assertEqual(neighbors, [(2, 0, 0)])
+
+        neighbors = grid_1d_x.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="dict"
+        )
+        self.assertEqual(neighbors, {"x": [(2, 0, 0)], "y": [], "z": []})
+
+        boundaries = grid_1d_x.get_cell_boundaries(coords=coords, fmt="list")
+        self.assertEqual(boundaries, [(0, 0, 0)])
+
+        boundaries = grid_1d_x.get_cell_boundaries(coords=coords, fmt="dict")
+        self.assertEqual(boundaries, {"x": [(0, 0, 0)], "y": [], "z": []})
+
+
+class Test_1D_Y(unittest.TestCase):
+    def test_cell_id(self):
+        id = 1
+
+        coords = grid_1d_y.get_cell_coords(id)
+        self.assertEqual(coords, (0, 1, 0))
+
+        neighbors = grid_1d_y.get_cell_neighbors(id=id, boundary=False, fmt="list")
+        self.assertEqual(neighbors, [2])
+
+        neighbors = grid_1d_y.get_cell_neighbors(id=id, boundary=False, fmt="dict")
+        self.assertEqual(neighbors, {"x": [], "y": [2], "z": []})
+
+        boundaries = grid_1d_y.get_cell_boundaries(id=id, fmt="list")
+        self.assertEqual(boundaries, [0])
+
+        boundaries = grid_1d_y.get_cell_boundaries(id=id, fmt="dict")
+        self.assertEqual(boundaries, {"x": [], "y": [0], "z": []})
+
+    def test_cell_coords(self):
+        coords = (0, 1, 0)
+
+        id = grid_1d_y.get_cell_id(coords)
+        self.assertEqual(id, 1)
+
+        neighbors = grid_1d_y.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="list"
+        )
+        self.assertEqual(neighbors, [(0, 2, 0)])
+
+        neighbors = grid_1d_y.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="dict"
+        )
+        self.assertEqual(neighbors, {"x": [], "y": [(0, 2, 0)], "z": []})
+
+        boundaries = grid_1d_y.get_cell_boundaries(coords=coords, fmt="list")
+        self.assertEqual(boundaries, [(0, 0, 0)])
+
+        boundaries = grid_1d_y.get_cell_boundaries(coords=coords, fmt="dict")
+        self.assertEqual(boundaries, {"x": [], "y": [(0, 0, 0)], "z": []})
+
+
+class Test_1D_Z(unittest.TestCase):
+    def test_cell_id(self):
+        id = 1
+
+        coords = grid_1d_z.get_cell_coords(id)
+        self.assertEqual(coords, (0, 0, 1))
+
+        neighbors = grid_1d_z.get_cell_neighbors(id=id, boundary=False, fmt="list")
+        self.assertEqual(neighbors, [2])
+
+        neighbors = grid_1d_z.get_cell_neighbors(id=id, boundary=False, fmt="dict")
+        self.assertEqual(neighbors, {"x": [], "y": [], "z": [2]})
+
+        boundaries = grid_1d_z.get_cell_boundaries(id=id, fmt="list")
+        self.assertEqual(boundaries, [0])
+
+        boundaries = grid_1d_z.get_cell_boundaries(id=id, fmt="dict")
+        self.assertEqual(boundaries, {"x": [], "y": [], "z": [0]})
+
+    def test_cell_coords(self):
+        coords = (0, 0, 1)
+
+        id = grid_1d_z.get_cell_id(coords)
+        self.assertEqual(id, 1)
+
+        neighbors = grid_1d_z.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="list"
+        )
+        self.assertEqual(neighbors, [(0, 0, 2)])
+
+        neighbors = grid_1d_z.get_cell_neighbors(
+            coords=coords, boundary=False, fmt="dict"
+        )
+        self.assertEqual(neighbors, {"x": [], "y": [], "z": [(0, 0, 2)]})
+
+        boundaries = grid_1d_z.get_cell_boundaries(coords=coords, fmt="list")
+        self.assertEqual(boundaries, [(0, 0, 0)])
+
+        boundaries = grid_1d_z.get_cell_boundaries(coords=coords, fmt="dict")
+        self.assertEqual(boundaries, {"x": [], "y": [], "z": [(0, 0, 0)]})
+
+
 class Test_2D_XY(unittest.TestCase):
     def test_cell_id(self):
         id = 6
@@ -166,6 +292,51 @@ class Test_3D(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    grid_1d_x = grids.CartGrid(
+        nx=3,
+        ny=1,
+        nz=1,
+        dx=10,
+        dy=10,
+        dz=10,
+        phi=0.27,
+        kx=270,
+        ky=270,
+        kz=270,
+        verbose=False,
+        unify=True,
+    )
+
+    grid_1d_y = grids.CartGrid(
+        nx=1,
+        ny=3,
+        nz=1,
+        dx=10,
+        dy=10,
+        dz=10,
+        phi=0.27,
+        kx=270,
+        ky=270,
+        kz=270,
+        verbose=False,
+        unify=True,
+    )
+
+    grid_1d_z = grids.CartGrid(
+        nx=1,
+        ny=1,
+        nz=3,
+        dx=10,
+        dy=10,
+        dz=10,
+        phi=0.27,
+        kx=270,
+        ky=270,
+        kz=270,
+        verbose=False,
+        unify=True,
+    )
+
     grid_2d_xy = grids.CartGrid(
         nx=3,
         ny=3,
@@ -178,6 +349,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
+        unify=True,
     )
     grid_2d_xz = grids.CartGrid(
         nx=3,
@@ -191,6 +363,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
+        unify=True,
     )
     grid_2d_yz = grids.CartGrid(
         nx=1,
@@ -204,6 +377,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
+        unify=True,
     )
     grid_3d = grids.CartGrid(
         nx=3,
@@ -217,5 +391,6 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
+        unify=True,
     )
     unittest.main()

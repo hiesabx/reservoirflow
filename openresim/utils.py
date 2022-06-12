@@ -127,9 +127,10 @@ def ispoints(in_data):
 
     Returns
     -------
-    _type_
-        _description_
+    Boolean
+        True if data is tuple of 3 (i.e. points). Otherwise, False.
     """
+    in_data = np.array(in_data)
     shape_check = len(in_data.shape) > 1 and in_data.shape[-1] == 3
     if isinstance(in_data, np.ndarray) and shape_check:
         return True

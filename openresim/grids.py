@@ -76,7 +76,7 @@ class CartGrid(Grid):
         comp=None,
         dtype="double",
         unit="field",
-        unify=False,
+        unify=True,
         verbose=False,
     ):
         """Return cartesian grid object with explicit structure.
@@ -365,7 +365,7 @@ class CartGrid(Grid):
         if self.flow_dir == "xyz":
             self.fshape = (nz, ny, nx)
         else:
-            if not unify:
+            if not self.unify:
                 if self.flow_dir == "-":
                     self.fshape = (1,)
                 elif self.flow_dir == "x":
@@ -542,12 +542,22 @@ class CartGrid(Grid):
         fshape : bool, optional, by default True
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : todo
+        fmt : str, optional, by default "tuple"
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
 
         Returns
         -------
         ndarray
             cells id in natural order as array.
+
+        ToDo
+        ----
+        can be a generator instead.
         """
         self.cells_id = self.get_order("natural", boundary, fshape)
 
@@ -598,7 +608,13 @@ class CartGrid(Grid):
         fshape : bool, optional, by default False
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'.
+        fmt : str, optional, by default 'tuple'
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
 
         Returns
         -------
@@ -607,7 +623,7 @@ class CartGrid(Grid):
 
         ToDo
         ----
-        add fmt description.
+        can be a generator instead.
         """
         cells_id = self.get_cells_id(boundary, False, "array")
         pyvista_grid = self.get_pyvista_grid(True)
@@ -663,7 +679,7 @@ class CartGrid(Grid):
         assert utils.isin(coords, cells_coords), "coords are out of range."
         utils.fshape_warn(self.unify, unify)
 
-        if not unify and self.D <= 2:
+        if not self.unify and self.D <= 2:
             icoords = tuple(c for c in coords[::-1] if c > 0)
             assert len(icoords) == self.get_D(), "icoords is not compatible"
         else:
@@ -833,16 +849,36 @@ class CartGrid(Grid):
             else:
                 flatten = False
 
-            if self.D == 0:
-                out_data = in_data
-            elif self.D == 1:
-                out_data = in_data[1:-1]
-            elif self.D == 2:
-                out_data = in_data[1:-1, 1:-1]
-            elif self.D == 3:
+            if self.D == 3:
                 out_data = in_data[1:-1, 1:-1, 1:-1]
             else:
-                out_data = in_data[1:-1, 1:-1, 1:-1]
+                if not self.unify:
+                    if self.D == 0:
+                        out_data = in_data
+                    elif self.D == 1:
+                        out_data = in_data[1:-1]
+                    elif self.D == 2:
+                        out_data = in_data[1:-1, 1:-1]
+                    else:
+                        raise ValueError("Unknown shape.")
+                else:
+                    fdir = self.get_flow_dir()
+                    if fdir == "-":
+                        out_data = in_data
+                    elif fdir == "x":
+                        out_data = in_data[:, :, 1:-1]
+                    elif fdir == "y":
+                        out_data = in_data[:, 1:-1, :]
+                    elif fdir == "z":
+                        out_data = in_data[1:-1, :, :]
+                    elif fdir == "xy":
+                        out_data = in_data[:, 1:-1, 1:-1]
+                    elif fdir == "xz":
+                        out_data = in_data[1:-1, :, 1:-1]
+                    elif fdir == "yz":
+                        out_data = in_data[1:-1, 1:-1, :]
+                    else:
+                        raise ValueError("Unknown shape.")
 
             if flatten:
                 if not points:
@@ -897,6 +933,7 @@ class CartGrid(Grid):
         ToDo
         ----
         The fshape might be checked automatically based on the provided data.
+        Confirm the behavior of when self.unify set to True.
         """
         if isinstance(in_data, np.ndarray):
             if points is None:
@@ -909,27 +946,69 @@ class CartGrid(Grid):
                 except:
                     utils.shape_error(in_data.shape, fshape)
 
-            if self.D == 0:
-                out_data = in_data
-            elif self.D == 1:
-                out_data = in_data[[0, -1]].flatten()
-            elif self.D == 2:
-                out_data = np.concatenate(
-                    [
-                        in_data[[0, -1], :].flatten(),
-                        in_data[1:-1, [0, -1]].flatten(),
-                    ]
-                )
-            elif self.D == 3:
-                out_data = np.concatenate(
-                    [
-                        in_data[:, [0, -1], :].flatten(),
-                        in_data[:, 1:-1, [0, -1]].flatten(),
-                        in_data[[0, -1], 1:-1, 1:-1].flatten(),
-                    ]
-                )
+            if not self.unify:
+                if self.D == 0:
+                    out_data = in_data
+                elif self.D == 1:
+                    out_data = in_data[[0, -1]].flatten()
+                elif self.D == 2:
+                    out_data = np.concatenate(
+                        [
+                            in_data[[0, -1], :].flatten(),
+                            in_data[1:-1, [0, -1]].flatten(),
+                        ]
+                    )
+                elif self.D == 3:
+                    out_data = np.concatenate(
+                        [
+                            in_data[:, [0, -1], :].flatten(),
+                            in_data[:, 1:-1, [0, -1]].flatten(),
+                            in_data[[0, -1], 1:-1, 1:-1].flatten(),
+                        ]
+                    )
+                else:
+                    raise ValueError("unknown shape.")
             else:
-                out_data = in_data[1:-1, 1:-1, 1:-1].flatten()
+                fdir = self.get_flow_dir()
+                if fdir == "-":
+                    out_data = in_data
+                elif fdir == "x":
+                    out_data = in_data[:, :, [0, -1]]
+                elif fdir == "y":
+                    out_data = in_data[:, [0, -1], :]
+                elif fdir == "z":
+                    out_data = in_data[[0, -1], :, :]
+                elif fdir == "xy":
+                    out_data = np.concatenate(
+                        [
+                            in_data[:, [0, -1], :].flatten(),
+                            in_data[:, :, [0, -1]].flatten(),
+                        ]
+                    )
+                elif fdir == "xz":
+                    out_data = np.concatenate(
+                        [
+                            in_data[[0, -1], :, :].flatten(),
+                            in_data[:, :, [0, -1]].flatten(),
+                        ]
+                    )
+                elif fdir == "yz":
+                    out_data = np.concatenate(
+                        [
+                            in_data[[0, -1], :, :].flatten(),
+                            in_data[:, [0, -1], :].flatten(),
+                        ]
+                    )
+                elif fdir == "xyz":
+                    out_data = np.concatenate(
+                        [
+                            in_data[:, [0, -1], :].flatten(),
+                            in_data[:, 1:-1, [0, -1]].flatten(),
+                            in_data[[0, -1], 1:-1, 1:-1].flatten(),
+                        ]
+                    )
+                else:
+                    raise ValueError("unknown shape.")
 
             if not points:
                 out_data = np.sort(out_data.flatten())
