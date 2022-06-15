@@ -356,7 +356,8 @@ class CartGrid(Grid):
             if self.flowdir == 'yz+':
                 self.fshape = (self.nz_b, self.ny_b, 3)
         """
-        assert boundary == True, "False boundary is not permitted."
+        msg = "False boundary is not permitted in fshape method."
+        assert boundary == True, msg
         utils.fshape_warn(self.unify, unify)
 
         nx, ny, nz = self.get_n(boundary)  # Includes self.get_fdir()
@@ -722,10 +723,10 @@ class CartGrid(Grid):
         boundary : bool, optional, by default True
             values in flow shape (True) or flatten (False).
         fmt : str, optional, by default 'dict'
-            output format as str from ['list', 'tuple', 'set', 'dict'].
-            Use 'dict' to output neighbors in x,y,z directions as keys.
-            Use 'tuple' or 'list' for list of neighbors when directions
-            are not needed.
+            output format as str from ['array', 'list', 'tuple', 'set',
+            'dict']. Use 'dict' to output neighbors in x,y,z directions
+            as keys. Use 'tuple' or 'list' for list of neighbors when
+            directions are not needed.
 
         Returns
         -------
@@ -741,7 +742,7 @@ class CartGrid(Grid):
 
         ToDo
         ----
-        nothing to do.
+        [Empty]
         """
         cell_neighbors = {"x": [], "y": [], "z": []}
 
@@ -794,6 +795,76 @@ class CartGrid(Grid):
             raise ValueError("at least id or coords argument must be defined.")
 
         return utils.reformat(cell_neighbors, fmt=fmt)
+
+    @_lru_cache(maxsize=None)
+    def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
+        """Return cell boundaries.
+
+        This method returns cell boundaries by id or coords. If
+        boundaries are desired by id, then id argument should be used.
+        The same applies coords argument. This method will raise
+        ValueError if none of id or coords arguments were defined or if
+        undefined fmt argument was used. Boundary cells are not allowed.
+
+        Warning: passing ndarray of len(shape) > 1 (e.g. coords ndarray)
+        causes a TypeError due to the cache decorator used in this
+        method since multi-dim ndarray is unhashable.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..).
+        fmt : str, optional, by default 'dict'
+            output format as str from ['array', 'list', 'tuple', 'set',
+            'dict']. Use 'dict' to output neighbors in x,y,z directions
+            as keys. Use 'tuple' or 'list' for list of neighbors when
+            directions are not needed.
+
+        Returns
+        -------
+        iterable
+            cell boundaries.
+
+        Raises
+        ------
+        ValueError
+            None of id or coords arguments are not defined.
+        ValueError
+            Unknown str value was used for fmt argument.
+
+        ToDo
+        ----
+        [Empty]
+        """
+        cell_boundaries = {"x": [], "y": [], "z": []}
+
+        if id is not None:
+            boundaries = self.get_boundaries("id", "set")
+            cell_neighbors = self.get_cell_neighbors(
+                id=id,
+                boundary=True,
+                fmt="dict",
+            )
+        elif coords is not None:
+            boundaries = self.get_boundaries("coords", "set")
+            cell_neighbors = self.get_cell_neighbors(
+                coords=coords,
+                boundary=True,
+                fmt="dict",
+            )
+        else:
+            raise ValueError("at least id or coords argument must be defined.")
+
+        cell_boundaries["x"] = list(set(cell_neighbors["x"]).intersection(boundaries))
+        cell_boundaries["y"] = list(set(cell_neighbors["y"]).intersection(boundaries))
+        cell_boundaries["z"] = list(set(cell_neighbors["z"]).intersection(boundaries))
+
+        return utils.reformat(cell_boundaries, fmt)
 
     def remove_boundaries(self, in_data, points: bool = None):
         """Remove boundary cells from ndarray.
@@ -1047,65 +1118,6 @@ class CartGrid(Grid):
             return self.boundaries_coords
         else:
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
-
-    @_lru_cache(maxsize=None)
-    def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
-        """Return b
-
-        Parameters
-        ----------
-        id : _type_, optional
-            _description_, by default None
-        coords : _type_, optional
-            _description_, by default None
-        fmt : str, optional
-            _description_, by default "dict"
-
-        Returns
-        -------
-        _type_
-            _description_
-
-        Raises
-        ------
-        ValueError
-            _description_
-        ValueError
-            _description_
-        """
-        if id is not None:
-            boundaries = self.get_boundaries("id", "set")
-            cells_id_b = self.get_cells_id(True, False)
-            assert id in cells_id_b, f"cell id is out of range {cells_id_b}."
-            cell_neighbors = self.get_cell_neighbors(id=id, boundary=True, fmt=fmt)
-        elif coords is not None:
-            boundaries = self.get_boundaries("coords", "set")
-            cells_coords = self.get_cells_coords(True, False)
-            assert (
-                coords in cells_coords
-            ), f"cell coords are out of range {cells_coords}."
-            cell_neighbors = self.get_cell_neighbors(
-                coords=coords, boundary=True, fmt=fmt
-            )
-        else:
-            raise ValueError("at least id or coords argument must be defined.")
-
-        if fmt == "dict":
-            cell_boundaries = {}
-            cell_boundaries["x"] = list(
-                set(cell_neighbors["x"]).intersection(boundaries)
-            )
-            cell_boundaries["y"] = list(
-                set(cell_neighbors["y"]).intersection(boundaries)
-            )
-            cell_boundaries["z"] = list(
-                set(cell_neighbors["z"]).intersection(boundaries)
-            )
-            return cell_boundaries
-        elif fmt == "list":
-            return list(set(cell_neighbors).intersection(boundaries))
-        else:
-            raise ValueError("format argument must be either 'dict' or 'list'.")
 
     # -------------------------------------------------------------------------
     # Properties

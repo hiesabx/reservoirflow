@@ -38,10 +38,10 @@ def isin(x: tuple, in_data):
 
     Parameters
     ----------
-    x : tuple, list, tuple, ndarray
-        list-like of len 3.
+    x : int, tuple, list, tuple, ndarray
+        int (e.g. id) or list-like (e.g. coords) of len 3.
     data : list, set, tuple, ndarray
-        list-like of tuples of len 3.
+        list-like of int or tuples of len 3.
 
     Returns
     -------
