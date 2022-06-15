@@ -7,7 +7,6 @@ properties that are required for fluid flow calculations.
 
 """
 import warnings
-from xmlrpc.client import Boolean
 from openresim.base import Base
 import numpy as np
 import scipy.sparse as ss
@@ -160,7 +159,7 @@ class CartGrid(Grid):
         self.nx, self.ny, self.nz = nx, ny, nz
         # self.get_D()  # > self.D
         # self.get_shape()  # > self.shape
-        # self.get_flow_dir()  # > self.flowdir
+        # self.get_fdir()  # > self.flowdir
         # self.get_n(True)  # > self.nx_b, self.ny_b, self.n_zb
         # self.get_fshape(True, False, False)  # > self.fshape
         # self.get_n_cells()  # > self.n_cells
@@ -225,7 +224,7 @@ class CartGrid(Grid):
         return self.shape
 
     @_lru_cache(maxsize=1)
-    def get_flow_dir(self):
+    def get_fdir(self):
         """Return the flow direction as str.
 
         Returns
@@ -238,30 +237,30 @@ class CartGrid(Grid):
         self.get_shape(False)
 
         if self.D == 0:
-            self.flow_dir = "-"
+            self.fdir = "-"
         elif self.D == 1:
             flow_dir_id = np.argmax(self.shape)
             if flow_dir_id == 0:
-                self.flow_dir = "x"
+                self.fdir = "x"
             elif flow_dir_id == 1:
-                self.flow_dir = "y"
+                self.fdir = "y"
             elif flow_dir_id == 2:
-                self.flow_dir = "z"
+                self.fdir = "z"
         elif self.D == 2:
             flow_dir_id = np.argmin(self.shape)
             if flow_dir_id == 2:
-                self.flow_dir = "xy"
+                self.fdir = "xy"
             elif flow_dir_id == 1:
-                self.flow_dir = "xz"
+                self.fdir = "xz"
             elif flow_dir_id == 0:
-                self.flow_dir = "yz"
+                self.fdir = "yz"
         elif self.D == 3:
-            self.flow_dir = "xyz"
+            self.fdir = "xyz"
 
         if self.verbose:
-            print(f"- Flow direction (flow_dir) is set to {self.flow_dir}.")
+            print(f"- Flow direction (fdir) is set to {self.fdir}.")
 
-        return self.flow_dir
+        return self.fdir
 
     @_lru_cache(maxsize=2)
     def get_n(self, boundary=False):
@@ -278,16 +277,16 @@ class CartGrid(Grid):
             the number of grids as (nx, ny, nz).
         """
         if boundary:
-            self.get_flow_dir()
-            if "x" in self.flow_dir:
+            self.get_fdir()
+            if "x" in self.fdir:
                 self.nx_b = self.nx + 2
             else:
                 self.nx_b = self.nx
-            if "y" in self.flow_dir:
+            if "y" in self.fdir:
                 self.ny_b = self.ny + 2
             else:
                 self.ny_b = self.ny
-            if "z" in self.flow_dir:
+            if "z" in self.fdir:
                 self.nz_b = self.nz + 2
             else:
                 self.nz_b = self.nz
@@ -360,45 +359,45 @@ class CartGrid(Grid):
         assert boundary == True, "False boundary is not permitted."
         utils.fshape_warn(self.unify, unify)
 
-        nx, ny, nz = self.get_n(boundary)  # Includes self.get_flow_dir()
+        nx, ny, nz = self.get_n(boundary)  # Includes self.get_fdir()
 
-        if self.flow_dir == "xyz":
+        if self.fdir == "xyz":
             self.fshape = (nz, ny, nx)
         else:
             if not self.unify:
-                if self.flow_dir == "-":
+                if self.fdir == "-":
                     self.fshape = (1,)
-                elif self.flow_dir == "x":
+                elif self.fdir == "x":
                     self.fshape = (nx,)
-                elif self.flow_dir == "y":
+                elif self.fdir == "y":
                     self.fshape = (ny,)
-                elif self.flow_dir == "z":
+                elif self.fdir == "z":
                     self.fshape = (nz,)
-                elif self.flow_dir == "xy":
+                elif self.fdir == "xy":
                     self.fshape = (ny, nx)
-                elif self.flow_dir == "xz":
+                elif self.fdir == "xz":
                     self.fshape = (nz, nx)
-                elif self.flow_dir == "yz":
+                elif self.fdir == "yz":
                     self.fshape = (nz, ny)
                 else:
-                    raise ValueError("unknown flow_dir value.")
+                    raise ValueError("unknown fdir value.")
             else:
-                if self.flow_dir == "-":
+                if self.fdir == "-":
                     self.fshape = (1, 1, 1)
-                elif self.flow_dir == "x":
+                elif self.fdir == "x":
                     self.fshape = (1, 1, nx)
-                elif self.flow_dir == "y":
+                elif self.fdir == "y":
                     self.fshape = (1, ny, 1)
-                elif self.flow_dir == "z":
+                elif self.fdir == "z":
                     self.fshape = (nz, 1, 1)
-                elif self.flow_dir == "xy":
+                elif self.fdir == "xy":
                     self.fshape = (1, ny, nx)
-                elif self.flow_dir == "xz":
+                elif self.fdir == "xz":
                     self.fshape = (nz, 1, nx)
-                elif self.flow_dir == "yz":
+                elif self.fdir == "yz":
                     self.fshape = (nz, ny, 1)
                 else:
-                    raise ValueError("unknown flow_dir value.")
+                    raise ValueError("unknown fdir value.")
 
         if points:
             self.fshape = self.fshape + (3,)
@@ -757,20 +756,20 @@ class CartGrid(Grid):
             if self.D >= 1:
                 n_lst = [id - 1, id + 1]
                 neighbors = [i for i in n_lst if i in cells_id]
-                cell_neighbors[self.flow_dir[0]] = neighbors
+                cell_neighbors[self.fdir[0]] = neighbors
             if self.D >= 2:
                 nx, ny, _ = self.get_n(True)
-                if "x" in self.flow_dir:
+                if "x" in self.fdir:
                     n_lst = [id - nx, id + nx]
-                elif "y" in self.flow_dir:
+                elif "y" in self.fdir:
                     n_lst = [id - ny, id + ny]
                 neighbors = [i for i in n_lst if i in cells_id]
-                cell_neighbors[self.flow_dir[1]] = neighbors
+                cell_neighbors[self.fdir[1]] = neighbors
             if self.D >= 3:
                 nx_ny_b = self.nx_b * self.ny_b
                 n_lst = [id - nx_ny_b, id + nx_ny_b]
                 neighbors = [i for i in n_lst if i in cells_id]
-                cell_neighbors[self.flow_dir[2]] = neighbors
+                cell_neighbors[self.fdir[2]] = neighbors
         elif coords is not None:
             boundaries = self.get_boundaries("coords", "set")
             isin_boundary = utils.isin(coords, boundaries)
@@ -779,15 +778,15 @@ class CartGrid(Grid):
             isin_cells_coords = utils.isin(coords, cells_coords)
             assert isin_cells_coords, f"coords are out of range {cells_coords}."
             i, j, k = coords
-            if "x" in self.flow_dir:
+            if "x" in self.fdir:
                 n_lst = [(i - 1, j, k), (i + 1, j, k)]
                 neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
                 cell_neighbors["x"] = neighbors
-            if "y" in self.flow_dir:
+            if "y" in self.fdir:
                 n_lst = [(i, j - 1, k), (i, j + 1, k)]
                 neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
                 cell_neighbors["y"] = neighbors
-            if "z" in self.flow_dir:
+            if "z" in self.fdir:
                 n_lst = [(i, j, k - 1), (i, j, k + 1)]
                 neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
                 cell_neighbors["z"] = neighbors
@@ -796,7 +795,7 @@ class CartGrid(Grid):
 
         return utils.reformat(cell_neighbors, fmt=fmt)
 
-    def remove_boundaries(self, in_data, points: Boolean = None):
+    def remove_boundaries(self, in_data, points: bool = None):
         """Remove boundary cells from ndarray.
 
         Parameters
@@ -808,7 +807,7 @@ class CartGrid(Grid):
         points : bool, optional, by default None
             True for points (i.e. tuples of len 3 like coords, icoords)
             and False for scaler values (e.g. id). If value is set to
-            None, boolean value is calculated automatically. Warning:
+            None, bool value is calculated automatically. Warning:
             this argument must be specified in case that in_data was for
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
@@ -829,7 +828,7 @@ class CartGrid(Grid):
 
         See Also
         --------
-        keep_boundaries: keep only boundary cells from input data.
+        extract_boundaries: keep only boundary cells from input data.
 
         ToDo
         ----
@@ -862,7 +861,7 @@ class CartGrid(Grid):
                     else:
                         raise ValueError("Unknown shape.")
                 else:
-                    fdir = self.get_flow_dir()
+                    fdir = self.get_fdir()
                     if fdir == "-":
                         out_data = in_data
                     elif fdir == "x":
@@ -895,8 +894,8 @@ class CartGrid(Grid):
         else:
             raise ValueError("dtype must be ndarray.")
 
-    def keep_boundaries(self, in_data, points=None, fmt="tuple"):
-        """Keep only boundary cells in ndarrays.
+    def extract_boundaries(self, in_data, points=None, fmt="tuple"):
+        """Extract boundary cells from ndarrays.
 
         Parameters
         ----------
@@ -905,14 +904,14 @@ class CartGrid(Grid):
         points : bool, optional, by default None
             True for points (i.e. tuples of len 3 like coords, icoords)
             and False for scaler values (e.g. id). If value is set to
-            None, boolean value is calculated automatically. Warning:
+            None, bool value is calculated automatically. Warning:
             this argument must be specified in case that in_data was for
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
             check the utility function `utils.ispoints()`.
         fmt : str, optional, by default "tuple"
             format of output data as str in ['tuple', 'list', 'set',
-            'array']. Options 'tuple' and 'list' give the same output.
+            'array'].
 
         Returns
         -------
@@ -946,69 +945,62 @@ class CartGrid(Grid):
                 except:
                     utils.shape_error(in_data.shape, fshape)
 
-            if not self.unify:
-                if self.D == 0:
-                    out_data = in_data
-                elif self.D == 1:
-                    out_data = in_data[[0, -1]].flatten()
-                elif self.D == 2:
-                    out_data = np.concatenate(
-                        [
-                            in_data[[0, -1], :].flatten(),
-                            in_data[1:-1, [0, -1]].flatten(),
-                        ]
-                    )
-                elif self.D == 3:
-                    out_data = np.concatenate(
-                        [
-                            in_data[:, [0, -1], :].flatten(),
-                            in_data[:, 1:-1, [0, -1]].flatten(),
-                            in_data[[0, -1], 1:-1, 1:-1].flatten(),
-                        ]
-                    )
-                else:
-                    raise ValueError("unknown shape.")
+            if self.D == 3:
+                out_data = np.concatenate(
+                    [
+                        in_data[:, [0, -1], :].flatten(),
+                        in_data[:, 1:-1, [0, -1]].flatten(),
+                        in_data[[0, -1], 1:-1, 1:-1].flatten(),
+                    ]
+                )
             else:
-                fdir = self.get_flow_dir()
-                if fdir == "-":
-                    out_data = in_data
-                elif fdir == "x":
-                    out_data = in_data[:, :, [0, -1]]
-                elif fdir == "y":
-                    out_data = in_data[:, [0, -1], :]
-                elif fdir == "z":
-                    out_data = in_data[[0, -1], :, :]
-                elif fdir == "xy":
-                    out_data = np.concatenate(
-                        [
-                            in_data[:, [0, -1], :].flatten(),
-                            in_data[:, :, [0, -1]].flatten(),
-                        ]
-                    )
-                elif fdir == "xz":
-                    out_data = np.concatenate(
-                        [
-                            in_data[[0, -1], :, :].flatten(),
-                            in_data[:, :, [0, -1]].flatten(),
-                        ]
-                    )
-                elif fdir == "yz":
-                    out_data = np.concatenate(
-                        [
-                            in_data[[0, -1], :, :].flatten(),
-                            in_data[:, [0, -1], :].flatten(),
-                        ]
-                    )
-                elif fdir == "xyz":
-                    out_data = np.concatenate(
-                        [
-                            in_data[:, [0, -1], :].flatten(),
-                            in_data[:, 1:-1, [0, -1]].flatten(),
-                            in_data[[0, -1], 1:-1, 1:-1].flatten(),
-                        ]
-                    )
+                if not self.unify:
+                    if self.D == 0:
+                        out_data = in_data
+                    elif self.D == 1:
+                        out_data = in_data[[0, -1]].flatten()
+                    elif self.D == 2:
+                        out_data = np.concatenate(
+                            [
+                                in_data[[0, -1], :].flatten(),
+                                in_data[1:-1, [0, -1]].flatten(),
+                            ]
+                        )
+                    else:
+                        raise ValueError("unknown shape.")
                 else:
-                    raise ValueError("unknown shape.")
+                    fdir = self.get_fdir()
+                    if fdir == "-":
+                        out_data = in_data
+                    elif fdir == "x":
+                        out_data = in_data[:, :, [0, -1]]
+                    elif fdir == "y":
+                        out_data = in_data[:, [0, -1], :]
+                    elif fdir == "z":
+                        out_data = in_data[[0, -1], :, :]
+                    elif fdir == "xy":
+                        out_data = np.concatenate(
+                            [
+                                in_data[:, [0, -1], :].flatten(),
+                                in_data[:, 1:-1, [0, -1]].flatten(),
+                            ]
+                        )
+                    elif fdir == "xz":
+                        out_data = np.concatenate(
+                            [
+                                in_data[[0, -1], :, :].flatten(),
+                                in_data[1:-1, :, [0, -1]].flatten(),
+                            ]
+                        )
+                    elif fdir == "yz":
+                        out_data = np.concatenate(
+                            [
+                                in_data[[0, -1], :, :].flatten(),
+                                in_data[1:-1, [0, -1], :].flatten(),
+                            ]
+                        )
+                    else:
+                        raise ValueError("unknown shape.")
 
             if not points:
                 out_data = np.sort(out_data.flatten())
@@ -1030,9 +1022,8 @@ class CartGrid(Grid):
             values will raise ValueError.
         fmt : str, optional, by default "tuple"
             format of output data as str in ['tuple', 'list', 'set',
-            'array']. Options 'tuple' and 'list' give the same output.
-            When option 'array' is used, utils.isin() must be used to
-            check if a tuple of 3 is in the array. For a better
+            'array']. When option 'array' is used, utils.isin() must be
+            used to check if a tuple of 3 is in the array. For a better
             performance, use 'set' to check if an item is in or not and
             use tuples to iterate through items.
 
@@ -1048,11 +1039,11 @@ class CartGrid(Grid):
         """
         if by == "id":
             cells_id = self.get_cells_id(True, True, "array")
-            self.boundaries_id = self.keep_boundaries(cells_id, False, fmt)
+            self.boundaries_id = self.extract_boundaries(cells_id, False, fmt)
             return self.boundaries_id
         elif by == "coords":
             cells_coords = self.get_cells_coords(True, True, "array")
-            self.boundaries_coords = self.keep_boundaries(cells_coords, True, fmt)
+            self.boundaries_coords = self.extract_boundaries(cells_coords, True, fmt)
             return self.boundaries_coords
         else:
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
@@ -1240,8 +1231,8 @@ class CartGrid(Grid):
 
     @_lru_cache(maxsize=6)
     def get_k(self, dir, boundary=True):
-        self.get_flow_dir()
-        assert dir in self.flow_dir, f"k{dir} is not in flow direction"
+        self.get_fdir()
+        assert dir in self.fdir, f"k{dir} is not in flow direction"
         if dir == "x":
             k = self.kx
         elif dir == "y":
@@ -1282,7 +1273,7 @@ class CartGrid(Grid):
     set_tops = set_z
 
     def get_is_homogeneous(self):
-        self.get_flow_dir()
+        self.get_fdir()
         lst = []
 
         phi = self.remove_boundaries(self.phi, False).flatten()
@@ -1292,7 +1283,7 @@ class CartGrid(Grid):
             is_homogeneous_phi = True
         lst.append(is_homogeneous_phi)
 
-        if "x" in self.flow_dir:
+        if "x" in self.fdir:
             kx = self.remove_boundaries(self.kx, False).flatten()
             if np.all(kx == self.kx[0]):
                 is_homogeneous_x = True
@@ -1300,7 +1291,7 @@ class CartGrid(Grid):
                 is_homogeneous_x = False
             lst.append(is_homogeneous_x)
 
-        if "y" in self.flow_dir:
+        if "y" in self.fdir:
             ky = self.remove_boundaries(self.ky, False).flatten()
             if np.all(ky == self.ky[0]):
                 is_homogeneous_y = True
@@ -1308,7 +1299,7 @@ class CartGrid(Grid):
                 is_homogeneous_y = False
             lst.append(is_homogeneous_y)
 
-        if "z" in self.flow_dir:
+        if "z" in self.fdir:
             kz = self.remove_boundaries(self.kz, False).flatten()
             if np.all(kz == self.kz[0]):
                 is_homogeneous_z = True
@@ -1328,8 +1319,8 @@ class CartGrid(Grid):
     # -------------------------------------------------------------------------
 
     def get_G(self, dir):
-        self.get_flow_dir()
-        if dir in self.flow_dir:
+        self.get_fdir()
+        if dir in self.fdir:
             k = self.get_k(dir=dir, boundary=True)
             area = self.get_cells_area(dir=dir, boundary=True)
             d = self.get_cells_d(dir=dir, boundary=True)
@@ -1348,7 +1339,7 @@ class CartGrid(Grid):
                 )
             return G
         else:
-            print(f"- G{dir} is not in flow_dir of {self.flow_dir}.")
+            print(f"- G{dir} is not in fdir of {self.fdir}.")
 
     def get_Gx(self):
         """
@@ -1437,35 +1428,35 @@ class CartGrid(Grid):
         (Reference: https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html)
         """
 
-        if "x" in self.flow_dir:
+        if "x" in self.fdir:
             xcorn = np.insert(self.dxx.cumsum(), 0, 0)
         else:
             xcorn = np.arange(0, (self.nx + 1) * self.dxx[0], self.dxx[0])
 
-        if "y" in self.flow_dir:
+        if "y" in self.fdir:
             ycorn = np.insert(self.dyy.cumsum(), 0, 0)
         else:
             ycorn = np.arange(0, (self.ny + 1) * self.dyy[0], self.dyy[0])
 
-        if "z" in self.flow_dir:
+        if "z" in self.fdir:
             zcorn = np.insert(self.dzz.cumsum(), 0, 0)
         else:
             zcorn = np.arange(0, (self.nz + 1) * self.dzz[0], self.dzz[0])
 
         # Boundary:
         if boundary:
-            ix = 2 if "x" in self.flow_dir else 0
-            iy = 2 if "y" in self.flow_dir else 0
-            iz = 2 if "z" in self.flow_dir else 0
+            ix = 2 if "x" in self.fdir else 0
+            iy = 2 if "y" in self.fdir else 0
+            iz = 2 if "z" in self.fdir else 0
         else:
             ix = 0
             iy = 0
             iz = 0
-            if "x" in self.flow_dir:
+            if "x" in self.fdir:
                 xcorn = xcorn[1:-1]
-            if "y" in self.flow_dir:
+            if "y" in self.fdir:
                 ycorn = ycorn[1:-1]
-            if "z" in self.flow_dir:
+            if "z" in self.fdir:
                 zcorn = zcorn[1:-1]
 
         # X corners:
@@ -1511,19 +1502,19 @@ class CartGrid(Grid):
         self.get_n_max(True)
         self.get_fshape(True, False, False)
         m_list = []
-        if "x" in self.flow_dir:
+        if "x" in self.fdir:
             self.dxx = np.ones(self.nx_b, dtype="int") * dx
             m_list.append(self.dxx)
         else:
             self.dxx = np.ones(self.n_max, dtype="int") * dx
             m_list.append(dx)
-        if "y" in self.flow_dir:
+        if "y" in self.fdir:
             self.dyy = np.ones(self.ny_b, dtype="int") * dy
             m_list.append(self.dyy)
         else:
             self.dyy = np.ones(self.n_max, dtype="int") * dy
             m_list.append(dy)
-        if "z" in self.flow_dir:
+        if "z" in self.fdir:
             self.dzz = np.ones(self.nz_b, dtype="int") * dz
             m_list.append(self.dzz)
         else:
@@ -1818,7 +1809,7 @@ class CartGrid(Grid):
 
         s = "with boundary" if boundary else "without boundary"
         title = "{}D model by {} (flow at {}-direction {})".format(
-            self.D, label, self.flow_dir, s
+            self.D, label, self.fdir, s
         )
 
         pl.add_title(title, font="courier", color="white", font_size=8)
@@ -1826,12 +1817,12 @@ class CartGrid(Grid):
         pl.enable_fly_to_right_click()
         pl.show_axes()
         if self.D == 1:
-            if self.flow_dir == "y":
+            if self.fdir == "y":
                 fdir = "yz"
             else:
                 fdir = "xz"
         elif self.D == 2:
-            fdir = self.flow_dir
+            fdir = self.fdir
         else:
             fdir = "xz"
         pl.camera_position = fdir
@@ -1865,10 +1856,10 @@ if __name__ == "__main__":
     print("Test 1:")
     cells = grid.get_cells_coords(True, False)
     print(cells)
-    # print(grid.keep_boundaries(cells, True, "tuple"))
-    # print(grid.keep_boundaries(cells, True, "set"))
-    # print(grid.keep_boundaries(cells, True, "array"))
-    b1 = grid.keep_boundaries(cells, True, "array")
+    # print(grid.extract_boundaries(cells, True, "tuple"))
+    # print(grid.extract_boundaries(cells, True, "set"))
+    # print(grid.extract_boundaries(cells, True, "array"))
+    b1 = grid.extract_boundaries(cells, True, "array")
     b2 = np.array([(0, 1, 0), (4, 1, 0)])
     print(utils.intersection(b1, b2, "list"))
     # print(grid.get_cell_boundaries(coords=(3, 3, 0), fmt="list"))
