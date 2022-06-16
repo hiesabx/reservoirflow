@@ -143,7 +143,7 @@ class Test_2D_XY(unittest.TestCase):
         self.assertEqual(neighbors, {"x": [7], "y": [11], "z": []})
 
         boundaries = grid_2d_xy.get_cell_boundaries(id=id, fmt="list")
-        self.assertEqual(boundaries, [1, 5])
+        self.assertEqual(boundaries, [5, 1])
 
         boundaries = grid_2d_xy.get_cell_boundaries(id=id, fmt="dict")
         self.assertEqual(boundaries, {"x": [5], "y": [1], "z": []})
@@ -165,7 +165,7 @@ class Test_2D_XY(unittest.TestCase):
         self.assertEqual(neighbors, {"x": [(2, 1, 0)], "y": [(1, 2, 0)], "z": []})
 
         boundaries = grid_2d_xy.get_cell_boundaries(coords=coords, fmt="list")
-        self.assertEqual(boundaries, [(1, 0, 0), (0, 1, 0)])
+        self.assertEqual(boundaries, [(0, 1, 0), (1, 0, 0)])
 
         boundaries = grid_2d_xy.get_cell_boundaries(coords=coords, fmt="dict")
         self.assertEqual(boundaries, {"x": [(0, 1, 0)], "y": [(1, 0, 0)], "z": []})
@@ -185,7 +185,7 @@ class Test_2D_XZ(unittest.TestCase):
         self.assertEqual(neighbors, {"x": [7], "y": [], "z": [11]})
 
         boundaries = grid_2d_xz.get_cell_boundaries(id=id, fmt="list")
-        self.assertEqual(boundaries, [1, 5])
+        self.assertEqual(boundaries, [5, 1])
 
         boundaries = grid_2d_xz.get_cell_boundaries(id=id, fmt="dict")
         self.assertEqual(boundaries, {"x": [5], "y": [], "z": [1]})
@@ -207,7 +207,7 @@ class Test_2D_XZ(unittest.TestCase):
         self.assertEqual(neighbors, {"x": [(2, 0, 1)], "y": [], "z": [(1, 0, 2)]})
 
         boundaries = grid_2d_xz.get_cell_boundaries(coords=coords, fmt="list")
-        self.assertEqual(boundaries, [(1, 0, 0), (0, 0, 1)])
+        self.assertEqual(boundaries, [(0, 0, 1), (1, 0, 0)])
 
         boundaries = grid_2d_xz.get_cell_boundaries(coords=coords, fmt="dict")
         self.assertEqual(boundaries, {"x": [(0, 0, 1)], "y": [], "z": [(1, 0, 0)]})
@@ -227,7 +227,7 @@ class Test_2D_YZ(unittest.TestCase):
         self.assertEqual(neighbors, {"x": [], "y": [7], "z": [11]})
 
         boundaries = grid_2d_yz.get_cell_boundaries(id=id, fmt="list")
-        self.assertEqual(boundaries, [1, 5])
+        self.assertEqual(boundaries, [5, 1])
 
         boundaries = grid_2d_yz.get_cell_boundaries(id=id, fmt="dict")
         self.assertEqual(boundaries, {"x": [], "y": [5], "z": [1]})
@@ -249,7 +249,7 @@ class Test_2D_YZ(unittest.TestCase):
         self.assertEqual(neighbors, {"x": [], "y": [(0, 2, 1)], "z": [(0, 1, 2)]})
 
         boundaries = grid_2d_yz.get_cell_boundaries(coords=coords, fmt="list")
-        self.assertEqual(boundaries, [(0, 1, 0), (0, 0, 1)])
+        self.assertEqual(boundaries, [(0, 0, 1), (0, 1, 0)])
 
         boundaries = grid_2d_yz.get_cell_boundaries(coords=coords, fmt="dict")
         self.assertEqual(boundaries, {"x": [], "y": [(0, 0, 1)], "z": [(0, 1, 0)]})
@@ -265,7 +265,7 @@ class Test_3D(unittest.TestCase):
         neighbors = grid_3d.get_cell_neighbors(id=id, boundary=False, fmt="dict")
         self.assertEqual(neighbors, {"x": [32], "y": [36], "z": [56]})
         boundaries = grid_3d.get_cell_boundaries(id=id, fmt="list")
-        self.assertEqual(boundaries, [26, 6, 30])
+        self.assertEqual(boundaries, [30, 26, 6])
         boundaries = grid_3d.get_cell_boundaries(id=id, fmt="dict")
         self.assertEqual(boundaries, {"x": [30], "y": [26], "z": [6]})
 
@@ -284,7 +284,7 @@ class Test_3D(unittest.TestCase):
             neighbors, {"x": [(2, 1, 1)], "y": [(1, 2, 1)], "z": [(1, 1, 2)]}
         )
         boundaries = grid_3d.get_cell_boundaries(coords=coords, fmt="list")
-        self.assertEqual(boundaries, [(0, 1, 1), (1, 1, 0), (1, 0, 1)])
+        self.assertEqual(boundaries, [(0, 1, 1), (1, 0, 1), (1, 1, 0)])
         boundaries = grid_3d.get_cell_boundaries(coords=coords, fmt="dict")
         self.assertEqual(
             boundaries, {"x": [(0, 1, 1)], "y": [(1, 0, 1)], "z": [(1, 1, 0)]}
@@ -292,6 +292,7 @@ class Test_3D(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    unify = False
     grid_1d_x = grids.CartGrid(
         nx=3,
         ny=1,
@@ -304,7 +305,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
 
     grid_1d_y = grids.CartGrid(
@@ -319,7 +320,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
 
     grid_1d_z = grids.CartGrid(
@@ -334,7 +335,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
 
     grid_2d_xy = grids.CartGrid(
@@ -349,7 +350,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
     grid_2d_xz = grids.CartGrid(
         nx=3,
@@ -363,7 +364,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
     grid_2d_yz = grids.CartGrid(
         nx=1,
@@ -377,7 +378,7 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
     grid_3d = grids.CartGrid(
         nx=3,
@@ -391,6 +392,6 @@ if __name__ == "__main__":
         ky=270,
         kz=270,
         verbose=False,
-        unify=True,
+        unify=unify,
     )
     unittest.main()

@@ -4,7 +4,7 @@ from openresim import grids
 #%% # Create Grid:
 def model_1():
 
-    g = grids.CartGrid(nx=3, ny=1, nz=3, dx=10, dy=10, dz=10, verbose=True, unify=True)
+    g = grids.CartGrid(nx=3, ny=3, nz=1, dx=10, dy=10, dz=10, verbose=False, unify=True)
 
     return g
 
@@ -33,7 +33,6 @@ def boundaries():
     fmt = "tuple"
     id = g.get_cells_id(False, False, fmt)
     coords = g.get_cells_coords(False, False, fmt)
-    # print(g.remove_boundaries(id))
     # print(g.remove_boundaries(coords))
     # print(g.extract_boundaries(id, fmt="tuple"))
     # print(g.extract_boundaries(coords, fmt="set"))
@@ -46,10 +45,20 @@ def boundaries():
         # break€€
 
 
+def props():
+    g.set_props(phi=0.30)
+    g.set_props(phi=0.20, id=(6))
+    # print(g.phi)
+    g.set_props(kx=1)
+    g.set_props(kx=100000, id=6)
+    print(g.kx)
+
+
 # %%
 if __name__ == "__main__":
     g = model_1()
-    neighbors()
+    props()
+    # neighbors()
     # boundaries()
     # show("id")
     # show("coords")

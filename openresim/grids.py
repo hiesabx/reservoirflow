@@ -109,17 +109,17 @@ class CartGrid(Grid):
         kx : int, float, array-like, optional, by default None
             permeability in x-direction (relevant only if 'x' was in
             fluid flow direction). In case of a list or array,
-            the length should be equal to ny+2 for all cells including
+            the length should be equal to nx+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             left to right).
         ky : int, float, array-like, optional, by default None
-            permeability in x-direction (relevant only if 'y' was in
+            permeability in y-direction (relevant only if 'y' was in
             fluid flow direction). In case of a list or array,
             the length should be equal to ny+2 for all cells including
             boundary cells. Vales should be in natural order (i.g.from
             front to back).
         kz : int, float, array-like, optional, by default None
-            permeability in x-direction (relevant only if 'z' was in
+            permeability in z-direction (relevant only if 'z' was in
             fluid flow direction). In case of a list or array,
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
@@ -172,7 +172,7 @@ class CartGrid(Grid):
         self.get_cells_area_z()
         self.get_cells_volume()
         self.get_cells_coords()  # > cells_coords
-        self.set_props(phi, kx, ky, kz, z, comp)
+        self.set_props(kx, ky, kz, phi, z, comp)
         self.get_boundaries()  # > self.boundaries_id, self.boundaries_coords
         self.get_volume()  # self.volume
         # self.get_Gx()  # > self.Gx
@@ -230,8 +230,8 @@ class CartGrid(Grid):
         Returns
         -------
         str
-            contains one or more of ('-','x','y','z') based on the grid
-            dimensions that are higher than 1.
+            contains one or combination of ('-','x','y','z') based on
+            the grid dimensions that are higher than 1.
         """
         self.get_D()
         self.get_shape(False)
@@ -673,7 +673,7 @@ class CartGrid(Grid):
         add tuple of tuples for coords as input.
         set unify as None.
         """
-        cells_coords = self.get_cells_coords(True, False)
+        cells_coords = self.get_cells_coords(True, False, "array")
         shape_bool = cells_coords.shape == (self.get_n_cells(True), 3)
         assert shape_bool, "coords should include boundary and be flatten."
         assert utils.isin(coords, cells_coords), "coords are out of range."
@@ -1110,12 +1110,10 @@ class CartGrid(Grid):
         """
         if by == "id":
             cells_id = self.get_cells_id(True, True, "array")
-            self.boundaries_id = self.extract_boundaries(cells_id, False, fmt)
-            return self.boundaries_id
+            return self.extract_boundaries(cells_id, False, fmt)
         elif by == "coords":
             cells_coords = self.get_cells_coords(True, True, "array")
-            self.boundaries_coords = self.extract_boundaries(cells_coords, True, fmt)
-            return self.boundaries_coords
+            return self.extract_boundaries(cells_coords, True, fmt)
         else:
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
 
@@ -1125,32 +1123,74 @@ class CartGrid(Grid):
 
     def set_props(
         self,
-        phi=None,
         kx=None,
         ky=None,
         kz=None,
+        phi=None,
         z=None,
         comp=None,
         id=None,
         coords=None,
     ):
+        """Set properties for all cells or a selected cell.
+
+        This method is used to set or change properties. If neither id
+        nor coords are defined, the same value will be assigned to all
+        cells including boundary cells.
+
+        Parameters
+        ----------
+        kx : int, float, array-like, optional, by default None
+            permeability in x-direction (relevant only if 'x' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to nx+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            left to right).
+        ky : int, float, array-like, optional, by default None
+            permeability in y-direction (relevant only if 'y' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g.from
+            front to back).
+        kz : int, float, array-like, optional, by default None
+            permeability in z-direction (relevant only if 'z' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to nz+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            down to up).
+        phi : float, array-like, optional, by default None
+            porosity. In case of an array, the shape should be equal to
+            grid.shape with boundaries. Vales should be in natural
+            order.
+        z : int, float, array-like, optional, by default 0.
+            depth of grid tops (NOT FULLY IMPLEMENTED).
+        comp : float, optional, by default None
+            compressibility.
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        ToDo
+        ----
+        - allow iterables for id and coords.
         """
-        Set properties
-        """
-        # Set user defined properties:
-        if phi is not None:
-            self.set_phi(phi, id, coords)
         if kx is not None:
             self.set_kx(kx, id, coords)
         if ky is not None:
             self.set_ky(ky, id, coords)
         if kz is not None:
             self.set_kz(kz, id, coords)
+        if phi is not None:
+            self.set_phi(phi, id, coords)
         if z is not None:
             self.set_z(z, id, coords)
         if comp is not None:
             self.set_compressibility(comp)
-        # Set default values if not defined:
         if not hasattr(self, "tops"):
             self.set_z(0)
         if not hasattr(self, "compressibility"):
@@ -1158,33 +1198,55 @@ class CartGrid(Grid):
         # if not hasattr(self, "is_homogeneous"):
         #     self.get_is_homogeneous()
 
-    # set_properties = set_props
-
     def set_phi(self, phi, id=None, coords=None):
-        """ """
+        """Set porosity in all cells or a selected cell.
+
+        Parameters
+        ----------
+        phi : float, array-like, optional, by default None
+            porosity. In case of an array, the shape should be equal to
+            grid.shape with boundaries. Vales should be in natural
+            order.
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Raises
+        ------
+        ValueError
+            phi was not initialized.
+
+        ToDo
+        ----
+        - allow iterables for id and coords.
+        """
         if id is None and coords is None:
-            self.get_ones(True, False)
-            self.phi = self.ones * phi
-            # self.porosity = self.phi
-            # np.zeros(self.shape) + phi
+            self.phi = self.get_ones(True, False) * phi
             s = "all cells"
-        else:
+        elif hasattr(self, "phi"):
             if id is not None:
                 coords = self.get_cell_coords(id, True)
-            self.phi[coords[2], coords[1], coords[0]] = phi
+            icoords = self.get_cell_icoords(coords)
+            self.phi[icoords] = phi
             s = "cell " + str(coords)
             # self.get_is_homogeneous()
-        print(f"- Porosity (phi) is set to {phi} for {s}.")
+        else:
+            raise ValueError("phi was not initialized.")
 
-    # set_porosity = set_phi
+        if self.verbose:
+            print(f"- Porosity (phi) is set to {phi} for {s}.")
 
     def set_kx(self, kx, id=None, coords=None):
         if id is None and coords is None:
-            self.get_ones(True, False)
-            self.kx = self.ones * kx
-            # self.permeability_x = self.kx
+
+            self.kx = self.get_ones(True, False) * kx
             s = "all cells"
-        else:
+        elif hasattr(self, "kx"):
             if id is not None:
                 kx_f = self.kx.flatten()
                 kx_f[id] = kx
@@ -1194,16 +1256,17 @@ class CartGrid(Grid):
                 icoords = self.get_cell_icoords(coords)
                 self.kx[icoords] = kx
             s = "cell " + str(coords)
-            self.get_is_homogeneous()
-        print(f"- Permeability at x-direction (kx) is set to {kx} for {s}.")
+            # self.get_is_homogeneous()
+        else:
+            raise ValueError("kx was not initialized.")
 
-    # set_permeability_x = set_kx
+        if self.verbose:
+            print(f"- Permeability at x-direction (kx) is set to {kx} for {s}.")
 
     def set_ky(self, ky, id=None, coords=None):
         if id is None and coords is None:
-            self.get_ones(True, False)
-            self.ky = self.ones * ky
-            # self.permeability_y = self.ky
+            self.ky = self.get_ones(True, False) * ky
+
             s = "all cells"
         else:
             if id is not None:
@@ -1215,16 +1278,14 @@ class CartGrid(Grid):
                 icoords = self.get_cell_icoords(coords)
                 self.ky[icoords] = ky
             s = "cell " + str(coords)
-            self.get_is_homogeneous()
-        print(f"- Permeability at y-direction (ky) is set to {ky} for {s}.")
+            # self.get_is_homogeneous()
 
-    # set_permeability_y = set_ky
+        if self.verbose:
+            print(f"- Permeability at y-direction (ky) is set to {ky} for {s}.")
 
     def set_kz(self, kz, id=None, coords=None):
         if id is None and coords is None:
-            self.get_ones(True, False)
-            self.kz = self.ones * kz
-            # self.permeability_z = self.kz
+            self.kz = self.get_ones(True, False) * kz
             s = "all cells"
         else:
             if id is not None:
@@ -1236,10 +1297,10 @@ class CartGrid(Grid):
                 icoords = self.get_cell_icoords(coords)
                 self.kz[icoords] = kz
             s = "cell " + str(coords)
-            self.get_is_homogeneous()
-        print(f"- Permeability at z-direction (kz) is set to {kz} for {s}.")
+            # self.get_is_homogeneous()
 
-    # set_permeability_z = set_kz
+        if self.verbose:
+            print(f"- Permeability at z-direction (kz) is set to {kz} for {s}.")
 
     @_lru_cache(maxsize=6)
     def get_k(self, dir, boundary=True):
@@ -1261,13 +1322,10 @@ class CartGrid(Grid):
         else:
             return self.remove_boundaries(k)
 
-    # get_permeability = get_k
-
     def set_z(self, z=None, id=None, coords=None):
         """ """
         if id is None and coords is None:
-            self.get_ones(True, False)
-            self.z = self.ones * z
+            self.z = self.get_ones(True, False) * z
             # self.tops = self.z
             s = "all cells"
         else:
@@ -1280,7 +1338,9 @@ class CartGrid(Grid):
                 icoords = self.get_cell_icoords(coords)
                 self.z[icoords] = z
             s = "cell " + str(coords)
-        print(f"- Tops (z) is set to {z} for {s}.")
+
+        if self.verbose:
+            print(f"- Tops (z) is set to {z} for {s}.")
 
     set_tops = set_z
 
@@ -1323,7 +1383,9 @@ class CartGrid(Grid):
             self.is_homogeneous = True
         else:
             self.is_homogeneous = False
-        print(f"- Flag is_homogeneous is set to {self.is_homogeneous}.")
+
+        if self.verbose:
+            print(f"- Flag is_homogeneous is set to {self.is_homogeneous}.")
         return self.is_homogeneous
 
     # -------------------------------------------------------------------------
@@ -1539,7 +1601,7 @@ class CartGrid(Grid):
         self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(fshape)
         self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(fshape)
 
-        if verbose:
+        if self.verbose:
             print(f"- Cells dims (dx, dy, dz) were computed.")
 
     @_lru_cache(maxsize=5)
@@ -1735,7 +1797,9 @@ class CartGrid(Grid):
             self.cells_V = self.cells_V.reshape(shape)
         if not boundary:
             self.cells_V = self.remove_boundaries(self.cells_V)
-        print("- Cells volumes (cells_V) was computed.")
+
+        if self.verbose:
+            print("- Cells volumes (cells_V) was computed.")
         return self.cells_V
 
     @_lru_cache(maxsize=None)
@@ -1843,8 +1907,17 @@ class CartGrid(Grid):
 
     # get_flow_shape = get_fshape
     # self.flow_shape = self.fshape
+    # self.porosity = self.phi
     # get_dimension = get_D
     # self.dimension = self.D
+    # set_properties = set_props
+    # set_permeability_x = set_kx
+    # self.permeability_x = self.kx
+    # set_permeability_y = set_ky
+    # self.permeability_y = self.ky
+    # set_permeability_z = set_kz
+    # self.permeability_z = self.kz
+    # get_permeability = get_k
 
 
 if __name__ == "__main__":
