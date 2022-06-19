@@ -32,6 +32,8 @@ class Grid(Base):
         self.dtype = dtype  # np.single, np.double
         self.unify = unify
         self.verbose = verbose
+        props_keys = ["kx", "ky", "kz", "phi", "z", "comp", "hetro"]
+        self.props = dict.fromkeys(props_keys)
 
 
 class CartGrid(Grid):
@@ -1180,15 +1182,15 @@ class CartGrid(Grid):
         - allow iterables for id and coords.
         """
         if kx is not None:
-            self.set_kx(kx, id, coords)
+            self.set_prop("kx", kx, id, coords)
         if ky is not None:
-            self.set_ky(ky, id, coords)
+            self.set_prop("ky", ky, id, coords)
         if kz is not None:
-            self.set_kz(kz, id, coords)
+            self.set_prop("kz", kz, id, coords)
         if phi is not None:
-            self.set_phi(phi, id, coords)
+            self.set_prop("phi", phi, id, coords)
         if z is not None:
-            self.set_z(z, id, coords)
+            self.set_prop("z", z, id, coords)
         if comp is not None:
             self.set_compressibility(comp)
         if not hasattr(self, "tops"):
@@ -1198,15 +1200,17 @@ class CartGrid(Grid):
         # if not hasattr(self, "is_homogeneous"):
         #     self.get_is_homogeneous()
 
-    def set_phi(self, phi, id=None, coords=None):
-        """Set porosity in all cells or a selected cell.
+    def set_prop(self, name, value, id=None, coords=None):
+        """Set a property in all cells or a selected cell.
 
         Parameters
         ----------
-        phi : float, array-like, optional, by default None
-            porosity. In case of an array, the shape should be equal to
-            grid.shape with boundaries. Vales should be in natural
-            order.
+        name : str
+            property name.
+        value : int, float, array-like
+            property value. In case of an array, the shape should be
+            equal to grid.shape with boundaries. Vales should be in
+            natural order.
         id : int, iterable of int, by default None
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
@@ -1219,93 +1223,80 @@ class CartGrid(Grid):
         Raises
         ------
         ValueError
-            phi was not initialized.
+            Property name is unknown or not defined.
 
         ToDo
         ----
         - allow iterables for id and coords.
+        - check for id or coords inside grid.
         """
-        if id is None and coords is None:
-            self.phi = self.get_ones(True, False) * phi
-            s = "all cells"
-        elif hasattr(self, "phi"):
-            if id is not None:
-                coords = self.get_cell_coords(id, True)
-            icoords = self.get_cell_icoords(coords)
-            self.phi[icoords] = phi
-            s = "cell " + str(coords)
-            # self.get_is_homogeneous()
+        if name in self.props.keys():
+            if id is None and coords is None:
+                self.props[name] = self.get_ones(True, False) * value
+                s = "all cells"
+            else:
+                if id is not None:
+                    coords = self.get_cell_coords(id, True)
+                    # prop = self.props[name].flatten()
+                    # prop[id] = value
+                    # fshape = self.get_fshape(True, False, False)
+                    # self.props[name] = prop.reshape(fshape)
+                    s = "cell id " + str(id)
+                if coords is not None:
+                    icoords = self.get_cell_icoords(coords)
+                    self.props[name][icoords] = value
+                    s = "cell coords " + str(coords)
         else:
-            raise ValueError("phi was not initialized.")
+            msg = (
+                f"Property {name} is unknown or not defined. "
+                f"Known properties are: {list(self.props.keys())}."
+            )
+            raise ValueError(msg)
 
         if self.verbose:
-            print(f"- Porosity (phi) is set to {phi} for {s}.")
+            print(f"- Property {name} is set to {value} for {s}.")
 
-    def set_kx(self, kx, id=None, coords=None):
-        if id is None and coords is None:
+    def get_prop(self, name, boundary=True, fshape=True, fmt="array"):
+        """Get a property in all cells.
 
-            self.kx = self.get_ones(True, False) * kx
-            s = "all cells"
-        elif hasattr(self, "kx"):
-            if id is not None:
-                kx_f = self.kx.flatten()
-                kx_f[id] = kx
-                fshape = self.get_fshape(True, False, False)
-                self.kx = kx_f.reshape(fshape)
-            if coords is not None:
-                icoords = self.get_cell_icoords(coords)
-                self.kx[icoords] = kx
-            s = "cell " + str(coords)
-            # self.get_is_homogeneous()
+        Parameters
+        ----------
+        name : str
+            property name.
+
+
+        Raises
+        ------
+        ValueError
+            Property name is unknown or not defined.
+
+        ToDo
+        ----
+        - flatten when fmt not array and in fshape.
+        """
+        if name in self.props.keys() and self.props[name] is not None:
+            prop = self.props[name]
+
+            if not boundary:
+                prop = self.remove_boundaries(prop, False)
+
+            if not fshape:
+                prop = prop.flatten()
+
+            return utils.reformat(prop, fmt)
+
         else:
-            raise ValueError("kx was not initialized.")
-
-        if self.verbose:
-            print(f"- Permeability at x-direction (kx) is set to {kx} for {s}.")
-
-    def set_ky(self, ky, id=None, coords=None):
-        if id is None and coords is None:
-            self.ky = self.get_ones(True, False) * ky
-
-            s = "all cells"
-        else:
-            if id is not None:
-                ky_f = self.ky.flatten()
-                ky_f[id] = ky
-                fshape = self.get_fshape(True, False, False)
-                self.ky = ky_f.reshape(fshape)
-            if coords is not None:
-                icoords = self.get_cell_icoords(coords)
-                self.ky[icoords] = ky
-            s = "cell " + str(coords)
-            # self.get_is_homogeneous()
-
-        if self.verbose:
-            print(f"- Permeability at y-direction (ky) is set to {ky} for {s}.")
-
-    def set_kz(self, kz, id=None, coords=None):
-        if id is None and coords is None:
-            self.kz = self.get_ones(True, False) * kz
-            s = "all cells"
-        else:
-            if id is not None:
-                kz_f = self.kz.flatten()
-                kz_f[id] = kz
-                fshape = self.get_fshape(True, False, False)
-                self.kz = kz_f.reshape(fshape)
-            if coords is not None:
-                icoords = self.get_cell_icoords(coords)
-                self.kz[icoords] = kz
-            s = "cell " + str(coords)
-            # self.get_is_homogeneous()
-
-        if self.verbose:
-            print(f"- Permeability at z-direction (kz) is set to {kz} for {s}.")
+            msg = (
+                f"Property {name} is unknown or not defined. "
+                f"Known properties are: {list(self.props.keys())}."
+            )
+            raise ValueError(msg)
 
     @_lru_cache(maxsize=6)
     def get_k(self, dir, boundary=True):
         self.get_fdir()
         assert dir in self.fdir, f"k{dir} is not in flow direction"
+        if len(dir) == 1 and 
         if dir == "x":
             k = self.kx
         elif dir == "y":
@@ -1321,28 +1312,6 @@ class CartGrid(Grid):
             return k
         else:
             return self.remove_boundaries(k)
-
-    def set_z(self, z=None, id=None, coords=None):
-        """ """
-        if id is None and coords is None:
-            self.z = self.get_ones(True, False) * z
-            # self.tops = self.z
-            s = "all cells"
-        else:
-            if id is not None:
-                z_f = self.z.flatten()
-                z_f[id] = z
-                fshape = self.get_fshape(True, False, False)
-                self.z = z_f.reshape(fshape)
-            if coords is not None:
-                icoords = self.get_cell_icoords(coords)
-                self.z[icoords] = z
-            s = "cell " + str(coords)
-
-        if self.verbose:
-            print(f"- Tops (z) is set to {z} for {s}.")
-
-    set_tops = set_z
 
     def get_is_homogeneous(self):
         self.get_fdir()
@@ -1918,6 +1887,8 @@ class CartGrid(Grid):
     # set_permeability_z = set_kz
     # self.permeability_z = self.kz
     # get_permeability = get_k
+    # self.tops = self.z
+    # set_tops = set_z
 
 
 if __name__ == "__main__":

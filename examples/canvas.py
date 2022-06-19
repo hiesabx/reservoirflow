@@ -54,10 +54,19 @@ def props():
     print(g.kx)
 
 
+def prop():
+    g.verbose = True
+    g.set_prop(name="phi", value=0.30)
+    g.set_prop(name="phi", value=0, id=11)
+    # print(g.props["phi"])
+    print(g.get_prop("kx"))
+
+
 # %%
 if __name__ == "__main__":
     g = model_1()
-    props()
+    prop()
+    # props()
     # neighbors()
     # boundaries()
     # show("id")
