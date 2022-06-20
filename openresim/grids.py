@@ -32,7 +32,7 @@ class Grid(Base):
         self.dtype = dtype  # np.single, np.double
         self.unify = unify
         self.verbose = verbose
-        props_keys = ["kx", "ky", "kz", "phi", "z", "comp", "hetro"]
+        props_keys = ["kx", "ky", "kz", "phi", "z", "comp"]
         self.props = dict.fromkeys(props_keys)
 
 
@@ -467,7 +467,8 @@ class CartGrid(Grid):
             self.order = self.remove_boundaries(self.order)
 
         if self.verbose:
-            s1, s2 = self.get_verbose_str(boundary, fshape)
+
+            s1, s2 = utils.get_verbose_str(boundary, fshape)
             print(f"- Cells order (order) was computed ({s1} - {s2}).")
 
         return self.order
@@ -567,7 +568,7 @@ class CartGrid(Grid):
             self.cells_id = utils.reformat(self.cells_id, fmt)
 
         if self.verbose:
-            s1, s2 = self.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.get_verbose_str(boundary, fshape)
             print(f"- Cells id (cells_id) was computed ({s1} - {s2}).")
 
         return self.cells_id
@@ -638,7 +639,7 @@ class CartGrid(Grid):
             self.cells_coords = utils.reformat(self.cells_coords, fmt)
 
         if self.verbose:
-            s1, s2 = self.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.get_verbose_str(boundary, fshape)
             print(f"- Cells coords (cells_coords) was computed ({s1} - {s2}).")
 
         return self.cells_coords
@@ -1194,20 +1195,11 @@ class CartGrid(Grid):
         if comp is not None:
             self.set_compressibility(comp)
 
+        # Defaults:
         if self.props["z"] is None:
             self.set_prop("z", 0)
         if not hasattr(self, "compressibility"):
             self.set_compressibility(0)
-
-    def get_props(self):
-        """Return props dictionary.
-
-        Returns
-        -------
-        dict
-            properties and their values as dict.
-        """
-        return self.props
 
     def set_prop(self, name, value, id=None, coords=None):
         """Set a property in all cells or a selected cell.
@@ -1215,7 +1207,7 @@ class CartGrid(Grid):
         Parameters
         ----------
         name : str
-            property name.
+            property name as a string from props attribute keys.
         value : int, float, array-like
             property value. In case of an array, the shape should be
             equal to grid.shape with boundaries. Vales should be in
@@ -1266,12 +1258,12 @@ class CartGrid(Grid):
             print(f"- Property {name} is set to {value} for {s}.")
 
     def get_prop(self, name, boundary=True, fshape=True, fmt="array"):
-        """Get a property in all cells.
+        """Get property values in all cells.
 
         Parameters
         ----------
         name : str
-            property name as a string.
+            property name as a string from props attribute keys.
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
         fshape : bool, optional, by default False
@@ -1315,6 +1307,20 @@ class CartGrid(Grid):
 
     @property
     def is_homogeneous(self):
+        """Returns homogeneity as bool
+
+        This property checks if kx, ky, kz, and phi are the same
+        across the grid.
+
+        Returns
+        -------
+        bool
+            True if homogeneous, otherwise False.
+
+        ToDo
+        ----
+        - check across kx, ky as well. review the definition.
+        """
         props = ["kx", "ky", "kz", "phi"]
         props = [name for name in props if self.props[name] is not None]
         for name in props:
@@ -1323,118 +1329,59 @@ class CartGrid(Grid):
                 return False
         return True
 
-    # -------------------------------------------------------------------------
-    # Properties - G
-    # -------------------------------------------------------------------------
+    @property
+    def is_heterogeneous(self):
+        """Returns heterogeneity as bool
 
-    def get_G(self, dir):
-        self.get_fdir()
-        if dir in self.fdir:
-            k = self.get_k(dir=dir, boundary=True)
-            area = self.get_cells_area(dir=dir, boundary=True)
-            d = self.get_cells_d(dir=dir, boundary=True)
-            if self.is_homogeneous:
-                G = (
-                    self.factors["transmissibility conversion"]
-                    * self.get_G_homo_mean(k)
-                    * self.get_G_homo_mean(area)
-                    / self.get_G_homo_mean(d)
-                )
-            else:
-                G = (
-                    2
-                    * self.factors["transmissibility conversion"]
-                    / self.get_G_hetro_denom(d, area, k)
-                )
-            return G
-        else:
-            print(f"- G{dir} is not in fdir of {self.fdir}.")
+        This property checks if kx, ky, kz, and phi are not the same
+        across the grid.
 
-    def get_Gx(self):
+        Returns
+        -------
+        bool
+            True if heterogeneity, otherwise False.
         """
-        Grid geometry factor at x-direction.
-        """
-        self.Gx = self.get_G(dir="x")
-        return self.Gx
-
-    def get_Gy(self):
-        """
-        Grid geometry factor at y-direction.
-        """
-        self.Gy = self.get_G(dir="y")
-        return self.Gy
-
-    def get_Gz(self):
-        """
-        Grid geometry factor at z-direction.
-        """
-        self.Gz = self.get_G(dir="z")
-        return self.Gz
-
-    def get_G_hetro_denom(self, dx, area, k):
-        if self.D == 0:
-            return dx / (area * k)
-        elif self.D == 1:
-            return (dx[:-1] / (area[:-1] * k[:-1])) + (dx[1:] / (area[1:] * k[1:]))
-        elif self.D == 2:
-            return (dx[:-1, :-1] / (area[:-1, :-1] * k[:-1, :-1])) + (
-                dx[1:, 1:] / (area[1:, 1:] * k[1:, 1:])
-            )
-        elif self.D == 3:
-            return (dx[:-1, :-1, :-1] / (area[:-1, :-1, :-1] * k[:-1, :-1, :-1])) + (
-                dx[1:, 1:, 1:] / (area[1:, 1:, 1:] * k[1:, 1:, 1:])
-            )
-
-    def get_G_homo_mean(self, property, type="geometric"):
-        """ """
-        if self.is_homogeneous:
-            if self.D == 0:
-                return property
-            elif self.D == 1:
-                return property[1:]
-            elif self.D == 2:
-                return property[1:, 1:]
-            elif self.D == 3:
-                return property[1:, 1:, 1:]
-        else:
-            if type == "geometric":
-                if self.D == 1:
-                    return (property[:-1] + property[1:]) / 2
-                elif self.D == 2:
-                    return (property[:-1, :-1] + property[1:, 1:]) / 2
-                elif self.D == 2:
-                    return (property[:-1, :-1, :-1] + property[1:, 1:, 1:]) / 2
-            else:
-                raise ValueError("Unknown mean type")
+        return not self.is_homogeneous
 
     # -------------------------------------------------------------------------
-    # Pyvista
+    # Pyvista:
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=2)
     def get_pyvista_grid(self, boundary=True):
-        """
+        """Return pyvista ExplicitStructuredGrid object.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        ExplicitStructuredGrid
+            pyvista gird object.
+
+        Reference
+        ---------
         https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
         """
-        if boundary:
-            dims = np.array((self.nx_b, self.ny_b, self.nz_b)) + 1
-        else:
-            dims = np.array((self.nx, self.ny, self.nz)) + 1
-
+        dims = np.array(self.get_n(boundary)) + 1
         corners = self.get_corners(boundary)
         pyvista_grid = pv.ExplicitStructuredGrid(dims, corners)
 
         if self.verbose:
-            s = "with boundary" if boundary else "without boundary"
+            s = utils.get_boundary_str(boundary)
             print(f"- Pyvista grid (pyvista_grid) {s} was created.")
 
         return pyvista_grid
 
     @_lru_cache(maxsize=2)
     def get_corners(self, boundary=True):
-        """
+        """Returns corners required to create pyvista grid.
 
-        (Reference: https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html)
+        Reference
+        ---------
+        https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html
         """
 
         if "x" in self.fdir:
@@ -1486,7 +1433,7 @@ class CartGrid(Grid):
         zcorn = np.repeat(zcorn, 4 * (self.nx + ix) * (self.ny + iy))
 
         if self.verbose:
-            s = "with boundary" if boundary else "without boundary"
+            s = utils.get_boundary_str(boundary)
             print(f"- Grid corners {s} were calculated.")
             print(
                 "    - xcorn shape:",
@@ -1504,7 +1451,7 @@ class CartGrid(Grid):
         return corners
 
     # -------------------------------------------------------------------------
-    # Dimensions
+    # Dimensions:
     # -------------------------------------------------------------------------
 
     def get_cells_dims(self, dx, dy, dz, verbose=True):
@@ -1591,23 +1538,7 @@ class CartGrid(Grid):
         return self.get_cell_d("z", id, coords)
 
     # -------------------------------------------------------------------------
-    # Helpers
-    # -------------------------------------------------------------------------
-
-    def get_verbose_str(self, boundary, fshape):
-        s1 = "with fshape" if fshape else "without fshape"
-        s2 = "with boundary" if boundary else "without boundary"
-        return s1, s2
-
-    def add_boundary(self, d):
-        if isinstance(d, [list, tuple, np.array]):
-            self.get_n_max(True)
-            if len(d) == self.n_max - 2:
-                d = np.concatenate((d[0], d, d[-1]))
-        return d
-
-    # -------------------------------------------------------------------------
-    # Centers
+    # Centers:
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=4)
@@ -1623,13 +1554,13 @@ class CartGrid(Grid):
             self.cells_center = self.remove_boundaries(self.cells_center, True)
 
         if self.verbose:
-            s1, s2 = self.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.get_verbose_str(boundary, fshape)
             print(f"- Cells center (cells_center) was computed ({s1} - {s2}).")
 
         return self.cells_center
 
     # -------------------------------------------------------------------------
-    # Area
+    # Area:
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=4)
@@ -1708,7 +1639,7 @@ class CartGrid(Grid):
         return self.get_cell_area("z", id, coords)
 
     # -------------------------------------------------------------------------
-    # Volume
+    # Volume:
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=2)
@@ -1747,6 +1678,94 @@ class CartGrid(Grid):
             return cells_volume[coords[2], coords[1], coords[0]]
         else:
             raise ValueError("at least id or coords argument must be defined.")
+
+    # -------------------------------------------------------------------------
+    # Geometry Factor:
+    # -------------------------------------------------------------------------
+
+    def get_G(self, dir):
+        self.get_fdir()
+        if dir in self.fdir:
+            k = self.get_k(dir=dir, boundary=True)
+            area = self.get_cells_area(dir=dir, boundary=True)
+            d = self.get_cells_d(dir=dir, boundary=True)
+            if self.is_homogeneous:
+                G = (
+                    self.factors["transmissibility conversion"]
+                    * self.get_G_homo_mean(k)
+                    * self.get_G_homo_mean(area)
+                    / self.get_G_homo_mean(d)
+                )
+            else:
+                G = (
+                    2
+                    * self.factors["transmissibility conversion"]
+                    / self.get_G_hetro_denom(d, area, k)
+                )
+            return G
+        else:
+            print(f"- G{dir} is not in fdir of {self.fdir}.")
+
+    # def get_Gx(self):
+    #     """
+    #     Grid geometry factor at x-direction.
+    #     """
+    #     self.Gx = self.get_G(dir="x")
+    #     return self.Gx
+
+    # def get_Gy(self):
+    #     """
+    #     Grid geometry factor at y-direction.
+    #     """
+    #     self.Gy = self.get_G(dir="y")
+    #     return self.Gy
+
+    # def get_Gz(self):
+    #     """
+    #     Grid geometry factor at z-direction.
+    #     """
+    #     self.Gz = self.get_G(dir="z")
+    #     return self.Gz
+
+    def get_G_hetro_denom(self, dx, area, k):
+        if self.D == 0:
+            return dx / (area * k)
+        elif self.D == 1:
+            return (dx[:-1] / (area[:-1] * k[:-1])) + (dx[1:] / (area[1:] * k[1:]))
+        elif self.D == 2:
+            return (dx[:-1, :-1] / (area[:-1, :-1] * k[:-1, :-1])) + (
+                dx[1:, 1:] / (area[1:, 1:] * k[1:, 1:])
+            )
+        elif self.D == 3:
+            return (dx[:-1, :-1, :-1] / (area[:-1, :-1, :-1] * k[:-1, :-1, :-1])) + (
+                dx[1:, 1:, 1:] / (area[1:, 1:, 1:] * k[1:, 1:, 1:])
+            )
+
+    def get_G_homo_mean(self, property, type="geometric"):
+        """ """
+        if self.is_homogeneous:
+            if self.D == 0:
+                return property
+            elif self.D == 1:
+                return property[1:]
+            elif self.D == 2:
+                return property[1:, 1:]
+            elif self.D == 3:
+                return property[1:, 1:, 1:]
+        else:
+            if type == "geometric":
+                if self.D == 1:
+                    return (property[:-1] + property[1:]) / 2
+                elif self.D == 2:
+                    return (property[:-1, :-1] + property[1:, 1:]) / 2
+                elif self.D == 2:
+                    return (property[:-1, :-1, :-1] + property[1:, 1:, 1:]) / 2
+            else:
+                raise ValueError("Unknown mean type")
+
+    # -------------------------------------------------------------------------
+    # Visualization:
+    # -------------------------------------------------------------------------
 
     def show(
         self,
@@ -1818,7 +1837,7 @@ class CartGrid(Grid):
                 font_size=10,
             )
 
-        s = "with boundary" if boundary else "without boundary"
+        s = utils.get_boundary_str(boundary)
         title = "{}D model by {} (flow at {}-direction {})".format(
             self.D, label, self.fdir, s
         )
@@ -1839,6 +1858,10 @@ class CartGrid(Grid):
         pl.camera_position = fdir
         pl.set_background("black", top="gray")
         pl.show(title="openresim 3D show", full_screen=True)
+
+    # -------------------------------------------------------------------------
+    # Synonyms:
+    # -------------------------------------------------------------------------
 
     # get_flow_shape = get_fshape
     # self.flow_shape = self.fshape

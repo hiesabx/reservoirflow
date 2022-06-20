@@ -11,7 +11,7 @@ def model_1():
 
 #%% Show:
 def show(label="id"):
-    g.show(label=label, boundary=True)
+    g.show(label=label, boundary=False)
     # g.show(label=label, boundary=False)
 
 
@@ -62,7 +62,11 @@ def prop():
     g.set_prop(name="kx", value=30, id=11)
     # print(g.props["phi"])
     print(g.is_homogeneous)
-    print(g.get_props())
+    print(g.is_heterogeneous)
+
+
+def G():
+    g.get_G(dir="x")
 
 
 # %%
