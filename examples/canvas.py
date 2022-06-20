@@ -57,9 +57,12 @@ def props():
 def prop():
     g.verbose = True
     g.set_prop(name="phi", value=0.30)
-    g.set_prop(name="phi", value=0, id=11)
+    # g.set_prop(name="phi", value=0, id=11)
+    g.set_prop(name="kx", value=300)
+    g.set_prop(name="kx", value=30, id=11)
     # print(g.props["phi"])
-    print(g.get_prop("kx"))
+    print(g.is_homogeneous)
+    print(g.get_props())
 
 
 # %%

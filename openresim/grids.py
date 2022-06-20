@@ -1193,12 +1193,21 @@ class CartGrid(Grid):
             self.set_prop("z", z, id, coords)
         if comp is not None:
             self.set_compressibility(comp)
-        if not hasattr(self, "tops"):
-            self.set_z(0)
+
+        if self.props["z"] is None:
+            self.set_prop("z", 0)
         if not hasattr(self, "compressibility"):
             self.set_compressibility(0)
-        # if not hasattr(self, "is_homogeneous"):
-        #     self.get_is_homogeneous()
+
+    def get_props(self):
+        """Return props dictionary.
+
+        Returns
+        -------
+        dict
+            properties and their values as dict.
+        """
+        return self.props
 
     def set_prop(self, name, value, id=None, coords=None):
         """Set a property in all cells or a selected cell.
@@ -1241,7 +1250,7 @@ class CartGrid(Grid):
                     # prop[id] = value
                     # fshape = self.get_fshape(True, False, False)
                     # self.props[name] = prop.reshape(fshape)
-                    s = "cell id " + str(id)
+                    # s = "cell id " + str(id)
                 if coords is not None:
                     icoords = self.get_cell_icoords(coords)
                     self.props[name][icoords] = value
@@ -1262,7 +1271,19 @@ class CartGrid(Grid):
         Parameters
         ----------
         name : str
-            property name.
+            property name as a string.
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
+        fmt : str, optional, by default 'tuple'
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
 
 
         Raises
@@ -1292,70 +1313,15 @@ class CartGrid(Grid):
             )
             raise ValueError(msg)
 
-    @_lru_cache(maxsize=6)
-    def get_k(self, dir, boundary=True):
-        self.get_fdir()
-        assert dir in self.fdir, f"k{dir} is not in flow direction"
-        if len(dir) == 1 and 
-        if dir == "x":
-            k = self.kx
-        elif dir == "y":
-            k = self.ky
-        elif dir == "z":
-            k = self.kz
-        elif dir in [None, "all"]:
-            k = {"x": self.kx, "y": self.ky, "z": self.kz}
-        else:
-            raise ValueError("dir is unknown!")
-
-        if boundary:
-            return k
-        else:
-            return self.remove_boundaries(k)
-
-    def get_is_homogeneous(self):
-        self.get_fdir()
-        lst = []
-
-        phi = self.remove_boundaries(self.phi, False).flatten()
-        if np.all(phi == self.phi[0]):
-            is_homogeneous_phi = True
-        else:
-            is_homogeneous_phi = True
-        lst.append(is_homogeneous_phi)
-
-        if "x" in self.fdir:
-            kx = self.remove_boundaries(self.kx, False).flatten()
-            if np.all(kx == self.kx[0]):
-                is_homogeneous_x = True
-            else:
-                is_homogeneous_x = False
-            lst.append(is_homogeneous_x)
-
-        if "y" in self.fdir:
-            ky = self.remove_boundaries(self.ky, False).flatten()
-            if np.all(ky == self.ky[0]):
-                is_homogeneous_y = True
-            else:
-                is_homogeneous_y = False
-            lst.append(is_homogeneous_y)
-
-        if "z" in self.fdir:
-            kz = self.remove_boundaries(self.kz, False).flatten()
-            if np.all(kz == self.kz[0]):
-                is_homogeneous_z = True
-            else:
-                is_homogeneous_z = False
-            lst.append(is_homogeneous_z)
-
-        if all(lst):
-            self.is_homogeneous = True
-        else:
-            self.is_homogeneous = False
-
-        if self.verbose:
-            print(f"- Flag is_homogeneous is set to {self.is_homogeneous}.")
-        return self.is_homogeneous
+    @property
+    def is_homogeneous(self):
+        props = ["kx", "ky", "kz", "phi"]
+        props = [name for name in props if self.props[name] is not None]
+        for name in props:
+            prop = self.get_prop(name, False, False)
+            if not np.all(prop == prop[0]):
+                return False
+        return True
 
     # -------------------------------------------------------------------------
     # Properties - G
