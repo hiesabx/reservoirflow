@@ -2,9 +2,26 @@
 from openresim import grids
 
 #%% # Create Grid:
-def model_1():
+def get_d(d_0, n):
+    if n > 1:
+        return [d_0] + [d_0 + (i * d_0) for i in range(1, n + 1)] + [d_0]
+    else:
+        return d_0
 
-    g = grids.CartGrid(nx=3, ny=3, nz=1, dx=10, dy=10, dz=10, verbose=False, unify=True)
+
+def model_1(n):
+
+    nx, ny, nz = n
+    g = grids.CartGrid(
+        nx=nx,
+        ny=ny,
+        nz=nz,
+        dx=get_d(10, nx),
+        dy=get_d(10, ny),
+        dz=get_d(10, nz),
+        verbose=False,
+        unify=True,
+    )
 
     return g
 
@@ -69,10 +86,16 @@ def G():
     g.get_G(dir="x")
 
 
+def d():
+    print(g.Dx)
+    print(g.dx)
+
+
 # %%
 if __name__ == "__main__":
-    g = model_1()
-    prop()
+    g = model_1((3, 2, 1))
+    d()
+    # prop()
     # props()
     # neighbors()
     # boundaries()

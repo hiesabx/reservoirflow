@@ -159,16 +159,7 @@ class CartGrid(Grid):
         assert ny >= 1, "ny must be 1 or larger."
         assert nz >= 1, "nz must be 1 or larger."
         self.nx, self.ny, self.nz = nx, ny, nz
-        # self.get_D()  # > self.D
-        # self.get_shape()  # > self.shape
-        # self.get_fdir()  # > self.flowdir
-        # self.get_n(True)  # > self.nx_b, self.ny_b, self.n_zb
-        # self.get_fshape(True, False, False)  # > self.fshape
-        # self.get_n_cells()  # > self.n_cells
-        # self.get_order(type="natural")  # > self.order
-        # self.get_ones(True, False)  # > self.blocks
-        # self.get_n_max(True)  #
-        self.get_cells_dims(dx, dy, dz)
+        self.__calc_cells_D(dx, dy, dz)
         self.get_cells_area_x()
         self.get_cells_area_y()
         self.get_cells_area_z()
@@ -277,6 +268,10 @@ class CartGrid(Grid):
         -------
         tuple
             the number of grids as (nx, ny, nz).
+
+        ToDo
+        ----
+        - n as array.
         """
         if boundary:
             self.get_fdir()
@@ -1365,9 +1360,9 @@ class CartGrid(Grid):
         ---------
         https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
         """
-        dims = np.array(self.get_n(boundary)) + 1
+        n = np.array(self.get_n(boundary)) + 1
         corners = self.get_corners(boundary)
-        pyvista_grid = pv.ExplicitStructuredGrid(dims, corners)
+        pyvista_grid = pv.ExplicitStructuredGrid(n, corners)
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
@@ -1385,19 +1380,19 @@ class CartGrid(Grid):
         """
 
         if "x" in self.fdir:
-            xcorn = np.insert(self.dxx.cumsum(), 0, 0)
+            xcorn = np.insert(self.dx.cumsum(), 0, 0)
         else:
-            xcorn = np.arange(0, (self.nx + 1) * self.dxx[0], self.dxx[0])
+            xcorn = np.arange(0, (self.nx + 1) * self.dx[0], self.dx[0])
 
         if "y" in self.fdir:
-            ycorn = np.insert(self.dyy.cumsum(), 0, 0)
+            ycorn = np.insert(self.dy.cumsum(), 0, 0)
         else:
-            ycorn = np.arange(0, (self.ny + 1) * self.dyy[0], self.dyy[0])
+            ycorn = np.arange(0, (self.ny + 1) * self.dy[0], self.dy[0])
 
         if "z" in self.fdir:
-            zcorn = np.insert(self.dzz.cumsum(), 0, 0)
+            zcorn = np.insert(self.dz.cumsum(), 0, 0)
         else:
-            zcorn = np.arange(0, (self.nz + 1) * self.dzz[0], self.dzz[0])
+            zcorn = np.arange(0, (self.nz + 1) * self.dz[0], self.dz[0])
 
         # Boundary:
         if boundary:
@@ -1454,110 +1449,154 @@ class CartGrid(Grid):
     # Dimensions:
     # -------------------------------------------------------------------------
 
-    def get_cells_dims(self, dx, dy, dz, verbose=True):
-        self.get_n_max(True)
-        self.get_fshape(True, False, False)
-        m_list = []
-        if "x" in self.fdir:
-            self.dxx = np.ones(self.nx_b, dtype="int") * dx
-            m_list.append(self.dxx)
-        else:
-            self.dxx = np.ones(self.n_max, dtype="int") * dx
-            m_list.append(dx)
-        if "y" in self.fdir:
-            self.dyy = np.ones(self.ny_b, dtype="int") * dy
-            m_list.append(self.dyy)
-        else:
-            self.dyy = np.ones(self.n_max, dtype="int") * dy
-            m_list.append(dy)
-        if "z" in self.fdir:
-            self.dzz = np.ones(self.nz_b, dtype="int") * dz
-            m_list.append(self.dzz)
-        else:
-            self.dzz = np.ones(self.n_max, dtype="int") * dz
-            m_list.append(dz)
+    def __calc_cells_d(self, dx, dy, dz):
+        """Calculates dimensional axes vectors in x, y, z directions.
 
-        self.dx, self.dy, self.dz = np.meshgrid(*m_list, copy=False)
-        fshape = self.get_fshape(True, False, False)
-        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(fshape)
-        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(fshape)
-        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(fshape)
+        This method takes dx, dy, and dz as scalers or iterables and use
+        them to construct axes vectors based on the number of grids in
+        x, y, z directions. This method is used __calc_cells_D().
+
+        Parameters
+        ----------
+        dx : int, float, array-like
+            grid dimension in x-direction. In case of a list or array,
+            the length should be equal to nx+2 for all cells including
+            boundary cells. Vales should be in natural order (i.e. from
+            left to right).
+        dy : int, float, array-like
+            grid dimension in y-direction. In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            front to back).
+        dz : int, float, array-like
+            grid dimension in z-direction. In case of a list or array,
+            the length should be equal to nz+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            down to up).
+
+        Returns
+        -------
+        list
+            a list of len 3 for axes vectors as dx, dy, dz.
+        """
+        nx, ny, nz = self.get_n(True)
+        n_max = self.get_n_max(True)
+        cells_d = []
+
+        if "x" in self.fdir:
+            self.dx = np.ones(nx, dtype="int") * dx
+            cells_d.append(self.dx)
+        else:
+            self.dx = np.ones(n_max, dtype="int") * dx
+            cells_d.append(dx)
+
+        if "y" in self.fdir:
+            self.dy = np.ones(ny, dtype="int") * dy
+            cells_d.append(self.dy)
+        else:
+            self.dy = np.ones(n_max, dtype="int") * dy
+            cells_d.append(dy)
+
+        if "z" in self.fdir:
+            self.dz = np.ones(nz, dtype="int") * dz
+            cells_d.append(self.dz)
+        else:
+            self.dz = np.ones(n_max, dtype="int") * dz
+            cells_d.append(dz)
 
         if self.verbose:
-            print(f"- Cells dims (dx, dy, dz) were computed.")
+            print(f"- Cells d axes vectors (dx, dy, dz) were computed.")
+
+        return cells_d
+
+    def __calc_cells_D(self, dx, dy, dz):
+        """Calculates dimensional meshgrid in x,y,z directions.
+
+        This method takes dx, dy, and dz as scalers or iterables and use
+        them to construct dimensional meshgrid based on axes vectors in
+        x,y,z provided by __calc_cells_d() method.
+
+        Parameters
+        ----------
+        dx : int, float, array-like
+            grid dimension in x-direction. In case of a list or array,
+            the length should be equal to nx+2 for all cells including
+            boundary cells. Vales should be in natural order (i.e. from
+            left to right).
+        dy : int, float, array-like
+            grid dimension in y-direction. In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            front to back).
+        dz : int, float, array-like
+            grid dimension in z-direction. In case of a list or array,
+            the length should be equal to nz+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            down to up).
+
+        Returns
+        -------
+        tuple
+            tuple of len 3 for dimension meshgrid as Dx, Dy, Dz.
+        """
+        fshape = self.get_fshape(True, False, False)
+        cells_d = self.__calc_cells_d(dx, dy, dz)
+
+        self.Dx, self.Dy, self.Dz = np.meshgrid(*cells_d, copy=False)
+        self.Dx = np.transpose(self.Dx, axes=(0, 2, 1)).reshape(fshape)
+        self.Dy = np.transpose(self.Dy, axes=(2, 0, 1)).reshape(fshape)
+        self.Dz = np.transpose(self.Dz, axes=(2, 1, 0)).reshape(fshape)
+
+        if self.verbose:
+            print(f"- Cells D meshgrid (Dx, Dy, Dz) were computed.")
+
+        return (self.Dx, self.Dy, self.Dz)
 
     @_lru_cache(maxsize=5)
-    def get_cells_d(self, dir, boundary=True, fshape=True):
+    def get_cells_D(self, dir, boundary=True, fshape=True):
+        """Return cells dimensional meshgrid.
+
+        Parameters
+        ----------
+        dir : _type_
+            _description_
+        boundary : bool, optional
+            _description_, by default True
+        fshape : bool, optional
+            _description_, by default True
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
         if dir == "x":
-            cells_d = self.dx
+            cells_D = self.Dx
         elif dir == "y":
-            cells_d = self.dy
+            cells_D = self.Dy
         elif dir == "z":
-            cells_d = self.dz
+            cells_D = self.Dz
 
         if fshape:
             shape = self.get_fshape(boundary, False, False)
-            cells_d = cells_d.reshape(shape)
+            cells_D = cells_D.reshape(shape)
+
         if not boundary:
-            cells_d = self.remove_boundaries(cells_d)
-        return cells_d
+            cells_D = self.remove_boundaries(cells_D)
 
-    @_lru_cache(maxsize=2)
-    def get_cells_dx(self, boundary=True, fshape=True):
-        return self.get_cells_d("x", boundary, fshape)
-
-    @_lru_cache(maxsize=2)
-    def get_cells_dy(self, boundary=True, fshape=True):
-        return self.get_cells_d("y", boundary, fshape)
-
-    @_lru_cache(maxsize=2)
-    def get_cells_dz(self, boundary=True, fshape=True):
-        return self.get_cells_d("z", boundary, fshape)
+        return cells_D
 
     @_lru_cache(maxsize=None)
-    def get_cell_d(self, dir, id=None, coords=None):
-        cells_d = self.get_cells_d(dir=dir, boundary=True, fshape=True)
+    def get_cell_D(self, dir, id=None, coords=None):
+        cells_D = self.get_cells_D(dir=dir, boundary=True, fshape=True)
         if id is not None:
-            return cells_d.flatten()[id]
+            return cells_D.flatten()[id]
         elif coords is not None:
             icoords = self.get_cell_icoords(coords)
-            return cells_d[icoords]
+            return cells_D[icoords]
         else:
             raise ValueError("at least id or coords argument must be defined.")
-
-    @_lru_cache(maxsize=None)
-    def get_cell_dx(self, id=None, coords=None):
-        return self.get_cell_d("x", id, coords)
-
-    @_lru_cache(maxsize=None)
-    def get_cell_dy(self, id=None, coords=None):
-        return self.get_cell_d("y", id, coords)
-
-    @_lru_cache(maxsize=None)
-    def get_cell_dz(self, id=None, coords=None):
-        return self.get_cell_d("z", id, coords)
-
-    # -------------------------------------------------------------------------
-    # Centers:
-    # -------------------------------------------------------------------------
-
-    @_lru_cache(maxsize=4)
-    def get_cells_center(self, boundary=True, fshape=False):
-        pyvista_grid = self.get_pyvista_grid(True)
-        self.cells_center = pyvista_grid.cell_centers().points
-
-        if fshape:
-            shape = self.get_fshape(boundary, True, False)
-            self.cells_center = self.cells_center.reshape(shape)
-
-        if not boundary:
-            self.cells_center = self.remove_boundaries(self.cells_center, True)
-
-        if self.verbose:
-            s1, s2 = utils.get_verbose_str(boundary, fshape)
-            print(f"- Cells center (cells_center) was computed ({s1} - {s2}).")
-
-        return self.cells_center
 
     # -------------------------------------------------------------------------
     # Area:
@@ -1565,7 +1604,7 @@ class CartGrid(Grid):
 
     @_lru_cache(maxsize=4)
     def get_cells_area_x(self, boundary=True, fshape=True):
-        self.area_x = self.dy.flatten() * self.dz.flatten()
+        self.area_x = self.Dy.flatten() * self.Dz.flatten()
         if fshape:
             shape = self.get_fshape(boundary, False, False)
             self.area_x = self.area_x.reshape(shape)
@@ -1575,7 +1614,7 @@ class CartGrid(Grid):
 
     @_lru_cache(maxsize=4)
     def get_cells_area_y(self, boundary=True, fshape=True):
-        self.area_y = self.dx.flatten() * self.dz.flatten()
+        self.area_y = self.Dx.flatten() * self.Dz.flatten()
         if fshape:
             shape = self.get_fshape(boundary, False, False)
             self.area_y = self.area_y.reshape(shape)
@@ -1585,7 +1624,7 @@ class CartGrid(Grid):
 
     @_lru_cache(maxsize=4)
     def get_cells_area_z(self, boundary=True, fshape=True):
-        self.area_z = self.dx.flatten() * self.dy.flatten()
+        self.area_z = self.Dx.flatten() * self.Dy.flatten()
         if fshape:
             shape = self.get_fshape(boundary, False, False)
             self.area_z = self.area_z.reshape(shape)
@@ -1656,7 +1695,7 @@ class CartGrid(Grid):
             self.cells_V = pyvista_grid.compute_cell_sizes()["Volume"]
             self.cells_V = self.cells_V.round(2)
         else:
-            self.cells_V = self.dx.flatten() * self.dy.flatten() * self.dz.flatten()
+            self.cells_V = self.Dx.flatten() * self.Dy.flatten() * self.Dz.flatten()
 
         if fshape:
             shape = self.get_fshape(boundary, False, False)
@@ -1680,6 +1719,28 @@ class CartGrid(Grid):
             raise ValueError("at least id or coords argument must be defined.")
 
     # -------------------------------------------------------------------------
+    # Centers:
+    # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=4)
+    def get_cells_center(self, boundary=True, fshape=False):
+        pyvista_grid = self.get_pyvista_grid(True)
+        self.cells_center = pyvista_grid.cell_centers().points
+
+        if fshape:
+            shape = self.get_fshape(boundary, True, False)
+            self.cells_center = self.cells_center.reshape(shape)
+
+        if not boundary:
+            self.cells_center = self.remove_boundaries(self.cells_center, True)
+
+        if self.verbose:
+            s1, s2 = utils.get_verbose_str(boundary, fshape)
+            print(f"- Cells center (cells_center) was computed ({s1} - {s2}).")
+
+        return self.cells_center
+
+    # -------------------------------------------------------------------------
     # Geometry Factor:
     # -------------------------------------------------------------------------
 
@@ -1688,7 +1749,7 @@ class CartGrid(Grid):
         if dir in self.fdir:
             k = self.get_k(dir=dir, boundary=True)
             area = self.get_cells_area(dir=dir, boundary=True)
-            d = self.get_cells_d(dir=dir, boundary=True)
+            d = self.get_cells_D(dir=dir, boundary=True)
             if self.is_homogeneous:
                 G = (
                     self.factors["transmissibility conversion"]
