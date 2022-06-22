@@ -87,8 +87,10 @@ def G():
 
 
 def d():
-    print(g.Dx)
-    print(g.dx)
+    print(g.get_cells_D("x", False, True))
+    print(g.get_cells_D("y", False, False))
+    print(g.get_cells_D("y", True, False))
+    print(g.get_cells_D("z", True, True))
 
 
 # %%

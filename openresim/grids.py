@@ -1116,7 +1116,7 @@ class CartGrid(Grid):
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
 
     # -------------------------------------------------------------------------
-    # Properties
+    # Properties:
     # -------------------------------------------------------------------------
 
     def set_props(
@@ -1454,7 +1454,9 @@ class CartGrid(Grid):
 
         This method takes dx, dy, and dz as scalers or iterables and use
         them to construct axes vectors based on the number of grids in
-        x, y, z directions. This method is used __calc_cells_D().
+        x, y, z directions. This method is used __calc_cells_D(). Please
+        note that dx, dy, dz refer to axes vectors while Dx, Dy, Dz
+        refer to meshgrid arrays.
 
         Parameters
         ----------
@@ -1514,7 +1516,9 @@ class CartGrid(Grid):
 
         This method takes dx, dy, and dz as scalers or iterables and use
         them to construct dimensional meshgrid based on axes vectors in
-        x,y,z provided by __calc_cells_d() method.
+        x,y,z provided by __calc_cells_d() method. Please note that dx,
+        dy, dz refer to axes vectors while Dx, Dy, Dz refer to meshgrid
+        arrays.
 
         Parameters
         ----------
@@ -1558,17 +1562,18 @@ class CartGrid(Grid):
 
         Parameters
         ----------
-        dir : _type_
-            _description_
-        boundary : bool, optional
-            _description_, by default True
-        fshape : bool, optional
-            _description_, by default True
+        dir : str
+            direction str in ['x', 'y', 'z'].
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
 
         Returns
         -------
-        _type_
-            _description_
+        ndarray
+            array of Dx, Dy, or Dz based on dir argument.
         """
 
         if dir == "x":
@@ -1577,13 +1582,14 @@ class CartGrid(Grid):
             cells_D = self.Dy
         elif dir == "z":
             cells_D = self.Dz
-
-        if fshape:
-            shape = self.get_fshape(boundary, False, False)
-            cells_D = cells_D.reshape(shape)
+        else:
+            raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
         if not boundary:
-            cells_D = self.remove_boundaries(cells_D)
+            cells_D = self.remove_boundaries(cells_D, False)
+
+        if not fshape:
+            cells_D = cells_D.flatten()
 
         return cells_D
 
