@@ -6,6 +6,7 @@ Model class. Grid class represents both the rock geometry and the rock
 properties that are required for fluid flow calculations.
 
 """
+from itertools import count
 import warnings
 from openresim.base import Base
 import numpy as np
@@ -52,10 +53,10 @@ class CartGrid(Grid):
     CartGrid
         cartesian grid object.
 
-    Raises
-    ------
-    ValueError
-        _description_
+    ToDo
+    ----
+    - make default calc all flatten because flatten > reshape is faster
+      than reshape > flatten.
     """
 
     name = "CartGrid"
@@ -159,19 +160,16 @@ class CartGrid(Grid):
         assert ny >= 1, "ny must be 1 or larger."
         assert nz >= 1, "nz must be 1 or larger."
         self.nx, self.ny, self.nz = nx, ny, nz
-        self.__calc_cells_D(dx, dy, dz)
-        self.get_cells_area_x()
-        self.get_cells_area_y()
-        self.get_cells_area_z()
-        self.get_cells_volume()
-        self.get_cells_coords()  # > cells_coords
+        self.__calc_cells_d(dx, dy, dz)
+        self.__calc_cells_A()
+        self.__calc_cells_V()
         self.set_props(kx, ky, kz, phi, z, comp)
         self.get_boundaries()  # > self.boundaries_id, self.boundaries_coords
-        self.get_volume()  # self.volume
+        # self.get_volume()  # self.volume
         # self.get_Gx()  # > self.Gx
         # self.get_Gy()  # > self.Gy
         # self.get_Gz()  # > self.Gz
-        self.get_cells_center()
+        # self.get_cells_center()
 
     # -------------------------------------------------------------------------
     # Basic:
@@ -321,7 +319,7 @@ class CartGrid(Grid):
         return self.n_max
 
     @_lru_cache(maxsize=2)
-    def get_fshape(self, boundary=True, points=False, unify=False):
+    def get_fshape(self, boundary=True, points=False):
         """Return flow shape as tuple.
 
         Parameters
@@ -346,6 +344,7 @@ class CartGrid(Grid):
 
         ToDo
         ----
+        - remove unify from docstring.
         add usage with boundary=False.
         add optional boundaries for 2D models:
             if self.flowdir == 'xz+':
@@ -355,7 +354,7 @@ class CartGrid(Grid):
         """
         msg = "False boundary is not permitted in fshape method."
         assert boundary == True, msg
-        utils.fshape_warn(self.unify, unify)
+        # utils.fshape_warn(self.unify, unify)
 
         nx, ny, nz = self.get_n(boundary)  # Includes self.get_fdir()
 
@@ -455,11 +454,11 @@ class CartGrid(Grid):
             )
 
         if fshape:
-            shape = self.get_fshape(boundary, False, False)
+            shape = self.get_fshape(boundary, False)
             self.order = self.order.reshape(shape)
 
         if not boundary:
-            self.order = self.remove_boundaries(self.order)
+            self.order = self.remove_boundaries(self.order, False, "both")
 
         if self.verbose:
 
@@ -488,7 +487,7 @@ class CartGrid(Grid):
         assert boundary == True, "False boundary option is not allowed."
         assert sparse == False, "True sparse option is not allowed."
 
-        fshape = self.get_fshape(boundary, False, False)
+        fshape = self.get_fshape(boundary, False)
 
         if not sparse:
             self.ones = np.ones(fshape, dtype="int")
@@ -628,7 +627,7 @@ class CartGrid(Grid):
         self.cells_coords = pyvista_grid.cell_coords(cells_id)
 
         if fshape:
-            coords_fshape = self.get_fshape(boundary, True, False)
+            coords_fshape = self.get_fshape(boundary, True)
             self.cells_coords = self.cells_coords.reshape(coords_fshape)
         else:
             self.cells_coords = utils.reformat(self.cells_coords, fmt)
@@ -640,7 +639,7 @@ class CartGrid(Grid):
         return self.cells_coords
 
     @_lru_cache(maxsize=None)
-    def get_cell_icoords(self, coords, unify=False):
+    def get_cell_icoords(self, coords):
         """Convert `coords` from `(i,j,k)` into `(k,j,i)`.
 
         This method is required to create `icoords` based on `(k,j,i)`
@@ -668,14 +667,15 @@ class CartGrid(Grid):
 
         ToDo
         ----
-        add tuple of tuples for coords as input.
-        set unify as None.
+        - remove unify from docstring.
+        - add tuple of tuples for coords as input.
+        - set unify as None.
         """
         cells_coords = self.get_cells_coords(True, False, "array")
         shape_bool = cells_coords.shape == (self.get_n_cells(True), 3)
         assert shape_bool, "coords should include boundary and be flatten."
         assert utils.isin(coords, cells_coords), "coords are out of range."
-        utils.fshape_warn(self.unify, unify)
+        # utils.fshape_warn(self.unify, unify)
 
         if not self.unify and self.D <= 2:
             icoords = tuple(c for c in coords[::-1] if c > 0)
@@ -684,6 +684,31 @@ class CartGrid(Grid):
             icoords = tuple(c for c in coords[::-1])
 
         return icoords
+
+    def get_cells_icoords(self, boundary=True, fshape=None, fmt=None):
+        """_summary_
+
+        Parameters
+        ----------
+        boundary : bool, optional
+            _description_, by default True
+        fshape : _type_, optional
+            _description_, by default None
+        fmt : _type_, optional
+            _description_, by default None
+
+        Returns
+        -------
+        _type_
+            _description_
+
+        ToDo
+        ----
+        - Finish implementation.
+        """
+        cells_coords = self.get_cells_coords(boundary, False)
+        cells_icoords = [self.get_cell_icoords(coords) for coords in cells_coords]
+        return cells_icoords
 
     # -------------------------------------------------------------------------
     # Neighbors and Boundaries:
@@ -864,7 +889,7 @@ class CartGrid(Grid):
 
         return utils.reformat(cell_boundaries, fmt)
 
-    def remove_boundaries(self, in_data, points: bool = None):
+    def remove_boundaries(self, in_data, points=None, remove="both"):
         """Remove boundary cells from ndarray.
 
         Parameters
@@ -881,6 +906,8 @@ class CartGrid(Grid):
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
             check the utility function `utils.ispoints()`.
+        remove : str, optional, by default 'both'.
+            boundaries to remove as str in ['both', 'left', 'right'].
 
         Returns
         -------
@@ -906,7 +933,7 @@ class CartGrid(Grid):
         if isinstance(in_data, np.ndarray):
             if points is None:
                 points = utils.ispoints(in_data)
-            fshape = self.get_fshape(True, points, False)
+            fshape = self.get_fshape(True, points)
 
             if in_data.shape != fshape:
                 try:
@@ -917,16 +944,28 @@ class CartGrid(Grid):
             else:
                 flatten = False
 
+            if remove == "both":
+                l = 1
+                r = -1
+            elif remove == "left":
+                l = 1
+                r = None
+            elif remove == "right":
+                l = 0
+                r = -1
+            else:
+                raise ValueError("remove must be in ['both', 'left', 'right']")
+
             if self.D == 3:
-                out_data = in_data[1:-1, 1:-1, 1:-1]
+                out_data = in_data[l:r, l:r, l:r]
             else:
                 if not self.unify:
                     if self.D == 0:
                         out_data = in_data
                     elif self.D == 1:
-                        out_data = in_data[1:-1]
+                        out_data = in_data[l:r]
                     elif self.D == 2:
-                        out_data = in_data[1:-1, 1:-1]
+                        out_data = in_data[l:r, l:r]
                     else:
                         raise ValueError("Unknown shape.")
                 else:
@@ -934,17 +973,17 @@ class CartGrid(Grid):
                     if fdir == "-":
                         out_data = in_data
                     elif fdir == "x":
-                        out_data = in_data[:, :, 1:-1]
+                        out_data = in_data[:, :, l:r]
                     elif fdir == "y":
-                        out_data = in_data[:, 1:-1, :]
+                        out_data = in_data[:, l:r, :]
                     elif fdir == "z":
-                        out_data = in_data[1:-1, :, :]
+                        out_data = in_data[l:r, :, :]
                     elif fdir == "xy":
-                        out_data = in_data[:, 1:-1, 1:-1]
+                        out_data = in_data[:, l:r, l:r]
                     elif fdir == "xz":
-                        out_data = in_data[1:-1, :, 1:-1]
+                        out_data = in_data[l:r, :, l:r]
                     elif fdir == "yz":
-                        out_data = in_data[1:-1, 1:-1, :]
+                        out_data = in_data[l:r, l:r, :]
                     else:
                         raise ValueError("Unknown shape.")
 
@@ -958,7 +997,7 @@ class CartGrid(Grid):
 
         elif isinstance(in_data, dict):
             for k, v in in_data.items():
-                in_data[k] = self.remove_boundaries(v)
+                in_data[k] = self.remove_boundaries(v, remove="both")
             return in_data
         else:
             raise ValueError("dtype must be ndarray.")
@@ -1006,7 +1045,7 @@ class CartGrid(Grid):
         if isinstance(in_data, np.ndarray):
             if points is None:
                 points = utils.ispoints(in_data)
-            fshape = self.get_fshape(True, points, False)
+            fshape = self.get_fshape(True, points)
 
             if in_data.shape != fshape:
                 try:
@@ -1209,12 +1248,13 @@ class CartGrid(Grid):
             natural order.
         id : int, iterable of int, by default None
             cell id based on natural order as int. For multiple cells,
-            list of int [id,id,..] or tuple of int (id,id,...).
-            NotFullyImplemented.
+            list of int [id,id,..] or tuple of int (id,id,...). If None,
+            then all cells are selected. NotFullyImplemented.
         coords : iterable of int, iterable of tuples of int, by default
             None cell coordinates (i,j,k) as a tuple of int. For
             multiple cells, tuple of tuples of int as
-            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+            ((i,j,k),(i,j,k),..). If None, then all cells are selected.
+            NotFullyImplemented.
 
         Raises
         ------
@@ -1235,7 +1275,7 @@ class CartGrid(Grid):
                     coords = self.get_cell_coords(id, True)
                     # prop = self.props[name].flatten()
                     # prop[id] = value
-                    # fshape = self.get_fshape(True, False, False)
+                    # fshape = self.get_fshape(True, False)
                     # self.props[name] = prop.reshape(fshape)
                     # s = "cell id " + str(id)
                 if coords is not None:
@@ -1286,7 +1326,7 @@ class CartGrid(Grid):
             prop = self.props[name]
 
             if not boundary:
-                prop = self.remove_boundaries(prop, False)
+                prop = self.remove_boundaries(prop, False, "both")
 
             if not fshape:
                 prop = prop.flatten()
@@ -1299,6 +1339,43 @@ class CartGrid(Grid):
                 f"Known properties are: {list(self.props.keys())}."
             )
             raise ValueError(msg)
+
+    def get_cells_k(self, dir, boundary=True, fshape=True, fmt="array"):
+        """Returns permeability values for all cells.
+
+        Parameters
+        ----------
+        name : str
+            property name as a string from props attribute keys.
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
+        fmt : str, optional, by default 'tuple'
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
+
+
+        Raises
+        ------
+        ValueError
+            dir must be in ['x', 'y', 'z'].
+
+        ToDo
+        ----
+        - flatten when fmt not array and in fshape.
+        """
+        if dir in ["x", "y", "z"]:
+            name = "k" + dir
+        else:
+            raise ValueError("dir must be in ['x', 'y', 'z'].")
+
+        return self.get_prop(name, boundary, fshape, fmt)
 
     @property
     def is_homogeneous(self):
@@ -1380,19 +1457,19 @@ class CartGrid(Grid):
         """
 
         if "x" in self.fdir:
-            xcorn = np.insert(self.dx.cumsum(), 0, 0)
+            xcorn = np.insert(self.dx_.cumsum(), 0, 0)
         else:
-            xcorn = np.arange(0, (self.nx + 1) * self.dx[0], self.dx[0])
+            xcorn = np.arange(0, (self.nx + 1) * self.dx_[0], self.dx_[0])
 
         if "y" in self.fdir:
-            ycorn = np.insert(self.dy.cumsum(), 0, 0)
+            ycorn = np.insert(self.dy_.cumsum(), 0, 0)
         else:
-            ycorn = np.arange(0, (self.ny + 1) * self.dy[0], self.dy[0])
+            ycorn = np.arange(0, (self.ny + 1) * self.dy_[0], self.dy_[0])
 
         if "z" in self.fdir:
-            zcorn = np.insert(self.dz.cumsum(), 0, 0)
+            zcorn = np.insert(self.dz_.cumsum(), 0, 0)
         else:
-            zcorn = np.arange(0, (self.nz + 1) * self.dz[0], self.dz[0])
+            zcorn = np.arange(0, (self.nz + 1) * self.dz_[0], self.dz_[0])
 
         # Boundary:
         if boundary:
@@ -1449,13 +1526,13 @@ class CartGrid(Grid):
     # Dimensions:
     # -------------------------------------------------------------------------
 
-    def __calc_cells_d(self, dx, dy, dz):
+    def __calc_cells_d_(self, dx, dy, dz):
         """Calculates dimensional axes vectors in x, y, z directions.
 
         This method takes dx, dy, and dz as scalers or iterables and use
         them to construct axes vectors based on the number of grids in
-        x, y, z directions. This method is used __calc_cells_D(). Please
-        note that dx, dy, dz refer to axes vectors while Dx, Dy, Dz
+        x, y, z directions. This method is used __calc_cells_d(). Please
+        note that dx_, dy_, dz_ refer to axes vectors while dx, dy, dz
         refer to meshgrid arrays.
 
         Parameters
@@ -1483,42 +1560,42 @@ class CartGrid(Grid):
         """
         nx, ny, nz = self.get_n(True)
         n_max = self.get_n_max(True)
-        cells_d = []
+        self.cells_d_ = []
 
         if "x" in self.fdir:
-            self.dx = np.ones(nx, dtype="int") * dx
-            cells_d.append(self.dx)
+            self.dx_ = np.ones(nx, dtype="int") * dx
+            self.cells_d_.append(self.dx_)
         else:
-            self.dx = np.ones(n_max, dtype="int") * dx
-            cells_d.append(dx)
+            self.dx_ = np.ones(n_max, dtype="int") * dx
+            self.cells_d_.append(dx)
 
         if "y" in self.fdir:
-            self.dy = np.ones(ny, dtype="int") * dy
-            cells_d.append(self.dy)
+            self.dy_ = np.ones(ny, dtype="int") * dy
+            self.cells_d_.append(self.dy_)
         else:
-            self.dy = np.ones(n_max, dtype="int") * dy
-            cells_d.append(dy)
+            self.dy_ = np.ones(n_max, dtype="int") * dy
+            self.cells_d_.append(dy)
 
         if "z" in self.fdir:
-            self.dz = np.ones(nz, dtype="int") * dz
-            cells_d.append(self.dz)
+            self.dz_ = np.ones(nz, dtype="int") * dz
+            self.cells_d_.append(self.dz_)
         else:
-            self.dz = np.ones(n_max, dtype="int") * dz
-            cells_d.append(dz)
+            self.dz_ = np.ones(n_max, dtype="int") * dz
+            self.cells_d_.append(dz)
 
         if self.verbose:
             print(f"- Cells d axes vectors (dx, dy, dz) were computed.")
 
-        return cells_d
+        return self.cells_d_
 
-    def __calc_cells_D(self, dx, dy, dz):
+    def __calc_cells_d(self, dx, dy, dz):
         """Calculates dimensional meshgrid in x,y,z directions.
 
         This method takes dx, dy, and dz as scalers or iterables and use
         them to construct dimensional meshgrid based on axes vectors in
-        x,y,z provided by __calc_cells_d() method. Please note that dx,
-        dy, dz refer to axes vectors while Dx, Dy, Dz refer to meshgrid
-        arrays.
+        x,y,z provided by __calc_cells_d() method. Please note that dx_,
+        dy_, dz_ refer to axes vectors while dx, dy, dz refer to
+        meshgrid arrays.
 
         Parameters
         ----------
@@ -1543,21 +1620,21 @@ class CartGrid(Grid):
         tuple
             tuple of len 3 for dimension meshgrid as Dx, Dy, Dz.
         """
-        fshape = self.get_fshape(True, False, False)
-        cells_d = self.__calc_cells_d(dx, dy, dz)
+        fshape = self.get_fshape(True, False)
+        cells_d_ = self.__calc_cells_d_(dx, dy, dz)
 
-        self.Dx, self.Dy, self.Dz = np.meshgrid(*cells_d, copy=False)
-        self.Dx = np.transpose(self.Dx, axes=(0, 2, 1)).reshape(fshape)
-        self.Dy = np.transpose(self.Dy, axes=(2, 0, 1)).reshape(fshape)
-        self.Dz = np.transpose(self.Dz, axes=(2, 1, 0)).reshape(fshape)
+        self.dx, self.dy, self.dz = np.meshgrid(*cells_d_, copy=False)
+        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(fshape)
+        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(fshape)
+        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(fshape)
 
         if self.verbose:
             print(f"- Cells D meshgrid (Dx, Dy, Dz) were computed.")
 
-        return (self.Dx, self.Dy, self.Dz)
+        return (self.dx, self.dy, self.dz)
 
-    @_lru_cache(maxsize=5)
-    def get_cells_D(self, dir, boundary=True, fshape=True):
+    @_lru_cache(maxsize=None)
+    def get_cells_d(self, dir, boundary=True, fshape=True):
         """Return cells dimensional meshgrid.
 
         Parameters
@@ -1567,289 +1644,828 @@ class CartGrid(Grid):
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
         fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). If set to
-            True, fmt argument will be ignored.
+            values in flow shape (True) or flatten (False).
 
         Returns
         -------
         ndarray
-            array of Dx, Dy, or Dz based on dir argument.
+            array of dx, dy, or dz based on dir argument.
+
+        ToDo
+        ----
+        - Allow dict for all directions.
         """
 
         if dir == "x":
-            cells_D = self.Dx
+            cells_d = self.dx
         elif dir == "y":
-            cells_D = self.Dy
+            cells_d = self.dy
         elif dir == "z":
-            cells_D = self.Dz
+            cells_d = self.dz
+        elif dir in ["-", "all", "dict"]:
+            return {"x": self.dx, "y": self.dy, "z": self.dz}
         else:
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
         if not boundary:
-            cells_D = self.remove_boundaries(cells_D, False)
+            cells_d = self.remove_boundaries(cells_d, False, "both")
 
         if not fshape:
-            cells_D = cells_D.flatten()
+            cells_d = cells_d.flatten()
 
-        return cells_D
+        if self.verbose:
+            print(f"- Cells d{dir} was exported.")
+
+        return cells_d
+
+    def get_cells_dx(self, boundary=True, fshape=True):
+        """Return cells dx.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            array of dx.
+        """
+        return self.get_cells_d("x", boundary, fshape)
+
+    def get_cells_dy(self, boundary=True, fshape=True):
+        """Return cells dy.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            array of dy.
+        """
+        return self.get_cells_d("y", boundary, fshape)
+
+    def get_cells_dz(self, boundary=True, fshape=True):
+        """Return cells dz.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            array of dz.
+        """
+        return self.get_cells_d("z", boundary, fshape)
 
     @_lru_cache(maxsize=None)
-    def get_cell_D(self, dir, id=None, coords=None):
-        cells_D = self.get_cells_D(dir=dir, boundary=True, fshape=True)
+    def get_cell_d(self, dir, id=None, coords=None):
+        """Return cell d.
+
+        Parameters
+        ----------
+        dir : str
+            direction str in ['x', 'y', 'z'].
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        float
+            cell d.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+
+        ToDo
+        ----
+        - check if id or coords in range.
+        """
+        cells_D = self.get_cells_d(dir=dir, boundary=True, fshape=True)
+
         if id is not None:
             return cells_D.flatten()[id]
         elif coords is not None:
             icoords = self.get_cell_icoords(coords)
             return cells_D[icoords]
         else:
-            raise ValueError("at least id or coords argument must be defined.")
+            raise ValueError("id or coords argument must be defined.")
+
+    def get_cell_dx(self, id=None, coords=None):
+        """Return cell dx.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        float
+            cell dx.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_d("x", id, coords)
+
+    def get_cell_dy(self, id=None, coords=None):
+        """Return cell dy.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        float
+            cell dy.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_d("y", id, coords)
+
+    def get_cell_dz(self, id=None, coords=None):
+        """Return cell dz.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        float
+            cell dz.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_d("z", id, coords)
 
     # -------------------------------------------------------------------------
     # Area:
     # -------------------------------------------------------------------------
 
-    @_lru_cache(maxsize=4)
-    def get_cells_area_x(self, boundary=True, fshape=True):
-        self.area_x = self.Dy.flatten() * self.Dz.flatten()
-        if fshape:
-            shape = self.get_fshape(boundary, False, False)
-            self.area_x = self.area_x.reshape(shape)
-        if not boundary:
-            self.area_x = self.remove_boundaries(self.area_x)
-        return self.area_x
+    def __calc_cells_A(self):
+        self.Ax = self.dy * self.dz
+        self.Ay = self.dx * self.dz
+        self.Az = self.dx * self.dy
 
-    @_lru_cache(maxsize=4)
-    def get_cells_area_y(self, boundary=True, fshape=True):
-        self.area_y = self.Dx.flatten() * self.Dz.flatten()
-        if fshape:
-            shape = self.get_fshape(boundary, False, False)
-            self.area_y = self.area_y.reshape(shape)
-        if not boundary:
-            self.area_y = self.remove_boundaries(self.area_y)
-        return self.area_y
+    @_lru_cache(maxsize=None)
+    def get_cells_A(self, dir, boundary=True, fshape=True):
+        """Returns cells cross-sectional area A.
 
-    @_lru_cache(maxsize=4)
-    def get_cells_area_z(self, boundary=True, fshape=True):
-        self.area_z = self.Dx.flatten() * self.Dy.flatten()
-        if fshape:
-            shape = self.get_fshape(boundary, False, False)
-            self.area_z = self.area_z.reshape(shape)
-        if not boundary:
-            self.area_z = self.remove_boundaries(self.area_z)
-        return self.area_z
+        Parameters
+        ----------
+        dir : str
+            direction str in ['x', 'y', 'z'].
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
 
-    @_lru_cache(maxsize=8)
-    def get_cells_area(self, dir=None, boundary=True, fshape=True):
+        Returns
+        -------
+        ndarray
+            array of Ax, Ay, or Az based on dir argument.
+
+        ToDo
+        ----
+        - Allow dict for all directions.
+        """
         if dir == "x":
-            return self.get_cells_area_x(boundary, fshape)
+            cells_A = self.Ax
         elif dir == "y":
-            return self.get_cells_area_y(boundary, fshape)
+            cells_A = self.Ay
         elif dir == "z":
-            return self.get_cells_area_z(boundary, fshape)
-        elif dir in [None, "all"]:
-            self.area = {
-                "x": self.get_cells_area_x(boundary, fshape),
-                "y": self.get_cells_area_y(boundary, fshape),
-                "z": self.get_cells_area_z(boundary, fshape),
-            }
-            return self.area
+            cells_A = self.Az
+        elif dir in ["-", "all", "dict"]:
+            return {"x": self.Ax, "y": self.Ay, "z": self.Az}
         else:
-            raise ValueError(
-                "Direction (dir) is unknown! "
-                "Argument dir can be one of the following: "
-                "['x','y','z','all', None]"
-            )
+            raise ValueError("dir argument must be in ['x', 'y', 'z'].")
+
+        if not fshape:
+            cells_A = cells_A.flatten()
+
+        if not boundary:
+            cells_A = self.remove_boundaries(cells_A, False, "both")
+
+        if self.verbose:
+            print(f"- Cells A{dir} was exported.")
+
+        return cells_A
+
+    def get_cells_Ax(self, boundary=True, fshape=True):
+        """Returns cells cross-sectional area Ax.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            array of Ax.
+        """
+        return self.get_cells_A("x", boundary, fshape)
+
+    def get_cells_Ay(self, boundary=True, fshape=True):
+        """Returns cells cross-sectional area Ay.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            array of Ay
+        """
+        return self.get_cells_A("y", boundary, fshape)
+
+    def get_cells_Az(self, boundary=True, fshape=True):
+        """Returns cells cross-sectional area Az.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+
+        Returns
+        -------
+        ndarray
+            array of Az.
+        """
+        return self.get_cells_A("z", boundary, fshape)
 
     @_lru_cache(maxsize=None)
-    def get_cell_area(self, dir, id=None, coords=None):
+    def get_cell_A(self, dir, id=None, coords=None):
+        """Returns cell cross-sectional area A.
+
+        Parameters
+        ----------
+        dir : str
+            direction str in ['x', 'y', 'z'].
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of A based on dir argument.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
         if id is not None:
-            cells_area = self.get_cells_area(dir, True, False)
-            return cells_area[id]
+            cells_A = self.get_cells_A(dir, True, False)
+            return cells_A[id]
         elif coords is not None:
-            cells_area = self.get_cells_area(dir, True, True)
-            return cells_area[coords[2], coords[1], coords[0]]
+            cells_A = self.get_cells_A(dir, True, True)
+            icoords = self.get_cell_icoords(coords)
+            return cells_A[icoords]
         else:
-            raise ValueError("At least id or coords argument must be defined.")
+            raise ValueError("id or coords argument must be defined.")
 
-    @_lru_cache(maxsize=None)
-    def get_cell_area_x(self, id=None, coords=None):
-        return self.get_cell_area("x", id, coords)
+    def get_cell_Ax(self, id=None, coords=None):
+        """Returns cell cross-sectional area Ax.
 
-    @_lru_cache(maxsize=None)
-    def get_cell_area_y(self, id=None, coords=None):
-        return self.get_cell_area("y", id, coords)
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
 
-    @_lru_cache(maxsize=None)
-    def get_cell_area_z(self, id=None, coords=None):
-        return self.get_cell_area("z", id, coords)
+        Returns
+        -------
+        int, float
+            scaler of Ax.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_A("x", id, coords)
+
+    def get_cell_Ay(self, id=None, coords=None):
+        """Returns cell cross-sectional area Ay.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of Ay.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_A("y", id, coords)
+
+    def get_cell_Az(self, id=None, coords=None):
+        """Returns cell cross-sectional area Az.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of Az.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_A("z", id, coords)
 
     # -------------------------------------------------------------------------
     # Volume:
     # -------------------------------------------------------------------------
 
+    def __calc_cells_V(self):
+        self.V = self.dx * self.dy * self.dz
+        self.Vt = self.V.sum()
+
     @_lru_cache(maxsize=2)
-    def get_volume(self, boundary=True):
-        pyvista_grid = self.get_pyvista_grid(boundary)
-        self.V = pyvista_grid.volume
-        return self.V
+    def get_Vt(self, boundary=True, pyvista=False):
+        """Returns total grid volume Vt.
 
-    @_lru_cache(maxsize=6)
-    def get_cells_volume(self, boundary=True, fshape=False, pyvista=False):
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        pyvista : bool, optional, by default False
+            use built-in pyvista calculations.
 
+        Returns
+        -------
+        int, float
+            total grid volume Vt.
+        """
+        if pyvista:
+            return self.get_pyvista_grid(boundary).volume
+        else:
+            if boundary:
+                return self.Vt
+            else:
+                return self.remove_boundaries(self.V, False, "both").sum()
+
+    @_lru_cache(maxsize=4)
+    def get_cells_V(self, boundary=True, fshape=False, pyvista=False):
+        """Returns cells volume V.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+        pyvista : bool, optional, by default False
+            use built-in pyvista calculations.
+
+        Returns
+        -------
+        ndarray
+            array of volume V.
+        """
         if pyvista:
             pyvista_grid = self.get_pyvista_grid(True)
-            self.cells_V = pyvista_grid.compute_cell_sizes()["Volume"]
-            self.cells_V = self.cells_V.round(2)
+            cells_V = pyvista_grid.compute_cell_sizes()["Volume"]
+            shape = self.get_fshape(True, False)
+            cells_V = cells_V.reshape(shape)
         else:
-            self.cells_V = self.Dx.flatten() * self.Dy.flatten() * self.Dz.flatten()
+            cells_V = self.V
 
-        if fshape:
-            shape = self.get_fshape(boundary, False, False)
-            self.cells_V = self.cells_V.reshape(shape)
+        if not fshape:
+            cells_V = cells_V.flatten()
+
         if not boundary:
-            self.cells_V = self.remove_boundaries(self.cells_V)
+            cells_V = self.remove_boundaries(cells_V, False, "both")
 
         if self.verbose:
-            print("- Cells volumes (cells_V) was computed.")
-        return self.cells_V
+            print("- Cells volumes (V) was computed.")
+
+        return cells_V
 
     @_lru_cache(maxsize=None)
-    def get_cell_volume(self, id=None, coords=None):
+    def get_cell_V(self, id=None, coords=None):
+        """Returns cell volume V.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of V.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
         if id is not None:
-            cells_volume = self.get_cells_volume(True, False)
-            return cells_volume.flatten()[id]
+            cells_V = self.get_cells_V(True, False, False)
+            return cells_V[id]
         elif coords is not None:
-            cells_volume = self.get_cells_volume(True, True)
-            return cells_volume[coords[2], coords[1], coords[0]]
+            cells_V = self.get_cells_V(True, True, False)
+            icoords = self.get_cell_icoords(coords)
+            return cells_V[icoords]
         else:
-            raise ValueError("at least id or coords argument must be defined.")
+            raise ValueError("id or coords argument must be defined.")
 
     # -------------------------------------------------------------------------
     # Centers:
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=4)
-    def get_cells_center(self, boundary=True, fshape=False):
-        pyvista_grid = self.get_pyvista_grid(True)
-        self.cells_center = pyvista_grid.cell_centers().points
+    def get_cells_center(self, boundary=True, fshape=False, pyvista=False):
+        """Returns cells center.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+        pyvista : bool, optional, by default False
+            use built-in pyvista calculations.
+
+        Returns
+        -------
+        ndarray
+            cells center array.
+        """
+        if pyvista:
+            pyvista_grid = self.get_pyvista_grid(True)
+            cells_center = pyvista_grid.cell_centers().points
+        else:
+
+            def calc_d_center(d_, n_b):
+                d = d_ / 2
+                d[1:] = d[1:] + d_[:-1].cumsum()
+                return d[:n_b]
+
+            dxx = calc_d_center(self.dx_, self.nx_b)
+            dyy = calc_d_center(self.dy_, self.ny_b)
+            dzz = calc_d_center(self.dz_, self.nz_b)
+            cells_center = np.meshgrid(dxx, dyy, dzz)
+            cells_center = [a.reshape(-1, 1) for a in cells_center]
+            cells_center = np.concatenate(cells_center, axis=1)
 
         if fshape:
-            shape = self.get_fshape(boundary, True, False)
-            self.cells_center = self.cells_center.reshape(shape)
+            shape = self.get_fshape(True, True)
+            cells_center = cells_center.reshape(shape)
 
         if not boundary:
-            self.cells_center = self.remove_boundaries(self.cells_center, True)
+            cells_center = self.remove_boundaries(cells_center, True, "both")
 
         if self.verbose:
-            s1, s2 = utils.get_verbose_str(boundary, fshape)
-            print(f"- Cells center (cells_center) was computed ({s1} - {s2}).")
+            print(f"- Cells center was computed.")
 
-        return self.cells_center
+        return cells_center
+
+    @_lru_cache(maxsize=None)
+    def get_cell_center(self, id=None, coords=None):
+        """Returns cell center.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            array of cell center.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        if id is not None:
+            cells_centers = self.get_cells_center(True, False, False)
+            return cells_centers[id]
+        elif coords is not None:
+            cells_centers = self.get_cells_center(True, True, False)
+            icoords = self.get_cell_icoords(coords)
+            return cells_centers[icoords]
+        else:
+            raise ValueError("id or coords argument must be defined.")
 
     # -------------------------------------------------------------------------
     # Geometry Factor:
     # -------------------------------------------------------------------------
 
-    def get_G(self, dir):
-        self.get_fdir()
-        if dir in self.fdir:
-            k = self.get_k(dir=dir, boundary=True)
-            area = self.get_cells_area(dir=dir, boundary=True)
-            d = self.get_cells_D(dir=dir, boundary=True)
-            if self.is_homogeneous:
-                G = (
-                    self.factors["transmissibility conversion"]
-                    * self.get_G_homo_mean(k)
-                    * self.get_G_homo_mean(area)
-                    / self.get_G_homo_mean(d)
-                )
-            else:
-                G = (
-                    2
-                    * self.factors["transmissibility conversion"]
-                    / self.get_G_hetro_denom(d, area, k)
-                )
-            return G
-        else:
-            print(f"- G{dir} is not in fdir of {self.fdir}.")
+    def __calc_G_hetro_denom(self, d, A, k):
+        """Calculated G heterogeneous denominator.
 
-    # def get_Gx(self):
-    #     """
-    #     Grid geometry factor at x-direction.
-    #     """
-    #     self.Gx = self.get_G(dir="x")
-    #     return self.Gx
+        Parameters
+        ----------
+        d : ndarray
+            array of dimensions in x, y, or z (e.g. dx).
+        area : ndarray
+            array of area in x, y, or z (e.g. Ax).
+        k : ndarray
+            array of permeability in x, y, or z (e.g. kx).
 
-    # def get_Gy(self):
-    #     """
-    #     Grid geometry factor at y-direction.
-    #     """
-    #     self.Gy = self.get_G(dir="y")
-    #     return self.Gy
+        Returns
+        -------
+        ndarray
+            denominator of G based on input values.
 
-    # def get_Gz(self):
-    #     """
-    #     Grid geometry factor at z-direction.
-    #     """
-    #     self.Gz = self.get_G(dir="z")
-    #     return self.Gz
+        Raises
+        ------
+        ValueError
+            Unknown dimensionality.
 
-    def get_G_hetro_denom(self, dx, area, k):
-        if self.D == 0:
-            return dx / (area * k)
+        Backup
+        ------
+        if self.D == 3:  # or self.unify:
+            l = d[:-1, :-1, :-1] / (A[:-1, :-1, :-1] * k[:-1, :-1, :-1])
+            r = d[1:, 1:, 1:] / (A[1:, 1:, 1:] * k[1:, 1:, 1:])
+            return l + r
+        elif self.D == 0:
+            return d / (A * k)
         elif self.D == 1:
-            return (dx[:-1] / (area[:-1] * k[:-1])) + (dx[1:] / (area[1:] * k[1:]))
+            l = d[:-1] / (A[:-1] * k[:-1])
+            r = d[1:] / (A[1:] * k[1:])
+            return l + r
         elif self.D == 2:
-            return (dx[:-1, :-1] / (area[:-1, :-1] * k[:-1, :-1])) + (
-                dx[1:, 1:] / (area[1:, 1:] * k[1:, 1:])
-            )
-        elif self.D == 3:
-            return (dx[:-1, :-1, :-1] / (area[:-1, :-1, :-1] * k[:-1, :-1, :-1])) + (
-                dx[1:, 1:, 1:] / (area[1:, 1:, 1:] * k[1:, 1:, 1:])
-            )
-
-    def get_G_homo_mean(self, property, type="geometric"):
-        """ """
-        if self.is_homogeneous:
-            if self.D == 0:
-                return property
-            elif self.D == 1:
-                return property[1:]
-            elif self.D == 2:
-                return property[1:, 1:]
-            elif self.D == 3:
-                return property[1:, 1:, 1:]
+            l = d[:-1, :-1] / (A[:-1, :-1] * k[:-1, :-1])
+            r = d[1:, 1:] / (A[1:, 1:] * k[1:, 1:])
+            return l + r
         else:
-            if type == "geometric":
-                if self.D == 1:
-                    return (property[:-1] + property[1:]) / 2
+            raise ValueError("Unknown dimensionality.")
+        """
+        d_l = self.remove_boundaries(d, False, "right")
+        A_l = self.remove_boundaries(A, False, "right")
+        k_l = self.remove_boundaries(k, False, "right")
+        d_r = self.remove_boundaries(d, False, "left")
+        A_r = self.remove_boundaries(A, False, "left")
+        k_r = self.remove_boundaries(k, False, "left")
+        return (d_l / (A_l * k_l)) + (d_r / (A_r * k_r))
+
+    def __calc_G_homo_mean(self, prop, type="geometric"):
+        """Calculates G homogenous mean.
+
+        Parameters
+        ----------
+        prop : ndarray
+            array of a property.
+        type : str, optional, by default "geometric"
+            mean type in ['geometric'].
+
+        Returns
+        -------
+        ndarray
+            mean of a property based on type.
+
+        Raises
+        ------
+        ValueError
+            Unknown dimensionality.
+        ValueError
+            Unknown mean type.
+
+        Backup
+        ------
+        - Faster calc in case of homogeneous d, k, A. However, this
+        implementation can be problematic since heterogeneous A and d
+        are not considered in is_homogeneous flag:
+            # code:
+            if self.is_homogeneous:
+                if self.D == 3 or self.unify:
+                    return prop[1:, 1:, 1:]
+                elif self.D == 0:
+                    return prop
+                elif self.D == 1:
+                    return prop[1:]
                 elif self.D == 2:
-                    return (property[:-1, :-1] + property[1:, 1:]) / 2
-                elif self.D == 2:
-                    return (property[:-1, :-1, :-1] + property[1:, 1:, 1:]) / 2
+                    return prop[1:, 1:]
             else:
-                raise ValueError("Unknown mean type")
+                if self.D == 3:
+                    return (prop[:-1, :-1, :-1] + prop[1:, 1:, 1:]) / 2
+                elif self.D == 1:
+                    return (prop[:-1] + prop[1:]) / 2
+                elif self.D == 2:
+                    return (prop[:-1, :-1] + prop[1:, 1:]) / 2
+                else:
+                    raise ValueError("Unknown dimensionality.")
+        """
+        self.get_D()
+        l = self.remove_boundaries(prop, False, "right")
+        r = self.remove_boundaries(prop, False, "left")
+        if type == "geometric":
+            return (l + r) / 2
+        else:
+            raise ValueError("Unknown mean type.")
+
+    @_lru_cache(maxsize=3)
+    def get_G(self, dir):
+        """Returns geometric factor (G).
+
+        Parameters
+        ----------
+        dir : str
+            direction as string in ['x', 'y', 'z'].
+
+        Returns
+        -------
+        ndarray
+            array of G based on dir argument (with fshape and boundary).
+        """
+        k = self.get_cells_k(dir, True, True, "array")
+        d = self.get_cells_d(dir, True, True)
+        area = self.get_cells_A(dir, True, True)
+        if self.is_homogeneous:
+            G = (
+                self.factors["transmissibility conversion"]
+                * self.__calc_G_homo_mean(k)
+                * self.__calc_G_homo_mean(area)
+                / self.__calc_G_homo_mean(d)
+            )
+        else:
+            G = (
+                2
+                * self.factors["transmissibility conversion"]
+                / self.__calc_G_hetro_denom(d, area, k)
+            )
+        return G
+
+    def get_Gx(self):
+        """Returns geometric factor at x direction (Gx).
+
+        Returns
+        -------
+        ndarray
+            array of Gx (with fshape and boundary).
+        """
+        self.Gx = self.get_G(dir="x")
+        return self.Gx
+
+    def get_Gy(self):
+        """Returns geometric factor at y direction (Gy).
+
+        Returns
+        -------
+        ndarray
+            array of Gy (with fshape and boundary).
+        """
+        self.Gy = self.get_G(dir="y")
+        return self.Gy
+
+    def get_Gz(self):
+        """Returns geometric factor at z direction (Gz).
+
+        Returns
+        -------
+        ndarray
+            array of Gz (with fshape and boundary).
+        """
+        self.Gz = self.get_G(dir="z")
+        return self.Gz
 
     # -------------------------------------------------------------------------
     # Visualization:
     # -------------------------------------------------------------------------
 
-    def show(
-        self,
-        label=None,  # 'coords' or 'id',
-        boundary=False,
-        corners=False,
-    ):
-        """
-        - centers_label: str ('coords', 'id')
+    def show(self, label=None, boundary=False, corners=False):
+        """Shows pyvista grid.
+
+        This method shows the grid using pyvista object in 3D. Only if
+        the total number of cells is lower than 20, then the grid will
+        be transparent. Therefore, to be able debug your model, try to
+        first test a small model.
+
+        Parameters
+        ----------
+        label : str, optional, by default None
+            label of grid centers as str in ['id', 'coords', 'icoords',
+            'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center']. If None,
+            then a sphere shape at the center will appear.
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
+        corners : bool, optional, by default False
+
+
+        Raises
+        ------
+        ValueError
+            label is not recognized.
         """
         self.get_n_max(True)
         pyvista_grid = self.get_pyvista_grid(boundary)
 
-        if self.n_max > 12:
-            opacity = 1
-        else:
+        transparent = self.get_n_cells(boundary) < 20
+        if transparent:
             opacity = 0.8
+        else:
+            opacity = 1
 
         pl = pv.Plotter()
         pl.add_mesh(
@@ -1873,35 +2489,46 @@ class CartGrid(Grid):
                 font_size=10,
             )
 
-        if label is not None:
+        if transparent and label is not None:
             if label == "coords":
                 labels = self.get_cells_coords(boundary, False, "tuple")
+            elif label == "icoords":
+                labels = self.get_cells_icoords(boundary, False, "tuple")
             elif label == "id":
                 labels = self.get_cells_id(boundary, False, "tuple")
-            elif label == "volume":
-                labels = self.get_cells_volume(boundary, False)
-            elif label == "center":
-                labels = self.get_cells_center(boundary, False)
             elif label == "dx":
                 labels = self.get_cells_dx(boundary, False)
             elif label == "dy":
                 labels = self.get_cells_dy(boundary, False)
             elif label == "dz":
                 labels = self.get_cells_dz(boundary, False)
-            elif label == "area_x":
-                labels = self.get_cells_area_x(boundary, False)
-            elif label == "area_y":
-                labels = self.get_cells_area_y(boundary, False)
-            elif label == "area_z":
-                labels = self.get_cells_area_z(boundary, False)
+            elif label in ["area_x", "Ax"]:
+                labels = self.get_cells_Ax(boundary, False)
+            elif label in ["area_y", "Ay"]:
+                labels = self.get_cells_Ay(boundary, False)
+            elif label in ["area_z", "Az"]:
+                labels = self.get_cells_Az(boundary, False)
+            elif label in ["volume", "V"]:
+                labels = self.get_cells_V(boundary, False, False)
+            elif label in ["center", "centers"]:
+                labels = self.get_cells_center(boundary, False, False)
             else:
-                raise ValueError(f"{label} can't be used!")
-            points = self.get_cells_center(boundary, False)
+                raise ValueError(f"label='{label}' is not recognized.")
+            points = self.get_cells_center(boundary, False, False)
             pl.add_point_labels(
                 points=points,
                 labels=labels,
                 point_size=10,
                 font_size=10,
+            )
+        elif transparent:
+            points = self.get_cells_center(boundary, False, False)
+            pl.add_points(
+                points,
+                point_size=10,
+                render_points_as_spheres=True,
+                show_edges=True,
+                color="black",
             )
 
         s = utils.get_boundary_str(boundary)
