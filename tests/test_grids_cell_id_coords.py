@@ -34,7 +34,7 @@ class TestApp(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    grid = grids.CartGrid(
+    grid = grids.Cartesian(
         nx=3, ny=3, nz=3, dx=10, dy=10, dz=10, phi=0.27, kx=270, ky=270, kz=270
     )
     unittest.main()

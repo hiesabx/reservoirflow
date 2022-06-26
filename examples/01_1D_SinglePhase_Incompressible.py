@@ -6,7 +6,7 @@ This is a 1D Model for single-phase incompressible fluid
 The workflow of openresim library consists of 8 steps as following:
 """
 # Step 1: Define 1D grid (default dtype: 'double')
-grid = grids.CartGrid(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270)
+grid = grids.Cartesian(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270)
 #       : change specific grid properties to add some heterogeneity
 grid.Ax[2] = 600  # change dx in grid 2
 grid.k[3] = 10  # change permeability in grid 3

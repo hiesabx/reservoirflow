@@ -6,8 +6,6 @@ Model class. Grid class represents both the rock geometry and the rock
 properties that are required for fluid flow calculations.
 
 """
-from itertools import count
-import warnings
 from openresim.base import Base
 import numpy as np
 import scipy.sparse as ss
@@ -17,10 +15,10 @@ from openresim import utils
 
 
 class Grid(Base):
-    """Create a Grid class.
+    """Base Grid class.
 
-    Grid class holds grid and rock properties using numpy arrays
-    including pyvista object for visualization.
+    Grid class represents both the rock geometry and the rock properties
+    using numpy arrays including pyvista object for visualization.
 
     Parameters
     ----------
@@ -37,10 +35,10 @@ class Grid(Base):
         self.props = dict.fromkeys(props_keys)
 
 
-class CartGrid(Grid):
+class Cartesian(Grid):
     """Cartesian grid class with explicit structure. Parameters can be
     defined as `unit='field'` (default) or `unit='metric'`. `units`
-    can be accessed from this class or base class `CartGrid.units` or
+    can be accessed from this class or base class `Cartesian.units` or
     `Grid.units`.
 
     Parameters
@@ -50,8 +48,8 @@ class CartGrid(Grid):
 
     Returns
     -------
-    CartGrid
-        cartesian grid object.
+    Cartesian
+        Cartesian Grid object.
 
     ToDo
     ----
@@ -59,8 +57,7 @@ class CartGrid(Grid):
       than reshape > flatten.
     """
 
-    name = "CartGrid"
-    type = "cartesian"
+    name = "Cartesian"
 
     def __init__(
         self,
@@ -84,7 +81,7 @@ class CartGrid(Grid):
         """Return cartesian grid object with explicit structure.
         Parameters can be defined as `unit='field'` (by default) or
         `unit='metric'`. `units` can be accessed from this class with
-        `CartGrid.units` or from or the base class with `Grid.units`.
+        `Cartesian.units` or from or the base class with `Grid.units`.
 
         Parameters
         ----------
@@ -164,12 +161,6 @@ class CartGrid(Grid):
         self.__calc_cells_A()
         self.__calc_cells_V()
         self.set_props(kx, ky, kz, phi, z, comp)
-        self.get_boundaries()  # > self.boundaries_id, self.boundaries_coords
-        # self.get_volume()  # self.volume
-        # self.get_Gx()  # > self.Gx
-        # self.get_Gy()  # > self.Gy
-        # self.get_Gz()  # > self.Gz
-        # self.get_cells_center()
 
     # -------------------------------------------------------------------------
     # Basic:
@@ -706,7 +697,7 @@ class CartGrid(Grid):
         ----
         - Finish implementation.
         """
-        cells_coords = self.get_cells_coords(boundary, False)
+        cells_coords = self.get_cells_coords(boundary, False, "tuple")
         cells_icoords = [self.get_cell_icoords(coords) for coords in cells_coords]
         return cells_icoords
 
@@ -1153,374 +1144,6 @@ class CartGrid(Grid):
             return self.extract_boundaries(cells_coords, True, fmt)
         else:
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
-
-    # -------------------------------------------------------------------------
-    # Properties:
-    # -------------------------------------------------------------------------
-
-    def set_props(
-        self,
-        kx=None,
-        ky=None,
-        kz=None,
-        phi=None,
-        z=None,
-        comp=None,
-        id=None,
-        coords=None,
-    ):
-        """Set properties for all cells or a selected cell.
-
-        This method is used to set or change properties. If neither id
-        nor coords are defined, the same value will be assigned to all
-        cells including boundary cells.
-
-        Parameters
-        ----------
-        kx : int, float, array-like, optional, by default None
-            permeability in x-direction (relevant only if 'x' was in
-            fluid flow direction). In case of a list or array,
-            the length should be equal to nx+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g. from
-            left to right).
-        ky : int, float, array-like, optional, by default None
-            permeability in y-direction (relevant only if 'y' was in
-            fluid flow direction). In case of a list or array,
-            the length should be equal to ny+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g.from
-            front to back).
-        kz : int, float, array-like, optional, by default None
-            permeability in z-direction (relevant only if 'z' was in
-            fluid flow direction). In case of a list or array,
-            the length should be equal to nz+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g. from
-            down to up).
-        phi : float, array-like, optional, by default None
-            porosity. In case of an array, the shape should be equal to
-            grid.shape with boundaries. Vales should be in natural
-            order.
-        z : int, float, array-like, optional, by default 0.
-            depth of grid tops (NOT FULLY IMPLEMENTED).
-        comp : float, optional, by default None
-            compressibility.
-        id : int, iterable of int, by default None
-            cell id based on natural order as int. For multiple cells,
-            list of int [id,id,..] or tuple of int (id,id,...).
-            NotFullyImplemented.
-        coords : iterable of int, iterable of tuples of int, by default
-            None cell coordinates (i,j,k) as a tuple of int. For
-            multiple cells, tuple of tuples of int as
-            ((i,j,k),(i,j,k),..). NotFullyImplemented.
-
-        ToDo
-        ----
-        - allow iterables for id and coords.
-        """
-        if kx is not None:
-            self.set_prop("kx", kx, id, coords)
-        if ky is not None:
-            self.set_prop("ky", ky, id, coords)
-        if kz is not None:
-            self.set_prop("kz", kz, id, coords)
-        if phi is not None:
-            self.set_prop("phi", phi, id, coords)
-        if z is not None:
-            self.set_prop("z", z, id, coords)
-        if comp is not None:
-            self.set_compressibility(comp)
-
-        # Defaults:
-        if self.props["z"] is None:
-            self.set_prop("z", 0)
-        if not hasattr(self, "compressibility"):
-            self.set_compressibility(0)
-
-    def set_prop(self, name, value, id=None, coords=None):
-        """Set a property in all cells or a selected cell.
-
-        Parameters
-        ----------
-        name : str
-            property name as a string from props attribute keys.
-        value : int, float, array-like
-            property value. In case of an array, the shape should be
-            equal to grid.shape with boundaries. Vales should be in
-            natural order.
-        id : int, iterable of int, by default None
-            cell id based on natural order as int. For multiple cells,
-            list of int [id,id,..] or tuple of int (id,id,...). If None,
-            then all cells are selected. NotFullyImplemented.
-        coords : iterable of int, iterable of tuples of int, by default
-            None cell coordinates (i,j,k) as a tuple of int. For
-            multiple cells, tuple of tuples of int as
-            ((i,j,k),(i,j,k),..). If None, then all cells are selected.
-            NotFullyImplemented.
-
-        Raises
-        ------
-        ValueError
-            Property name is unknown or not defined.
-
-        ToDo
-        ----
-        - allow iterables for id and coords.
-        - check for id or coords inside grid.
-        """
-        if name in self.props.keys():
-            if id is None and coords is None:
-                self.props[name] = self.get_ones(True, False) * value
-                s = "all cells"
-            else:
-                if id is not None:
-                    coords = self.get_cell_coords(id, True)
-                    # prop = self.props[name].flatten()
-                    # prop[id] = value
-                    # fshape = self.get_fshape(True, False)
-                    # self.props[name] = prop.reshape(fshape)
-                    # s = "cell id " + str(id)
-                if coords is not None:
-                    icoords = self.get_cell_icoords(coords)
-                    self.props[name][icoords] = value
-                    s = "cell coords " + str(coords)
-        else:
-            msg = (
-                f"Property {name} is unknown or not defined. "
-                f"Known properties are: {list(self.props.keys())}."
-            )
-            raise ValueError(msg)
-
-        if self.verbose:
-            print(f"- Property {name} is set to {value} for {s}.")
-
-    def get_prop(self, name, boundary=True, fshape=True, fmt="array"):
-        """Get property values in all cells.
-
-        Parameters
-        ----------
-        name : str
-            property name as a string from props attribute keys.
-        boundary : bool, optional, by default True
-            values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). If set to
-            True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'
-            output format as str from ['array', 'list', 'tuple', 'set'].
-            This argument is ignored if fshape argument is set to True.
-            For a better performance, use 'set' to check if an item is
-            in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
-            if a tuple of 3 is in the array.
-
-
-        Raises
-        ------
-        ValueError
-            Property name is unknown or not defined.
-
-        ToDo
-        ----
-        - flatten when fmt not array and in fshape.
-        """
-        if name in self.props.keys() and self.props[name] is not None:
-            prop = self.props[name]
-
-            if not boundary:
-                prop = self.remove_boundaries(prop, False, "both")
-
-            if not fshape:
-                prop = prop.flatten()
-
-            return utils.reformat(prop, fmt)
-
-        else:
-            msg = (
-                f"Property {name} is unknown or not defined. "
-                f"Known properties are: {list(self.props.keys())}."
-            )
-            raise ValueError(msg)
-
-    def get_cells_k(self, dir, boundary=True, fshape=True, fmt="array"):
-        """Returns permeability values for all cells.
-
-        Parameters
-        ----------
-        name : str
-            property name as a string from props attribute keys.
-        boundary : bool, optional, by default True
-            values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). If set to
-            True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'
-            output format as str from ['array', 'list', 'tuple', 'set'].
-            This argument is ignored if fshape argument is set to True.
-            For a better performance, use 'set' to check if an item is
-            in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
-            if a tuple of 3 is in the array.
-
-
-        Raises
-        ------
-        ValueError
-            dir must be in ['x', 'y', 'z'].
-
-        ToDo
-        ----
-        - flatten when fmt not array and in fshape.
-        """
-        if dir in ["x", "y", "z"]:
-            name = "k" + dir
-        else:
-            raise ValueError("dir must be in ['x', 'y', 'z'].")
-
-        return self.get_prop(name, boundary, fshape, fmt)
-
-    @property
-    def is_homogeneous(self):
-        """Returns homogeneity as bool
-
-        This property checks if kx, ky, kz, and phi are the same
-        across the grid.
-
-        Returns
-        -------
-        bool
-            True if homogeneous, otherwise False.
-
-        ToDo
-        ----
-        - check across kx, ky as well. review the definition.
-        """
-        props = ["kx", "ky", "kz", "phi"]
-        props = [name for name in props if self.props[name] is not None]
-        for name in props:
-            prop = self.get_prop(name, False, False)
-            if not np.all(prop == prop[0]):
-                return False
-        return True
-
-    @property
-    def is_heterogeneous(self):
-        """Returns heterogeneity as bool
-
-        This property checks if kx, ky, kz, and phi are not the same
-        across the grid.
-
-        Returns
-        -------
-        bool
-            True if heterogeneity, otherwise False.
-        """
-        return not self.is_homogeneous
-
-    # -------------------------------------------------------------------------
-    # Pyvista:
-    # -------------------------------------------------------------------------
-
-    @_lru_cache(maxsize=2)
-    def get_pyvista_grid(self, boundary=True):
-        """Return pyvista ExplicitStructuredGrid object.
-
-        Parameters
-        ----------
-        boundary : bool, optional, by default True
-            values with boundary (True) or without boundary (False).
-
-        Returns
-        -------
-        ExplicitStructuredGrid
-            pyvista gird object.
-
-        Reference
-        ---------
-        https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
-        """
-        n = np.array(self.get_n(boundary)) + 1
-        corners = self.get_corners(boundary)
-        pyvista_grid = pv.ExplicitStructuredGrid(n, corners)
-
-        if self.verbose:
-            s = utils.get_boundary_str(boundary)
-            print(f"- Pyvista grid (pyvista_grid) {s} was created.")
-
-        return pyvista_grid
-
-    @_lru_cache(maxsize=2)
-    def get_corners(self, boundary=True):
-        """Returns corners required to create pyvista grid.
-
-        Reference
-        ---------
-        https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html
-        """
-
-        if "x" in self.fdir:
-            xcorn = np.insert(self.dx_.cumsum(), 0, 0)
-        else:
-            xcorn = np.arange(0, (self.nx + 1) * self.dx_[0], self.dx_[0])
-
-        if "y" in self.fdir:
-            ycorn = np.insert(self.dy_.cumsum(), 0, 0)
-        else:
-            ycorn = np.arange(0, (self.ny + 1) * self.dy_[0], self.dy_[0])
-
-        if "z" in self.fdir:
-            zcorn = np.insert(self.dz_.cumsum(), 0, 0)
-        else:
-            zcorn = np.arange(0, (self.nz + 1) * self.dz_[0], self.dz_[0])
-
-        # Boundary:
-        if boundary:
-            ix = 2 if "x" in self.fdir else 0
-            iy = 2 if "y" in self.fdir else 0
-            iz = 2 if "z" in self.fdir else 0
-        else:
-            ix = 0
-            iy = 0
-            iz = 0
-            if "x" in self.fdir:
-                xcorn = xcorn[1:-1]
-            if "y" in self.fdir:
-                ycorn = ycorn[1:-1]
-            if "z" in self.fdir:
-                zcorn = zcorn[1:-1]
-
-        # X corners:
-        xcorn = np.repeat(xcorn, 2)
-        xcorn = xcorn[1:-1]
-        xcorn = np.tile(xcorn, 4 * (self.ny + iy) * (self.nz + iz))
-
-        # Y corners:
-        ycorn = np.repeat(ycorn, 2)
-        ycorn = ycorn[1:-1]
-        ycorn = np.tile(ycorn, (2 * (self.nx + ix), 2 * (self.nz + iz)))
-        ycorn = np.transpose(ycorn)
-        ycorn = ycorn.flatten()
-
-        # Z corners:
-        zcorn = np.repeat(zcorn, 2)
-        zcorn = zcorn[1:-1]
-        zcorn = np.repeat(zcorn, 4 * (self.nx + ix) * (self.ny + iy))
-
-        if self.verbose:
-            s = utils.get_boundary_str(boundary)
-            print(f"- Grid corners {s} were calculated.")
-            print(
-                "    - xcorn shape:",
-                xcorn.shape,
-                "- ycorn shape:",
-                ycorn.shape,
-                "- zcorn shape:",
-                zcorn.shape,
-            )
-
-        # Combine corners:
-        corners = np.stack((xcorn, ycorn, zcorn))
-        corners = corners.transpose()
-
-        return corners
 
     # -------------------------------------------------------------------------
     # Dimensions:
@@ -2258,6 +1881,394 @@ class CartGrid(Grid):
             raise ValueError("id or coords argument must be defined.")
 
     # -------------------------------------------------------------------------
+    # Pyvista:
+    # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=2)
+    def get_pyvista_grid(self, boundary=True):
+        """Return pyvista ExplicitStructuredGrid object.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        ExplicitStructuredGrid
+            pyvista gird object.
+
+        Reference
+        ---------
+        https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
+        """
+        n = np.array(self.get_n(boundary)) + 1
+        corners = self.get_corners(boundary)
+        pyvista_grid = pv.ExplicitStructuredGrid(n, corners)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"- Pyvista grid (pyvista_grid) {s} was created.")
+
+        return pyvista_grid
+
+    @_lru_cache(maxsize=2)
+    def get_corners(self, boundary=True):
+        """Returns corners required to create pyvista grid.
+
+        Reference
+        ---------
+        https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html
+        """
+
+        if "x" in self.fdir:
+            xcorn = np.insert(self.dx_.cumsum(), 0, 0)
+        else:
+            xcorn = np.arange(0, (self.nx + 1) * self.dx_[0], self.dx_[0])
+
+        if "y" in self.fdir:
+            ycorn = np.insert(self.dy_.cumsum(), 0, 0)
+        else:
+            ycorn = np.arange(0, (self.ny + 1) * self.dy_[0], self.dy_[0])
+
+        if "z" in self.fdir:
+            zcorn = np.insert(self.dz_.cumsum(), 0, 0)
+        else:
+            zcorn = np.arange(0, (self.nz + 1) * self.dz_[0], self.dz_[0])
+
+        # Boundary:
+        if boundary:
+            ix = 2 if "x" in self.fdir else 0
+            iy = 2 if "y" in self.fdir else 0
+            iz = 2 if "z" in self.fdir else 0
+        else:
+            ix = 0
+            iy = 0
+            iz = 0
+            if "x" in self.fdir:
+                xcorn = xcorn[1:-1]
+            if "y" in self.fdir:
+                ycorn = ycorn[1:-1]
+            if "z" in self.fdir:
+                zcorn = zcorn[1:-1]
+
+        # X corners:
+        xcorn = np.repeat(xcorn, 2)
+        xcorn = xcorn[1:-1]
+        xcorn = np.tile(xcorn, 4 * (self.ny + iy) * (self.nz + iz))
+
+        # Y corners:
+        ycorn = np.repeat(ycorn, 2)
+        ycorn = ycorn[1:-1]
+        ycorn = np.tile(ycorn, (2 * (self.nx + ix), 2 * (self.nz + iz)))
+        ycorn = np.transpose(ycorn)
+        ycorn = ycorn.flatten()
+
+        # Z corners:
+        zcorn = np.repeat(zcorn, 2)
+        zcorn = zcorn[1:-1]
+        zcorn = np.repeat(zcorn, 4 * (self.nx + ix) * (self.ny + iy))
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"- Grid corners {s} were calculated.")
+            print(
+                "    - xcorn shape:",
+                xcorn.shape,
+                "- ycorn shape:",
+                ycorn.shape,
+                "- zcorn shape:",
+                zcorn.shape,
+            )
+
+        # Combine corners:
+        corners = np.stack((xcorn, ycorn, zcorn))
+        corners = corners.transpose()
+
+        return corners
+
+    # -------------------------------------------------------------------------
+    # Properties:
+    # -------------------------------------------------------------------------
+
+    def set_props(
+        self,
+        kx=None,
+        ky=None,
+        kz=None,
+        phi=None,
+        z=None,
+        comp=None,
+        id=None,
+        coords=None,
+    ):
+        """Set properties for all cells or a selected cell.
+
+        This method is used to set or change properties. If neither id
+        nor coords are defined, the same value will be assigned to all
+        cells including boundary cells.
+
+        Parameters
+        ----------
+        kx : int, float, array-like, optional, by default None
+            permeability in x-direction (relevant only if 'x' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to nx+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            left to right).
+        ky : int, float, array-like, optional, by default None
+            permeability in y-direction (relevant only if 'y' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to ny+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g.from
+            front to back).
+        kz : int, float, array-like, optional, by default None
+            permeability in z-direction (relevant only if 'z' was in
+            fluid flow direction). In case of a list or array,
+            the length should be equal to nz+2 for all cells including
+            boundary cells. Vales should be in natural order (i.g. from
+            down to up).
+        phi : float, array-like, optional, by default None
+            porosity. In case of an array, the shape should be equal to
+            grid.shape with boundaries. Vales should be in natural
+            order.
+        z : int, float, array-like, optional, by default 0.
+            depth of grid tops (NOT FULLY IMPLEMENTED).
+        comp : float, optional, by default None
+            compressibility.
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        ToDo
+        ----
+        - allow iterables for id and coords.
+        """
+        if kx is not None:
+            self.set_prop("kx", kx, id, coords)
+            self.kx = self.props["kx"]
+        if ky is not None:
+            self.set_prop("ky", ky, id, coords)
+            self.ky = self.props["ky"]
+        if kz is not None:
+            self.set_prop("kz", kz, id, coords)
+            self.kz = self.props["kz"]
+        if phi is not None:
+            self.set_prop("phi", phi, id, coords)
+            self.phi = self.props["phi"]
+        if z is not None:
+            self.set_prop("z", z, id, coords)
+            self.z = self.props["z"]
+        if comp is not None:
+            self.set_compressibility(comp)
+        if self.props["z"] is None:
+            self.set_prop("z", 0)
+            self.z = self.props["z"]
+        if not hasattr(self, "compressibility"):
+            self.set_compressibility(0)
+
+    def set_cell_value(self, array, value, id=None, coords=None):
+        if id is not None:
+            coords = self.get_cell_coords(id, True)
+            # prop = self.props[name].flatten()
+            # prop[id] = value
+            # fshape = self.get_fshape(True, False)
+            # self.props[name] = prop.reshape(fshape)
+            # s = "cell id " + str(id)
+        if coords is not None:
+            icoords = self.get_cell_icoords(coords)
+            array[icoords] = value
+
+    def set_prop(self, name, value, id=None, coords=None):
+        """Set a property in all cells or a selected cell.
+
+        Parameters
+        ----------
+        name : str
+            property name as a string from props attribute keys.
+        value : int, float, array-like
+            property value. In case of an array, the shape should be
+            equal to grid.shape with boundaries. Vales should be in
+            natural order.
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...). If None,
+            then all cells are selected. NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). If None, then all cells are selected.
+            NotFullyImplemented.
+
+        Raises
+        ------
+        ValueError
+            Property name is unknown or not defined.
+
+        ToDo
+        ----
+        - allow iterables for id and coords.
+        - check for id or coords inside grid.
+
+        Backup
+        ------
+        - Code for id part:
+            prop = self.props[name].flatten()
+            prop[id] = value
+            fshape = self.get_fshape(True, False)
+            self.props[name] = prop.reshape(fshape)
+            s = "cell id " + str(id)
+        """
+        if name in self.props.keys():
+            if id is None and coords is None:
+                self.props[name] = self.get_ones(True, False) * value
+                s = "all cells"
+            else:
+                if id is not None:
+                    coords = self.get_cell_coords(id, True)
+                if coords is not None:
+                    icoords = self.get_cell_icoords(coords)
+                    self.props[name][icoords] = value
+                    s = "cell coords " + str(coords)
+        else:
+            msg = (
+                f"Property {name} is unknown or not defined. "
+                f"Known properties are: {list(self.props.keys())}."
+            )
+            raise ValueError(msg)
+
+        if self.verbose:
+            print(f"- Property {name} is set to {value} for {s}.")
+
+    def get_prop(self, name, boundary=True, fshape=True, fmt="array"):
+        """Get property values in all cells.
+
+        Parameters
+        ----------
+        name : str
+            property name as a string from props attribute keys.
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
+        fmt : str, optional, by default 'tuple'
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
+
+
+        Raises
+        ------
+        ValueError
+            Property name is unknown or not defined.
+
+        ToDo
+        ----
+        - flatten when fmt not array and in fshape.
+        """
+        if name in self.props.keys() and self.props[name] is not None:
+            prop = self.props[name]
+
+            if not boundary:
+                prop = self.remove_boundaries(prop, False, "both")
+
+            if not fshape:
+                prop = prop.flatten()
+
+            return utils.reformat(prop, fmt)
+
+        else:
+            msg = (
+                f"Property {name} is unknown or not defined. "
+                f"Known properties are: {list(self.props.keys())}."
+            )
+            raise ValueError(msg)
+
+    def get_cells_k(self, dir, boundary=True, fshape=True, fmt="array"):
+        """Returns permeability values for all cells.
+
+        Parameters
+        ----------
+        name : str
+            property name as a string from props attribute keys.
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
+        fmt : str, optional, by default 'tuple'
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
+
+
+        Raises
+        ------
+        ValueError
+            dir must be in ['x', 'y', 'z'].
+
+        ToDo
+        ----
+        - flatten when fmt not array and in fshape.
+        """
+        if dir in ["x", "y", "z"]:
+            name = "k" + dir
+        else:
+            raise ValueError("dir must be in ['x', 'y', 'z'].")
+
+        return self.get_prop(name, boundary, fshape, fmt)
+
+    @property
+    def is_homogeneous(self):
+        """Returns homogeneity as bool
+
+        This property checks if kx, ky, kz, and phi are the same
+        across the grid.
+
+        Returns
+        -------
+        bool
+            True if homogeneous, otherwise False.
+
+        ToDo
+        ----
+        - check across kx, ky as well. review the definition.
+        """
+        props = ["kx", "ky", "kz", "phi"]
+        props = [name for name in props if self.props[name] is not None]
+        for name in props:
+            prop = self.get_prop(name, False, False)
+            if not np.all(prop == prop[0]):
+                return False
+        return True
+
+    @property
+    def is_heterogeneous(self):
+        """Returns heterogeneity as bool
+
+        This property checks if kx, ky, kz, and phi are not the same
+        across the grid.
+
+        Returns
+        -------
+        bool
+            True if heterogeneity, otherwise False.
+        """
+        return not self.is_homogeneous
+
+    # -------------------------------------------------------------------------
     # Geometry Factor:
     # -------------------------------------------------------------------------
 
@@ -2434,7 +2445,7 @@ class CartGrid(Grid):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    def show(self, label=None, boundary=False, corners=False):
+    def show(self, label=None, boundary=True, corners=False):
         """Shows pyvista grid.
 
         This method shows the grid using pyvista object in 3D. Only if
@@ -2521,7 +2532,7 @@ class CartGrid(Grid):
                 point_size=10,
                 font_size=10,
             )
-        elif transparent:
+        else:
             points = self.get_cells_center(boundary, False, False)
             pl.add_points(
                 points,
@@ -2573,16 +2584,29 @@ class CartGrid(Grid):
     # self.tops = self.z
     # set_tops = set_z
 
+    # -------------------------------------------------------------------------
+    # End
+    # -------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
 
-    dx = 11  # [11,21,31,41]
-    dy = 12  # [12,22,32,42]
-    dz = 13  # [13,23,33,43]
-    grid = CartGrid(
-        nx=3,
-        ny=3,
-        nz=1,
+    def get_d(d_0, n):
+        if n > 1:
+            return [d_0] + [d_0 + (i * d_0) for i in range(1, n + 1)] + [d_0]
+        else:
+            return d_0
+
+    nx, ny, nz = (2, 2, 1)
+
+    dx = get_d(10, nx)
+    dy = get_d(10, ny)
+    dz = get_d(10, nz)
+
+    grid = Cartesian(
+        nx=nx,
+        ny=ny,
+        nz=nz,
         dx=dx,
         dy=dy,
         dz=dz,
@@ -2592,49 +2616,5 @@ if __name__ == "__main__":
         phi=0.27,
     )
 
-    print("Test 1:")
-    cells = grid.get_cells_coords(True, False)
-    print(cells)
-    # print(grid.extract_boundaries(cells, True, "tuple"))
-    # print(grid.extract_boundaries(cells, True, "set"))
-    # print(grid.extract_boundaries(cells, True, "array"))
-    b1 = grid.extract_boundaries(cells, True, "array")
-    b2 = np.array([(0, 1, 0), (4, 1, 0)])
-    print(utils.intersection(b1, b2, "list"))
-    # print(grid.get_cell_boundaries(coords=(3, 3, 0), fmt="list"))
-
-    # grid.show(boundary=True, label="coords")
-    # boundaries = grid.get_cell_boundaries(coords=coords, fmt="list")
-    # print("Neighbors:", boundaries)
-
-    # grid.set_kx(kx=10, coords=(1,1,1))
-    # print(grid.kx)
-    # print(grid.get_cells_id())
-    # print(grid.kx.shape)
-    # print(grid.cells_volume_b.shape)
-    # grid.show(boundary=True, label="id", corners=False)
-    # grid.show(boundary=False, label="id", corners=False)
-    # grid.show(boundary=True, label="dy")
-    # grid.show(boundary=True, label="dz")
-    # grid.show(boundary=True, label="area_x")
-    # grid.show(boundary=True, label="area_y")
-    # grid.show(boundary=True, label="area_z")
-
-    # grid.show(boundary=True, centers='volume')
-
-    # Doc and reporting:
-    # print(grid.__doc__)
-    # print(grid) # or grid.report()
-
-    # Setters:
-    # grid.set_comp(1e-6)
-    # grid.set_permeability(200, 1)
-    # grid.set_props(0.3, 11)
-    # grid.set_phi(0.2)
-    # grid.set_k(10)
-    # grid.set_tops(10)
-
-    # Getters:
-    # grid.get_pv_grid(show_boundary=True)
-    # print(grid.get_boundaries())
-    # print(grid.pv_grid.neighbors(1, rel='connectivity')) # connectivity, geometric
+    grid.show("id")
+    print(grid)

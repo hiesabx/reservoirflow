@@ -73,7 +73,7 @@ if __name__ == "__main__":
     dx = [11, 21, 31, 41]
     dy = [12, 22, 32, 42]
     dz = [13, 23, 33, 43]
-    grid = grids.CartGrid(
+    grid = grids.Cartesian(
         nx=2,
         ny=2,
         nz=2,

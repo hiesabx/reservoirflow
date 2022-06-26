@@ -12,7 +12,7 @@ def get_d(d_0, n):
 def model_1(n, unify):
 
     nx, ny, nz = n
-    g = grids.CartGrid(
+    g = grids.Cartesian(
         nx=nx,
         ny=ny,
         nz=nz,
@@ -64,17 +64,20 @@ def boundaries():
 
 def props():
     g.set_props(phi=0.30)
-    g.set_props(phi=0.20, id=(6))
-    # print(g.phi)
+    # g.set_props(phi=0.20, id=(6))
+    g.set_prop("phi", value=0.20, id=6)
+    print(id(g.phi))
+    print(id(g.props["phi"]))
     g.set_props(kx=1)
-    g.set_props(kx=100000, id=6)
-    # print(g.kx)
+    g.set_prop("kx", value=100000, id=6)
+    print(id(g.kx))
+    print(id(g.props["kx"]))
 
 
 def prop():
     g.verbose = True
     g.set_prop(name="phi", value=0.30)
-    # g.set_prop(name="phi", value=0, id=11)
+    g.set_prop(name="phi", value=0, id=11)
     g.set_prop(name="kx", value=300)
     g.set_prop(name="kx", value=30, id=11)
     # print(g.props["phi"])
@@ -153,16 +156,16 @@ def G():
 # %%
 if __name__ == "__main__":
     g = model_1((2, 2, 1), unify=False)
-    G()
-    center()
-    volume()
-    cell_d()
-    cells_A()
+    # G()
+    # center()
+    # volume()
+    # cell_d()
+    # cells_A()
     prop()
     props()
-    neighbors()
-    boundaries()
+    # neighbors()
+    # boundaries()
     show("id")
-    # show("coords")
+    show("coords")
     # show("dx")
     # show("center")

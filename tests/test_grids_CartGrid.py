@@ -31,7 +31,7 @@ if __name__ == "__main__":
             return d_0
 
     def test_grid(nx, ny, nz):
-        grid = grids.CartGrid(
+        grid = grids.Cartesian(
             nx=nx,
             ny=ny,
             nz=nz,

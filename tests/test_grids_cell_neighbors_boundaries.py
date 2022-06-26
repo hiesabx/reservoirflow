@@ -293,7 +293,7 @@ class Test_3D(unittest.TestCase):
 
 if __name__ == "__main__":
     unify = False
-    grid_1d_x = grids.CartGrid(
+    grid_1d_x = grids.Cartesian(
         nx=3,
         ny=1,
         nz=1,
@@ -308,7 +308,7 @@ if __name__ == "__main__":
         unify=unify,
     )
 
-    grid_1d_y = grids.CartGrid(
+    grid_1d_y = grids.Cartesian(
         nx=1,
         ny=3,
         nz=1,
@@ -323,7 +323,7 @@ if __name__ == "__main__":
         unify=unify,
     )
 
-    grid_1d_z = grids.CartGrid(
+    grid_1d_z = grids.Cartesian(
         nx=1,
         ny=1,
         nz=3,
@@ -338,7 +338,7 @@ if __name__ == "__main__":
         unify=unify,
     )
 
-    grid_2d_xy = grids.CartGrid(
+    grid_2d_xy = grids.Cartesian(
         nx=3,
         ny=3,
         nz=1,
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         verbose=False,
         unify=unify,
     )
-    grid_2d_xz = grids.CartGrid(
+    grid_2d_xz = grids.Cartesian(
         nx=3,
         ny=1,
         nz=3,
@@ -366,7 +366,7 @@ if __name__ == "__main__":
         verbose=False,
         unify=unify,
     )
-    grid_2d_yz = grids.CartGrid(
+    grid_2d_yz = grids.Cartesian(
         nx=1,
         ny=3,
         nz=3,
@@ -380,7 +380,7 @@ if __name__ == "__main__":
         verbose=False,
         unify=unify,
     )
-    grid_3d = grids.CartGrid(
+    grid_3d = grids.Cartesian(
         nx=3,
         ny=3,
         nz=3,
