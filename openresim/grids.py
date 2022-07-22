@@ -3,8 +3,8 @@ Grid classes for reservoir simulation models.
 
 This module contains all grid classes that are required to build the 
 Model class. Grid class represents both the rock geometry and the rock 
-properties that are required for fluid flow calculations.
-
+properties which are required for the fluid-flow in porous-media 
+calculations.
 """
 from openresim.base import Base
 import numpy as np
@@ -27,19 +27,38 @@ class Grid(Base):
     """
 
     def __init__(self, dtype, unit, unify, verbose):
+        """Returns parent Grid class.
+
+        Parameters
+        ----------
+        dtype : str or `np.dtype`, optional, by default 'double'
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
+        unit : str ('field', 'metric'), optional, by default 'field'
+            units used in input and output. Parameters can be defined as
+            `unit='field'` (default) or `unit='metric'`. `units`
+            attribute can be accessed from this class using
+            (`Cartesian.units`) or from the base class (`Grid.units`).
+        unify : bool, optional, by default False
+            unify shape to be always tuple of 3 when set to True. When
+            set to False, shape includes only the number of girds in
+            flow direction as tuple. This option is only relevant in
+            case of 1D or 2D flow. This option may be required to make
+            1D and 2D shapes shapes of this class more consistent with
+            each other or with 3D shape.
+        verbose : bool, optional, by default False
+            print information for debugging.
+        """
         super().__init__(unit)
-        self.dtype = dtype  # np.single, np.double
+        self.dtype = dtype
         self.unify = unify
         self.verbose = verbose
         props_keys = ["kx", "ky", "kz", "phi", "z", "comp"]
-        self.props = dict.fromkeys(props_keys)
+        self.__props__ = dict.fromkeys(props_keys)
 
 
 class Cartesian(Grid):
-    """Cartesian grid class with explicit structure. Parameters can be
-    defined as `unit='field'` (default) or `unit='metric'`. `units`
-    can be accessed from this class or base class `Cartesian.units` or
-    `Grid.units`.
+    """Cartesian grid class with explicit structure.
 
     Parameters
     ----------
@@ -78,10 +97,7 @@ class Cartesian(Grid):
         unify=True,
         verbose=False,
     ):
-        """Return cartesian grid object with explicit structure.
-        Parameters can be defined as `unit='field'` (by default) or
-        `unit='metric'`. `units` can be accessed from this class with
-        `Cartesian.units` or from or the base class with `Grid.units`.
+        """Cartesian grid class with explicit structure.
 
         Parameters
         ----------
@@ -133,17 +149,20 @@ class Cartesian(Grid):
         comp : float, optional, by default None
             compressibility.
         dtype : str or `np.dtype`, optional, by default 'double'
-            data type used in all arrays.
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
         unit : str ('field', 'metric'), optional, by default 'field'
-            units used in input and output.
+            units used in input and output. Parameters can be defined as
+            `unit='field'` (default) or `unit='metric'`. `units`
+            attribute can be accessed from this class using
+            (`Cartesian.units`) or from the base class (`Grid.units`).
         unify : bool, optional, by default False
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
             flow direction as tuple. This option is only relevant in
             case of 1D or 2D flow. This option may be required to make
             1D and 2D shapes shapes of this class more consistent with
-            each other or with 3D shape. Warning: True option is not
-            yet fully compatible.
+            each other or with 3D shape.
         verbose : bool, optional, by default False
             print information for debugging.
 
@@ -157,7 +176,7 @@ class Cartesian(Grid):
         assert ny >= 1, "ny must be 1 or larger."
         assert nz >= 1, "nz must be 1 or larger."
         self.nx, self.ny, self.nz = nx, ny, nz
-        self.__calc_cells_d(dx, dy, dz)
+        self.__calc_cells_d(dx, dy, dz, False)
         self.__calc_cells_A()
         self.__calc_cells_V()
         self.set_props(kx, ky, kz, phi, z, comp)
@@ -168,7 +187,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=1)
     def get_D(self):
-        """Return the grid dimension as int.
+        """Returns the grid dimension (D) as int.
 
         Returns
         -------
@@ -178,13 +197,13 @@ class Cartesian(Grid):
         self.D = sum([1 if n > 1 else 0 for n in (self.nx, self.ny, self.nz)])
 
         if self.verbose:
-            print(f"- Dimension (D) is set to {self.D}.")
+            print(f"[info] D is {self.D}.")
 
         return self.D
 
     @_lru_cache(maxsize=2)
     def get_shape(self, boundary=False):
-        """Return the grid shape in x, y, z as ndarray.
+        """Returns the grid shape in x, y, z as ndarray.
 
         Parameters
         ----------
@@ -201,13 +220,13 @@ class Cartesian(Grid):
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"- Shape {s} is set to {self.shape}.")
+            print(f"[info] shape {s} is {self.shape}.")
 
         return self.shape
 
     @_lru_cache(maxsize=1)
     def get_fdir(self):
-        """Return the flow direction as str.
+        """Returns the flow direction (fdir) as str.
 
         Returns
         -------
@@ -240,13 +259,13 @@ class Cartesian(Grid):
             self.fdir = "xyz"
 
         if self.verbose:
-            print(f"- Flow direction (fdir) is set to {self.fdir}.")
+            print(f"[info] fdir is {self.fdir}.")
 
         return self.fdir
 
     @_lru_cache(maxsize=2)
     def get_n(self, boundary=False):
-        """Return the number of grids in x, y, and z as tuple.
+        """Returns the number of grids (n) in x, y, z as tuple.
 
         Parameters
         ----------
@@ -282,13 +301,13 @@ class Cartesian(Grid):
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"- N-cells {s} is {self.n}.")
+            print(f"[info] n {s} is {self.n}.")
 
         return self.n
 
     @_lru_cache(maxsize=2)
     def get_n_max(self, boundary=True):
-        """Return the maximum number of grids as int.
+        """Returns the maximum number of grids (n_max) as int.
 
         Parameters
         ----------
@@ -305,28 +324,21 @@ class Cartesian(Grid):
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"- Maximum number of cells {s} is {self.n_max}.")
+            print(f"[info] n_max {s} is {self.n_max}.")
 
         return self.n_max
 
     @_lru_cache(maxsize=2)
     def get_fshape(self, boundary=True, points=False):
-        """Return flow shape as tuple.
+        """Returns flow shape (fshape) as tuple.
 
         Parameters
         ----------
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
-            Warning: True option is required.
         points : bool, optional, by default False
-            True for points (i.e. tuples of len 3 like coords, icoords)
-            and False for scaler values (e.g. id).
-        unify : bool, optional, by default False
-            unify shape to be always tuple of 3 as (nz,ny,nx) when set
-            to True. When set to False, shape includes only the number
-            of girds in flow direction as tuple. This option is only
-            relevant in case of 1D or 2D flow. Warning: True option is
-            not yet fully compatible.
+            True for points (e.g. coords, icoords) and False for scaler
+            values (e.g. id).
 
         Returns
         -------
@@ -335,19 +347,17 @@ class Cartesian(Grid):
 
         ToDo
         ----
-        - remove unify from docstring.
-        add usage with boundary=False.
+        - check if false boundary is not problematic:
+            check code: (to be removed)
+            # msg = "False boundary is not permitted in fshape method."
+            # assert boundary == True, msg
         add optional boundaries for 2D models:
             if self.flowdir == 'xz+':
                 self.fshape = (self.nz_b, self.nx_b, 3)
             if self.flowdir == 'yz+':
                 self.fshape = (self.nz_b, self.ny_b, 3)
         """
-        msg = "False boundary is not permitted in fshape method."
-        assert boundary == True, msg
-        # utils.fshape_warn(self.unify, unify)
-
-        nx, ny, nz = self.get_n(boundary)  # Includes self.get_fdir()
+        nx, ny, nz = self.get_n(boundary)
 
         if self.fdir == "xyz":
             self.fshape = (nz, ny, nx)
@@ -391,13 +401,13 @@ class Cartesian(Grid):
             self.fshape = self.fshape + (3,)
 
         if self.verbose:
-            print(f"- Flow shape (fshape) is set to {self.fshape}.")
+            print(f"[info] fshape is {self.fshape}.")
 
         return self.fshape
 
     @_lru_cache(maxsize=2)
     def get_n_cells(self, boundary=True):
-        """Return total number of grid cells as int.
+        """Returns total number of grid cells as int.
 
         Parameters
         ----------
@@ -414,18 +424,19 @@ class Cartesian(Grid):
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"- Number of cells {s} is {self.n_cells}.")
+            print(f"[info] n_cells {s} is {self.n_cells}.")
 
         return self.n_cells
 
     @_lru_cache(maxsize=4)
     def get_order(self, type="natural", boundary=True, fshape=False):
-        """Return grid order as ndarray.
+        """Returns grid order as ndarray.
 
         Parameters
         ----------
         type : str, optional, by default "natural"
-            order type in which grids are numbered.
+            grid order type in which grids are numbered. Currently, only
+            "natural" order is supported.
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
         fshape : bool, optional, by default False
@@ -444,23 +455,22 @@ class Cartesian(Grid):
                 "Supported order types: ['natural']"
             )
 
+        if not boundary:
+            self.order = self.remove_boundaries(self.order, False, "both")
+
         if fshape:
             shape = self.get_fshape(boundary, False)
             self.order = self.order.reshape(shape)
 
-        if not boundary:
-            self.order = self.remove_boundaries(self.order, False, "both")
-
         if self.verbose:
-
             s1, s2 = utils.get_verbose_str(boundary, fshape)
-            print(f"- Cells order (order) was computed ({s1} - {s2}).")
+            print(f"[info] order was computed ({s1} - {s2}).")
 
         return self.order
 
     @_lru_cache(maxsize=1)
-    def get_ones(self, boundary=True, sparse=False):
-        """Return array of ones in flow shape.
+    def get_ones(self, boundary=True, fshape=False, sparse=False):
+        """Returns array of ones in flow shape (fshape).
 
         Parameters
         ----------
@@ -473,20 +483,20 @@ class Cartesian(Grid):
         -------
         array
             array in flow shape filled with ones.
+
         """
-
-        assert boundary == True, "False boundary option is not allowed."
-        assert sparse == False, "True sparse option is not allowed."
-
-        fshape = self.get_fshape(boundary, False)
+        if fshape:
+            shape = self.get_fshape(boundary, False)
+        else:
+            shape = self.get_n_cells(boundary)
 
         if not sparse:
-            self.ones = np.ones(fshape, dtype="int")
+            self.ones = np.ones(shape, dtype="int")
         else:
-            self.ones = ss.lil_matrix(fshape, dtype="int")
+            self.ones = ss.lil_matrix(shape, dtype="int")
 
         if self.verbose:
-            print(f"- Ones array (ones) was computed.")
+            print(f"[info] ones was computed.")
 
         return self.ones
 
@@ -496,13 +506,15 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=None)
     def get_cell_id(self, coords=[], boundary=True):
-        """Return cell/cells id based on natural as int/list.
+        """Returns cell/cells id based on natural as int/list.
 
         Parameters
         ----------
         coords : tuple of int, tuple of tuples of int
             cell coordinates (i,j,k) as a tuple of int. For multiple
             cells, tuple of tuples of int as ((i,j,k),(i,j,k),..).
+            Warning: providing an unhashable type (e.g. list, ndarray)
+            is not supported and will cause TypeError.
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
 
@@ -521,7 +533,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=4)
     def get_cells_id(self, boundary=True, fshape=False, fmt="tuple"):
-        """Return all cells id based on natural order as ndarray.
+        """Returns all cells id based on natural order as ndarray.
 
         Parameters
         ----------
@@ -554,22 +566,21 @@ class Cartesian(Grid):
 
         if self.verbose:
             s1, s2 = utils.get_verbose_str(boundary, fshape)
-            print(f"- Cells id (cells_id) was computed ({s1} - {s2}).")
+            print(f"[info] cells_id was computed ({s1} - {s2}).")
 
         return self.cells_id
 
     @_lru_cache(maxsize=None)
     def get_cell_coords(self, id, boundary=True):
-        """Return cell/cells coordinates as tuple/list of tuples.
+        """Returns cell/cells coordinates as tuple/list of tuples.
 
         Parameters
         ----------
         id : int, tuple of int
             cell id based on natural order as int. For multiple cells,
-            list of int [id,id,..] or tuple of int (id,id,...). Warning:
-            passing list or arrays instead of tuples does not work with
-            cache decorator used in this method since lists and ndarray
-            are both unhashable.
+            tuple of int (id,id,...). Warning: providing an unhashable
+            type (e.g. list, ndarray) is not supported and will cause
+            TypeError.
         boundary : bool, optional, by default True
             values in flow shape (True) or flatten (False).
 
@@ -587,7 +598,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=4)
     def get_cells_coords(self, boundary=True, fshape=False, fmt="tuple"):
-        """Return all cells coords based on (i,j,k) as ndarray.
+        """Returns all cells coords based on (i,j,k).
 
         Parameters
         ----------
@@ -611,23 +622,24 @@ class Cartesian(Grid):
 
         ToDo
         ----
-        can be a generator instead.
+        - can be a generator instead?
+        - check if needs optimization.
         """
         cells_id = self.get_cells_id(boundary, False, "array")
         pyvista_grid = self.get_pyvista_grid(True)
-        self.cells_coords = pyvista_grid.cell_coords(cells_id)
+        cells_coords = pyvista_grid.cell_coords(cells_id)
 
         if fshape:
-            coords_fshape = self.get_fshape(boundary, True)
-            self.cells_coords = self.cells_coords.reshape(coords_fshape)
+            shape = self.get_fshape(boundary, True)
+            cells_coords = cells_coords.reshape(shape)
         else:
-            self.cells_coords = utils.reformat(self.cells_coords, fmt)
+            cells_coords = utils.reformat(cells_coords, fmt)
 
         if self.verbose:
             s1, s2 = utils.get_verbose_str(boundary, fshape)
-            print(f"- Cells coords (cells_coords) was computed ({s1} - {s2}).")
+            print(f"[info] cells_coords was computed ({s1} - {s2}).")
 
-        return self.cells_coords
+        return cells_coords
 
     @_lru_cache(maxsize=None)
     def get_cell_icoords(self, coords):
@@ -641,15 +653,10 @@ class Cartesian(Grid):
         Parameters
         ----------
         coords : tuple of int, tuple of tuples of int
-            cell coordinates (i,j,k) as a tuple of int. For
-            multiple cells, tuple of tuples of int as
-            ((i,j,k),(i,j,k),..).
-        unify : bool, optional, by default False
-            unify shape to be always tuple of 3 as (k,j,i) when set to
-            True. When set to False, shape includes only the number
-            of girds in flow direction as tuple. This option is only
-            relevant in case of 1D or 2D flow. Warning: True option is
-            not yet fully compatible.
+            cell coordinates (i,j,k) as a tuple of int. For multiple
+            cells, tuple of tuples of int as ((i,j,k),(i,j,k),..).
+            Warning: providing an unhashable type (e.g. list, ndarray)
+            is not supported and will cause TypeError.
 
         Returns
         -------
@@ -658,47 +665,63 @@ class Cartesian(Grid):
 
         ToDo
         ----
-        - remove unify from docstring.
-        - add tuple of tuples for coords as input.
-        - set unify as None.
+        - very slow, improve isin method..
         """
-        cells_coords = self.get_cells_coords(True, False, "array")
-        shape_bool = cells_coords.shape == (self.get_n_cells(True), 3)
-        assert shape_bool, "coords should include boundary and be flatten."
-        assert utils.isin(coords, cells_coords), "coords are out of range."
-        # utils.fshape_warn(self.unify, unify)
 
-        if not self.unify and self.D <= 2:
-            icoords = tuple(c for c in coords[::-1] if c > 0)
-            assert len(icoords) == self.get_D(), "icoords is not compatible"
+        if not isinstance(coords[0], tuple):
+            cells_coords = self.get_cells_coords(True, False, "array")
+            msg = "coords are out of range."
+            assert utils.isin(coords, cells_coords), msg
+            if not self.unify and self.D <= 2:
+                icoords = tuple(c for c in coords[::-1] if c > 0)
+                assert len(icoords) == self.get_D(), "icoords is not compatible"
+            else:
+                icoords = tuple(c for c in coords[::-1])
         else:
-            icoords = tuple(c for c in coords[::-1])
+            icoords = tuple(self.get_cell_icoords(i) for i in coords)
 
         return icoords
 
-    def get_cells_icoords(self, boundary=True, fshape=None, fmt=None):
-        """_summary_
+    def get_cells_icoords(self, boundary=True, fshape=False, fmt=None):
+        """Returns all cells icoords based on (k,j,i).
 
         Parameters
         ----------
-        boundary : bool, optional
-            _description_, by default True
-        fshape : _type_, optional
-            _description_, by default None
-        fmt : _type_, optional
-            _description_, by default None
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
+        fmt : str, optional, by default 'tuple'
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
 
         Returns
         -------
-        _type_
-            _description_
+        ndarray
+            cells coords in (i,j,k) as array.
 
         ToDo
         ----
         - Finish implementation.
         """
         cells_coords = self.get_cells_coords(boundary, False, "tuple")
-        cells_icoords = [self.get_cell_icoords(coords) for coords in cells_coords]
+        cells_icoords = self.get_cell_icoords(cells_coords)
+
+        if fshape:
+            shape = self.get_fshape(boundary, True)
+            cells_icoords = np.array(cells_icoords).reshape(shape)
+        else:
+            cells_icoords = utils.reformat(cells_icoords, fmt)
+
+        if self.verbose:
+            s1, s2 = utils.get_verbose_str(boundary, fshape)
+            print(f"[info] cells_icoords was computed ({s1} - {s2}).")
+
         return cells_icoords
 
     # -------------------------------------------------------------------------
@@ -713,7 +736,7 @@ class Cartesian(Grid):
         boundary=False,
         fmt="dict",
     ):
-        """Return cell neighbors.
+        """Returns cell neighbors.
 
         This method returns cell neighbors by id or coords. If
         neighbors are desired by id, then id argument should be used.
@@ -812,7 +835,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=None)
     def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
-        """Return cell boundaries.
+        """Returns cell boundaries.
 
         This method returns cell boundaries by id or coords. If
         boundaries are desired by id, then id argument should be used.
@@ -1112,7 +1135,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=2)
     def get_boundaries(self, by="id", fmt="tuple"):
-        """Return all boundary cells by id or coords.
+        """Returns all boundary cells by id or coords.
 
         Parameters
         ----------
@@ -1207,11 +1230,11 @@ class Cartesian(Grid):
             self.cells_d_.append(dz)
 
         if self.verbose:
-            print(f"- Cells d axes vectors (dx, dy, dz) were computed.")
+            print(f"[info] axes vectors (dx_, dy_, dz_) were computed.")
 
         return self.cells_d_
 
-    def __calc_cells_d(self, dx, dy, dz):
+    def __calc_cells_d(self, dx, dy, dz, fshape=False):
         """Calculates dimensional meshgrid in x,y,z directions.
 
         This method takes dx, dy, and dz as scalers or iterables and use
@@ -1237,28 +1260,39 @@ class Cartesian(Grid):
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). If set to
+            True, fmt argument will be ignored.
 
         Returns
         -------
         tuple
             tuple of len 3 for dimension meshgrid as Dx, Dy, Dz.
+
+        ToDo
+        ----
+        - Do we need any fmt here?
         """
-        fshape = self.get_fshape(True, False)
+        if fshape:
+            shape = self.get_fshape(True, False)
+        else:
+            shape = self.get_n_cells(True)
+
         cells_d_ = self.__calc_cells_d_(dx, dy, dz)
 
         self.dx, self.dy, self.dz = np.meshgrid(*cells_d_, copy=False)
-        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(fshape)
-        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(fshape)
-        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(fshape)
+        self.dx = np.transpose(self.dx, axes=(0, 2, 1)).reshape(shape)
+        self.dy = np.transpose(self.dy, axes=(2, 0, 1)).reshape(shape)
+        self.dz = np.transpose(self.dz, axes=(2, 1, 0)).reshape(shape)
 
         if self.verbose:
-            print(f"- Cells D meshgrid (Dx, Dy, Dz) were computed.")
+            print(f"[info] axes meshgrid (Dx, Dy, Dz) were computed.")
 
         return (self.dx, self.dy, self.dz)
 
     @_lru_cache(maxsize=None)
     def get_cells_d(self, dir, boundary=True, fshape=True):
-        """Return cells dimensional meshgrid.
+        """Returns cells dimensional meshgrid.
 
         Parameters
         ----------
@@ -1293,16 +1327,17 @@ class Cartesian(Grid):
         if not boundary:
             cells_d = self.remove_boundaries(cells_d, False, "both")
 
-        if not fshape:
-            cells_d = cells_d.flatten()
+        if fshape:
+            shape = self.get_fshape(boundary, False)
+            cells_d = cells_d.reshape(shape)
 
         if self.verbose:
-            print(f"- Cells d{dir} was exported.")
+            print(f"[info] d{dir} was exported.")
 
         return cells_d
 
     def get_cells_dx(self, boundary=True, fshape=True):
-        """Return cells dx.
+        """Returns cells dx.
 
         Parameters
         ----------
@@ -1319,7 +1354,7 @@ class Cartesian(Grid):
         return self.get_cells_d("x", boundary, fshape)
 
     def get_cells_dy(self, boundary=True, fshape=True):
-        """Return cells dy.
+        """Returns cells dy.
 
         Parameters
         ----------
@@ -1336,7 +1371,7 @@ class Cartesian(Grid):
         return self.get_cells_d("y", boundary, fshape)
 
     def get_cells_dz(self, boundary=True, fshape=True):
-        """Return cells dz.
+        """Returns cells dz.
 
         Parameters
         ----------
@@ -1354,7 +1389,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=None)
     def get_cell_d(self, dir, id=None, coords=None):
-        """Return cell d.
+        """Returns cell d.
 
         Parameters
         ----------
@@ -1394,7 +1429,7 @@ class Cartesian(Grid):
             raise ValueError("id or coords argument must be defined.")
 
     def get_cell_dx(self, id=None, coords=None):
-        """Return cell dx.
+        """Returns cell dx.
 
         Parameters
         ----------
@@ -1420,7 +1455,7 @@ class Cartesian(Grid):
         return self.get_cell_d("x", id, coords)
 
     def get_cell_dy(self, id=None, coords=None):
-        """Return cell dy.
+        """Returns cell dy.
 
         Parameters
         ----------
@@ -1446,7 +1481,7 @@ class Cartesian(Grid):
         return self.get_cell_d("y", id, coords)
 
     def get_cell_dz(self, id=None, coords=None):
-        """Return cell dz.
+        """Returns cell dz.
 
         Parameters
         ----------
@@ -1513,14 +1548,15 @@ class Cartesian(Grid):
         else:
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
-        if not fshape:
-            cells_A = cells_A.flatten()
+        if fshape:
+            shape = self.get_fshape(boundary)
+            cells_A = cells_A.reshape(shape)
 
         if not boundary:
             cells_A = self.remove_boundaries(cells_A, False, "both")
 
         if self.verbose:
-            print(f"- Cells A{dir} was exported.")
+            print(f"[info] A{dir} was exported.")
 
         return cells_A
 
@@ -1743,19 +1779,18 @@ class Cartesian(Grid):
         if pyvista:
             pyvista_grid = self.get_pyvista_grid(True)
             cells_V = pyvista_grid.compute_cell_sizes()["Volume"]
-            shape = self.get_fshape(True, False)
-            cells_V = cells_V.reshape(shape)
         else:
             cells_V = self.V
 
-        if not fshape:
-            cells_V = cells_V.flatten()
+        if fshape:
+            shape = self.get_fshape(boundary)
+            cells_V = cells_V.reshape(shape)
 
         if not boundary:
             cells_V = self.remove_boundaries(cells_V, False, "both")
 
         if self.verbose:
-            print("- Cells volumes (V) was computed.")
+            print("[info] V was computed.")
 
         return cells_V
 
@@ -1841,7 +1876,7 @@ class Cartesian(Grid):
             cells_center = self.remove_boundaries(cells_center, True, "both")
 
         if self.verbose:
-            print(f"- Cells center was computed.")
+            print(f"[info] center was computed.")
 
         return cells_center
 
@@ -1886,7 +1921,7 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=2)
     def get_pyvista_grid(self, boundary=True):
-        """Return pyvista ExplicitStructuredGrid object.
+        """Returns pyvista ExplicitStructuredGrid object.
 
         Parameters
         ----------
@@ -1908,7 +1943,7 @@ class Cartesian(Grid):
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"- Pyvista grid (pyvista_grid) {s} was created.")
+            print(f"[info] pyvista_grid {s} was created.")
 
         return pyvista_grid
 
@@ -1971,7 +2006,7 @@ class Cartesian(Grid):
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"- Grid corners {s} were calculated.")
+            print(f"[info] corners {s} were calculated.")
             print(
                 "    - xcorn shape:",
                 xcorn.shape,
@@ -2051,24 +2086,24 @@ class Cartesian(Grid):
         """
         if kx is not None:
             self.set_prop("kx", kx, id, coords)
-            self.kx = self.props["kx"]
+            self.kx = self.__props__["kx"]
         if ky is not None:
             self.set_prop("ky", ky, id, coords)
-            self.ky = self.props["ky"]
+            self.ky = self.__props__["ky"]
         if kz is not None:
             self.set_prop("kz", kz, id, coords)
-            self.kz = self.props["kz"]
+            self.kz = self.__props__["kz"]
         if phi is not None:
             self.set_prop("phi", phi, id, coords)
-            self.phi = self.props["phi"]
+            self.phi = self.__props__["phi"]
         if z is not None:
             self.set_prop("z", z, id, coords)
-            self.z = self.props["z"]
+            self.z = self.__props__["z"]
         if comp is not None:
             self.set_compressibility(comp)
-        if self.props["z"] is None:
+        if self.__props__["z"] is None:
             self.set_prop("z", 0)
-            self.z = self.props["z"]
+            self.z = self.__props__["z"]
         if not hasattr(self, "compressibility"):
             self.set_compressibility(0)
 
@@ -2086,6 +2121,10 @@ class Cartesian(Grid):
 
     def set_prop(self, name, value, id=None, coords=None):
         """Set a property in all cells or a selected cell.
+
+        This method is used to populate properties values based on grid
+        shape. By default, values are populated in a flatten array which
+        can then be reshaped based on fshape.
 
         Parameters
         ----------
@@ -2114,6 +2153,7 @@ class Cartesian(Grid):
         ----
         - allow iterables for id and coords.
         - check for id or coords inside grid.
+        - make get_ones(#, False, #) > with flatt as default.
 
         Backup
         ------
@@ -2124,26 +2164,26 @@ class Cartesian(Grid):
             self.props[name] = prop.reshape(fshape)
             s = "cell id " + str(id)
         """
-        if name in self.props.keys():
+        if name in self.__props__.keys():
             if id is None and coords is None:
-                self.props[name] = self.get_ones(True, False) * value
+                self.__props__[name] = self.get_ones(True, False, False) * value
                 s = "all cells"
             else:
                 if id is not None:
                     coords = self.get_cell_coords(id, True)
                 if coords is not None:
                     icoords = self.get_cell_icoords(coords)
-                    self.props[name][icoords] = value
+                    self.__props__[name][icoords] = value
                     s = "cell coords " + str(coords)
         else:
             msg = (
                 f"Property {name} is unknown or not defined. "
-                f"Known properties are: {list(self.props.keys())}."
+                f"Known properties are: {list(self.__props__.keys())}."
             )
             raise ValueError(msg)
 
         if self.verbose:
-            print(f"- Property {name} is set to {value} for {s}.")
+            print(f"[info] {name} is {value} for {s}.")
 
     def get_prop(self, name, boundary=True, fshape=True, fmt="array"):
         """Get property values in all cells.
@@ -2175,8 +2215,8 @@ class Cartesian(Grid):
         ----
         - flatten when fmt not array and in fshape.
         """
-        if name in self.props.keys() and self.props[name] is not None:
-            prop = self.props[name]
+        if name in self.__props__.keys() and self.__props__[name] is not None:
+            prop = self.__props__[name]
 
             if not boundary:
                 prop = self.remove_boundaries(prop, False, "both")
@@ -2189,7 +2229,7 @@ class Cartesian(Grid):
         else:
             msg = (
                 f"Property {name} is unknown or not defined. "
-                f"Known properties are: {list(self.props.keys())}."
+                f"Known properties are: {list(self.__props__.keys())}."
             )
             raise ValueError(msg)
 
@@ -2247,7 +2287,7 @@ class Cartesian(Grid):
         - check across kx, ky as well. review the definition.
         """
         props = ["kx", "ky", "kz", "phi"]
-        props = [name for name in props if self.props[name] is not None]
+        props = [name for name in props if self.__props__[name] is not None]
         for name in props:
             prop = self.get_prop(name, False, False)
             if not np.all(prop == prop[0]):
