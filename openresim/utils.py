@@ -51,6 +51,7 @@ def isin(x: tuple, in_data):
     ToDo
     ----
     test if data contains points data and x is i,j,k tuple.
+    - must use sets to check instead of fore loops.
     """
     if not isinstance(x, tuple) and not isinstance(x, (np.integer, int)):
         x = tuple(x)

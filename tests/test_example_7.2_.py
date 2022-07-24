@@ -58,7 +58,7 @@ if __name__ == "__main__":
         )
         fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, dtype="double")
         model = models.Model(grid, fluid, dtype="double")
-        model.set_well(i=4, q=-600, s=1.5, r=3.5)
+        model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries(
             {0: {"rate": 600}, -1: {"rate": 0}}
         )  # 0: {'pressure': 4000},

@@ -75,7 +75,7 @@ if __name__ == "__main__":
         model = models.Model(grid, fluid, dtype="double")
 
         # model.grid.pv_grid.points = model.grid.get_pv_grid(show_boundary=True) += z
-        model.set_well(i=4, q=-600, s=1.5, r=3.5)
+        model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: {"pressure": 4000}, -1: {"rate": 0}})
         return model
 

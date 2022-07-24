@@ -32,8 +32,10 @@ class Base:
     units = units_dict[unit]
     factors = factors_dict[unit]
 
-    def __init__(self, unit="field"):
+    def __init__(self, unit="field", dtype="double", verbose=True):
         self.set_units(unit)
+        self.dtype = dtype
+        self.verbose = verbose
 
     def set_units(self, unit="field"):
         if unit in self.units_dict.keys():
@@ -43,32 +45,16 @@ class Base:
         else:
             raise ValueError(f"The selected unit system ({unit}) is unknown!")
 
-    def set_compressibility(self, comp):
+    def set_comp(self, comp):
         """ """
-        self.compressibility = self.comp = comp
+        self.comp = comp
         if comp == 0:
-            self.compressibility_type = self.comp_type = "incompressible"
-            # self.__set_compressibility_type('incompressible')
+            self.comp_type = "incompressible"
         elif comp > 0:
-            self.compressibility_type = self.comp_type = "compressible"
-            # self.__set_compressibility_type('compressible')
+            self.comp_type = "compressible"
         else:
-            # self.__set_compressibility_type('unknown')
+            self.comp_type = None
             raise ValueError("Compressibility type is unknown!")
-
-    set_comp = set_compressibility
-
-    # def __set_compressibility_type(self, comp_type: str):
-    #     """
-
-    #     """
-    #     if 'incomp' in comp_type:
-    #         self.compressibility_type = self.comp_type = 'incompressible'
-    #     elif 'comp' in comp_type:
-    #         self.compressibility_type = self.comp_type = 'compressible'
-    #     else:
-    #         raise ValueError('Compressibility type is unknown!')
-    # __set_comp_type = __set_compressibility_type
 
     def report(self, prop=None, ifmt=0):
         props = vars(self)
@@ -96,12 +82,25 @@ class Base:
     def __repr__(self):  # print(repr(class))
         return str(vars(self))
 
+    # -------------------------------------------------------------------------
+    # Synonyms:
+    # -------------------------------------------------------------------------
+
+    def allow_synonyms(self):
+        self.set_compressibility = self.set_comp
+        self.compressibility = self.comp
+        self.compressibility_type = self.comp_type
+
+    # -------------------------------------------------------------------------
+    # End
+    # -------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
-    b = Base("metric")
+    b = Base("metric", "single", True)
     b.name = "b"
     print(repr(b))
-    k = Base()
+    k = Base("metric", "single", True)
     k.name = "k"
     b.report()
     k.report()

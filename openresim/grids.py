@@ -26,7 +26,9 @@ class Grid(Base):
         Base class with universal settings.
     """
 
-    def __init__(self, dtype, unit, unify, verbose):
+    name = "Grid"
+
+    def __init__(self, unit, dtype, verbose, unify):
         """Returns parent Grid class.
 
         Parameters
@@ -49,11 +51,12 @@ class Grid(Base):
         verbose : bool, optional, by default False
             print information for debugging.
         """
-        super().__init__(unit)
-        self.dtype = dtype
+        super().__init__(unit, dtype, verbose)
         self.unify = unify
-        self.verbose = verbose
         props_keys = ["kx", "ky", "kz", "phi", "z", "comp"]
+        self.k = {}
+        self.d = {}
+        self.A = {}
         self.__props__ = dict.fromkeys(props_keys)
 
 
@@ -76,7 +79,7 @@ class Cartesian(Grid):
       than reshape > flatten.
     """
 
-    name = "Cartesian"
+    name = "Cartesian Grid"
 
     def __init__(
         self,
@@ -171,7 +174,7 @@ class Cartesian(Grid):
         Complete unify feature to be compatible with all class
         components.
         """
-        super().__init__(dtype, unit, unify, verbose)
+        super().__init__(unit, dtype, verbose, unify)
         assert nx >= 1, "nx must be 1 or larger."
         assert ny >= 1, "ny must be 1 or larger."
         assert nz >= 1, "nz must be 1 or larger."
@@ -470,12 +473,14 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=1)
     def get_ones(self, boundary=True, fshape=False, sparse=False):
-        """Returns array of ones in flow shape (fshape).
+        """Returns array of ones.
 
         Parameters
         ----------
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
         sparse : bool, optional, by default False
             values as sparse matrix (True) or as ndarray (False).
 
@@ -484,6 +489,9 @@ class Cartesian(Grid):
         array
             array in flow shape filled with ones.
 
+        ToDo
+        ----
+        - Make sure sparse option is valid.
         """
         if fshape:
             shape = self.get_fshape(boundary, False)
@@ -491,14 +499,51 @@ class Cartesian(Grid):
             shape = self.get_n_cells(boundary)
 
         if not sparse:
-            self.ones = np.ones(shape, dtype="int")
+            self.zeros = np.ones(shape, dtype=self.dtype)
         else:
-            self.ones = ss.lil_matrix(shape, dtype="int")
+            self.zeros = ss.lil_matrix(shape, dtype=self.dtype)
 
         if self.verbose:
-            print(f"[info] ones was computed.")
+            print(f"[info] ones array was computed.")
 
-        return self.ones
+        return self.zeros
+
+    @_lru_cache(maxsize=1)
+    def get_zeros(self, boundary=True, fshape=False, sparse=False):
+        """Returns array of zeros.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False).
+        sparse : bool, optional, by default False
+            values as sparse matrix (True) or as ndarray (False).
+
+        Returns
+        -------
+        array
+            array in flow shape filled with ones.
+
+        ToDo
+        ----
+        - Make sure sparse option is valid.
+        """
+        if fshape:
+            shape = self.get_fshape(boundary, False)
+        else:
+            shape = self.get_n_cells(boundary)
+
+        if not sparse:
+            self.zeros = np.zeros(shape, dtype=self.dtype)
+        else:
+            self.zeros = ss.lil_matrix(shape, dtype=self.dtype) * 0
+
+        if self.verbose:
+            print(f"[info] zeros array was computed.")
+
+        return self.zeros
 
     # -------------------------------------------------------------------------
     # Cells id and coordinates:
@@ -1288,6 +1333,10 @@ class Cartesian(Grid):
         if self.verbose:
             print(f"[info] axes meshgrid (Dx, Dy, Dz) were computed.")
 
+        self.d["x"] = self.dx
+        self.d["y"] = self.dy
+        self.d["z"] = self.dz
+
         return (self.dx, self.dy, self.dz)
 
     @_lru_cache(maxsize=None)
@@ -1511,9 +1560,9 @@ class Cartesian(Grid):
     # -------------------------------------------------------------------------
 
     def __calc_cells_A(self):
-        self.Ax = self.dy * self.dz
-        self.Ay = self.dx * self.dz
-        self.Az = self.dx * self.dy
+        self.Ax = self.A["x"] = self.dy * self.dz
+        self.Ay = self.A["y"] = self.dx * self.dz
+        self.Az = self.A["z"] = self.dx * self.dy
 
     @_lru_cache(maxsize=None)
     def get_cells_A(self, dir, boundary=True, fshape=True):
@@ -2086,13 +2135,13 @@ class Cartesian(Grid):
         """
         if kx is not None:
             self.set_prop("kx", kx, id, coords)
-            self.kx = self.__props__["kx"]
+            self.kx = self.k["x"] = self.__props__["kx"]
         if ky is not None:
             self.set_prop("ky", ky, id, coords)
-            self.ky = self.__props__["ky"]
+            self.ky = self.k["y"] = self.__props__["ky"]
         if kz is not None:
             self.set_prop("kz", kz, id, coords)
-            self.kz = self.__props__["kz"]
+            self.kz = self.k["z"] = self.__props__["kz"]
         if phi is not None:
             self.set_prop("phi", phi, id, coords)
             self.phi = self.__props__["phi"]
@@ -2100,12 +2149,12 @@ class Cartesian(Grid):
             self.set_prop("z", z, id, coords)
             self.z = self.__props__["z"]
         if comp is not None:
-            self.set_compressibility(comp)
+            self.set_comp(comp)
         if self.__props__["z"] is None:
             self.set_prop("z", 0)
             self.z = self.__props__["z"]
-        if not hasattr(self, "compressibility"):
-            self.set_compressibility(0)
+        if not hasattr(self, "comp"):
+            self.set_comp(0)
 
     def set_cell_value(self, array, value, id=None, coords=None):
         if id is not None:
@@ -2221,8 +2270,9 @@ class Cartesian(Grid):
             if not boundary:
                 prop = self.remove_boundaries(prop, False, "both")
 
-            if not fshape:
-                prop = prop.flatten()
+            if fshape:
+                shape = self.get_fshape(boundary, False)
+                prop = prop.reshape(shape)
 
             return utils.reformat(prop, fmt)
 
@@ -2417,68 +2467,96 @@ class Cartesian(Grid):
             raise ValueError("Unknown mean type.")
 
     @_lru_cache(maxsize=3)
-    def get_G(self, dir):
+    def get_G(self, dir, fshape=False):
         """Returns geometric factor (G).
 
         Parameters
         ----------
         dir : str
             direction as string in ['x', 'y', 'z'].
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). In this
+            case, fshape is for cells' boundaries.
 
         Returns
         -------
         ndarray
-            array of G based on dir argument (with fshape and boundary).
+            array of G based on dir argument.
         """
-        k = self.get_cells_k(dir, True, True, "array")
-        d = self.get_cells_d(dir, True, True)
-        area = self.get_cells_A(dir, True, True)
+        k = self.get_cells_k(dir, True, False, "array")
+        A = self.get_cells_A(dir, True, False)
+        d = self.get_cells_d(dir, True, False)
+
         if self.is_homogeneous:
             G = (
                 self.factors["transmissibility conversion"]
                 * self.__calc_G_homo_mean(k)
-                * self.__calc_G_homo_mean(area)
+                * self.__calc_G_homo_mean(A)
                 / self.__calc_G_homo_mean(d)
             )
         else:
             G = (
                 2
                 * self.factors["transmissibility conversion"]
-                / self.__calc_G_hetro_denom(d, area, k)
+                / self.__calc_G_hetro_denom(d, A, k)
             )
+
+        if fshape:
+            shape = self.get_fshape(True, False)
+            shape = [n - 1 if n > 1 else n for n in shape]
+            G = G.reshape(shape)
+
         return G
 
-    def get_Gx(self):
+    def get_Gx(self, fshape=False):
         """Returns geometric factor at x direction (Gx).
+
+        Parameters
+        ----------
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). In this
+            case, fshape is for cells' boundaries.
 
         Returns
         -------
         ndarray
-            array of Gx (with fshape and boundary).
+            array of Gx.
         """
-        self.Gx = self.get_G(dir="x")
+        self.Gx = self.get_G("x", fshape)
         return self.Gx
 
-    def get_Gy(self):
+    def get_Gy(self, fshape=False):
         """Returns geometric factor at y direction (Gy).
+
+        Parameters
+        ----------
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). In this
+            case, fshape is for cells' boundaries.
 
         Returns
         -------
         ndarray
             array of Gy (with fshape and boundary).
         """
-        self.Gy = self.get_G(dir="y")
+        self.Gy = self.get_G("y", fshape)
         return self.Gy
 
-    def get_Gz(self):
+    def get_Gz(self, fshape=False):
         """Returns geometric factor at z direction (Gz).
+
+        Parameters
+        ----------
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). In this
+            case, fshape is for cells' boundaries.
 
         Returns
         -------
         ndarray
             array of Gz (with fshape and boundary).
         """
-        self.Gz = self.get_G(dir="z")
+        self.Gz = self.get_G("z", fshape)
         return self.Gz
 
     # -------------------------------------------------------------------------
@@ -2608,21 +2686,18 @@ class Cartesian(Grid):
     # Synonyms:
     # -------------------------------------------------------------------------
 
-    # get_flow_shape = get_fshape
-    # self.flow_shape = self.fshape
-    # self.porosity = self.phi
-    # get_dimension = get_D
-    # self.dimension = self.D
-    # set_properties = set_props
-    # set_permeability_x = set_kx
-    # self.permeability_x = self.kx
-    # set_permeability_y = set_ky
-    # self.permeability_y = self.ky
-    # set_permeability_z = set_kz
-    # self.permeability_z = self.kz
-    # get_permeability = get_k
-    # self.tops = self.z
-    # set_tops = set_z
+    def allow_synonyms(self):
+        self.get_flow_shape = self.get_fshape
+        self.flow_shape = self.fshape
+        self.porosity = self.phi
+        self.get_dimension = self.get_D
+        self.dimension = self.D
+        self.set_properties = self.set_props
+        self.permeability = self.k
+        self.permeability_x = self.kx
+        self.permeability_y = self.ky
+        self.permeability_z = self.kz
+        self.tops = self.z
 
     # -------------------------------------------------------------------------
     # End

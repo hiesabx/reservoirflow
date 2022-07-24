@@ -147,7 +147,7 @@ if __name__ == "__main__":
             mu=3.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
         )
         model = models.Model(grid, fluid, pi=4000, dtype="double")
-        model.set_well(i=4, q=-600, s=1.5, r=3.5)
+        model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: {"pressure": 4000}, -1: {"rate": 0}})
         return model
 

@@ -67,11 +67,11 @@ def props():
     # g.set_props(phi=0.20, id=(6))
     g.set_prop("phi", value=0.20, id=6)
     print(id(g.phi))
-    print(id(g.props["phi"]))
+    print(id(g.__props__["phi"]))
     g.set_props(kx=1)
     g.set_prop("kx", value=100000, id=6)
     print(id(g.kx))
-    print(id(g.props["kx"]))
+    print(id(g.__props__["kx"]))
 
 
 def prop():

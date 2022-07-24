@@ -1,7 +1,12 @@
-# %% 1. Import Statements:
-# from tabnanny import verbose
+"""
+Model classes to create reservoir simulation models.
+
+This module contains all model classes used to create a reservoir 
+simulation model in combination with with a Fluid class and Grid class.
+"""
 import time
-from openresim import base, grids, fluids, wells, plots
+from openresim.base import Base
+from openresim import grids, fluids, wells, plots
 import numpy as np
 import sympy as sym
 import scipy.sparse as ss
@@ -9,15 +14,22 @@ import scipy.sparse.linalg as ssl
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-# from functools import lru_cache
-# import threading
-# from concurrent import futures
 
+class Model(Base):
+    """Model class to create a reservoir simulation model.
 
-# %% 2. Model Class:
-class Model(base.Base):
-    """
-    Model class to create a model.
+    Model class represents the fluid flow process in a reservoir
+    due to pressure change cause by production or injection wells.
+
+    Parameters
+    ----------
+    Base : class
+        Base class with universal settings.
+
+    Returns
+    -------
+    Model
+        Model object.
     """
 
     name = "Model"
@@ -25,91 +37,160 @@ class Model(base.Base):
     def __init__(
         self,
         grid: grids.Grid,
-        fluid: fluids.SinglePhaseFluid,
+        fluid: fluids.Fluid,
         well: wells.Well = None,
         pi: int = None,
         dt: int = 1,
         dtype: str = "double",
         unit="field",
+        verbose=True,
     ):
+        """Reservoir simulation Model class.
+
+        Parameters
+        ----------
+        grid : grids.Grid
+            Grid module.
+        fluid : fluids.SinglePhaseFluid
+            Fluid module.
+        well : wells.Well, optional, by default None
+            Well module.
+        pi : int, optional, by default None
+            Initial reservoir pressure.
+        dt : int, optional, by default 1
+            Time duration for each time step.
+        dtype : str or `np.dtype`, optional, by default 'double'
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
+        unit : str ('field', 'metric'), optional, by default 'field'
+            units used in input and output. Parameters can be defined as
+            `unit='field'` (default) or `unit='metric'`. `units`
+            attribute can be accessed from this class using
+            (`Model.units`).
+        verbose : bool, optional, by default False
+            print information for debugging.
         """
-        dd
-        """
-        # super().__init__(unit)
+        super().__init__(unit, dtype, verbose)
         self.grid = grid
         self.fluid = fluid
-        self.dtype = dtype
-        self.dt = dt
-        self.flow_equations_terms_dict = {}
+        assert self.dtype == grid.dtype, "grid dtype is not compatible."
+        assert self.dtype == fluid.dtype, "Fluid dtype is not compatible."
 
-        # Initial Step:
+        self.flow_equations_terms_dict = {}
+        self.dt = dt
         self.A = None
         self.nsteps = 1
         self.tstep = 0
 
-        # Set properties: compressibility and RHS
-        self.set_properties()
+        self.__initialize__(pi, well)
+        self.__calc_comp()
+        self.__calc_trans()
+        self.__calc_RHS()
 
-        # Pressure array: shape = (nsteps, nx+2)
-        self.pressures = np.ones((1, self.grid.nx + 2), dtype=self.dtype) * np.nan
+    # -------------------------------------------------------------------------
+    # Basic:
+    # -------------------------------------------------------------------------
 
-        # Initial aressure: required in case of compressible fluid
+    def __initialize__(self, pi, well):
+        ones = self.grid.get_ones(True, False, False)[np.newaxis]
+        self.pressures = ones * np.nan
+        self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
+
         self.pi = pi
         if pi is not None:
-            self.pressures[0][1:-1] = pi
+            cells_id = self.grid.get_cells_id(False, False, "list")
+            self.pressures[0][cells_id] = pi
 
-        # Rate array:
-        self.rates = np.zeros((1, self.grid.nx + 2), dtype=self.dtype)
-
-        # Well dict:
         self.wells = {}
         if well is not None:
             self.set_well(well)
 
-    def set_transmissibility(self):
-        self.transmissibility = self.trans = self.grid.G / (
-            self.fluid.mu * self.fluid.B
-        )
+    # -------------------------------------------------------------------------
+    # Properties:
+    # -------------------------------------------------------------------------
 
-    set_trans = set_transmissibility
+    def __calc_comp(self):
+        """ """
+        if self.fluid.comp_type == self.grid.comp_type == "incompressible":
+            self.set_comp(0)
+        else:
+            self.set_comp(self.fluid.comp + self.grid.comp)
 
-    def get_well_G(self, i):
+    def __calc_trans(self):
+        self.trans = {}
+        for dir in self.grid.get_fdir():
+            self.trans[dir] = self.get_trans(dir, False)
+
+    def get_trans(self, dir="x", fshape=False):
+        """Returns transmissibility.
+
+        Parameters
+        ----------
+        dir : str
+            direction as string in ['x', 'y', 'z'].
+        fshape : bool, optional, by default False
+            values in flow shape (True) or flatten (False). In this
+            case, fshape is for cells' boundaries.
+
+        Returns
+        -------
+        ndarray
+            array of transmissibility based on dir argument.
+        """
+
+        G = self.grid.get_G(dir, fshape)
+        trans = G / (self.fluid.mu * self.fluid.B)
+
+        return trans
+
+    # -------------------------------------------------------------------------
+    # Wells:
+    # -------------------------------------------------------------------------
+
+    def __calc_well_G(self, id=None):
         G_n = (
             2
             * np.pi
             * self.factors["transmissibility conversion"]
-            * self.grid.k[i]
-            * self.grid.dz[i]
+            * self.grid.k["x"][id]
+            * self.grid.d["z"][id]
         )
-        G_d = np.log(self.wells[i]["r_eq"] / self.wells[i]["r"] * 12)
-        if "s" in self.wells[i].keys():
-            G_d += self.wells[i]["s"]
+
+        G_d = np.log(self.wells[id]["r_eq"] / self.wells[id]["r"] * 12)
+
+        if "s" in self.wells[id].keys():
+            G_d += self.wells[id]["s"]
+
         return G_n / G_d
 
-    def get_well_r_eq(self, i):
-        return 0.14 * (self.grid.dx[i] ** 2 + self.grid.dy[i] ** 2) ** 0.5
+    def __calc_well_r_eq(self, id):
+        return 0.14 * (self.grid.dx[id] ** 2 + self.grid.dy[id] ** 2) ** 0.5
 
-    def set_well(self, i=None, well=None, q=None, pwf=None, r=None, s=None):
+    def set_well(self, id=None, well=None, q=None, pwf=None, r=None, s=None):
         if well is not None:
-            if i is None:
-                i = well.i
-            self.wells[i] = vars(well)
+            if id is None:
+                id = well.id
+            self.wells[id] = vars(well)
         else:
-            assert i is not None, "i must be defined"
-            if not i in self.wells.keys():
-                self.wells[i] = {}
+            assert id is not None, "id must be defined"
+            if not id in self.wells.keys():
+                self.wells[id] = {}
             if q is not None:
-                self.wells[i]["q"] = q
+                self.wells[id]["q"] = q
             if pwf is not None:
-                self.wells[i]["pwf"] = pwf
+                self.wells[id]["pwf"] = pwf
             if r is not None:
-                self.wells[i]["r"] = r
+                self.wells[id]["r"] = r
             if s is not None:
-                self.wells[i]["s"] = s
-        if "q" in self.wells[i]:
-            self.rates[0][i] = self.wells[i]["q"]
-        self.wells[i]["r_eq"] = self.get_well_r_eq(i)
-        self.wells[i]["G"] = self.get_well_G(i)
+                self.wells[id]["s"] = s
+        if "q" in self.wells[id]:
+            self.rates[0][id] = self.wells[id]["q"]
+        self.wells[id]["r_eq"] = self.__calc_well_r_eq(id)
+        self.wells[id]["G"] = self.__calc_well_G(id)
+
+    # -------------------------------------------------------------------------
+    # Boundaries:
+    # -------------------------------------------------------------------------
 
     def set_boundary(self, i: int, cond: str, v: float):
         """Set model boundary condition
@@ -141,30 +222,18 @@ class Model(base.Base):
             [(cond, v)] = b_dict[i].items()
             self.set_boundary(i, cond, v)
 
-    def __set_RHS(self):
-        if self.compressibility_type == "incompressible":
-            self.RHS = np.zeros(self.grid.nx + 2, dtype=self.dtype)
-        elif self.compressibility_type == "compressible":
-            self.RHS = (self.grid.volume * self.grid.phi * self.compressibility) / (
-                self.factors["volume conversion"] * self.fluid.B * self.dt
-            )
+    # -------------------------------------------------------------------------
+    # Flow Equations:
+    # -------------------------------------------------------------------------
 
-    def set_properties(self):
-        """ """
-        self.set_transmissibility()
-        if (
-            self.fluid.compressibility_type
-            == self.grid.compressibility_type
-            == "incompressible"
-        ):
-            self.set_compressibility(0)
-        else:
-            self.set_compressibility(
-                self.fluid.compressibility + self.grid.compressibility
-            )
-        self.__set_RHS()
-
-    set_props = set_properties
+    def __calc_RHS(self):
+        if self.comp_type == "incompressible":
+            n = self.grid.get_n_cells(True)
+            self.RHS = 0  # np.zeros(n, dtype=self.dtype)
+        elif self.comp_type == "compressible":
+            RHS_n = self.grid.V * self.grid.phi * self.comp
+            RHS_d = self.factors["volume conversion"] * self.fluid.B * self.dt
+            self.RHS = RHS_n / RHS_d
 
     def get_i_flow_equation(self, i, verbose=False):
 
@@ -267,6 +336,10 @@ class Model(base.Base):
         for i in self.grid.order[self.grid.i_blocks.astype("bool")]:
             i_lhs, i_rhs = self.get_i_flow_equation(i, verbose)
             print(f"Grid {i}: {i_lhs}, {i_rhs}")
+
+    # -------------------------------------------------------------------------
+    # Coefficient Matrix:
+    # -------------------------------------------------------------------------
 
     # @lru_cache(maxsize=None)
     def update_matrix(self, i, sparse=True, verbose=False):
@@ -380,6 +453,10 @@ class Model(base.Base):
 
             return self.A, self.d
 
+    # -------------------------------------------------------------------------
+    # Numerical Solution:
+    # -------------------------------------------------------------------------
+
     # @lru_cache(maxsize=None)
     def solve(self, sparse=True, check_MB=True, update=True, verbose=False):
 
@@ -457,6 +534,10 @@ class Model(base.Base):
         duration = round(time.time() - start_time, 2)
         print(f"Simulation run of {nsteps} steps is finished in {duration} seconds.")
 
+    # -------------------------------------------------------------------------
+    # Material Balance:
+    # -------------------------------------------------------------------------
+
     def check_MB(self, verbose=False, error_threshold=0.1):
         """Material Balance Check"""
         if verbose:
@@ -492,6 +573,10 @@ class Model(base.Base):
             abs(self.error) < error_threshold
         ), f"""
         Material balance error ({self.error}) higher than the allowed error ({error_threshold})."""
+
+    # -------------------------------------------------------------------------
+    # Visualization:
+    # -------------------------------------------------------------------------
 
     def plot(self, property: str = "pressures", i: int = None, tstep: int = None):
 
@@ -545,26 +630,44 @@ class Model(base.Base):
         # copy_model.set_boundaries(self.b_dict)
         return copy_model
 
+    # -------------------------------------------------------------------------
+    # Synonyms:
+    # -------------------------------------------------------------------------
+
+    def allow_synonyms(self):
+        self.set_transmissibility = self.set_trans
+        self.transmissibility = self.trans
+        self.set_properties = self.__calc_comp
+
+    # -------------------------------------------------------------------------
+    # End
+    # -------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     grid = grids.Cartesian(
         nx=4,
-        ny=1,
-        nz=1,
+        ny=2,
+        nz=2,
         dx=300,
         dy=350,
         dz=40,
         phi=0.27,
         kx=270,
+        ky=200,
+        kz=200,
         comp=1 * 10**-6,
-        dtype="single",
+        dtype="double",
     )
     fluid = fluids.SinglePhaseFluid(
-        mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="single"
+        mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
     )
-    model = Model(grid, fluid, pi=4000, dtype="single")
-    model.set_well(i=4, q=-600, s=1.5, r=3.5)
+
+    model = Model(grid, fluid, pi=4000, dtype="double")
+    model.set_well(id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: {"pressure": 4000}, -1: {"rate": 0}})
-    model.run(nsteps=6, sparse=False, check_MB=True, verbose=False)
-    print(model.pressures)
-    print(model.rates)
+    print(model.RHS)
+    # model.run(nsteps=6, sparse=False, check_MB=True, verbose=False)
+    # print(grid.get_Gx(fshape=True))
+    # print(model.pressures)
+    # print(model.rates)
