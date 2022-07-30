@@ -11,7 +11,7 @@ grid = grids.Cartesian(nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270
 grid.Ax[2] = 600  # change dx in grid 2
 grid.k[3] = 10  # change permeability in grid 3
 # Step 2: Define a fluid (single phase incompressible fluid)
-fluid = fluids.SinglePhaseFluid(mu=0.5, B=1)
+fluid = fluids.SinglePhase(mu=0.5, B=1)
 # Step 3: Create a model
 model = models.Model(grid, fluid)
 # Step 4: Add wells

@@ -86,7 +86,7 @@ def prop():
 
 
 def G():
-    g.get_G(dir="x")
+    g.get_cells_G(dir="x")
 
 
 def cells_D():
@@ -148,9 +148,9 @@ def G():
     g.set_prop("kx", 100)
     g.set_prop("ky", 100)
     g.set_prop("kz", 100)
-    print(g.get_Gx())
-    print(g.get_Gy())
-    print(g.get_Gz())
+    print(g.get_cells_Gx())
+    print(g.get_cells_Gy())
+    print(g.get_cells_Gz())
 
 
 # %%

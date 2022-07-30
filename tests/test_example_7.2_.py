@@ -7,7 +7,7 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        np.testing.assert_array_equal(model.trans, trans_desired)
+        np.testing.assert_array_equal(model.T, trans_desired)
 
     def test_pressures(self):
         pressures_desired = np.array(
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         grid = grids.Cartesian(
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
-        fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, dtype="double")
+        fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
         model = models.Model(grid, fluid, dtype="double")
         model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries(
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         )  # 0: {'pressure': 4000},
         model.pressures[1] = 4000
         # print(model.get_i_flow_equation(1))
-        model.get_flow_equations()
+        model.get_cells_eq()
         # print(model.pressures)
         return model
 

@@ -499,14 +499,14 @@ class Cartesian(Grid):
             shape = self.get_n_cells(boundary)
 
         if not sparse:
-            self.zeros = np.ones(shape, dtype=self.dtype)
+            self.ones = np.ones(shape, dtype=self.dtype)
         else:
-            self.zeros = ss.lil_matrix(shape, dtype=self.dtype)
+            self.ones = ss.lil_matrix(shape, dtype=self.dtype)
 
         if self.verbose:
             print(f"[info] ones array was computed.")
 
-        return self.zeros
+        return self.ones
 
     @_lru_cache(maxsize=1)
     def get_zeros(self, boundary=True, fshape=False, sparse=False):
@@ -626,8 +626,8 @@ class Cartesian(Grid):
             tuple of int (id,id,...). Warning: providing an unhashable
             type (e.g. list, ndarray) is not supported and will cause
             TypeError.
-        boundary : bool, optional, by default True
-            values in flow shape (True) or flatten (False).
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
 
         Returns
         -------
@@ -802,8 +802,8 @@ class Cartesian(Grid):
             None cell coordinates (i,j,k) as a tuple of int. For
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..).
-        boundary : bool, optional, by default True
-            values in flow shape (True) or flatten (False).
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
         fmt : str, optional, by default 'dict'
             output format as str from ['array', 'list', 'tuple', 'set',
             'dict']. Use 'dict' to output neighbors in x,y,z directions
@@ -831,11 +831,11 @@ class Cartesian(Grid):
         if id is not None:
             assert not isinstance(id, np.ndarray), "block"
             boundaries = self.get_boundaries("id", "set")
-            isin_boundary = utils.isin(id, boundaries)
-            assert not isin_boundary, "boundary cells are not allowed."
+            # isin_boundary = utils.isin(id, boundaries)
+            # assert not isin_boundary, "boundary cells are not allowed."
             cells_id = self.get_cells_id(boundary, False, "set")
-            isin_cells_id = utils.isin(id, cells_id)
-            assert isin_cells_id, f"id is out of range {cells_id}."
+            # isin_cells_id = utils.isin(id, cells_id)
+            # assert isin_cells_id, f"id is out of range {cells_id}."
             if self.D >= 1:
                 n_lst = [id - 1, id + 1]
                 neighbors = [i for i in n_lst if i in cells_id]
@@ -2320,6 +2320,121 @@ class Cartesian(Grid):
 
         return self.get_prop(name, boundary, fshape, fmt)
 
+    @_lru_cache(maxsize=None)
+    def get_cell_k(self, dir, id=None, coords=None):
+        """Returns cell permeability.
+
+        Parameters
+        ----------
+        dir : str
+            direction str in ['x', 'y', 'z'].
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of k based on dir argument.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        if id is not None:
+            cells_k = self.get_cells_k(dir, True, False)
+            return cells_k[id]
+        elif coords is not None:
+            cells_k = self.get_cells_k(dir, True, True)
+            icoords = self.get_cell_icoords(coords)
+            return cells_k[icoords]
+        else:
+            raise ValueError("id or coords argument must be defined.")
+
+    def get_cell_kx(self, id=None, coords=None):
+        """Returns cell permeability at x direction.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of kx.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_k("x", id, coords)
+
+    def get_cell_Ay(self, id=None, coords=None):
+        """Returns cell permeability at y direction.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of ky.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_k("y", id, coords)
+
+    def get_cell_Az(self, id=None, coords=None):
+        """Returns cell permeability at z direction.
+
+        Parameters
+        ----------
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+
+        Returns
+        -------
+        int, float
+            scaler of kz.
+
+        Raises
+        ------
+        ValueError
+            id or coords argument must be defined.
+        """
+        return self.get_cell_k("z", id, coords)
+
     @property
     def is_homogeneous(self):
         """Returns homogeneity as bool
@@ -2404,10 +2519,10 @@ class Cartesian(Grid):
             raise ValueError("Unknown dimensionality.")
         """
         d_l = self.remove_boundaries(d, False, "right")
-        A_l = self.remove_boundaries(A, False, "right")
-        k_l = self.remove_boundaries(k, False, "right")
         d_r = self.remove_boundaries(d, False, "left")
+        A_l = self.remove_boundaries(A, False, "right")
         A_r = self.remove_boundaries(A, False, "left")
+        k_l = self.remove_boundaries(k, False, "right")
         k_r = self.remove_boundaries(k, False, "left")
         return (d_l / (A_l * k_l)) + (d_r / (A_r * k_r))
 
@@ -2432,6 +2547,11 @@ class Cartesian(Grid):
             Unknown dimensionality.
         ValueError
             Unknown mean type.
+
+        ToDo
+        ----
+        - Confirm the behavior of removing 'left' and 'right' boundaries
+        in case of 2D and 3D.
 
         Backup
         ------
@@ -2461,14 +2581,24 @@ class Cartesian(Grid):
         self.get_D()
         l = self.remove_boundaries(prop, False, "right")
         r = self.remove_boundaries(prop, False, "left")
+
+        # test:
+        # print("Test:")
+        # cells_id = self.get_cells_id(True, False, "array")
+        # print(" - cells_id =", cells_id)
+        # l_ = self.remove_boundaries(cells_id, False, "right")
+        # print(" - cells_id (left) =", l_)
+        # r_ = self.remove_boundaries(cells_id, False, "left")
+        # print(" - cells_id (right) =", r_)
+
         if type == "geometric":
             return (l + r) / 2
         else:
             raise ValueError("Unknown mean type.")
 
     @_lru_cache(maxsize=3)
-    def get_G(self, dir, fshape=False):
-        """Returns geometric factor (G).
+    def get_cells_G(self, dir, fshape=False):
+        """Returns cells geometric factor (G).
 
         Parameters
         ----------
@@ -2508,8 +2638,8 @@ class Cartesian(Grid):
 
         return G
 
-    def get_Gx(self, fshape=False):
-        """Returns geometric factor at x direction (Gx).
+    def get_cells_Gx(self, fshape=False):
+        """Returns cells geometric factor at x direction (Gx).
 
         Parameters
         ----------
@@ -2522,11 +2652,11 @@ class Cartesian(Grid):
         ndarray
             array of Gx.
         """
-        self.Gx = self.get_G("x", fshape)
+        self.Gx = self.get_cells_G("x", fshape)
         return self.Gx
 
-    def get_Gy(self, fshape=False):
-        """Returns geometric factor at y direction (Gy).
+    def get_cells_Gy(self, fshape=False):
+        """Returns cells geometric factor at y direction (Gy).
 
         Parameters
         ----------
@@ -2539,11 +2669,11 @@ class Cartesian(Grid):
         ndarray
             array of Gy (with fshape and boundary).
         """
-        self.Gy = self.get_G("y", fshape)
+        self.Gy = self.get_cells_G("y", fshape)
         return self.Gy
 
-    def get_Gz(self, fshape=False):
-        """Returns geometric factor at z direction (Gz).
+    def get_cells_Gz(self, fshape=False):
+        """Returns cells geometric factor at z direction (Gz).
 
         Parameters
         ----------
@@ -2556,8 +2686,63 @@ class Cartesian(Grid):
         ndarray
             array of Gz (with fshape and boundary).
         """
-        self.Gz = self.get_G("z", fshape)
+        self.Gz = self.get_cells_G("z", fshape)
         return self.Gz
+
+    @_lru_cache(maxsize=None)
+    def get_cell_G(self, id=None, coords=None, boundary=True):
+        """Returns cell geometric factor (G) at all cell faces.
+
+        Parameters
+        ----------
+        dir : str
+            direction as string in ['x', 'y', 'z'].
+        id : int, iterable of int, by default None
+            cell id based on natural order as int. For multiple cells,
+            list of int [id,id,..] or tuple of int (id,id,...).
+            NotFullyImplemented.
+        coords : iterable of int, iterable of tuples of int, by default
+            None cell coordinates (i,j,k) as a tuple of int. For
+            multiple cells, tuple of tuples of int as
+            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+        boundary : bool, optional, by default False
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        ndarray
+            array of G based on dir argument.
+
+        ToDo
+        ----
+        - for now use only with id
+        """
+        neighbors = self.get_cell_neighbors(id, coords, boundary, fmt="dict")
+        G = {}
+
+        for dir in self.get_fdir():
+            d = self.get_cell_d(dir, id, coords)
+            A = self.get_cell_A(dir, id, coords)
+            k = self.get_cell_k(dir, id, coords)
+
+            for id_n in neighbors[dir]:
+                d_n = self.get_cell_d(dir, id_n, None)
+                A_n = self.get_cell_A(dir, id_n, None)
+                k_n = self.get_cell_k(dir, id_n, None)
+                if self.is_homogeneous:
+                    G[id_n] = (
+                        self.factors["transmissibility conversion"]
+                        * ((k + k_n) / 2)
+                        * ((A + A_n) / 2)
+                        / ((d + d_n) / 2)
+                    )
+                else:
+                    G[id_n] = (
+                        2
+                        * self.factors["transmissibility conversion"]
+                        / ((d / (A * k)) + (d_n / (A_n * k_n)))
+                    )
+        return G
 
     # -------------------------------------------------------------------------
     # Visualization:
@@ -2712,7 +2897,7 @@ if __name__ == "__main__":
         else:
             return d_0
 
-    nx, ny, nz = (2, 2, 1)
+    nx, ny, nz = (20, 20, 3)
 
     dx = get_d(10, nx)
     dy = get_d(10, ny)

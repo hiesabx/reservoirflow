@@ -8,7 +8,7 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        np.testing.assert_array_equal(model.trans, trans_desired)
+        np.testing.assert_array_equal(model.T, trans_desired)
 
     def test_RHS(self):
         RHS_desired = np.array(
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             comp=0,
             dtype="double",
         )
-        fluid = fluids.SinglePhaseFluid(
+        fluid = fluids.SinglePhase(
             mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double"
         )
         model = models.Model(grid, fluid, pi=3000, dt=5, dtype="double")

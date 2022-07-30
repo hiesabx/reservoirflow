@@ -10,7 +10,7 @@ grid = grids.Cartesian(
     nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, comp=1 * 10**-6
 )
 # Step 2: Define a fluid (single phase incompressible fluid)
-fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, rho=50, comp=1 * 10**-5)
+fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5)
 # Step 3: Create a model
 model = models.Model(grid, fluid, pi=4000)
 # Step 4: Add a well

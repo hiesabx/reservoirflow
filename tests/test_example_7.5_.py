@@ -7,7 +7,7 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         model = create_model()
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
-        np.testing.assert_array_equal(model.trans, trans_desired)
+        np.testing.assert_array_equal(model.T, trans_desired)
 
     def test_fluid(self):
         model = create_model()
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             kx=270,
             dtype="double",
         )
-        fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, rho=50, dtype="double")
+        fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, dtype="double")
         model = models.Model(grid, fluid, dtype="double")
 
         # model.grid.pv_grid.points = model.grid.get_pv_grid(show_boundary=True) += z

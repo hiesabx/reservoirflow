@@ -8,7 +8,7 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        np.testing.assert_array_equal(model.trans, trans_desired)
+        np.testing.assert_array_equal(model.T, trans_desired)
 
     def test_RHS(self):
         RHS_desired = np.array(
@@ -140,16 +140,45 @@ if __name__ == "__main__":
             dz=30,
             phi=0.27,
             kx=150,
-            comp=1 * 10**-6,
+            ky=100,
+            # comp=1 * 10**-6,
+            dtype="double",
+            unify=False,
+        )
+        fluid = fluids.SinglePhase(
+            mu=3.5,
+            B=1,
+            rho=50,
+            # comp=1 * 10**-5,
             dtype="double",
         )
-        fluid = fluids.SinglePhaseFluid(
-            mu=3.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
-        )
         model = models.Model(grid, fluid, pi=4000, dtype="double")
-        model.set_well(id=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries({0: {"pressure": 4000}, -1: {"rate": 0}})
+        model.set_well(id=6, pwf=2000, s=0, r=3)
+        model.set_well(id=9, q=-600, s=0, r=3)
+        model.set_boundaries(
+            {
+                1: ("pressure", 4000),
+                2: ("pressure", 4000),
+                4: ("rate", 500),
+                7: ("gradient", -0.3),
+                11: ("gradient", -0.3),
+                14: ("rate", -200),
+            }
+        )
+        # grid.show("id")
         return model
 
     model = create_model()
+    # l, r = model.get_cell_eq(5)
+    # model.init_matrices(False)
+    # model.get_d(False)
+    # model.solve(True)
+    # model.get_cells_eq()
+    # print(model.get_T("x", False))
+    # print(model.get_T("y", False))
+    # model.get_T("z", False)
+    # print(model.RHS)
+    # print(model.T)
+    # print(model.get_d(False))
+    # model.get_A()
 #    unittest.main()

@@ -9,7 +9,7 @@ class Fluid(Base):
         super().__init__(unit, dtype, verbose)
 
 
-class SinglePhaseFluid(Fluid):
+class SinglePhase(Fluid):
     """
     Fluid class to create a fluid.
     """
@@ -79,7 +79,7 @@ class SinglePhaseFluid(Fluid):
 
 
 if __name__ == "__main__":
-    fluid = SinglePhaseFluid(mu=0.5, B=1, rho=1, unit="metric")
+    fluid = SinglePhase(mu=0.5, B=1, rho=1, unit="metric")
     fluid.set_units("metric")
     fluid.set_rho(10)
     print(fluid)
