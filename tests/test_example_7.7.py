@@ -6,125 +6,78 @@ import unittest
 
 class TestApp(unittest.TestCase):
     def test_trans(self):
-        trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
+        T_x_desired = np.array([1.035, 1.035, 1.035])
+        T_y_desired = np.array([1.3524, 1.3524, 1.3524])
         model = create_model()
-        np.testing.assert_array_equal(model.T, trans_desired)
+        T_x = model.get_cells_T("x", False, False)
+        T_y = model.get_cells_T("y", False, False)
+        np.testing.assert_almost_equal(T_x, T_x_desired, decimal=5)
+        np.testing.assert_almost_equal(T_y, T_y_desired, decimal=5)
 
-    def test_RHS(self):
-        RHS_desired = np.array(
-            [
-                2.221714417615699,
-                2.221714417615699,
-                2.221714417615699,
-                2.221714417615699,
-                2.221714417615699,
-                2.221714417615699,
-            ]
-        )
+    def test_pressures(self):
+        p_desired = np.array([3772.36025, 3354.19841, 3267.38946, 3187.2711])
         model = create_model()
-        np.testing.assert_array_equal(model.RHS, RHS_desired)
-
-    def test_step_0(self):
-        initial_pressures_desired = np.array([4000.0, 4000.0, 4000.0, 4000.0])
-        model = create_model()
-        np.testing.assert_almost_equal(
-            model.pressures[0][1:-1], initial_pressures_desired, decimal=5
-        )
-
-    def test_step_1(self):
-        pressures_desired_step_1 = np.array(
-            [
-                3993.7457054727147,
-                3980.7478537203187,
-                3966.2439396955738,
-                3949.0993471641805,
-            ]
-        )
-        rates_desired_step_1 = np.array([355.24893259, 0.0, 0.0, 0.0, -600.0, 0.0])
-        incremental_error_desired = 0.99999
-
-        model = create_model()
-        pressures_sparse = model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            pressures_sparse, pressures_desired_step_1, decimal=5
-        )
-        np.testing.assert_almost_equal(model.rates[1], rates_desired_step_1, decimal=5)
-        np.testing.assert_almost_equal(
-            model.incremental_error, incremental_error_desired, decimal=5
-        )
+        p_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        boundaries = model.grid.get_boundaries("id", "list")
+        np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
 
         model = create_model()
         pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            pressures_not_sparse, pressures_desired_step_1, decimal=5
-        )
-        np.testing.assert_almost_equal(model.rates[1], rates_desired_step_1, decimal=5)
-        np.testing.assert_almost_equal(
-            model.incremental_error, incremental_error_desired, decimal=5
-        )
-
-    def test_step_2(self):
-        pressures_desired_step_2 = np.array(
-            [
-                3990.953458875824,
-                3972.6419439813862,
-                3953.6963177175703,
-                3933.7691125796787,
-            ]
-        )
-        rates_desired_step_2 = np.array([513.85077309, 0.0, 0.0, 0.0, -600.0, 0.0])
-        incremental_error_desired = 0.99999
-
-        model = create_model()
-        model.run(nsteps=2, sparse=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            model.pressures[2][1:-1], pressures_desired_step_2, decimal=5
-        )
-        np.testing.assert_almost_equal(model.rates[2], rates_desired_step_2, decimal=5)
-        np.testing.assert_almost_equal(
-            model.incremental_error, incremental_error_desired, decimal=5
-        )
+        q_not_sparse = model.rates[1][boundaries]
+        np.testing.assert_almost_equal(pressures_not_sparse, p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(
-            model.wells[4]["r_eq"], 64.53681120105021, decimal=5
-        )
-        np.testing.assert_almost_equal(model.wells[4]["q"], -600, decimal=5)
-        np.testing.assert_almost_equal(
-            model.wells[4]["G"], 11.08453575337366, decimal=5
+            model.wells[6]["r_eq"], 58.52694766871065, decimal=5
         )
         np.testing.assert_almost_equal(
-            model.wells[4]["pwf"], 3922.0346142177686, decimal=5
+            model.wells[9]["r_eq"], 58.52694766871065, decimal=5
+        )
+        np.testing.assert_almost_equal(model.wells[6]["pwf"], 2000, decimal=5)
+        np.testing.assert_almost_equal(model.wells[9]["q"], -600, decimal=5)
+        np.testing.assert_almost_equal(
+            model.wells[6]["G"], 4.768850278197406, decimal=5
+        )
+        np.testing.assert_almost_equal(
+            model.wells[9]["G"], 4.768850278197406, decimal=5
         )
 
-    def test_rates_step_1(self):
+    def test_rates(self):
         rates_desired = np.array(
-            [355.2489325854533, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
+            [
+                0.0,  # 0
+                615.72,  # 1
+                1746.76413,  # 2
+                0.0,  # 3
+                500.0,  # 4
+                -108.675,  # 7
+                0.0,  # 8
+                -108.675,  # 11
+                0.0,  # 12
+                0.0,  # 13
+                -200.0,  # 14
+                0.0,  # 15
+            ]
         )
-        model = create_model()
-        model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
 
-    def test_rates_step_2(self):
-        rates_desired = np.array(
-            [355.2489325854533, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
-        )
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        boundaries = model.grid.get_boundaries("id", "list")
+        q_sparse = model.rates[1][boundaries]
+        np.testing.assert_almost_equal(q_sparse, rates_desired, decimal=5)
+
+        model = create_model()
+        model.solve(sparse=False, update=True, check_MB=True)
+        q_not_sparse = model.rates[1][boundaries]
+        np.testing.assert_almost_equal(q_not_sparse, rates_desired, decimal=5)
 
     def test_error(self):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-
-        cumulative_error_desired = 0.28973
-        np.testing.assert_almost_equal(
-            model.cumulative_error, cumulative_error_desired, decimal=5
-        )
-        # print(model.incremental_error)
-        # print(model.cumulative_error)
+        error_desired = -4.547e-12
+        np.testing.assert_almost_equal(model.error, error_desired, decimal=5)
 
 
 if __name__ == "__main__":
@@ -141,7 +94,6 @@ if __name__ == "__main__":
             phi=0.27,
             kx=150,
             ky=100,
-            # comp=1 * 10**-6,
             dtype="double",
             unify=False,
         )
@@ -149,10 +101,9 @@ if __name__ == "__main__":
             mu=3.5,
             B=1,
             rho=50,
-            # comp=1 * 10**-5,
             dtype="double",
         )
-        model = models.Model(grid, fluid, pi=4000, dtype="double")
+        model = models.Model(grid, fluid, dtype="double", verbose=False)
         model.set_well(id=6, pwf=2000, s=0, r=3)
         model.set_well(id=9, q=-600, s=0, r=3)
         model.set_boundaries(
@@ -165,10 +116,17 @@ if __name__ == "__main__":
                 14: ("rate", -200),
             }
         )
-        # grid.show("id")
         return model
 
     model = create_model()
+    # for id_b in model.grid.get_boundaries("id", "tuple"):
+    #     print(id_b, ":", end=" ")
+    #     print(model.grid.get_cell_neighbors(id_b, None, False, "list"))
+
+    # print(model.solve())
+    # print(model.get_cells_T("x", False, False))
+    # print(model.get_cells_T("y", False, False))
+    # model.grid.show("id")
     # l, r = model.get_cell_eq(5)
     # model.init_matrices(False)
     # model.get_d(False)
@@ -181,4 +139,4 @@ if __name__ == "__main__":
     # print(model.T)
     # print(model.get_d(False))
     # model.get_A()
-#    unittest.main()
+    unittest.main()

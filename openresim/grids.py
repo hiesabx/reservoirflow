@@ -2477,7 +2477,7 @@ class Cartesian(Grid):
     # Geometry Factor:
     # -------------------------------------------------------------------------
 
-    def __calc_G_hetro_denom(self, d, A, k):
+    def __calc_G_hetro_denom(self, d, A, k, boundary):
         """Calculated G heterogeneous denominator.
 
         Parameters
@@ -2518,15 +2518,18 @@ class Cartesian(Grid):
         else:
             raise ValueError("Unknown dimensionality.")
         """
-        d_l = self.remove_boundaries(d, False, "right")
-        d_r = self.remove_boundaries(d, False, "left")
-        A_l = self.remove_boundaries(A, False, "right")
-        A_r = self.remove_boundaries(A, False, "left")
-        k_l = self.remove_boundaries(k, False, "right")
-        k_r = self.remove_boundaries(k, False, "left")
-        return (d_l / (A_l * k_l)) + (d_r / (A_r * k_r))
+        if boundary:
+            d_l = self.remove_boundaries(d, False, "right")
+            d_r = self.remove_boundaries(d, False, "left")
+            A_l = self.remove_boundaries(A, False, "right")
+            A_r = self.remove_boundaries(A, False, "left")
+            k_l = self.remove_boundaries(k, False, "right")
+            k_r = self.remove_boundaries(k, False, "left")
+            return (d_l / (A_l * k_l)) + (d_r / (A_r * k_r))
+        else:
+            return (d[:-1] / (A[:-1] * k[:-1])) + (d[1:] / (A[1:] * k[1:]))
 
-    def __calc_G_homo_mean(self, prop, type="geometric"):
+    def __calc_G_homo_mean(self, prop, boundary, type="geometric"):
         """Calculates G homogenous mean.
 
         Parameters
@@ -2579,8 +2582,15 @@ class Cartesian(Grid):
                     raise ValueError("Unknown dimensionality.")
         """
         self.get_D()
-        l = self.remove_boundaries(prop, False, "right")
-        r = self.remove_boundaries(prop, False, "left")
+        if boundary:
+            l = self.remove_boundaries(prop, False, "right")
+            r = self.remove_boundaries(prop, False, "left")
+            if type == "geometric":
+                return (l + r) / 2
+            else:
+                raise ValueError("Unknown mean type.")
+        else:
+            return (prop[:-1] + prop[1:]) / 2
 
         # test:
         # print("Test:")
@@ -2591,13 +2601,8 @@ class Cartesian(Grid):
         # r_ = self.remove_boundaries(cells_id, False, "left")
         # print(" - cells_id (right) =", r_)
 
-        if type == "geometric":
-            return (l + r) / 2
-        else:
-            raise ValueError("Unknown mean type.")
-
     @_lru_cache(maxsize=3)
-    def get_cells_G(self, dir, fshape=False):
+    def get_cells_G(self, dir, boundary=False, fshape=False):
         """Returns cells geometric factor (G).
 
         Parameters
@@ -2613,26 +2618,26 @@ class Cartesian(Grid):
         ndarray
             array of G based on dir argument.
         """
-        k = self.get_cells_k(dir, True, False, "array")
-        A = self.get_cells_A(dir, True, False)
-        d = self.get_cells_d(dir, True, False)
+        k = self.get_cells_k(dir, boundary, False, "array")
+        A = self.get_cells_A(dir, boundary, False)
+        d = self.get_cells_d(dir, boundary, False)
 
         if self.is_homogeneous:
             G = (
                 self.factors["transmissibility conversion"]
-                * self.__calc_G_homo_mean(k)
-                * self.__calc_G_homo_mean(A)
-                / self.__calc_G_homo_mean(d)
+                * self.__calc_G_homo_mean(k, boundary)
+                * self.__calc_G_homo_mean(A, boundary)
+                / self.__calc_G_homo_mean(d, boundary)
             )
         else:
             G = (
                 2
                 * self.factors["transmissibility conversion"]
-                / self.__calc_G_hetro_denom(d, A, k)
+                / self.__calc_G_hetro_denom(d, A, k, boundary)
             )
 
         if fshape:
-            shape = self.get_fshape(True, False)
+            shape = self.get_fshape(boundary, False)
             shape = [n - 1 if n > 1 else n for n in shape]
             G = G.reshape(shape)
 

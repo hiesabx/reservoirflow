@@ -7,20 +7,18 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        np.testing.assert_array_equal(model.T, trans_desired)
+        np.testing.assert_array_equal(model.T["x"], trans_desired)
 
     def test_pressures(self):
         pressures_desired = np.array(
-            [3989.4367685, 3968.31030549, 3947.18384248, 3926.05737947]
+            [4000.0, 3989.4367685, 3968.31030549, 3947.18384248, 3926.05737947, np.nan]
         )
         model = create_model()
-        pressures_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        model.solve(sparse=True, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
         model = create_model()
-        pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            pressures_sparse, pressures_not_sparse, decimal=5
-        )
-        np.testing.assert_almost_equal(pressures_sparse, pressures_desired, decimal=5)
+        model.solve(sparse=False, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
@@ -55,7 +53,6 @@ if __name__ == "__main__":
         model = models.Model(grid, fluid, dtype="double", verbose=False)
         model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-
         return model
 
     unittest.main()

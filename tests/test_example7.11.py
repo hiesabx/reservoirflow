@@ -50,7 +50,7 @@ class TestApp(unittest.TestCase):
         )
         np.testing.assert_almost_equal(model.rates[1], rates_desired_step_1, decimal=5)
         np.testing.assert_almost_equal(
-            model.incremental_error, incremental_error_desired, decimal=5
+            model.error, incremental_error_desired, decimal=5
         )
 
         model = create_model()
@@ -60,7 +60,7 @@ class TestApp(unittest.TestCase):
         )
         np.testing.assert_almost_equal(model.rates[1], rates_desired_step_1, decimal=5)
         np.testing.assert_almost_equal(
-            model.incremental_error, incremental_error_desired, decimal=5
+            model.error, incremental_error_desired, decimal=5
         )
 
     def test_step_2(self):
@@ -82,7 +82,7 @@ class TestApp(unittest.TestCase):
         )
         np.testing.assert_almost_equal(model.rates[2], rates_desired_step_2, decimal=5)
         np.testing.assert_almost_equal(
-            model.incremental_error, incremental_error_desired, decimal=5
+            model.error, incremental_error_desired, decimal=5
         )
 
     def test_well(self):
@@ -148,12 +148,14 @@ if __name__ == "__main__":
         )
         model = models.Model(grid, fluid, pi=3000, dt=5, dtype="double")
         model.set_well(id=4, q=-400, pwf=1500, s=0, r=3.5)
-        model.set_boundaries({0: {"rate": 0}, -1: {"rate": 0}})
+        print(model.wells)
+        model.set_boundaries({0: ("rate", 0), 6: ("rate", 0)})
         return model
 
     model = create_model()
-    model.solve(sparse=True, check_MB=False, verbose=True)
-    # model.run(nsteps=1000, sparse=False)
-    print(model.pressures)
+    # model.solve(sparse=True, check_MB=False)
+    # model.run(nsteps=30, sparse=False)
+    print(model.tstep)
+    print(model.pressures[:, 1:-1])
     # print(model)
     # unittest.main()

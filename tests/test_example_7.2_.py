@@ -57,17 +57,15 @@ if __name__ == "__main__":
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-        model = models.Model(grid, fluid, dtype="double")
+        model = models.Model(grid, fluid, dtype="double", verbose=False)
         model.set_well(id=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries(
-            {0: {"rate": 600}, -1: {"rate": 0}}
-        )  # 0: {'pressure': 4000},
-        model.pressures[1] = 4000
+        model.set_boundaries({0: ("rate", 600), 5: ("rate", 0)})
+        model.pressures[0][1] = 4000
         # print(model.get_i_flow_equation(1))
         model.get_cells_eq()
         # print(model.pressures)
         return model
 
     model = create_model()
-    model.solve(sparse=False, verbose=True, check_MB=False)
+    model.solve(sparse=False, check_MB=False)
     # unittest.main()

@@ -7,12 +7,12 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         model = create_model()
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
-        np.testing.assert_array_equal(model.T, trans_desired)
+        np.testing.assert_array_equal(model.T["x"], trans_desired)
 
     def test_fluid(self):
         model = create_model()
         gravity_desired = 0.347221808
-        np.testing.assert_almost_equal(model.fluid.gravity, gravity_desired, decimal=5)
+        np.testing.assert_almost_equal(model.fluid.g, gravity_desired, decimal=5)
 
     def test_pressures(self):
         model = create_model()
@@ -52,7 +52,7 @@ class TestApp(unittest.TestCase):
         rates_desired = np.array(
             [600.0000000000247, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
         )
-        np.testing.assert_almost_equal(model.rates, rates_desired, decimal=5)
+        np.testing.assert_almost_equal(model.rates[-1], rates_desired, decimal=5)
 
 
 if __name__ == "__main__":
@@ -72,14 +72,12 @@ if __name__ == "__main__":
             dtype="double",
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, dtype="double")
-        model = models.Model(grid, fluid, dtype="double")
-
-        # model.grid.pv_grid.points = model.grid.get_pv_grid(show_boundary=True) += z
+        model = models.Model(grid, fluid, dtype="double", verbose=False)
         model.set_well(id=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries({0: {"pressure": 4000}, -1: {"rate": 0}})
+        model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
     model = create_model()
-    model.solve(verbose=False)
-    model.show_grid("pressures")
-    # unittest.main()
+    # model.solve()
+    # model.show_grid("pressures")
+    unittest.main()

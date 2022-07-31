@@ -20,7 +20,8 @@ class Model(Base):
     """Model class used to create a reservoir simulation model.
 
     Model class represents the fluid flow process in a reservoir
-    due to pressure change cause by production or injection wells.
+    due to pressure change cause by boundary conditions or by
+    (production or injection) wells.
 
     Parameters
     ----------
@@ -51,11 +52,11 @@ class Model(Base):
         Parameters
         ----------
         grid : grids.Grid
-            Grid module.
-        fluid : fluids.SinglePhaseFluid
-            Fluid module.
+            Grid object .
+        fluid : fluids.Fluid
+            Fluid object.
         well : wells.Well, optional, by default None
-            Well module.
+            Well object.
         pi : int, optional, by default None
             Initial reservoir pressure.
         dt : int, optional, by default 1
@@ -75,7 +76,7 @@ class Model(Base):
         self.grid = grid
         self.fluid = fluid
         assert self.dtype == grid.dtype, "grid dtype is not compatible."
-        assert self.dtype == fluid.dtype, "Fluid dtype is not compatible."
+        assert self.dtype == fluid.dtype, "fluid dtype is not compatible."
 
         self.cells_terms = {}
         self.dt = dt
@@ -85,8 +86,9 @@ class Model(Base):
 
         self.__initialize__(pi, well)
         self.__calc_comp()
-        self.__calc_T()
+        self.__calc_dir_T()
         self.__calc_RHS()
+        self.set_boundaries({0: ('rate',0)})
 
     # -------------------------------------------------------------------------
     # Basic:
@@ -132,16 +134,17 @@ class Model(Base):
         if self.verbose:
             print("[info] model compressibility (comp) was calculated.")
 
-    def __calc_T(self):
+    def __calc_dir_T(self):
         """Calculates transmissibility at every flow direction (fdir)."""
+
         self.T = {}
         for dir in self.grid.get_fdir():
-            self.T[dir] = self.get_T(dir, False)
+            self.T[dir] = self.get_cells_T(dir, True, False)
 
         if self.verbose:
-            print("[info] transmissibility in all directions was computed.")
+            print("[info] transmissibility (T) in all directions was computed.")
 
-    def get_T(self, dir="x", fshape=False):
+    def get_cells_T(self, dir="x", boundary=False, fshape=False):
         """Returns transmissibility (T) at all cells' boundaries.
 
         Parameters
@@ -157,7 +160,9 @@ class Model(Base):
         ndarray
             array of transmissibility at all cells' boundaries.
         """
-        return self.grid.get_cells_G(dir, fshape) / (self.fluid.mu * self.fluid.B)
+        return self.grid.get_cells_G(dir, boundary, fshape) / (
+            self.fluid.mu * self.fluid.B
+        )
 
     @_lru_cache(maxsize=None)
     def get_cell_T(self, id=None, coords=None, boundary=False):
@@ -215,9 +220,12 @@ class Model(Base):
         - use k and d based on well direction.
         """
         fdir = self.grid.get_fdir()
-        if "x" == fdir:
+        if fdir == "x":
             k_H = self.grid.k["x"][id]
-        elif "xy" == fdir:
+        elif fdir == "xy":
+            k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
+        elif fdir == "xyz":
+            # todo: not varified
             k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
@@ -253,15 +261,24 @@ class Model(Base):
         ----
         - use k and d based on well direction.
         """
-        D = self.grid.get_D()
         fdir = self.grid.get_fdir()
-        if "x" == fdir:
-            d = self.grid.d["x"][id] ** 2 + self.grid.d["x"][id] ** 2
+        if fdir in ["x", "y"]:
+            d = self.grid.d["x"][id] ** 2 + self.grid.d["y"][id] ** 2
             return 0.14 * d**0.5
-        if "y" == fdir:
-            d = self.grid.d["y"][id] ** 2 + self.grid.d["y"][id] ** 2
-            return 0.14 * d**0.5
-        elif "xy" == fdir:
+        elif fdir == "xy":
+            kx_ky = self.grid.k["x"][id] / self.grid.k["y"][id]
+            ky_kx = self.grid.k["y"][id] / self.grid.k["x"][id]
+            return (
+                0.28
+                * (
+                    ky_kx**0.5 * self.grid.d["x"][id] ** 2
+                    + kx_ky**0.5 * self.grid.d["y"][id] ** 2
+                )
+                ** 0.5
+                / (ky_kx**0.25 + kx_ky**0.25)
+            )
+        elif fdir == "xyz":
+            # todo: not verified
             kx_ky = self.grid.k["x"][id] / self.grid.k["y"][id]
             ky_kx = self.grid.k["y"][id] / self.grid.k["x"][id]
             return (
@@ -549,8 +566,8 @@ class Model(Base):
         ----------
         id : int
             cell id based on natural order as int.
-        p_id : Symbol
-            cell pressure symbol at cell id.
+        p_id : Symbol or value
+            cell pressure symbol or value at cell id.
 
         Returns
         -------
@@ -869,81 +886,115 @@ class Model(Base):
     # Numerical Solution:
     # -------------------------------------------------------------------------
 
-    # @lru_cache(maxsize=None)
-    def solve(self, sparse=True, check_MB=True, update=True, verbose=False):
+    def __update_wells(self):
+        """_summary_
+
+
+        Backup
+        ------
+        - well q calc:
+            self.__calc_w_terms(
+                    id, self.pressures[self.tstep][id]
+                )
+            or
+            self.wells[id]["q"] = (
+                -self.wells[id]["G"]
+                / (self.fluid.B * self.fluid.mu)
+                * (self.pressures[self.tstep][id] - self.wells[id]["pwf"])
+            )
+        """
+        for id in self.wells.keys():
+            if "q" in self.wells[id]:
+                self.wells[id]["pwf"] = self.pressures[self.tstep][id] + (
+                    self.wells[id]["q"]
+                    * self.fluid.B
+                    * self.fluid.mu
+                    / self.wells[id]["G"]
+                )
+            if "pwf" in self.wells[id]:
+                self.wells[id]["q"] = (
+                    -self.wells[id]["G"]
+                    / (self.fluid.B * self.fluid.mu)
+                    * (self.pressures[self.tstep][id] - self.wells[id]["pwf"])
+                )
+                self.rates[self.tstep][id] = self.wells[id]["q"]
+
+    def __update_boundaries(self):
+        for id_b in self.grid.get_boundaries("id", "tuple"):
+            neighbors = self.grid.get_cell_neighbors(id_b, None, False, "list")
+            if len(neighbors) == 0:
+                continue
+            if len(neighbors) == 1:
+                T = self.get_cell_T(id_b, None, False)
+                id_n = neighbors[0]
+                p_n = self.pressures[self.tstep][id_n]
+                b_terms = self.__calc_b_terms(id_n, id_b, p_n, T[id_n])
+                self.rates[self.tstep][id_b] = b_terms
+            else:
+                raise ValueError("boundary cell can't have more than one neighbor")
+
+    def solve(self, sparse=True, check_MB=True, update=True):
+        """_summary_
+
+        Parameters
+        ----------
+        sparse : bool, optional
+            _description_, by default True
+        check_MB : bool, optional
+            _description_, by default True
+        update : bool, optional
+            _description_, by default True
+
+        Returns
+        -------
+        _type_
+            _description_
+
+        Backup
+        ------
+        - another not sparse solutions:
+            pressures = np.dot(np.linalg.inv(self.A), self.d)
+        """
 
         self.init_matrices(sparse)
-
         if sparse:
             pressures = ssl.spsolve(self.A.tocsc(), self.d)
         else:
             pressures = np.linalg.solve(self.A, self.d).flatten()
-            # same as: np.dot(np.linalg.inv(self.A), self.d)
 
-        if self.grid.D == 1:
-            # Update pressures:
-            if update:
-                self.tstep += 1
-                self.pressures = np.vstack([self.pressures, self.pressures[-1]])
-                # self.pressures[self.tstep] = self.pressures[self.tstep-1].copy()
-                self.pressures[self.tstep][1:-1] = pressures
-                self.rates = np.vstack([self.rates, self.rates[-1]])
-                # self.rates[self.tstep] = self.rates[self.tstep-1].copy()
+        if update:
+            self.tstep += 1
+            cells_id = self.grid.get_cells_id(False, False, "list")
+            self.pressures = np.vstack([self.pressures, self.pressures[-1]])
+            self.pressures[self.tstep][cells_id] = pressures
+            self.rates = np.vstack([self.rates, self.rates[-1]])
+            self.__update_wells()
+            self.__update_boundaries()
+            if check_MB:
+                self.check_MB()
 
-                # Update wells:
-                for i in self.wells.keys():
-                    if "q" in self.wells[i]:
-                        self.wells[i]["pwf"] = self.pressures[self.tstep][i] + (
-                            self.wells[i]["q"]
-                            * self.fluid.B
-                            * self.fluid.mu
-                            / self.wells[i]["G"]
-                        )
-                    if "pwf" in self.wells[i]:
-                        self.wells[i]["q"] = (
-                            -self.wells[i]["G"]
-                            / (self.fluid.B * self.fluid.mu)
-                            * (self.pressures[self.tstep][i] - self.wells[i]["pwf"])
-                        )
-                        self.rates[self.tstep][i] = self.wells[i]["q"]
-
-                # Update boundaries:
-                for boundary in self.grid.boundaries:
-                    i = 1 if boundary == 0 else boundary - 1
-                    if not np.isnan(self.pressures[self.tstep][boundary]):
-                        self.rates[self.tstep][boundary] = (
-                            self.T[min(i, boundary)]
-                            * 2
-                            * (
-                                (
-                                    self.pressures[self.tstep][boundary]
-                                    - self.pressures[self.tstep][i]
-                                )
-                                - (
-                                    self.fluid.g
-                                    * (self.grid.z[boundary] - self.grid.z[i])
-                                )
-                            )
-                        )
-
-                if check_MB:
-                    self.check_MB(verbose)
-
-        if verbose:
-            print("- Pressures:\n", self.pressures[self.tstep])
-            print("- rates:\n", self.rates[self.tstep])
+        if self.verbose:
+            print("[info] Pressures:\n", self.pressures[self.tstep])
+            print("[info] rates:\n", self.rates[self.tstep])
 
         return pressures
 
-    def run(self, nsteps=10, sparse=True, check_MB=True, verbose=False):
+    def run(self, nsteps=10, sparse=True, check_MB=True):
         self.nsteps += nsteps
         start_time = time.time()
+        if self.verbose:
+            self.verbose = False
+            verbose_restore = True
+        else:
+            verbose_restore = False
         for _ in tqdm(
             range(1, nsteps + 1), unit="steps", colour="green", position=0, leave=True
         ):
-            self.solve(sparse, check_MB, update=True, verbose=verbose)
+            self.solve(sparse, check_MB, update=True)
         duration = round(time.time() - start_time, 2)
         print(f"Simulation run of {nsteps} steps is finished in {duration} seconds.")
+        if verbose_restore:
+            self.verbose = True
 
     # -------------------------------------------------------------------------
     # Material Balance:
@@ -958,27 +1009,26 @@ class Model(Base):
             if verbose:
                 print(f"    - Error: {self.error}")
         elif self.comp_type == "compressible":
+            cells_id = self.grid.get_cells_id(False, False, "list")
             # Check MB error over a time step:
-            self.incremental_error = (
-                self.RHS[1:-1]
+            self.error = (
+                self.RHS[cells_id]
                 * (
-                    self.pressures[self.tstep][1:-1]
-                    - self.pressures[self.tstep - 1][1:-1]
+                    self.pressures[self.tstep][cells_id]
+                    - self.pressures[self.tstep - 1][cells_id]
                 )
             ).sum() / self.rates[self.tstep].sum()
             # Check MB error from initial state to current time step: (less accurate)
             self.cumulative_error = (
-                self.RHS[1:-1]
+                self.RHS[cells_id]
                 * self.dt
-                * (self.pressures[self.tstep][1:-1] - self.pressures[0][1:-1])
+                * (self.pressures[self.tstep][cells_id] - self.pressures[0][cells_id])
             ).sum() / (self.dt * self.tstep * self.rates.sum())
-            self.error = abs(self.incremental_error - 1)
-            if verbose:
-                print(f"    - Incremental Error: {self.incremental_error}")
+            self.error = abs(self.error - 1)
+            if self.verbose:
+                print(f"    - Incremental Error: {self.error}")
                 print(f"    -  Cumulative Error: {self.cumulative_error}")
-                print(
-                    f"    -       Total Error: {self.incremental_error+self.cumulative_error}"
-                )
+                print(f"    -       Total Error: {self.error+self.cumulative_error}")
 
         assert (
             abs(self.error) < error_threshold
@@ -1048,7 +1098,6 @@ class Model(Base):
     def allow_synonyms(self):
         self.set_transmissibility = self.set_trans
         self.transmissibility = self.T
-        self.set_properties = self.__calc_comp
 
     # -------------------------------------------------------------------------
     # End
@@ -1071,19 +1120,7 @@ if __name__ == "__main__":
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-
     model = Model(grid, fluid, pi=4000, dtype="double")
     model.set_well(id=5, q=-600, s=1.5, r=3.5)
     model.set_well(id=6, pwf=1000, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 1: ("rate", 0)})
-    # print(model.RHS)
-    # print(model.wells)
-    # print(grid.get_cell_G(id=5, boundary=True))
-    # print(model.get_cell_T(5, None, True))
-    # print(model.get_cell_eq(5))
-    # print(model.get_cell_eq(6))
-    # model.get_cells_eq()
-    print(grid.phi)
-    print(model.get_d())
-    # model.run(nsteps=6, sparse=False, check_MB=True, verbose=False)
-    # print(grid.get_Gx(fshape=True))
