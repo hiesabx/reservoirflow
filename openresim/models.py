@@ -17,6 +17,7 @@ from tqdm import tqdm
 import warnings
 import pandas as pd
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 class Model(Base):
@@ -436,6 +437,7 @@ class Model(Base):
     # Flow Equations:
     # -------------------------------------------------------------------------
 
+    @_lru_cache(maxsize=1)
     def __calc_RHS(self):
         """Calculates flow equation for RHS.
 
@@ -446,7 +448,6 @@ class Model(Base):
         if self.comp_type == "incompressible":
             n = self.grid.get_n_cells(True)
             self.RHS = np.zeros(n, dtype=self.dtype)
-            # or self.RHS = 0
         elif self.comp_type == "compressible":
             RHS_n = self.grid.V * self.grid.phi * self.comp
             RHS_d = self.factors["volume conversion"] * self.fluid.B * self.dt
@@ -455,6 +456,7 @@ class Model(Base):
             raise ValueError("compressibility type is unknown.")
         return self.RHS
 
+    @_lru_cache(maxsize=None)
     def __calc_n_terms(self, id, id_n, p, T):
         """Calculates cell flow equation with a neighbor cell.
 
@@ -623,7 +625,6 @@ class Model(Base):
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
-    # @_lru_cache(maxsize=None)
     def get_cell_eq(self, id):
         """Return cell equation.
 
@@ -727,28 +728,82 @@ class Model(Base):
 
         return cell_eq_lhs, cell_eq.rhs
 
-    # @lru_cache(maxsize=None)
-    def get_cells_eq(self):
-        """Return flow equations for all internal cells.
-
-        Backup
-        ------
-        - internal cells id:
-            for i in self.grid.order[self.grid.i_blocks.astype("bool")]:
-        """
+    def get_cells_eq(self, threading=True):
+        """Return flow equations for all internal cells."""
         cells_eq = {}
-        for id in self.grid.get_cells_id(False, False, "tuple"):
-            cells_eq[id] = self.get_cell_eq(id)
-            if self.verbose:
-                print(f"[info] cell id: {id}")
-                print(f"[info]      - lhs: {cells_eq[id][0]}")
-                print(f"[info]      - rhs: {cells_eq[id][1]}")
+        cells_id = self.grid.get_cells_id(False, False, "tuple")
+        if threading:
+            with ThreadPoolExecutor(len(cells_id) // 2) as executor:
+                # with ProcessPoolExecutor(2) as executor:
+                equations = executor.map(self.get_cell_eq, cells_id)
+                for id, eq in zip(cells_id, equations):
+                    cells_eq[id] = eq
+        else:
+            cells_eq = {}
+            for id in cells_id:
+                cells_eq[id] = self.get_cell_eq(id)
+                if self.verbose:
+                    print(f"[info] cell id: {id}")
+                    print(f"[info]      - lhs: {cells_eq[id][0]}")
+                    print(f"[info]      - rhs: {cells_eq[id][1]}")
 
         return cells_eq
 
     # -------------------------------------------------------------------------
     # Coefficient Matrix:
     # -------------------------------------------------------------------------
+
+    def init_matrices(self, sparse=False, threading=True):
+
+        if self.tstep == 0:
+            n = self.grid.get_n_cells(False)
+            if sparse:
+                self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
+                self.A = ss.lil_matrix((n, n), dtype=self.dtype)
+            else:
+                self.d = np.zeros((n, 1), dtype=self.dtype)
+                self.A = np.zeros((n, n), dtype=self.dtype)
+
+        cells_eq = self.get_cells_eq(threading)
+        cells_id = self.grid.get_cells_id(False, False, "tuple")
+
+        # for i, id in enumerate(cells_id):
+        #     cell_lhs, cell_rhs = cells_eq[id]
+        #     ids = [cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
+        #     self.d[i] = np.array(cell_rhs).astype(self.dtype)
+        #     self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
+
+        #     if self.verbose:
+        #         print(f"[info] cell id: {id}")
+        #         print(f"[info]      - ids: {ids}")
+        #         print(f"[info]      - lhs: {cell_lhs}")
+        #         print(f"[info]      - rhs: {cell_rhs}")
+
+        def update(i, id):
+            cell_lhs, cell_rhs = cells_eq[id]
+            ids = [cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
+            self.d[i] = np.array(cell_rhs).astype(self.dtype)
+            self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
+            if self.verbose:
+                print(f"[info] cell id: {id}")
+                print(f"[info]      - ids: {ids}")
+                print(f"[info]      - lhs: {cell_lhs}")
+                print(f"[info]      - rhs: {cell_rhs}")
+
+        if threading:
+            cells_i = range(len(cells_id))
+            with ThreadPoolExecutor(len(cells_id) // 2) as executor:
+                # with ProcessPoolExecutor(2) as executor:
+                executor.map(update, cells_i, cells_id)
+        else:
+            for i, id in enumerate(cells_id):
+                update(i, id)
+
+        if self.verbose:
+            print("[info] - A:\n", self.A)
+            print("[info] - d:\n", self.d)
+
+        return self.A, self.d
 
     # @lru_cache(maxsize=None)
     def __update_matrix(self, id, sparse=True):
@@ -855,37 +910,6 @@ class Model(Base):
             print("[info] - d:\n", self.d)
 
         return self.d
-
-    def init_matrices(self, sparse=False):
-
-        if self.tstep == 0:
-            n = self.grid.get_n_cells(False)
-            if sparse:
-                self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
-                self.A = ss.lil_matrix((n, n), dtype=self.dtype)
-            else:
-                self.d = np.zeros((n, 1), dtype=self.dtype)
-                self.A = np.zeros((n, n), dtype=self.dtype)
-
-        cells_eq = self.get_cells_eq()
-        cells_id = self.grid.get_cells_id(False, False, "tuple")
-        for i, id in enumerate(cells_id):
-            cell_lhs, cell_rhs = cells_eq[id]  # or self.get_cell_eq(id)
-            ids = [cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
-            self.d[i] = np.array(cell_rhs).astype(self.dtype)
-            self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
-
-            if self.verbose:
-                print(f"[info] cell id: {id}")
-                print(f"[info]      - ids: {ids}")
-                print(f"[info]      - lhs: {cell_lhs}")
-                print(f"[info]      - rhs: {cell_rhs}")
-
-        if self.verbose:
-            print("[info] - A:\n", self.A)
-            print("[info] - d:\n", self.d)
-
-        return self.A, self.d
 
     # -------------------------------------------------------------------------
     # Numerical Solution:

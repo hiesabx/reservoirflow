@@ -152,21 +152,6 @@ if __name__ == "__main__":
         return model
 
     model = create_model()
-    # model.grid.show("id")
-    # print(model.wells)
-    model.verbose = True
-    # model.get_cells_eq()
-    # print(model.get_cell_eq(4))
-    # model.run(nsteps=18, sparse=False)
-    # print(model.get_cell_eq(4))
-    # model.run(nsteps=1, sparse=False)
-    # print(model.get_cell_eq(4))
-    # model.run(nsteps=11, sparse=False)
-    # print(model.get_cell_eq(4))
-    # print(model.get_cell_eq(4))
-    # print(model.RHS)
-    # print(model.get_cells_T())
-    # print(model.wells)
     model.run(nsteps=27, sparse=False)
 
     # print(model.wells)
