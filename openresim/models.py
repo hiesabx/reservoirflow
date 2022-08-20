@@ -2,7 +2,7 @@
 Model classes to create reservoir simulation models.
 
 This module contains all model classes used to create a reservoir 
-simulation model in combination with with a Fluid class and Grid class.
+simulation model in combination with a Fluid class and Grid class.
 """
 import time
 from openresim.base import Base
@@ -14,6 +14,9 @@ import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import warnings
+import pandas as pd
+from collections import defaultdict
 
 
 class Model(Base):
@@ -46,6 +49,7 @@ class Model(Base):
         dtype: str = "double",
         unit="field",
         verbose=True,
+        sparse=True,
     ):
         """Reservoir simulation Model class.
 
@@ -88,7 +92,7 @@ class Model(Base):
         self.__calc_comp()
         self.__calc_dir_T()
         self.__calc_RHS()
-        self.set_boundaries({0: ('rate',0)})
+        self.set_boundaries({0: ("rate", 0)})
 
     # -------------------------------------------------------------------------
     # Basic:
@@ -114,6 +118,7 @@ class Model(Base):
             self.pressures[0][cells_id] = pi
 
         self.wells = {}
+        self.w_pressures = defaultdict(list)
         if well is not None:
             self.set_well(well)
 
@@ -225,7 +230,7 @@ class Model(Base):
         elif fdir == "xy":
             k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
         elif fdir == "xyz":
-            # todo: not varified
+            print(f"[warning] __calc_well_G at {fdir} has to be verified.")
             k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
@@ -278,7 +283,7 @@ class Model(Base):
                 / (ky_kx**0.25 + kx_ky**0.25)
             )
         elif fdir == "xyz":
-            # todo: not verified
+            print(f"[warning] __calc_well_r_eq at {fdir} has to be verified.")
             kx_ky = self.grid.k["x"][id] / self.grid.k["y"][id]
             ky_kx = self.grid.k["y"][id] / self.grid.k["x"][id]
             return (
@@ -330,14 +335,17 @@ class Model(Base):
                 self.wells[id] = {}
             if q is not None:
                 self.wells[id]["q"] = q
+                self.wells[id]["q_sp"] = q
+                self.wells[id]["constrain"] = "q"
             if pwf is not None:
                 self.wells[id]["pwf"] = pwf
+                self.wells[id]["pwf_sp"] = pwf
+                self.w_pressures[id].append(self.pressures[self.tstep, id])
             if r is not None:
                 self.wells[id]["r"] = r
             if s is not None:
                 self.wells[id]["s"] = s
-        if "q" in self.wells[id]:
-            self.rates[0][id] = self.wells[id]["q"]
+
         self.wells[id]["r_eq"] = self.__calc_well_r_eq(id)
         self.wells[id]["G"] = self.__calc_well_G(id)
 
@@ -434,14 +442,6 @@ class Model(Base):
         ToDo
         ----
         - make sure RHS is suitable in case of floats.
-
-        Backup
-        ------
-        - in case of incompressible:
-            n = self.grid.get_n_cells(True)
-            self.RHS =  np.zeros(n, dtype=self.dtype)
-            or
-            self.RHS = 0
         """
         if self.comp_type == "incompressible":
             n = self.grid.get_n_cells(True)
@@ -453,8 +453,9 @@ class Model(Base):
             self.RHS = RHS_n / RHS_d
         else:
             raise ValueError("compressibility type is unknown.")
+        return self.RHS
 
-    def __calc_n_terms(self, id, n_id, p_id, n_T):
+    def __calc_n_terms(self, id, id_n, p, T):
         """Calculates cell flow equation with a neighbor cell.
 
         This function derives flow terms between a specific cell (id)
@@ -464,12 +465,12 @@ class Model(Base):
         ----------
         id : int
             cell id based on natural order as int.
-        n_id : int
+        id_n : int
             neighbor cell id based on natural order as int.
-        p_id : Symbol
+        p : Symbol
             pressure symbol at cell id.
-        n_T : float
-            transmissibility with neighbor cell.
+        T : float
+            transmissibility with the neighbor cell.
 
         Returns
         -------
@@ -487,16 +488,20 @@ class Model(Base):
             n_term = trans * (dp - acc)
         - T with matrix:
             self.T[dir][min(n_id,id)]
+        - exec implementation:
+            exec(f"p{n_id} = sym.Symbol('p{n_id}')")
+            exec(
+                f"n_term = n_T * ((p{n_id} - p_id) - "
+                + "(self.fluid.g * (self.grid.z[n_id] - self.grid.z[id])))"
+            )
+            return locals()["n_term"]
+
         """
-        exec(f"p{n_id} = sym.Symbol('p{n_id}')")
-        exec(
-            f"n_term = n_T * ((p{n_id} - p_id) - "
-            + "(self.fluid.g * (self.grid.z[n_id] - self.grid.z[id])))"
-        )
+        p_n = eval(f"sym.Symbol('p{id_n}')")
+        dz = self.grid.z[id_n] - self.grid.z[id]
+        return T * ((p_n - p) - (self.fluid.g * dz))
 
-        return locals()["n_term"]
-
-    def __calc_b_terms(self, id, b_id, p_id, b_T):
+    def __calc_b_terms(self, id, id_b, p, T):
         """Calculates cell flow equation with a boundary cell.
 
         This function derives flow terms between a specific cell (id)
@@ -536,27 +541,21 @@ class Model(Base):
         - T with matrix:
             self.T[dir][min(b_id,id)]
         """
-        p_id_b = self.pressures[self.tstep][b_id]
+        p_b = self.pressures[self.tstep][id_b]
 
-        if not np.isnan(p_id_b):
-            b_term = (
-                b_T
-                * 2
-                * (
-                    (p_id_b - p_id)
-                    - (self.fluid.g * (self.grid.z[b_id] - self.grid.z[id]))
-                )
-            )
+        if not np.isnan(p_b):
+            dz = self.grid.z[id_b] - self.grid.z[id]
+            b_term = T * 2 * ((p_b - p) - (self.fluid.g * dz))
         else:
-            if b_id in self.bdict and self.bdict[b_id][0] == "gradient":
-                v = self.bdict[b_id][1]
-                # ToDo: 0 or self.tstep?
-                self.rates[self.tstep][b_id] = b_T * self.grid.d["x"][id] * v
-            b_term = self.rates[self.tstep][b_id]
+            if id_b in self.bdict and self.bdict[id_b][0] == "gradient":
+                v = self.bdict[id_b][1]
+                print(f"[Warning] __calc_b_terms with gradient is not verified.")
+                self.rates[self.tstep][id_b] = T * self.grid.d["x"][id] * v
+            b_term = self.rates[self.tstep][id_b]
 
         return b_term
 
-    def __calc_w_terms(self, id, p_id):
+    def __calc_w_terms(self, id, p):
         """Calculates cell flow equation for the well.
 
         This function derives flow terms between a specific cell (id)
@@ -566,7 +565,7 @@ class Model(Base):
         ----------
         id : int
             cell id based on natural order as int.
-        p_id : Symbol or value
+        p : Symbol or value
             cell pressure symbol or value at cell id.
 
         Returns
@@ -585,16 +584,16 @@ class Model(Base):
             return locals()["w_term"]
 
         """
-        if "q" in self.wells[id]:
+        if "q" in self.wells[id] and self.wells[id]["constrain"] == "q":
             return self.wells[id]["q"]
         else:
             return (
                 -self.wells[id]["G"]
                 / (self.fluid.B * self.fluid.mu)
-                * (p_id - self.wells[id]["pwf"])
+                * (p - self.wells[id]["pwf"])
             )
 
-    def __calc_a_term(self, id, p_id):
+    def __calc_a_term(self, id, p):
         """Calculates cell flow equation for the accumulation term.
 
         Parameters
@@ -620,7 +619,7 @@ class Model(Base):
             return 0
         else:
             try:
-                return self.RHS[id] * (p_id - self.pressures[self.tstep][id])
+                return self.RHS[id] * (p - self.pressures[self.tstep][id])
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
@@ -669,10 +668,9 @@ class Model(Base):
 
         cells_id = self.grid.get_cells_id(False, False, "set")
         assert id in cells_id, f"id is out of range {cells_id}."
-        exec(f"p{id}=sym.Symbol('p{id}')")
-        p_id = locals()[f"p{id}"]
+        p = eval(f"sym.Symbol('p{id}')")
 
-        if id not in self.cells_terms:
+        if not id in self.cells_terms:
             neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="tuple")
             boundaries = self.grid.get_cell_boundaries(id=id, fmt="tuple")
             terms = []
@@ -681,18 +679,18 @@ class Model(Base):
                 print(f"[info] cell id: {id}")
                 print(f"[info]    - Neighbors: {neighbors}")
                 print(f"[info]    - Boundaries: {boundaries}")
-            for n_id in neighbors:
-                n_terms = self.__calc_n_terms(id, n_id, p_id, T[n_id])
+            for id_n in neighbors:
+                n_terms = self.__calc_n_terms(id, id_n, p, T[id_n])
                 terms.append(n_terms)
                 if self.verbose:
                     print(f"[info] Neighbor terms: {n_terms}")
-            for b_id in boundaries:
-                b_terms = self.__calc_b_terms(id, b_id, p_id, T[b_id])
+            for id_b in boundaries:
+                b_terms = self.__calc_b_terms(id, id_b, p, T[id_b])
                 terms.append(b_terms)
                 if self.verbose:
                     print(f"[info] Boundary terms: {b_terms}")
             if id in self.wells:
-                w_terms = self.__calc_w_terms(id, p_id)
+                w_terms = self.__calc_w_terms(id, p)
                 terms.append(w_terms)
                 if self.verbose:
                     print(f"[info] Well terms: {w_terms}")
@@ -703,9 +701,16 @@ class Model(Base):
         else:
             terms = self.cells_terms[id]
 
-        a_term = self.__calc_a_term(id, p_id)
+        if id in self.wells and self.wells[id]["constrain"] == "pwf":
+            w_terms = self.__calc_w_terms(id, p)
+            if self.verbose:
+                print(f"[info] Well terms (updated): {w_terms}")
+            terms[-1] = w_terms
+
+        a_term = self.__calc_a_term(id, p)
         if self.verbose:
-            print("[info] accumulation terms:", a_term)
+            print("[info] cell id:", id)
+            print("[info] Accumulation terms:", a_term)
 
         cell_eq = sym.Eq(sum(terms), a_term)
 
@@ -716,9 +721,9 @@ class Model(Base):
             cell_eq = cell_eq.simplify()
 
         if self.verbose:
-            print("[info] flow equation:", cell_eq)
+            print("[info] Flow equation:", cell_eq)
 
-        cell_eq_lhs = dict(cell_eq.lhs.as_coefficients_dict())
+        cell_eq_lhs = cell_eq.lhs.as_coefficients_dict()
 
         return cell_eq_lhs, cell_eq.rhs
 
@@ -902,8 +907,7 @@ class Model(Base):
                 / (self.fluid.B * self.fluid.mu)
                 * (self.pressures[self.tstep][id] - self.wells[id]["pwf"])
             )
-        """
-        for id in self.wells.keys():
+        - all calc original:
             if "q" in self.wells[id]:
                 self.wells[id]["pwf"] = self.pressures[self.tstep][id] + (
                     self.wells[id]["q"]
@@ -911,6 +915,7 @@ class Model(Base):
                     * self.fluid.mu
                     / self.wells[id]["G"]
                 )
+            self.w_pressures[id].append(self.wells[id]["pwf"])
             if "pwf" in self.wells[id]:
                 self.wells[id]["q"] = (
                     -self.wells[id]["G"]
@@ -918,6 +923,43 @@ class Model(Base):
                     * (self.pressures[self.tstep][id] - self.wells[id]["pwf"])
                 )
                 self.rates[self.tstep][id] = self.wells[id]["q"]
+        """
+        resolve = False
+        for id in self.wells.keys():
+            pwf_est = self.pressures[self.tstep][id] + (
+                self.wells[id]["q_sp"]
+                * self.fluid.B
+                * self.fluid.mu
+                / self.wells[id]["G"]
+            )
+            if pwf_est > self.wells[id]["pwf_sp"]:
+                self.wells[id]["constrain"] = "q"
+                q_est = self.wells[id]["q_sp"]
+
+            else:
+                if (
+                    pwf_est < self.wells[id]["pwf_sp"]
+                    and self.wells[id]["q"] == self.wells[id]["q_sp"]
+                ):
+                    resolve = True
+
+                self.wells[id]["constrain"] = "pwf"
+                pwf_est = self.wells[id]["pwf_sp"]
+                q_est = (
+                    -self.wells[id]["G"]
+                    / (self.fluid.B * self.fluid.mu)
+                    * (self.pressures[self.tstep][id] - pwf_est)
+                )
+
+            self.wells[id]["q"] = self.rates[self.tstep][id] = q_est
+            self.wells[id]["pwf"] = pwf_est
+
+            if resolve:
+                return True
+            else:
+                self.w_pressures[id].append(pwf_est)
+
+        return False
 
     def __update_boundaries(self):
         for id_b in self.grid.get_boundaries("id", "tuple"):
@@ -968,8 +1010,17 @@ class Model(Base):
             self.pressures = np.vstack([self.pressures, self.pressures[-1]])
             self.pressures[self.tstep][cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
-            self.__update_wells()
             self.__update_boundaries()
+            resolve = self.__update_wells()
+
+            if resolve:
+                self.rates = self.rates[: self.tstep]
+                self.pressures = self.pressures[: self.tstep]
+                self.tstep -= 1
+                self.solve(sparse, False, True)
+                if self.verbose:
+                    print(f"[info] Time step {self.tstep} was resolved.")
+
             if check_MB:
                 self.check_MB()
 
@@ -987,12 +1038,18 @@ class Model(Base):
             verbose_restore = True
         else:
             verbose_restore = False
+
         for _ in tqdm(
             range(1, nsteps + 1), unit="steps", colour="green", position=0, leave=True
         ):
-            self.solve(sparse, check_MB, update=True)
+            self.solve(sparse, check_MB, True)
+
         duration = round(time.time() - start_time, 2)
-        print(f"Simulation run of {nsteps} steps is finished in {duration} seconds.")
+        print(
+            f"[info] Simulation run of {nsteps} steps",
+            f"is finished in {duration} seconds.",
+            f"\n[info] Material Balance Error: {self.error}.",
+        )
         if verbose_restore:
             self.verbose = True
 
@@ -1003,11 +1060,12 @@ class Model(Base):
     def check_MB(self, verbose=False, error_threshold=0.1):
         """Material Balance Check"""
         if verbose:
-            print(f"Error in step {self.tstep}")
+            print(f"[info] Error in step {self.tstep}")
+
         if self.comp_type == "incompressible":
             self.error = self.rates[self.tstep].sum()  # must add up to 0
             if verbose:
-                print(f"    - Error: {self.error}")
+                print(f"[info]    - Error: {self.error}")
         elif self.comp_type == "compressible":
             cells_id = self.grid.get_cells_id(False, False, "list")
             # Check MB error over a time step:
@@ -1026,14 +1084,67 @@ class Model(Base):
             ).sum() / (self.dt * self.tstep * self.rates.sum())
             self.error = abs(self.error - 1)
             if self.verbose:
-                print(f"    - Incremental Error: {self.error}")
-                print(f"    -  Cumulative Error: {self.cumulative_error}")
-                print(f"    -       Total Error: {self.error+self.cumulative_error}")
+                print(f"[info]    - Incremental Error: {self.error}")
+                print(f"[info]    -  Cumulative Error: {self.cumulative_error}")
+                print(
+                    f"[info]    -       Total Error: {self.error+self.cumulative_error}"
+                )
 
-        assert (
-            abs(self.error) < error_threshold
-        ), f"""
-        Material balance error ({self.error}) higher than the allowed error ({error_threshold})."""
+        if abs(self.error) > error_threshold:
+            warnings.warn("High material balance error.")
+            print(
+                f"[warning] Material balance error ({self.error}) higher",
+                f" than the allowed error ({error_threshold}).",
+            )
+
+    # -------------------------------------------------------------------------
+    # Data:
+    # -------------------------------------------------------------------------
+
+    def data(
+        self,
+        boundary=False,
+        units=False,
+        rates=False,
+        pressures=False,
+        pwf=False,
+        save=False,
+    ):
+        if units:
+            time_str = f" [{self.units['time']}]"
+            press_str = f" [{self.units['pressure']}]"
+            rate_str = f" [{self.units['rate']}]"
+        else:
+            time_str = ""
+            press_str = ""
+            rate_str = ""
+        time = np.arange(0, self.nsteps * self.dt, self.dt)
+        data = pd.Series(time, name=f"Time" + time_str)
+        cells_id = self.grid.get_cells_id(boundary, False, "list")
+        if rates:
+            rates_cells_id = [f"Q{str(id)}" + rate_str for id in cells_id]
+            rates_data = self.rates[:, cells_id]
+            rates_df = pd.DataFrame(rates_data, columns=rates_cells_id)
+            data = pd.concat([data, rates_df], axis=1)
+        if pressures:
+            press_cells_id = [f"P{str(id)}" + press_str for id in cells_id]
+            pressure_data = self.pressures[:, cells_id]
+            pressures_df = pd.DataFrame(pressure_data, columns=press_cells_id)
+            data = pd.concat([data, pressures_df], axis=1)
+        if pwf:
+            press_wells_id = [
+                f"Pwf{str(id)}" + press_str for id in self.w_pressures.keys()
+            ]
+            w_pressures_df = pd.DataFrame(self.w_pressures)
+            w_pressures_df.columns = press_wells_id
+            data = pd.concat([data, w_pressures_df], axis=1)
+
+        data.index.name = "steps"
+        if save:
+            data.to_csv("model_data.csv")
+            print("[info] Model data was successfully saved.")
+
+        return data
 
     # -------------------------------------------------------------------------
     # Visualization:

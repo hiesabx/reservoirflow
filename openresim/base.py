@@ -4,7 +4,9 @@ units_dict = {
     "field": {
         "transmissibility": "STB/D-psi",
         "error": "STB/D",
-        "pressure": "psia",
+        "pressure": "Psia",
+        "time": "Days",
+        "rate": "STB/Day",
     },
     "metric": {"transmissibility": "M3/D-bar", "error": "M3/D"},
 }
