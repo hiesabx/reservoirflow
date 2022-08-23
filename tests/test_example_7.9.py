@@ -1,12 +1,34 @@
 from venv import create
 from openresim import grids, fluids, models
 import numpy as np
+import pandas as pd
 import unittest
 
 
 class TestApp(unittest.TestCase):
+    def test_data(self):
+        df_desired = pd.read_csv(
+            "tests/test_example_7.9.csv",
+            index_col=0,
+            dtype={None: "float64", "Time [Days]": "int32"},
+        )
+        model = create_model()
+        model.run(nsteps=10, sparse=False)
+        df = model.data(*6 * [True], False)
+        pd.testing.assert_frame_equal(df, df_desired)
+        np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
+        self.assertLess(model.ctime, 5)
+
     def test_trans(self):
-        trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
+        trans_desired = np.array(
+            [
+                28.4004,
+                28.4004,
+                28.4004,
+                28.4004,
+                28.4004,
+            ]
+        )
         model = create_model()
         np.testing.assert_array_equal(model.T["x"], trans_desired)
 
@@ -24,85 +46,46 @@ class TestApp(unittest.TestCase):
         model = create_model()
         np.testing.assert_array_equal(model.RHS, RHS_desired)
 
-    def test_step_0(self):
-        initial_pressures_desired = np.array(
-            [4000.0, 4000.0, 4000.0, 4000.0, 4000.0, np.nan]
-        )
-        model = create_model()
-        np.testing.assert_almost_equal(
-            model.pressures[0], initial_pressures_desired, decimal=5
-        )
-
-    def test_step_1(self):
-        pressures_desired = np.array(
-            [
-                4000.0,
-                3993.7457054727147,
-                3980.7478537203187,
-                3966.2439396955738,
-                3949.0993471641805,
-                np.nan,
-            ]
-        )
-        rates_desired = np.array([355.24893259, 0.0, 0.0, 0.0, -600.0, 0.0])
+    def test_error(self):
         error_desired = 0.99891
-        cumulative_error_desired = 0.28973
-
-        model = create_model()
-        model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
-        np.testing.assert_almost_equal(1 - model.error, error_desired, decimal=3)
-        np.testing.assert_almost_equal(
-            model.cumulative_error, cumulative_error_desired, decimal=5
-        )
+        cumulative_error_desired = 0.999999
 
         model = create_model()
         model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
         np.testing.assert_almost_equal(1 - model.error, error_desired, decimal=3)
         np.testing.assert_almost_equal(
             model.cumulative_error, cumulative_error_desired, decimal=5
         )
 
-    def test_step_2(self):
-        pressures_desired = np.array(
-            [
-                4000.0,
-                3990.953458875824,
-                3972.6419439813862,
-                3953.6963177175703,
-                3933.7691125796787,
-                np.nan,
-            ]
+        model_sp = create_model()
+        model_sp.solve(sparse=True, update=True, check_MB=True)
+        np.testing.assert_almost_equal(1 - model_sp.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(
+            model_sp.cumulative_error, cumulative_error_desired, decimal=5
         )
-        rates_desired = np.array([513.85077309, 0.0, 0.0, 0.0, -600.0, 0.0])
+
         error_desired = 0.99891
-        cumulative_error_desired = 0.177731
+        cumulative_error_desired = 0.499999
 
-        model = create_model()
-        model.run(nsteps=2, sparse=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[2], pressures_desired, decimal=5)
-        np.testing.assert_almost_equal(model.rates[2], rates_desired, decimal=5)
+        model.solve(sparse=False, update=True, check_MB=True)
         np.testing.assert_almost_equal(1 - model.error, error_desired, decimal=3)
         np.testing.assert_almost_equal(
             model.cumulative_error, cumulative_error_desired, decimal=5
+        )
+
+        model_sp.solve(sparse=True, update=True, check_MB=True)
+        np.testing.assert_almost_equal(1 - model_sp.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(
+            model_sp.cumulative_error, cumulative_error_desired, decimal=5
         )
 
     def test_well(self):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            model.wells[4]["r_eq"], 64.53681120105021, decimal=5
-        )
+        np.testing.assert_almost_equal(model.wells[4]["r_eq"], 64.536811, decimal=5)
         np.testing.assert_almost_equal(model.wells[4]["q"], -600, decimal=5)
-        np.testing.assert_almost_equal(
-            model.wells[4]["G"], 11.08453575337366, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[4]["pwf"], 3922.0346142177686, decimal=5
-        )
+        np.testing.assert_almost_equal(model.wells[4]["G"], 11.084535, decimal=5)
+        np.testing.assert_almost_equal(model.wells[4]["pwf"], 3922.034614, decimal=5)
 
 
 if __name__ == "__main__":

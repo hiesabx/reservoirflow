@@ -62,4 +62,5 @@ if __name__ == "__main__":
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
+    model = create_model()
     unittest.main()

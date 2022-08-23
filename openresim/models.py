@@ -49,8 +49,7 @@ class Model(Base):
         dt: int = 1,
         dtype: str = "double",
         unit="field",
-        verbose=True,
-        sparse=True,
+        verbose=False,
     ):
         """Reservoir simulation Model class.
 
@@ -88,6 +87,8 @@ class Model(Base):
         self.A = None
         self.nsteps = 1
         self.tstep = 0
+        self.ctime = 0  # computing time
+        self.errors = [0]
 
         self.__initialize__(pi, well)
         self.__calc_comp()
@@ -177,15 +178,11 @@ class Model(Base):
         Parameters
         ----------
         id : int, iterable of int, by default None
-            cell id based on natural order as int. For multiple cells,
-            list of int [id,id,..] or tuple of int (id,id,...).
-            NotFullyImplemented.
-        coords : iterable of int, iterable of tuples of int, by default
-            None cell coordinates (i,j,k) as a tuple of int. For
-            multiple cells, tuple of tuples of int as
-            ((i,j,k),(i,j,k),..). NotFullyImplemented.
+            cell id based on natural order as int.
+        coords : iterable of int, by default None
+            cell coordinates (i,j,k) as a tuple of int.
         boundary : bool, optional, by default True
-            values in flow shape (True) or flatten (False).
+            values with boundary (True) or without boundary (False).
 
         Returns
         -------
@@ -315,7 +312,8 @@ class Model(Base):
             well rate as positive for injection or negative for
             production
         pwf : int, float, optional, by default None
-            bottom hole flowing pressure (BHFP).
+            bottom hole flowing pressure (BHFP). If was not defined,
+            None value will be set to zero.
         r : int, float, optional, by default None
             well radius.
         s : int, float, optional, by default None
@@ -342,6 +340,8 @@ class Model(Base):
                 self.wells[id]["pwf"] = pwf
                 self.wells[id]["pwf_sp"] = pwf
                 self.w_pressures[id].append(self.pressures[self.tstep, id])
+            if "constrain" not in self.wells[id]:
+                self.wells[id]["constrain"] = None
             if r is not None:
                 self.wells[id]["r"] = r
             if s is not None:
@@ -349,6 +349,15 @@ class Model(Base):
 
         self.wells[id]["r_eq"] = self.__calc_well_r_eq(id)
         self.wells[id]["G"] = self.__calc_well_G(id)
+        # if "q" not in self.wells[id] and "pwf" in self.wells[id]:
+        #     q = self.__calc_w_terms(id, self.pressures[self.tstep][id])
+        #     self.wells[id]["q"] = q
+        #     self.wells[id]["q_sp"] = q
+        #     self.wells[id]["constrain"] = "q"
+        if "pwf" not in self.wells[id]:
+            self.wells[id]["pwf"] = 0
+            self.wells[id]["pwf_sp"] = 0
+            self.w_pressures[id].append(self.pressures[self.tstep, id])
 
         if self.verbose:
             print(f"[info] a well in cell {id} was set.")
@@ -513,11 +522,11 @@ class Model(Base):
         ----------
         id : int
             cell id based on natural order as int.
-        b_id : int
+        id_b : int
             boundary cell id based on natural order as int.
-        p_id : Symbol
+        p : Symbol
             pressure symbol at cell id.
-        b_T : float
+        T : float
             transmissibility with boundary cell.
 
         Returns
@@ -601,7 +610,7 @@ class Model(Base):
         Parameters
         ----------
         id : _type_
-            _description_
+            cell id based on natural order as int.
 
         Returns
         -------
@@ -714,7 +723,6 @@ class Model(Base):
             print("[info] Accumulation terms:", a_term)
 
         cell_eq = sym.Eq(sum(terms), a_term)
-
         if (
             cell_eq.lhs.as_coefficients_dict()[1] != 0
             or cell_eq.rhs.as_coefficients_dict()[1] != 0
@@ -728,7 +736,7 @@ class Model(Base):
 
         return cell_eq_lhs, cell_eq.rhs
 
-    def get_cells_eq(self, threading=True):
+    def get_cells_eq(self, threading=False):
         """Return flow equations for all internal cells."""
         cells_eq = {}
         cells_id = self.grid.get_cells_id(False, False, "tuple")
@@ -753,9 +761,58 @@ class Model(Base):
     # Coefficient Matrix:
     # -------------------------------------------------------------------------
 
+    def __update_matrices(self, id):
+        """Update flow equations' matrices (A, d).
+
+        Parameters
+        ----------
+        id : int
+            cell id based on natural order as int.
+
+        Backup
+        ------
+        - arrays for lhs and rhs:
+            self.d[i] = np.array(cell_rhs).astype(self.dtype)
+            self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
+        """
+        i = self.cells_i[id]
+        cell_lhs, cell_rhs = self.cells_eq[id]
+        ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
+        self.d[i] = cell_rhs
+        self.A[i, ids] = list(cell_lhs.values())
+        if self.verbose:
+            print(f"[info] cell id: {id}")
+            print(f"[info]      - ids: {ids}")
+            print(f"[info]      - lhs: {cell_lhs}")
+            print(f"[info]      - rhs: {cell_rhs}")
+
     def init_matrices(self, sparse=False, threading=True):
+        """Initialize flow equations' matrices (A, d).
+
+        Parameters
+        ----------
+        sparse : bool, optional, by default False
+            use sparse matrices instead of dense matrices.
+        threading : bool, optional, by default False
+            use multiple threads for concurrence workers. The maximum
+            number of threads are set to the half number of grids.
+
+        Returns
+        -------
+        _type_
+            _description_
+
+        ToDo
+        ----
+        - Update only required cells.
+        """
+
+        self.cells_eq = self.get_cells_eq(threading)
 
         if self.tstep == 0:
+            self.cells_id = self.grid.get_cells_id(False, False, "tuple")
+            self.boundaries = self.grid.get_boundaries("id", "list")
+            self.cells_i = dict(zip(self.cells_id, range(len(self.cells_id))))
             n = self.grid.get_n_cells(False)
             if sparse:
                 self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
@@ -764,40 +821,13 @@ class Model(Base):
                 self.d = np.zeros((n, 1), dtype=self.dtype)
                 self.A = np.zeros((n, n), dtype=self.dtype)
 
-        cells_eq = self.get_cells_eq(threading)
-        cells_id = self.grid.get_cells_id(False, False, "tuple")
-
-        # for i, id in enumerate(cells_id):
-        #     cell_lhs, cell_rhs = cells_eq[id]
-        #     ids = [cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
-        #     self.d[i] = np.array(cell_rhs).astype(self.dtype)
-        #     self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
-
-        #     if self.verbose:
-        #         print(f"[info] cell id: {id}")
-        #         print(f"[info]      - ids: {ids}")
-        #         print(f"[info]      - lhs: {cell_lhs}")
-        #         print(f"[info]      - rhs: {cell_rhs}")
-
-        def update(i, id):
-            cell_lhs, cell_rhs = cells_eq[id]
-            ids = [cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
-            self.d[i] = np.array(cell_rhs).astype(self.dtype)
-            self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
-            if self.verbose:
-                print(f"[info] cell id: {id}")
-                print(f"[info]      - ids: {ids}")
-                print(f"[info]      - lhs: {cell_lhs}")
-                print(f"[info]      - rhs: {cell_rhs}")
-
         if threading:
-            cells_i = range(len(cells_id))
-            with ThreadPoolExecutor(len(cells_id) // 2) as executor:
+            with ThreadPoolExecutor(len(self.cells_id) // 2) as executor:
                 # with ProcessPoolExecutor(2) as executor:
-                executor.map(update, cells_i, cells_id)
+                executor.map(self.__update_matrices, self.cells_id)
         else:
-            for i, id in enumerate(cells_id):
-                update(i, id)
+            for id in self.cells_id:
+                self.__update_matrices(id)
 
         if self.verbose:
             print("[info] - A:\n", self.A)
@@ -805,7 +835,6 @@ class Model(Base):
 
         return self.A, self.d
 
-    # @lru_cache(maxsize=None)
     def __update_matrix(self, id, sparse=True):
         """
         Update coefficient matrix (A) and result vector (d).
@@ -949,17 +978,21 @@ class Model(Base):
                 self.rates[self.tstep][id] = self.wells[id]["q"]
         """
         resolve = False
+        tstep_w_pressures = {}
         for id in self.wells.keys():
-            pwf_est = self.pressures[self.tstep][id] + (
-                self.wells[id]["q_sp"]
-                * self.fluid.B
-                * self.fluid.mu
-                / self.wells[id]["G"]
-            )
+            if "q_sp" in self.wells[id]:
+                pwf_est = self.pressures[self.tstep][id] + (
+                    self.wells[id]["q_sp"]
+                    * self.fluid.B
+                    * self.fluid.mu
+                    / self.wells[id]["G"]
+                )
+            else:
+                pwf_est = self.wells[id]["pwf"]
+
             if pwf_est > self.wells[id]["pwf_sp"]:
                 self.wells[id]["constrain"] = "q"
                 q_est = self.wells[id]["q_sp"]
-
             else:
                 if (
                     pwf_est < self.wells[id]["pwf_sp"]
@@ -981,7 +1014,11 @@ class Model(Base):
             if resolve:
                 return True
             else:
-                self.w_pressures[id].append(pwf_est)
+                tstep_w_pressures[id] = pwf_est
+
+        if not resolve:
+            for id in self.wells.keys():
+                self.w_pressures[id].append(tstep_w_pressures[id])
 
         return False
 
@@ -1055,23 +1092,25 @@ class Model(Base):
         return pressures
 
     def run(self, nsteps=10, sparse=True, check_MB=True):
-        self.nsteps += nsteps
         start_time = time.time()
+        self.nsteps += nsteps
+        self.run_ctime = 0
         if self.verbose:
             self.verbose = False
             verbose_restore = True
         else:
             verbose_restore = False
-
+        print(f"[info] Simulation run started: {nsteps} timesteps.")
         for _ in tqdm(
             range(1, nsteps + 1), unit="steps", colour="green", position=0, leave=True
         ):
             self.solve(sparse, check_MB, True)
 
-        duration = round(time.time() - start_time, 2)
+        self.run_ctime = round(time.time() - start_time, 2)
+        self.ctime += self.run_ctime
         print(
             f"[info] Simulation run of {nsteps} steps",
-            f"is finished in {duration} seconds.",
+            f"is finished in {self.run_ctime} seconds.",
             f"\n[info] Material Balance Error: {self.error}.",
         )
         if verbose_restore:
@@ -1120,6 +1159,7 @@ class Model(Base):
                 f"[warning] Material balance error ({self.error}) higher",
                 f" than the allowed error ({error_threshold}).",
             )
+        self.errors.append(self.error)
 
     # -------------------------------------------------------------------------
     # Data:
@@ -1129,46 +1169,58 @@ class Model(Base):
         self,
         boundary=False,
         units=False,
-        rates=False,
-        pressures=False,
-        pwf=False,
+        c_rates=False,
+        c_pressures=False,
+        w_rates=False,
+        w_pressures=False,
         save=False,
     ):
         if units:
             time_str = f" [{self.units['time']}]"
             press_str = f" [{self.units['pressure']}]"
             rate_str = f" [{self.units['rate']}]"
+            # error_str = f" [{self.units['error']}]"
         else:
             time_str = ""
             press_str = ""
             rate_str = ""
-        time = np.arange(0, self.nsteps * self.dt, self.dt)
-        data = pd.Series(time, name=f"Time" + time_str)
-        cells_id = self.grid.get_cells_id(boundary, False, "list")
-        if rates:
-            rates_cells_id = [f"Q{str(id)}" + rate_str for id in cells_id]
-            rates_data = self.rates[:, cells_id]
-            rates_df = pd.DataFrame(rates_data, columns=rates_cells_id)
-            data = pd.concat([data, rates_df], axis=1)
-        if pressures:
-            press_cells_id = [f"P{str(id)}" + press_str for id in cells_id]
-            pressure_data = self.pressures[:, cells_id]
-            pressures_df = pd.DataFrame(pressure_data, columns=press_cells_id)
-            data = pd.concat([data, pressures_df], axis=1)
-        if pwf:
-            press_wells_id = [
-                f"Pwf{str(id)}" + press_str for id in self.w_pressures.keys()
-            ]
-            w_pressures_df = pd.DataFrame(self.w_pressures)
-            w_pressures_df.columns = press_wells_id
-            data = pd.concat([data, w_pressures_df], axis=1)
+            # error_str = ""
 
-        data.index.name = "steps"
+        time = np.arange(0, self.nsteps * self.dt, self.dt)
+        df = pd.Series(time, name=f"Time" + time_str)
+        cells_id = self.grid.get_cells_id(boundary, False, "list")
+
+        # if errors:
+        #     data = pd.Series(np.array(self.errors) * 0.1e-10, name=f"Error" + error_str)
+        #     df = pd.concat([df, data], axis=1)
+        if c_rates:
+            cells = [id for id in cells_id if id not in self.wells]
+            labels = [f"q{str(id)}" + rate_str for id in cells]
+            array = self.rates[:, cells]
+            data = pd.DataFrame(array, columns=labels)
+            df = pd.concat([df, data], axis=1)
+        if c_pressures:
+            labels = [f"P{str(id)}" + press_str for id in cells_id]
+            array = self.pressures[:, cells_id]
+            data = pd.DataFrame(array, columns=labels)
+            df = pd.concat([df, data], axis=1)
+        if w_rates:
+            labels = [f"Q{str(id)}" + rate_str for id in self.wells]
+            array = self.rates[:, list(self.wells.keys())]
+            data = pd.DataFrame(array, columns=labels)
+            df = pd.concat([df, data], axis=1)
+        if w_pressures:
+            labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
+            data = pd.DataFrame(self.w_pressures)
+            data.columns = labels
+            df = pd.concat([df, data], axis=1)
+
+        df.index.name = "steps"
         if save:
-            data.to_csv("model_data.csv")
+            df.to_csv("model_data.csv")
             print("[info] Model data was successfully saved.")
 
-        return data
+        return df
 
     # -------------------------------------------------------------------------
     # Visualization:
@@ -1241,8 +1293,8 @@ class Model(Base):
 
 if __name__ == "__main__":
     grid = grids.Cartesian(
-        nx=4,
-        ny=1,
+        nx=3,
+        ny=3,
         nz=1,
         dx=300,
         dy=350,
@@ -1256,6 +1308,15 @@ if __name__ == "__main__":
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
     model = Model(grid, fluid, pi=4000, dtype="double")
-    model.set_well(id=5, q=-600, s=1.5, r=3.5)
-    model.set_well(id=6, pwf=1000, s=1.5, r=3.5)
-    model.set_boundaries({0: ("pressure", 4000), 1: ("rate", 0)})
+    grid.show("id")
+    model.set_well(id=6, q=-600, pwf=1000, s=1.5, r=3.5)
+    model.set_well(id=18, pwf=1000, s=1.5, r=3.5)
+    # model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
+    model.run(20, True, True)
+    model.data(
+        units=True,
+        w_rates=True,
+        cells_pressures=True,
+        w_pressures=True,
+        save=True,
+    )
