@@ -831,8 +831,10 @@ class Cartesian(Grid):
         if id is not None:
             assert not isinstance(id, np.ndarray), "block"
             boundaries = self.get_boundaries("id", "set")
-            # isin_boundary = utils.isin(id, boundaries)
-            # assert not isin_boundary, "boundary cells are not allowed."
+            isin_boundary = utils.isin(id, boundaries) and boundary is True
+            assert (
+                not isin_boundary
+            ), "boundary cells are not allowed with boundary=True."
             cells_id = self.get_cells_id(boundary, False, "set")
             # isin_cells_id = utils.isin(id, cells_id)
             # assert isin_cells_id, f"id is out of range {cells_id}."
@@ -855,11 +857,13 @@ class Cartesian(Grid):
                 cell_neighbors[self.fdir[2]] = neighbors
         elif coords is not None:
             boundaries = self.get_boundaries("coords", "set")
-            isin_boundary = utils.isin(coords, boundaries)
-            assert not isin_boundary, "boundary cells are not allowed."
+            isin_boundary = utils.isin(coords, boundaries) and boundary is True
+            assert (
+                not isin_boundary
+            ), "boundary cells are not allowed with boundary=True."
             cells_coords = self.get_cells_coords(boundary, False, "set")
-            isin_cells_coords = utils.isin(coords, cells_coords)
-            assert isin_cells_coords, f"coords are out of range {cells_coords}."
+            # isin_cells_coords = utils.isin(coords, cells_coords)
+            # assert isin_cells_coords, f"coords are out of range {cells_coords}."
             i, j, k = coords
             if "x" in self.fdir:
                 n_lst = [(i - 1, j, k), (i + 1, j, k)]
@@ -927,6 +931,8 @@ class Cartesian(Grid):
 
         if id is not None:
             boundaries = self.get_boundaries("id", "set")
+            isin_boundary = utils.isin(id, boundaries)
+            assert not isin_boundary, "boundary cells are not allowed."
             cell_neighbors = self.get_cell_neighbors(
                 id=id,
                 boundary=True,
@@ -934,6 +940,8 @@ class Cartesian(Grid):
             )
         elif coords is not None:
             boundaries = self.get_boundaries("coords", "set")
+            isin_boundary = utils.isin(coords, boundaries)
+            assert not isin_boundary, "boundary cells are not allowed."
             cell_neighbors = self.get_cell_neighbors(
                 coords=coords,
                 boundary=True,

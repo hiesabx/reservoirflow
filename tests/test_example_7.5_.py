@@ -78,6 +78,4 @@ if __name__ == "__main__":
         return model
 
     model = create_model()
-    # model.solve()
-    # model.show_grid("pressures")
     unittest.main()

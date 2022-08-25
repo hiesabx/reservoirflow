@@ -22,6 +22,7 @@ class TestApp(unittest.TestCase):
             w_pressures=True,
             save=False,
         )
+        print(df)
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
         self.assertLess(model.ctime, 20)

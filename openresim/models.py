@@ -85,7 +85,7 @@ class Model(Base):
         self.cells_terms = {}
         self.dt = dt
         self.A = None
-        self.nsteps = 1
+        self.nsteps = 0
         self.tstep = 0
         self.ctime = 0  # computing time
         self.errors = [0]
@@ -151,13 +151,15 @@ class Model(Base):
         if self.verbose:
             print("[info] transmissibility (T) in all directions was computed.")
 
-    def get_cells_T(self, dir="x", boundary=False, fshape=False):
+    def get_cells_T(self, dir=None, boundary=False, fshape=False):
         """Returns transmissibility (T) at all cells' boundaries.
 
         Parameters
         ----------
         dir : str
-            direction as string in ['x', 'y', 'z'].
+            direction as string in ['x', 'y', 'z']. If None,
+            transmissibility in all grid flow directions (fdir) will be
+            included in a dictionary.
         fshape : bool, optional, by default False
             values in flow shape (True) or flatten (False). In this
             case, fshape is for cells' boundaries.
@@ -167,9 +169,12 @@ class Model(Base):
         ndarray
             array of transmissibility at all cells' boundaries.
         """
-        return self.grid.get_cells_G(dir, boundary, fshape) / (
-            self.fluid.mu * self.fluid.B
-        )
+        if dir is not None:
+            return self.grid.get_cells_G(dir, boundary, fshape) / (
+                self.fluid.mu * self.fluid.B
+            )
+        else:
+            return self.T
 
     @_lru_cache(maxsize=None)
     def get_cell_T(self, id=None, coords=None, boundary=False):
@@ -560,8 +565,9 @@ class Model(Base):
         else:
             if id_b in self.bdict and self.bdict[id_b][0] == "gradient":
                 v = self.bdict[id_b][1]
-                print(f"[Warning] __calc_b_terms with gradient is not verified.")
-                self.rates[self.tstep][id_b] = T * self.grid.d["x"][id] * v
+                n = self.grid.get_cell_neighbors(id_b, None, False, "dict")
+                dir = [dir for dir in n if id in n[dir]][0]
+                self.rates[self.tstep][id_b] = T * self.grid.d[dir][id] * v
             b_term = self.rates[self.tstep][id_b]
 
         return b_term
@@ -1186,7 +1192,7 @@ class Model(Base):
             rate_str = ""
             # error_str = ""
 
-        time = np.arange(0, self.nsteps * self.dt, self.dt)
+        time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
         df = pd.Series(time, name=f"Time" + time_str)
         cells_id = self.grid.get_cells_id(boundary, False, "list")
 

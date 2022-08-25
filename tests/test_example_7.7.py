@@ -1,10 +1,23 @@
-from venv import create
 from openresim import grids, fluids, models
 import numpy as np
+import pandas as pd
 import unittest
 
 
 class TestApp(unittest.TestCase):
+    def test_data(self):
+        df_desired = pd.read_csv(
+            "tests/test_example_7.7.csv",
+            index_col=0,
+            dtype={None: "float64", "Time [Days]": "int32"},
+        )
+        model = create_model()
+        model.solve(True, True, True)
+        df = model.data(*6 * [True], False)
+        pd.testing.assert_frame_equal(df, df_desired)
+        np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
+        self.assertLess(model.ctime, 5)
+
     def test_trans(self):
         T_x_desired = np.array([1.035, 1.035, 1.035])
         T_y_desired = np.array([1.3524, 1.3524, 1.3524])
@@ -17,32 +30,23 @@ class TestApp(unittest.TestCase):
     def test_pressures(self):
         p_desired = np.array([3772.36025, 3354.19841, 3267.38946, 3187.2711])
         model = create_model()
+
         p_sparse = model.solve(sparse=True, update=True, check_MB=True)
-        boundaries = model.grid.get_boundaries("id", "list")
         np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
 
         model = create_model()
-        pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        q_not_sparse = model.rates[1][boundaries]
-        np.testing.assert_almost_equal(pressures_not_sparse, p_desired, decimal=5)
+        p_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
+        np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            model.wells[6]["r_eq"], 58.52694766871065, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[9]["r_eq"], 58.52694766871065, decimal=5
-        )
-        np.testing.assert_almost_equal(model.wells[6]["pwf"], 2000, decimal=5)
-        np.testing.assert_almost_equal(model.wells[9]["q"], -600, decimal=5)
-        np.testing.assert_almost_equal(
-            model.wells[6]["G"], 4.768850278197406, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[9]["G"], 4.768850278197406, decimal=5
-        )
+        np.testing.assert_almost_equal(model.wells[6]["r_eq"], 58.527, decimal=3)
+        np.testing.assert_almost_equal(model.wells[9]["r_eq"], 58.527, decimal=3)
+        np.testing.assert_almost_equal(model.wells[6]["G"], 4.7688, decimal=4)
+        np.testing.assert_almost_equal(model.wells[9]["G"], 4.7688, decimal=4)
+        np.testing.assert_almost_equal(model.wells[6]["pwf"], 2000)
+        np.testing.assert_almost_equal(model.wells[9]["q"], -600)
 
     def test_rates(self):
         rates_desired = np.array(
@@ -63,8 +67,9 @@ class TestApp(unittest.TestCase):
         )
 
         model = create_model()
-        model.solve(sparse=True, update=True, check_MB=True)
         boundaries = model.grid.get_boundaries("id", "list")
+
+        model.solve(sparse=True, update=True, check_MB=True)
         q_sparse = model.rates[1][boundaries]
         np.testing.assert_almost_equal(q_sparse, rates_desired, decimal=5)
 
@@ -119,24 +124,4 @@ if __name__ == "__main__":
         return model
 
     model = create_model()
-    # for id_b in model.grid.get_boundaries("id", "tuple"):
-    #     print(id_b, ":", end=" ")
-    #     print(model.grid.get_cell_neighbors(id_b, None, False, "list"))
-
-    # print(model.solve())
-    # print(model.get_cells_T("x", False, False))
-    # print(model.get_cells_T("y", False, False))
-    # model.grid.show("id")
-    # l, r = model.get_cell_eq(5)
-    # model.init_matrices(False)
-    # model.get_d(False)
-    # model.solve(True)
-    # model.get_cells_eq()
-    # print(model.get_T("x", False))
-    # print(model.get_T("y", False))
-    # model.get_T("z", False)
-    # print(model.RHS)
-    # print(model.T)
-    # print(model.get_d(False))
-    # model.get_A()
     unittest.main()
