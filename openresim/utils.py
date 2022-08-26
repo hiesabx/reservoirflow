@@ -21,6 +21,10 @@ def get_boundary_str(boundary):
     return "with boundary" if boundary else "without boundary"
 
 
+def get_points_str(points):
+    return " (as points)" if points else ""
+
+
 def get_fshape_str(fshape):
     return "with fshape" if fshape else "without fshape"
 

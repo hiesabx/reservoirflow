@@ -404,7 +404,9 @@ class Cartesian(Grid):
             self.fshape = self.fshape + (3,)
 
         if self.verbose:
-            print(f"[info] fshape is {self.fshape}.")
+            s1 = utils.get_boundary_str(boundary)
+            s2 = utils.get_points_str(points)
+            print(f"[info] fshape {s1}{s2} is {self.fshape}.")
 
         return self.fshape
 
@@ -1606,7 +1608,7 @@ class Cartesian(Grid):
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
         if fshape:
-            shape = self.get_fshape(boundary)
+            shape = self.get_fshape(True, False)
             cells_A = cells_A.reshape(shape)
 
         if not boundary:
@@ -1840,7 +1842,7 @@ class Cartesian(Grid):
             cells_V = self.V
 
         if fshape:
-            shape = self.get_fshape(boundary)
+            shape = self.get_fshape(True, False)
             cells_V = cells_V.reshape(shape)
 
         if not boundary:
@@ -1922,8 +1924,9 @@ class Cartesian(Grid):
             dyy = calc_d_center(self.dy_, self.ny_b)
             dzz = calc_d_center(self.dz_, self.nz_b)
             cells_center = np.meshgrid(dxx, dyy, dzz)
-            cells_center = [a.reshape(-1, 1) for a in cells_center]
-            cells_center = np.concatenate(cells_center, axis=1)
+            cells_center = np.transpose(cells_center, axes=(1, 3, 2, 0))
+            # cells_center = [a.reshape(-1, 1) for a in cells_center]
+            cells_center = np.concatenate(cells_center, axis=1).reshape(-1, 3)
 
         if fshape:
             shape = self.get_fshape(True, True)
@@ -2391,7 +2394,7 @@ class Cartesian(Grid):
         """
         return self.get_cell_k("x", id, coords)
 
-    def get_cell_Ay(self, id=None, coords=None):
+    def get_cell_ky(self, id=None, coords=None):
         """Returns cell permeability at y direction.
 
         Parameters
@@ -2417,7 +2420,7 @@ class Cartesian(Grid):
         """
         return self.get_cell_k("y", id, coords)
 
-    def get_cell_Az(self, id=None, coords=None):
+    def get_cell_kz(self, id=None, coords=None):
         """Returns cell permeability at z direction.
 
         Parameters
@@ -2788,7 +2791,7 @@ class Cartesian(Grid):
         self.get_n_max(True)
         pyvista_grid = self.get_pyvista_grid(boundary)
 
-        transparent = self.get_n_cells(boundary) < 20
+        transparent = self.get_n_cells(boundary) < 100
         if transparent:
             opacity = 0.8
         else:
@@ -2867,15 +2870,17 @@ class Cartesian(Grid):
         pl.add_camera_orientation_widget()
         pl.enable_fly_to_right_click()
         pl.show_axes()
-        if self.D == 1:
-            if self.fdir == "y":
-                fdir = "yz"
+        fdir = "xz"
+        if fdir == None:
+            if self.D == 1:
+                if self.fdir == "y":
+                    fdir = "yz"
+                else:
+                    fdir = "xz"
+            elif self.D == 2:
+                fdir = self.fdir
             else:
                 fdir = "xz"
-        elif self.D == 2:
-            fdir = self.fdir
-        else:
-            fdir = "xz"
         pl.camera_position = fdir
         pl.set_background("black", top="gray")
         pl.show(title="openresim 3D show", full_screen=True)
@@ -2910,7 +2915,7 @@ if __name__ == "__main__":
         else:
             return d_0
 
-    nx, ny, nz = (20, 20, 3)
+    nx, ny, nz = (2, 2, 2)
 
     dx = get_d(10, nx)
     dy = get_d(10, ny)
@@ -2927,7 +2932,8 @@ if __name__ == "__main__":
         ky=10,
         kz=20,
         phi=0.27,
+        verbose=False,
+        unify=False,
     )
 
-    grid.show("id")
     print(grid)

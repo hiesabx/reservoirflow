@@ -1,8 +1,7 @@
 import numpy as np
 import pyvista as pv
 from openresim import models
-
-# import time
+import time
 
 
 # Default settings color bar:
@@ -22,9 +21,7 @@ from openresim import models
 # }
 
 
-def show_grid(
-    model, property: str, show_centers=True, show_boundary=False, show_bounds=False
-):
+def show_grid(model, property: str, centers=True, boundary=False, show_bounds=False):
     # Extract property values:
     props = list(vars(model))
     assert (
@@ -32,13 +29,12 @@ def show_grid(
     ), f"""Unknown property! Available properties are : {props}"""
     local_dict = locals()
     exec(f"values = model.{property}", local_dict)
-    values = local_dict["values"].reshape(
-        model.nsteps, model.grid.nx + 2
-    )  # , model.grid.ny, model.grid.nz)
+    values = local_dict["values"]
 
     # Show boundary:
-    if not show_boundary:
-        values = values[:, 1:-1]
+    if not boundary:
+        cells_id = model.grid.get_cells_id(False, False, "list")
+        values = values[:, cells_id]
 
     # Define limits:
     max_v = np.nanmax(values)
@@ -64,7 +60,7 @@ def show_grid(
         # full_screen = True,
     )
 
-    grid = model.grid.get_pv_grid(show_boundary)
+    grid = model.grid.get_pyvista_grid(boundary)
     grid.cell_data[property] = values[1]
 
     # Setup plotter:
@@ -93,7 +89,7 @@ def show_grid(
     )
 
     # Show centers:
-    if show_centers:
+    if centers:
         pl.add_points(
             grid.cell_centers(),
             point_size=10,
@@ -103,25 +99,27 @@ def show_grid(
         )
 
     # Show wells:
-    for w in model.wells:
-        # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
-        # y = model.grid.dy[w]//2
-        # z = 100
-        # well_center = (x, y, z)
-        height = model.grid.dz[w] * 2
-        well_cell_i = w if show_boundary else w - 1
-        well_cell_center = list(
-            model.grid.pv_grid.extract_cells(well_cell_i).GetCenter()
-        )
-        well_cell_center[2] = height // 2
-        well = pv.Cylinder(
-            center=well_cell_center,
-            height=height,
-            radius=model.wells[w]["r"],
-            direction=(0, 0, 1),
-        )
-        pl.add_mesh(well)
+    def show_wells(pl):
+        for w in model.wells:
+            # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
+            # y = model.grid.dy[w]//2
+            # z = 100
+            # well_center = (x, y, z)
+            height = model.grid.dz[w] * 2
+            # well_cell_i = w if boundary else w - 1
+            well_cell_center = list(
+                model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
+            )
+            well_cell_center[2] = height // 2
+            well = pv.Cylinder(
+                center=well_cell_center,
+                height=height,
+                radius=model.wells[w]["r"],
+                direction=(0, 0, 1),
+            )
+            pl.add_mesh(well)
 
+    show_wells(pl)
     # Plot configuration:
     pl.camera_position = "xz"
     # p.show_bounds(grid='front', location='outer', all_edges=True)
@@ -139,6 +137,8 @@ def show_grid(
     pl.show(full_screen=True)
 
     pl = pv.Plotter(notebook=False, off_screen=True)
+    show_wells(pl)
+
     pl.add_mesh(
         grid,
         clim=limits,
@@ -159,7 +159,6 @@ def show_grid(
         show_scalar_bar=True,
         # annotations=annotations,
     )
-
     pl.open_gif("images/grid.gif")
 
     pts = grid.points.copy()
@@ -168,6 +167,7 @@ def show_grid(
         pl.update_scalars(values[step], render=False)
         pl.render()
         pl.write_frame()
+        # time.sleep(2)
 
     pl.close()
 

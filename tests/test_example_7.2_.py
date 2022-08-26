@@ -53,6 +53,6 @@ if __name__ == "__main__":
         return model
 
     model = create_model()
-    # model.solve()
-    # print(model.data(*7 * [True]))
+    model.solve()
+    model.data(*7 * [True])
     unittest.main()

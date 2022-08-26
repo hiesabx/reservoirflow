@@ -1132,12 +1132,13 @@ class Model(Base):
             print(f"[info] Error in step {self.tstep}")
 
         if self.comp_type == "incompressible":
-            self.error = self.rates[self.tstep].sum()  # must add up to 0
+            # rates must add up to 0:
+            self.error = self.rates[self.tstep].sum()
             if verbose:
                 print(f"[info]    - Error: {self.error}")
         elif self.comp_type == "compressible":
             cells_id = self.grid.get_cells_id(False, False, "list")
-            # Check MB error over a time step:
+            # error over a timestep:
             self.error = (
                 self.RHS[cells_id]
                 * (
@@ -1145,7 +1146,7 @@ class Model(Base):
                     - self.pressures[self.tstep - 1][cells_id]
                 )
             ).sum() / self.rates[self.tstep].sum()
-            # Check MB error from initial state to current time step: (less accurate)
+            # error from initial timestep to current timestep: (less accurate)
             self.cumulative_error = (
                 self.RHS[cells_id]
                 * self.dt
@@ -1173,13 +1174,13 @@ class Model(Base):
 
     def data(
         self,
-        boundary=False,
-        units=False,
-        c_rates=False,
-        c_pressures=False,
-        w_rates=False,
-        w_pressures=False,
-        save=False,
+        boundary=True,
+        units=True,
+        c_rates=True,
+        c_pressures=True,
+        w_rates=True,
+        w_pressures=True,
+        save=True,
     ):
         if units:
             time_str = f" [{self.units['time']}]"
@@ -1232,17 +1233,17 @@ class Model(Base):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    def plot(self, property: str = "pressures", i: int = None, tstep: int = None):
+    def plot(self, property: str = "pressures", id: int = None, tstep: int = None):
 
         if tstep is None:
             tstep = self.tstep
 
-        if i is not None:
-            exec(f"plt.plot(self.{property}[:, i].flatten())")
+        if id is not None:
+            exec(f"plt.plot(self.{property}[:, id].flatten())")
             plt.xlabel("Days")
         elif tstep is not None:
             exec(f"plt.plot(self.{property}[tstep, :].flatten())")
-            plt.xlabel("Grid (i)")
+            plt.xlabel("Grid (id)")
             plt.xticks(ticks=range(0, self.grid.nx + 2))
         plt.grid()
         plt.show()
@@ -1250,7 +1251,8 @@ class Model(Base):
     def plot_grid(self, property: str = "pressures", tstep: int = None):
         if tstep is None:
             tstep = self.tstep
-        exec(f"plt.imshow(self.{property}[tstep][1:-1][np.newaxis, :])")
+        cells_id = self.grid.get_cells_id(False, False, "list")
+        exec(f"plt.imshow(self.{property}[tstep][cells_id][np.newaxis, :])")
         plt.colorbar(label=f"{property.capitalize()} ({self.units[property[:-1]]})")
         plt.title(f"{property.capitalize()} Distribution")
         plt.yticks([])
@@ -1258,7 +1260,7 @@ class Model(Base):
         plt.xticks(ticks=range(0, 4), labels=range(1, 5))
         plt.show()
 
-    def show_grid(
+    def show(
         self, property: str, show_centers=True, show_boundary=False, show_bounds=False
     ):
         plots.show_grid(self, property, show_centers, show_boundary, show_bounds)
@@ -1299,8 +1301,8 @@ class Model(Base):
 
 if __name__ == "__main__":
     grid = grids.Cartesian(
-        nx=3,
-        ny=3,
+        nx=9,
+        ny=9,
         nz=1,
         dx=300,
         dy=350,
@@ -1314,15 +1316,9 @@ if __name__ == "__main__":
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
     model = Model(grid, fluid, pi=4000, dtype="double")
-    grid.show("id")
-    model.set_well(id=6, q=-600, pwf=1000, s=1.5, r=3.5)
-    model.set_well(id=18, pwf=1000, s=1.5, r=3.5)
-    # model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-    model.run(20, True, True)
-    model.data(
-        units=True,
-        w_rates=True,
-        cells_pressures=True,
-        w_pressures=True,
-        save=True,
-    )
+    grid.show("id", False)
+    model.set_well(id=60, q=-1000, pwf=1000, s=1.5, r=3.5)
+    # model.set_well(id=18, q=700, s=1.5, r=3.5)
+    model.run(12, True, True)
+    model.data()
+    model.show("pressures")
