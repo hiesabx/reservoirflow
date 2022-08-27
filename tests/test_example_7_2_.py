@@ -40,19 +40,19 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=1)
 
 
+def create_model():
+    grid = grids.Cartesian(
+        nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
+    )
+    fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
+    model = models.Model(grid, fluid, dtype="double", verbose=False)
+    model.set_well(id=4, q=-600, s=1.5, r=3.5)
+    model.set_boundaries({0: ("pressure", 4000)})
+    return model
+
+
 if __name__ == "__main__":
-
-    def create_model():
-        grid = grids.Cartesian(
-            nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
-        )
-        fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-        model = models.Model(grid, fluid, dtype="double", verbose=False)
-        model.set_well(id=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries({0: ("pressure", 4000)})
-        return model
-
-    model = create_model()
-    model.solve()
-    model.data(*7 * [True])
+    # model = create_model()
+    # model.solve()
+    # model.data(*7 * [True])
     unittest.main()

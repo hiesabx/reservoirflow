@@ -7,7 +7,7 @@ import unittest
 class TestApp(unittest.TestCase):
     def test_data(self):
         df_desired = pd.read_csv(
-            "tests/test_example_7.7.csv",
+            "tests/test_example_7_7.csv",
             index_col=0,
             dtype={None: "float64", "Time [Days]": "int32"},
         )
@@ -85,43 +85,41 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.error, error_desired, decimal=5)
 
 
+def create_model():
+    grid = grids.Cartesian(
+        nx=2,
+        ny=2,
+        nz=1,
+        dx=350,
+        dy=250,
+        dz=30,
+        phi=0.27,
+        kx=150,
+        ky=100,
+        dtype="double",
+        unify=False,
+    )
+    fluid = fluids.SinglePhase(
+        mu=3.5,
+        B=1,
+        rho=50,
+        dtype="double",
+    )
+    model = models.Model(grid, fluid, dtype="double", verbose=False)
+    model.set_well(id=6, pwf=2000, s=0, r=3)
+    model.set_well(id=9, q=-600, s=0, r=3)
+    model.set_boundaries(
+        {
+            1: ("pressure", 4000),
+            2: ("pressure", 4000),
+            4: ("rate", 500),
+            7: ("gradient", -0.3),
+            11: ("gradient", -0.3),
+            14: ("rate", -200),
+        }
+    )
+    return model
+
+
 if __name__ == "__main__":
-
-    def create_model():
-
-        grid = grids.Cartesian(
-            nx=2,
-            ny=2,
-            nz=1,
-            dx=350,
-            dy=250,
-            dz=30,
-            phi=0.27,
-            kx=150,
-            ky=100,
-            dtype="double",
-            unify=False,
-        )
-        fluid = fluids.SinglePhase(
-            mu=3.5,
-            B=1,
-            rho=50,
-            dtype="double",
-        )
-        model = models.Model(grid, fluid, dtype="double", verbose=False)
-        model.set_well(id=6, pwf=2000, s=0, r=3)
-        model.set_well(id=9, q=-600, s=0, r=3)
-        model.set_boundaries(
-            {
-                1: ("pressure", 4000),
-                2: ("pressure", 4000),
-                4: ("rate", 500),
-                7: ("gradient", -0.3),
-                11: ("gradient", -0.3),
-                14: ("rate", -200),
-            }
-        )
-        return model
-
-    model = create_model()
     unittest.main()

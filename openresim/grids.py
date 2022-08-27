@@ -183,6 +183,7 @@ class Cartesian(Grid):
         self.__calc_cells_A()
         self.__calc_cells_V()
         self.set_props(kx, ky, kz, phi, z, comp)
+        self.cells_id = self.get_cells_id(False, False, "array")
 
     # -------------------------------------------------------------------------
     # Basic:
@@ -606,16 +607,16 @@ class Cartesian(Grid):
         ----
         can be a generator instead.
         """
-        self.cells_id = self.get_order("natural", boundary, fshape)
+        cells_id = self.get_order("natural", boundary, fshape)
 
         if not fshape:
-            self.cells_id = utils.reformat(self.cells_id, fmt)
+            cells_id = utils.reformat(cells_id, fmt)
 
         if self.verbose:
             s1, s2 = utils.get_verbose_str(boundary, fshape)
             print(f"[info] cells_id was computed ({s1} - {s2}).")
 
-        return self.cells_id
+        return cells_id
 
     @_lru_cache(maxsize=None)
     def get_cell_coords(self, id, boundary=True):
@@ -1384,7 +1385,8 @@ class Cartesian(Grid):
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
         if not boundary:
-            cells_d = self.remove_boundaries(cells_d, False, "both")
+            # cells_d = self.remove_boundaries(cells_d, False, "both")
+            cells_d = cells_d[self.cells_id]
 
         if fshape:
             shape = self.get_fshape(boundary, False)
@@ -1607,12 +1609,13 @@ class Cartesian(Grid):
         else:
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
-        if fshape:
-            shape = self.get_fshape(True, False)
-            cells_A = cells_A.reshape(shape)
-
         if not boundary:
-            cells_A = self.remove_boundaries(cells_A, False, "both")
+            # cells_A = self.remove_boundaries(cells_A, False, "both")
+            cells_A = cells_A[self.cells_id]
+
+        if fshape:
+            shape = self.get_fshape(boundary, False)
+            cells_A = cells_A.reshape(shape)
 
         if self.verbose:
             print(f"[info] A{dir} was exported.")
@@ -1841,12 +1844,13 @@ class Cartesian(Grid):
         else:
             cells_V = self.V
 
-        if fshape:
-            shape = self.get_fshape(True, False)
-            cells_V = cells_V.reshape(shape)
-
         if not boundary:
-            cells_V = self.remove_boundaries(cells_V, False, "both")
+            # cells_V = self.remove_boundaries(cells_V, False, "both")
+            cells_V = cells_V[self.cells_id]
+
+        if fshape:
+            shape = self.get_fshape(boundary, False)
+            cells_V = cells_V.reshape(shape)
 
         if self.verbose:
             print("[info] V was computed.")
@@ -1928,12 +1932,13 @@ class Cartesian(Grid):
             # cells_center = [a.reshape(-1, 1) for a in cells_center]
             cells_center = np.concatenate(cells_center, axis=1).reshape(-1, 3)
 
-        if fshape:
-            shape = self.get_fshape(True, True)
-            cells_center = cells_center.reshape(shape)
-
         if not boundary:
-            cells_center = self.remove_boundaries(cells_center, True, "both")
+            # cells_center = self.remove_boundaries(cells_center, True, "both")
+            cells_center = cells_center[self.cells_id]
+
+        if fshape:
+            shape = self.get_fshape(boundary, True)
+            cells_center = cells_center.reshape(shape)
 
         if self.verbose:
             print(f"[info] center was computed.")
@@ -2279,7 +2284,8 @@ class Cartesian(Grid):
             prop = self.__props__[name]
 
             if not boundary:
-                prop = self.remove_boundaries(prop, False, "both")
+                # prop = self.remove_boundaries(prop, False, "both")
+                prop = prop[self.cells_id]
 
             if fshape:
                 shape = self.get_fshape(boundary, False)
@@ -2936,4 +2942,11 @@ if __name__ == "__main__":
         unify=False,
     )
 
-    print(grid)
+    grid.show("id", True)
+    cells_id = grid.get_cells_id(False, False, "array")
+    Ay = grid.get_cells_Ay(False, False)
+    Ay_b = grid.get_cells_Ay(True, False)
+    print(Ay_b)
+
+    print(Ay)
+    print(Ay_b[cells_id])

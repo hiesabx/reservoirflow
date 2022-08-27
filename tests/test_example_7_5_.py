@@ -55,27 +55,26 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.rates[-1], rates_desired, decimal=5)
 
 
+def create_model():
+    z = np.array([3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62])
+    grid = grids.Cartesian(
+        nx=4,
+        ny=1,
+        nz=1,
+        dx=300,
+        dy=350,
+        dz=40,
+        z=z,
+        phi=0.27,
+        kx=270,
+        dtype="double",
+    )
+    fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, dtype="double")
+    model = models.Model(grid, fluid, dtype="double", verbose=False)
+    model.set_well(id=4, q=-600, s=1.5, r=3.5)
+    model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
+    return model
+
+
 if __name__ == "__main__":
-
-    def create_model():
-        z = np.array([3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62])
-        grid = grids.Cartesian(
-            nx=4,
-            ny=1,
-            nz=1,
-            dx=300,
-            dy=350,
-            dz=40,
-            z=z,
-            phi=0.27,
-            kx=270,
-            dtype="double",
-        )
-        fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, dtype="double")
-        model = models.Model(grid, fluid, dtype="double", verbose=False)
-        model.set_well(id=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-        return model
-
-    model = create_model()
     unittest.main()

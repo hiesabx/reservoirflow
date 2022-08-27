@@ -291,107 +291,109 @@ class Test_3D(unittest.TestCase):
         )
 
 
+unify = False
+grid_1d_x = grids.Cartesian(
+    nx=3,
+    ny=1,
+    nz=1,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+
+grid_1d_y = grids.Cartesian(
+    nx=1,
+    ny=3,
+    nz=1,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+
+grid_1d_z = grids.Cartesian(
+    nx=1,
+    ny=1,
+    nz=3,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+
+grid_2d_xy = grids.Cartesian(
+    nx=3,
+    ny=3,
+    nz=1,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+grid_2d_xz = grids.Cartesian(
+    nx=3,
+    ny=1,
+    nz=3,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+grid_2d_yz = grids.Cartesian(
+    nx=1,
+    ny=3,
+    nz=3,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+grid_3d = grids.Cartesian(
+    nx=3,
+    ny=3,
+    nz=3,
+    dx=10,
+    dy=10,
+    dz=10,
+    phi=0.27,
+    kx=270,
+    ky=270,
+    kz=270,
+    verbose=False,
+    unify=unify,
+)
+
+
 if __name__ == "__main__":
-    unify = False
-    grid_1d_x = grids.Cartesian(
-        nx=3,
-        ny=1,
-        nz=1,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
-
-    grid_1d_y = grids.Cartesian(
-        nx=1,
-        ny=3,
-        nz=1,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
-
-    grid_1d_z = grids.Cartesian(
-        nx=1,
-        ny=1,
-        nz=3,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
-
-    grid_2d_xy = grids.Cartesian(
-        nx=3,
-        ny=3,
-        nz=1,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
-    grid_2d_xz = grids.Cartesian(
-        nx=3,
-        ny=1,
-        nz=3,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
-    grid_2d_yz = grids.Cartesian(
-        nx=1,
-        ny=3,
-        nz=3,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
-    grid_3d = grids.Cartesian(
-        nx=3,
-        ny=3,
-        nz=3,
-        dx=10,
-        dy=10,
-        dz=10,
-        phi=0.27,
-        kx=270,
-        ky=270,
-        kz=270,
-        verbose=False,
-        unify=unify,
-    )
     unittest.main()

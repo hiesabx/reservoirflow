@@ -69,22 +69,22 @@ class TestApp(unittest.TestCase):
         self.assertEqual(grid.get_cell_V(id=42), 32736)
 
 
-if __name__ == "__main__":
-    dx = [11, 21, 31, 41]
-    dy = [12, 22, 32, 42]
-    dz = [13, 23, 33, 43]
-    grid = grids.Cartesian(
-        nx=2,
-        ny=2,
-        nz=2,
-        dx=dx,
-        dy=dy,
-        dz=dz,
-        kx=270,
-        ky=270,
-        kz=270,
-        phi=0.27,
-        unify=True,
-    )
+dx = [11, 21, 31, 41]
+dy = [12, 22, 32, 42]
+dz = [13, 23, 33, 43]
+grid = grids.Cartesian(
+    nx=2,
+    ny=2,
+    nz=2,
+    dx=dx,
+    dy=dy,
+    dz=dz,
+    kx=270,
+    ky=270,
+    kz=270,
+    phi=0.27,
+    unify=True,
+)
 
+if __name__ == "__main__":
     unittest.main()

@@ -116,8 +116,7 @@ class Model(Base):
 
         self.pi = pi
         if pi is not None:
-            cells_id = self.grid.get_cells_id(False, False, "list")
-            self.pressures[0][cells_id] = pi
+            self.pressures[0][self.grid.cells_id] = pi
 
         self.wells = {}
         self.w_pressures = defaultdict(list)
@@ -682,8 +681,7 @@ class Model(Base):
             )
         """
 
-        cells_id = self.grid.get_cells_id(False, False, "set")
-        assert id in cells_id, f"id is out of range {cells_id}."
+        assert id in self.grid.cells_id, f"id is out of range {self.grid.cells_id}."
         p = eval(f"sym.Symbol('p{id}')")
 
         if not id in self.cells_terms:
@@ -745,16 +743,16 @@ class Model(Base):
     def get_cells_eq(self, threading=False):
         """Return flow equations for all internal cells."""
         cells_eq = {}
-        cells_id = self.grid.get_cells_id(False, False, "tuple")
+        n_threads = self.grid.get_n_cells(False) // 2
         if threading:
-            with ThreadPoolExecutor(len(cells_id) // 2) as executor:
+            with ThreadPoolExecutor(n_threads) as executor:
                 # with ProcessPoolExecutor(2) as executor:
-                equations = executor.map(self.get_cell_eq, cells_id)
-                for id, eq in zip(cells_id, equations):
+                equations = executor.map(self.get_cell_eq, self.grid.cells_id)
+                for id, eq in zip(self.grid.cells_id, equations):
                     cells_eq[id] = eq
         else:
             cells_eq = {}
-            for id in cells_id:
+            for id in self.grid.cells_id:
                 cells_eq[id] = self.get_cell_eq(id)
                 if self.verbose:
                     print(f"[info] cell id: {id}")
@@ -784,6 +782,7 @@ class Model(Base):
         i = self.cells_i[id]
         cell_lhs, cell_rhs = self.cells_eq[id]
         ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
+        # print(i, ids)
         self.d[i] = cell_rhs
         self.A[i, ids] = list(cell_lhs.values())
         if self.verbose:
@@ -792,7 +791,7 @@ class Model(Base):
             print(f"[info]      - lhs: {cell_lhs}")
             print(f"[info]      - rhs: {cell_rhs}")
 
-    def init_matrices(self, sparse=False, threading=True):
+    def init_matrices(self, sparse=False, threading=False):
         """Initialize flow equations' matrices (A, d).
 
         Parameters
@@ -817,8 +816,9 @@ class Model(Base):
 
         if self.tstep == 0:
             self.cells_id = self.grid.get_cells_id(False, False, "tuple")
+            n_cells = self.grid.get_n_cells(False)
             self.boundaries = self.grid.get_boundaries("id", "list")
-            self.cells_i = dict(zip(self.cells_id, range(len(self.cells_id))))
+            self.cells_i = dict(zip(self.cells_id, range(n_cells)))
             n = self.grid.get_n_cells(False)
             if sparse:
                 self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
@@ -828,7 +828,8 @@ class Model(Base):
                 self.A = np.zeros((n, n), dtype=self.dtype)
 
         if threading:
-            with ThreadPoolExecutor(len(self.cells_id) // 2) as executor:
+            n_threads = self.grid.get_n_cells(False) // 2
+            with ThreadPoolExecutor(n_threads) as executor:
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices, self.cells_id)
         else:
@@ -930,9 +931,8 @@ class Model(Base):
             n_cells = self.grid.get_n_cells(False)
             self.d = ss.lil_matrix((n_cells, 1), dtype=self.dtype)
         else:
-            cells_id = self.grid.get_cells_id(False, False, "array")
-            pressures = self.pressures[self.tstep][cells_id]
-            RHS = self.RHS[cells_id]
+            pressures = self.pressures[self.tstep][self.grid.cells_id]
+            RHS = self.RHS[self.grid.cells_id]
             try:
                 self.d = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
             except:
@@ -1042,12 +1042,14 @@ class Model(Base):
             else:
                 raise ValueError("boundary cell can't have more than one neighbor")
 
-    def solve(self, sparse=True, check_MB=True, update=True):
+    def solve(self, sparse=True, threading=False, check_MB=True, update=True):
         """_summary_
 
         Parameters
         ----------
         sparse : bool, optional
+            _description_, by default True
+        threading : bool, optional
             _description_, by default True
         check_MB : bool, optional
             _description_, by default True
@@ -1065,7 +1067,7 @@ class Model(Base):
             pressures = np.dot(np.linalg.inv(self.A), self.d)
         """
 
-        self.init_matrices(sparse)
+        self.init_matrices(sparse, threading)
         if sparse:
             pressures = ssl.spsolve(self.A.tocsc(), self.d)
         else:
@@ -1073,9 +1075,8 @@ class Model(Base):
 
         if update:
             self.tstep += 1
-            cells_id = self.grid.get_cells_id(False, False, "list")
             self.pressures = np.vstack([self.pressures, self.pressures[-1]])
-            self.pressures[self.tstep][cells_id] = pressures
+            self.pressures[self.tstep][self.grid.cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
             self.__update_boundaries()
             resolve = self.__update_wells()
@@ -1097,7 +1098,7 @@ class Model(Base):
 
         return pressures
 
-    def run(self, nsteps=10, sparse=True, check_MB=True):
+    def run(self, nsteps=10, sparse=True, threading=True, check_MB=True):
         start_time = time.time()
         self.nsteps += nsteps
         self.run_ctime = 0
@@ -1110,15 +1111,16 @@ class Model(Base):
         for _ in tqdm(
             range(1, nsteps + 1), unit="steps", colour="green", position=0, leave=True
         ):
-            self.solve(sparse, check_MB, True)
+            self.solve(sparse, threading, check_MB, True)
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime += self.run_ctime
         print(
             f"[info] Simulation run of {nsteps} steps",
-            f"is finished in {self.run_ctime} seconds.",
-            f"\n[info] Material Balance Error: {self.error}.",
+            f"finished in {self.run_ctime} seconds.",
         )
+        if check_MB:
+            print(f"\n[info] Material Balance Error: {self.error}.")
         if verbose_restore:
             self.verbose = True
 
@@ -1137,20 +1139,22 @@ class Model(Base):
             if verbose:
                 print(f"[info]    - Error: {self.error}")
         elif self.comp_type == "compressible":
-            cells_id = self.grid.get_cells_id(False, False, "list")
             # error over a timestep:
             self.error = (
-                self.RHS[cells_id]
+                self.RHS[self.grid.cells_id]
                 * (
-                    self.pressures[self.tstep][cells_id]
-                    - self.pressures[self.tstep - 1][cells_id]
+                    self.pressures[self.tstep][self.grid.cells_id]
+                    - self.pressures[self.tstep - 1][self.grid.cells_id]
                 )
             ).sum() / self.rates[self.tstep].sum()
             # error from initial timestep to current timestep: (less accurate)
             self.cumulative_error = (
-                self.RHS[cells_id]
+                self.RHS[self.grid.cells_id]
                 * self.dt
-                * (self.pressures[self.tstep][cells_id] - self.pressures[0][cells_id])
+                * (
+                    self.pressures[self.tstep][self.grid.cells_id]
+                    - self.pressures[0][self.grid.cells_id]
+                )
             ).sum() / (self.dt * self.tstep * self.rates.sum())
             self.error = abs(self.error - 1)
             if self.verbose:
@@ -1319,6 +1323,6 @@ if __name__ == "__main__":
     grid.show("id", False)
     model.set_well(id=60, q=-1000, pwf=1000, s=1.5, r=3.5)
     # model.set_well(id=18, q=700, s=1.5, r=3.5)
-    model.run(12, True, True)
+    model.run(12, False, False, False)
     model.data()
     model.show("pressures")

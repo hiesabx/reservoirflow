@@ -8,7 +8,7 @@ import unittest
 class TestApp(unittest.TestCase):
     def test_data(self):
         df_desired = pd.read_csv(
-            "tests/test_example_7.9.csv",
+            "tests/test_example_7_9.csv",
             index_col=0,
             dtype={None: "float64", "Time [Days]": "int32"},
         )
@@ -17,7 +17,6 @@ class TestApp(unittest.TestCase):
         df = model.data(*6 * [True], False)
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
-        self.assertLess(model.ctime, 5)
 
     def test_trans(self):
         trans_desired = np.array(
@@ -88,27 +87,25 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.wells[4]["pwf"], 3922.034614, decimal=5)
 
 
+def create_model():
+    grid = grids.Cartesian(
+        nx=4,
+        ny=1,
+        nz=1,
+        dx=300,
+        dy=350,
+        dz=40,
+        phi=0.27,
+        kx=270,
+        comp=1 * 10**-6,
+        dtype="double",
+    )
+    fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
+    model = models.Model(grid, fluid, pi=4000, dtype="double", verbose=False)
+    model.set_well(id=4, q=-600, s=1.5, r=3.5)
+    model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
+    return model
+
+
 if __name__ == "__main__":
-
-    def create_model():
-        grid = grids.Cartesian(
-            nx=4,
-            ny=1,
-            nz=1,
-            dx=300,
-            dy=350,
-            dz=40,
-            phi=0.27,
-            kx=270,
-            comp=1 * 10**-6,
-            dtype="double",
-        )
-        fluid = fluids.SinglePhase(
-            mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
-        )
-        model = models.Model(grid, fluid, pi=4000, dtype="double", verbose=False)
-        model.set_well(id=4, q=-600, s=1.5, r=3.5)
-        model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-        return model
-
     unittest.main()
