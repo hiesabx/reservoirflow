@@ -87,8 +87,7 @@ class Model(Base):
         self.A = None
         self.nsteps = 0
         self.tstep = 0
-        self.ctime = 0  # computing time
-        self.errors = [0]
+        self.ctime = 0
 
         self.__initialize__(pi, well)
         self.__calc_comp()
@@ -459,7 +458,7 @@ class Model(Base):
         - make sure RHS is suitable in case of floats.
         """
         if self.comp_type == "incompressible":
-            n = self.grid.get_n_cells(True)
+            n = self.grid.get_n(True)
             self.RHS = np.zeros(n, dtype=self.dtype)
         elif self.comp_type == "compressible":
             RHS_n = self.grid.V * self.grid.phi * self.comp
@@ -743,7 +742,7 @@ class Model(Base):
     def get_cells_eq(self, threading=False):
         """Return flow equations for all internal cells."""
         cells_eq = {}
-        n_threads = self.grid.get_n_cells(False) // 2
+        n_threads = self.grid.get_n(False) // 2
         if threading:
             with ThreadPoolExecutor(n_threads) as executor:
                 # with ProcessPoolExecutor(2) as executor:
@@ -816,10 +815,9 @@ class Model(Base):
 
         if self.tstep == 0:
             self.cells_id = self.grid.get_cells_id(False, False, "tuple")
-            n_cells = self.grid.get_n_cells(False)
+            n = self.grid.get_n(False)
             self.boundaries = self.grid.get_boundaries("id", "list")
-            self.cells_i = dict(zip(self.cells_id, range(n_cells)))
-            n = self.grid.get_n_cells(False)
+            self.cells_i = dict(zip(self.cells_id, range(n)))
             if sparse:
                 self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
                 self.A = ss.lil_matrix((n, n), dtype=self.dtype)
@@ -828,7 +826,7 @@ class Model(Base):
                 self.A = np.zeros((n, n), dtype=self.dtype)
 
         if threading:
-            n_threads = self.grid.get_n_cells(False) // 2
+            n_threads = self.grid.get_n(False) // 2
             with ThreadPoolExecutor(n_threads) as executor:
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices, self.cells_id)
@@ -928,8 +926,8 @@ class Model(Base):
 
     def get_d(self, sparse=False):
         if self.comp_type == "incompressible":
-            n_cells = self.grid.get_n_cells(False)
-            self.d = ss.lil_matrix((n_cells, 1), dtype=self.dtype)
+            n = self.grid.get_n(False)
+            self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
         else:
             pressures = self.pressures[self.tstep][self.grid.cells_id]
             RHS = self.RHS[self.grid.cells_id]
@@ -1170,7 +1168,6 @@ class Model(Base):
                 f"[warning] Material balance error ({self.error}) higher",
                 f" than the allowed error ({error_threshold}).",
             )
-        self.errors.append(self.error)
 
     # -------------------------------------------------------------------------
     # Data:
@@ -1190,20 +1187,15 @@ class Model(Base):
             time_str = f" [{self.units['time']}]"
             press_str = f" [{self.units['pressure']}]"
             rate_str = f" [{self.units['rate']}]"
-            # error_str = f" [{self.units['error']}]"
         else:
             time_str = ""
             press_str = ""
             rate_str = ""
-            # error_str = ""
 
         time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
         df = pd.Series(time, name=f"Time" + time_str)
         cells_id = self.grid.get_cells_id(boundary, False, "list")
 
-        # if errors:
-        #     data = pd.Series(np.array(self.errors) * 0.1e-10, name=f"Error" + error_str)
-        #     df = pd.concat([df, data], axis=1)
         if c_rates:
             cells = [id for id in cells_id if id not in self.wells]
             labels = [f"q{str(id)}" + rate_str for id in cells]

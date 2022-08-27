@@ -207,7 +207,8 @@ class Cartesian(Grid):
 
     @_lru_cache(maxsize=2)
     def get_shape(self, boundary=False):
-        """Returns the grid shape in x, y, z as ndarray.
+        """Returns the number of grids in x, y, z as tuple of
+        (nx, ny, nz).
 
         Parameters
         ----------
@@ -216,17 +217,77 @@ class Cartesian(Grid):
 
         Returns
         -------
-        ndarray
-            number of cells as np.array([nx, ny, nz]).
+        tuple
+            the number of grids as (nx, ny, nz).
         """
-        n = self.get_n(boundary)
-        self.shape = np.array(n, dtype="int")
+        if boundary:
+            self.get_fdir()
+            if "x" in self.fdir:
+                self.nx_b = self.nx + 2
+            else:
+                self.nx_b = self.nx
+            if "y" in self.fdir:
+                self.ny_b = self.ny + 2
+            else:
+                self.ny_b = self.ny
+            if "z" in self.fdir:
+                self.nz_b = self.nz + 2
+            else:
+                self.nz_b = self.nz
+            self.shape = (self.nx_b, self.ny_b, self.nz_b)
+        else:
+            self.shape = (self.nx, self.ny, self.nz)
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
             print(f"[info] shape {s} is {self.shape}.")
 
         return self.shape
+
+    def get_n(self, boundary=True):
+        """Returns the total number of grid cells as int.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        int
+            total number of cells.
+        """
+        shape = self.get_shape(boundary)
+        self.n = np.prod(shape)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"[info] n {s} is {self.n}.")
+
+        return self.n
+
+    @_lru_cache(maxsize=2)
+    def get_n_max(self, boundary=True):
+        """Returns the maximum number of grid cells (n_max) as int.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        int
+            maximum number of grids as max(nx, ny, nz).
+        """
+        shape = self.get_shape(boundary)
+        self.n_max = max(shape)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"[info] n_max {s} is {self.n_max}.")
+
+        return self.n_max
 
     @_lru_cache(maxsize=1)
     def get_fdir(self):
@@ -268,71 +329,6 @@ class Cartesian(Grid):
         return self.fdir
 
     @_lru_cache(maxsize=2)
-    def get_n(self, boundary=False):
-        """Returns the number of grids (n) in x, y, z as tuple.
-
-        Parameters
-        ----------
-        boundary : bool, optional, by default False
-            values with boundary (True) or without boundary (False).
-
-        Returns
-        -------
-        tuple
-            the number of grids as (nx, ny, nz).
-
-        ToDo
-        ----
-        - n as array.
-        """
-        if boundary:
-            self.get_fdir()
-            if "x" in self.fdir:
-                self.nx_b = self.nx + 2
-            else:
-                self.nx_b = self.nx
-            if "y" in self.fdir:
-                self.ny_b = self.ny + 2
-            else:
-                self.ny_b = self.ny
-            if "z" in self.fdir:
-                self.nz_b = self.nz + 2
-            else:
-                self.nz_b = self.nz
-            self.n = (self.nx_b, self.ny_b, self.nz_b)
-        else:
-            self.n = (self.nx, self.ny, self.nz)
-
-        if self.verbose:
-            s = utils.get_boundary_str(boundary)
-            print(f"[info] n {s} is {self.n}.")
-
-        return self.n
-
-    @_lru_cache(maxsize=2)
-    def get_n_max(self, boundary=True):
-        """Returns the maximum number of grids (n_max) as int.
-
-        Parameters
-        ----------
-        boundary : bool, optional, by default True
-            values with boundary (True) or without boundary (False).
-
-        Returns
-        -------
-        int
-            maximum number of grids as max(nx, ny, nz).
-        """
-        n = self.get_n(boundary)
-        self.n_max = max(n)
-
-        if self.verbose:
-            s = utils.get_boundary_str(boundary)
-            print(f"[info] n_max {s} is {self.n_max}.")
-
-        return self.n_max
-
-    @_lru_cache(maxsize=2)
     def get_fshape(self, boundary=True, points=False):
         """Returns flow shape (fshape) as tuple.
 
@@ -348,20 +344,8 @@ class Cartesian(Grid):
         -------
         tuple
             number of grids at flow directions in z, y, x order.
-
-        ToDo
-        ----
-        - check if false boundary is not problematic:
-            check code: (to be removed)
-            # msg = "False boundary is not permitted in fshape method."
-            # assert boundary == True, msg
-        add optional boundaries for 2D models:
-            if self.flowdir == 'xz+':
-                self.fshape = (self.nz_b, self.nx_b, 3)
-            if self.flowdir == 'yz+':
-                self.fshape = (self.nz_b, self.ny_b, 3)
         """
-        nx, ny, nz = self.get_n(boundary)
+        nx, ny, nz = self.get_shape(boundary)
 
         if self.fdir == "xyz":
             self.fshape = (nz, ny, nx)
@@ -411,29 +395,6 @@ class Cartesian(Grid):
 
         return self.fshape
 
-    @_lru_cache(maxsize=2)
-    def get_n_cells(self, boundary=True):
-        """Returns total number of grid cells as int.
-
-        Parameters
-        ----------
-        boundary : bool, optional, by default True
-            values with boundary (True) or without boundary (False).
-
-        Returns
-        -------
-        int
-            total number of cells.
-        """
-        n = self.get_n(boundary)
-        self.n_cells = np.prod(n)
-
-        if self.verbose:
-            s = utils.get_boundary_str(boundary)
-            print(f"[info] n_cells {s} is {self.n_cells}.")
-
-        return self.n_cells
-
     @_lru_cache(maxsize=4)
     def get_order(self, type="natural", boundary=True, fshape=False):
         """Returns grid order as ndarray.
@@ -454,7 +415,7 @@ class Cartesian(Grid):
             gird order as array.
         """
         if type == "natural":
-            self.order = np.arange(self.get_n_cells(True))
+            self.order = np.arange(self.get_n(True))
         else:
             raise ValueError(
                 "Order type is not supported or unknown. "
@@ -499,7 +460,7 @@ class Cartesian(Grid):
         if fshape:
             shape = self.get_fshape(boundary, False)
         else:
-            shape = self.get_n_cells(boundary)
+            shape = self.get_n(boundary)
 
         if not sparse:
             self.ones = np.ones(shape, dtype=self.dtype)
@@ -536,7 +497,7 @@ class Cartesian(Grid):
         if fshape:
             shape = self.get_fshape(boundary, False)
         else:
-            shape = self.get_n_cells(boundary)
+            shape = self.get_n(boundary)
 
         if not sparse:
             self.zeros = np.zeros(shape, dtype=self.dtype)
@@ -846,7 +807,7 @@ class Cartesian(Grid):
                 neighbors = [i for i in n_lst if i in cells_id]
                 cell_neighbors[self.fdir[0]] = neighbors
             if self.D >= 2:
-                nx, ny, _ = self.get_n(True)
+                nx, ny, _ = self.get_shape(True)
                 if "x" in self.fdir:
                     n_lst = [id - nx, id + nx]
                 elif "y" in self.fdir:
@@ -1260,7 +1221,7 @@ class Cartesian(Grid):
         list
             a list of len 3 for axes vectors as dx, dy, dz.
         """
-        nx, ny, nz = self.get_n(True)
+        nx, ny, nz = self.get_shape(True)
         n_max = self.get_n_max(True)
         self.cells_d_ = []
 
@@ -1332,7 +1293,7 @@ class Cartesian(Grid):
         if fshape:
             shape = self.get_fshape(True, False)
         else:
-            shape = self.get_n_cells(True)
+            shape = self.get_n(True)
 
         cells_d_ = self.__calc_cells_d_(dx, dy, dz)
 
@@ -2002,7 +1963,7 @@ class Cartesian(Grid):
         ---------
         https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
         """
-        n = np.array(self.get_n(boundary)) + 1
+        n = np.array(self.get_shape(boundary)) + 1
         corners = self.get_corners(boundary)
         pyvista_grid = pv.ExplicitStructuredGrid(n, corners)
 
@@ -2797,7 +2758,7 @@ class Cartesian(Grid):
         self.get_n_max(True)
         pyvista_grid = self.get_pyvista_grid(boundary)
 
-        transparent = self.get_n_cells(boundary) < 100
+        transparent = self.get_n(boundary) < 100
         if transparent:
             opacity = 0.8
         else:
