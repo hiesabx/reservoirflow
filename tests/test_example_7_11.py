@@ -16,11 +16,10 @@ class TestApp(unittest.TestCase):
         df = model.data(
             boundary=False,
             units=True,
-            c_rates=False,
-            c_pressures=True,
-            w_rates=True,
-            w_pressures=True,
+            columns=["time", "cells_pressure", "wells"],
             save=False,
+            drop_nan=True,
+            drop_zero=True,
         )
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)

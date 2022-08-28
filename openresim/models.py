@@ -123,7 +123,7 @@ class Model(Base):
         if start_date is None:
             self.start_date = date.today()
         else:
-            self.start_date = date(start_date)
+            self.start_date = start_date
 
         self.wells = {}
         self.w_pressures = defaultdict(list)
@@ -1199,62 +1199,118 @@ class Model(Base):
     # Data:
     # -------------------------------------------------------------------------
 
-    def data(
-        self,
-        boundary=True,
-        units=True,
-        c_rates=True,
-        c_pressures=True,
-        w_rates=True,
-        w_pressures=True,
-        save=True,
-    ):
+    def __concat(self, data, df):
+        if df is not None:
+            df = pd.concat([df, data], axis=1)
+            return df
+        return data
+
+    def __add_time(self, units, df=None):
         if units:
             time_str = f" [{self.units['time']}]"
-            press_str = f" [{self.units['pressure']}]"
-            rate_str = f" [{self.units['rate']}]"
         else:
             time_str = ""
-            press_str = ""
-            rate_str = ""
-
         time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
-        df = pd.Series(time, name=f"Time" + time_str)
-        dates = pd.date_range(
+        data = pd.Series(time, name="Time" + time_str)
+        return self.__concat(data, df)
+
+    def __add_date(self, units, df=None):
+        if units:
+            date_str = f" [d.m.y]"
+        else:
+            date_str = ""
+        date_series = pd.date_range(
             start=self.start_date,
             periods=self.tstep + 1,
             freq=str(self.dt) + "D",
         ).strftime("%d.%m.%Y")
-        dates = pd.Series(dates, name="Date")  # .dt
-        df = pd.concat([df, dates], axis=1)
-        cells_id = self.grid.get_cells_id(boundary, False, "list")
+        data = pd.Series(date_series, name="Date" + date_str)
+        return self.__concat(data, df)
 
-        if c_rates:
-            cells = [id for id in cells_id if id not in self.wells]
-            labels = [f"q{str(id)}" + rate_str for id in cells]
-            array = self.rates[:, cells]
-            data = pd.DataFrame(array, columns=labels)
-            df = pd.concat([df, data], axis=1)
-        if c_pressures:
-            labels = [f"P{str(id)}" + press_str for id in cells_id]
-            array = self.pressures[:, cells_id]
-            data = pd.DataFrame(array, columns=labels)
-            df = pd.concat([df, data], axis=1)
-        if w_rates:
-            labels = [f"Q{str(id)}" + rate_str for id in self.wells]
-            array = self.rates[:, list(self.wells.keys())]
-            data = pd.DataFrame(array, columns=labels)
-            df = pd.concat([df, data], axis=1)
-        if w_pressures:
-            labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
-            data = pd.DataFrame(self.w_pressures)
-            data.columns = labels
-            df = pd.concat([df, data], axis=1)
+    def __add_cells_rate(self, units, boundary, df=None):
+        if units:
+            rate_str = f" [{self.units['rate']}]"
+        else:
+            rate_str = ""
+        cells_id = self.grid.get_cells_id(boundary, False, "array")
+        cells = [id for id in cells_id if id not in self.wells]
+        labels = [f"q{str(id)}" + rate_str for id in cells]
+        array = self.rates[:, cells]
+        data = pd.DataFrame(array, columns=labels)
+        return self.__concat(data, df)
 
-        df = df.dropna(axis=1, how="all")
-        df = df.loc[:, (df != 0).any(axis=0)]
+    def __add_cells_pressures(self, units, boundary, df=None):
+        if units:
+            press_str = f" [{self.units['pressure']}]"
+        else:
+            press_str = ""
+        cells_id = self.grid.get_cells_id(boundary, False, "array")
+        labels = [f"P{str(id)}" + press_str for id in cells_id]
+        array = self.pressures[:, cells_id]
+        data = pd.DataFrame(array, columns=labels)
+        return self.__concat(data, df)
+
+    def __add_wells_rate(self, units, boundary, df=None):
+        if units:
+            rate_str = f" [{self.units['rate']}]"
+        else:
+            rate_str = ""
+        labels = [f"Q{str(id)}" + rate_str for id in self.wells]
+        array = self.rates[:, list(self.wells.keys())]
+        data = pd.DataFrame(array, columns=labels)
+        return self.__concat(data, df)
+
+    def __add_wells_pressures(self, units, boundary, df=None):
+        if units:
+            press_str = f" [{self.units['pressure']}]"
+        else:
+            press_str = ""
+        labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
+        data = pd.DataFrame(self.w_pressures)
+        data.columns = labels
+        return self.__concat(data, df)
+
+    def data(
+        self,
+        boundary=True,
+        units=True,
+        columns=["time", "date", "wells"],
+        save=True,
+        drop_nan=True,
+        drop_zero=True,
+    ):
+
+        col_dict = {
+            "time": ["t", "time"],
+            "date": ["d", "date"],
+            "cells_rate": ["q", "rates", "cells", "cells_rate"],
+            "cells_pressure": ["p", "pressures", "cells", "cells_pressure"],
+            "wells_rate": ["q", "rates", "wells", "wells_rate"],
+            "wells_pressure": ["p", "pressures", "wells", "wells_pressure"],
+        }
+
+        df = None
+        for c in columns:
+            if c.lower() in col_dict["time"]:
+                df = self.__add_time(units, df)
+            if c.lower() in col_dict["date"]:
+                df = self.__add_date(units, df)
+            if c.lower() in col_dict["cells_rate"]:
+                df = self.__add_cells_rate(units, boundary, df)
+            if c.lower() in col_dict["cells_pressure"]:
+                df = self.__add_cells_pressures(units, boundary, df)
+            if c.lower() in col_dict["wells_rate"]:
+                df = self.__add_wells_rate(units, boundary, df)
+            if c.lower() in col_dict["wells_pressure"]:
+                df = self.__add_wells_pressures(units, boundary, df)
+
+        if drop_nan:
+            df = df.dropna(axis=1, how="all")
+
+        if drop_zero:
+            df = df.loc[:, (df != 0).any(axis=0)]
+
         df.index.name = "steps"
-
         if save:
             df.to_csv("model_data.csv")
             print("[info] Model data was successfully saved.")
@@ -1412,7 +1468,7 @@ if __name__ == "__main__":
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = Model(grid, fluid, pi=4000, dt=5, dtype="double")
+    model = Model(grid, fluid, pi=4000, dt=5, start_date="10.10.2018", dtype="double")
     # grid.show("id", False)
     model.set_well(id=6, q=-1000, pwf=1000, s=1.5, r=3.5)
     # # model.set_well(id=18, q=700, s=1.5, r=3.5)

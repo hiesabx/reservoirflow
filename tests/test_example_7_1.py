@@ -55,6 +55,6 @@ def create_model():
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    model = create_model()
-    model.run(100, True, True, True)
+    unittest.main()
+    # model = create_model()
+    # model.run(100, True, True, True)

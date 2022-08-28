@@ -13,7 +13,14 @@ class TestApp(unittest.TestCase):
         )
         model = create_model()
         model.solve(True, True, True)
-        df = model.data(*6 * [True], False)
+        df = model.data(
+            boundary=True,
+            units=True,
+            columns=["time", "cells_rate", "cells_pressure", "wells"],
+            save=False,
+            drop_nan=False,
+            drop_zero=False,
+        )
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
         self.assertLess(model.ctime, 5)
