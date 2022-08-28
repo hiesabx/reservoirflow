@@ -14,7 +14,7 @@ class TestApp(unittest.TestCase):
         )
         model = create_model()
         model.run(nsteps=10, sparse=False)
-        df = model.data(
+        df = model.get_dataframe(
             boundary=True,
             units=True,
             columns=["time", "cells_rate", "cells_pressure", "wells"],

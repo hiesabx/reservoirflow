@@ -1270,7 +1270,7 @@ class Model(Base):
         data.columns = labels
         return self.__concat(data, df)
 
-    def data(
+    def get_dataframe(
         self,
         boundary=True,
         units=True,
@@ -1279,6 +1279,40 @@ class Model(Base):
         drop_nan=True,
         drop_zero=True,
     ):
+        """Returns simulation data as a dataframe.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+            It is only relevant when cells columns are selected.
+        units : bool, optional, by default True
+            column names with units (True) or without units (False).
+        columns : list, optional, by default ["time", "date", "wells"]
+            selected columns to be added to the dataframe. The following
+            options are available:
+            "time": for time steps as specified in dt.
+            "date": for dates as specified in dt and start_date.
+            "q", "rates": for all rates including cells and wells.
+            "p", "pressures": for all pressures including cells and wells.
+            "cells": for all cells rates and pressures.
+            "wells": for all wells rates and pressures.
+            "cells_rate": for all cells rates.
+            "cells_pressure": for all cells pressures.
+            "wells_rate": for all wells rates.
+            "wells_pressure": for all wells pressures.
+        save : bool, optional, by default True
+            save output as a csv file.
+        drop_nan : bool, optional, by default True
+            drop columns which contain only nan values.
+        drop_zero : bool, optional, by default True
+            drop columns which contain only zero values.
+
+        Returns
+        -------
+        DataFrame
+            simulation data as pandas dataframe.
+        """
 
         col_dict = {
             "time": ["t", "time"],
@@ -1473,5 +1507,5 @@ if __name__ == "__main__":
     model.set_well(id=6, q=-1000, pwf=1000, s=1.5, r=3.5)
     # # model.set_well(id=18, q=700, s=1.5, r=3.5)
     model.run(2, True, False, True)
-    model.data()
+    model.get_dataframe()
     # model.show("pressures")

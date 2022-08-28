@@ -13,7 +13,7 @@ class TestApp(unittest.TestCase):
         )
         model = create_model()
         model.solve(True, True, True)
-        df = model.data(
+        df = model.get_dataframe(
             boundary=True,
             units=True,
             columns=["time", "cells_rate", "cells_pressure", "wells"],
