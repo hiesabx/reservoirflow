@@ -23,6 +23,6 @@ model.set_boundaries(
 model.solve(sparse=False, check_MB=False, verbose=True)
 # print(model)
 # # Step 7: Show pressures in 3D grid
-model.show(property="pressures", show_boundary=False)
+model.show(property="pressures", boundary=False)
 # Step 8: Show report
 # model.report()

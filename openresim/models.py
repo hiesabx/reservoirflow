@@ -18,6 +18,8 @@ import warnings
 import pandas as pd
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+import pyvista as pv
+from datetime import date
 
 
 class Model(Base):
@@ -47,6 +49,7 @@ class Model(Base):
         well: wells.Well = None,
         pi: int = None,
         dt: int = 1,
+        start_date: date = None,
         dtype: str = "double",
         unit="field",
         verbose=False,
@@ -89,7 +92,7 @@ class Model(Base):
         self.tstep = 0
         self.ctime = 0
 
-        self.__initialize__(pi, well)
+        self.__initialize__(pi, start_date, well)
         self.__calc_comp()
         self.__calc_dir_T()
         self.__calc_RHS()
@@ -99,7 +102,7 @@ class Model(Base):
     # Basic:
     # -------------------------------------------------------------------------
 
-    def __initialize__(self, pi, well):
+    def __initialize__(self, pi, start_date, well):
         """Initialize reservoir pressures, rates, and wells.
 
         Parameters
@@ -116,6 +119,11 @@ class Model(Base):
         self.pi = pi
         if pi is not None:
             self.pressures[0][self.grid.cells_id] = pi
+
+        if start_date is None:
+            self.start_date = date.today()
+        else:
+            self.start_date = date(start_date)
 
         self.wells = {}
         self.w_pressures = defaultdict(list)
@@ -231,7 +239,7 @@ class Model(Base):
         elif fdir == "xy":
             k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
         elif fdir == "xyz":
-            print(f"[warning] __calc_well_G at {fdir} has to be verified.")
+            # print(f"[warning] __calc_well_G at {fdir} has to be verified.")
             k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
@@ -284,7 +292,7 @@ class Model(Base):
                 / (ky_kx**0.25 + kx_ky**0.25)
             )
         elif fdir == "xyz":
-            print(f"[warning] __calc_well_r_eq at {fdir} has to be verified.")
+            # print(f"[warning] __calc_well_r_eq at {fdir} has to be verified.")
             kx_ky = self.grid.k["x"][id] / self.grid.k["y"][id]
             ky_kx = self.grid.k["y"][id] / self.grid.k["x"][id]
             return (
@@ -983,7 +991,7 @@ class Model(Base):
         """
         resolve = False
         tstep_w_pressures = {}
-        for id in self.wells.keys():
+        for id in self.wells:
             if "q_sp" in self.wells[id]:
                 pwf_est = self.pressures[self.tstep][id] + (
                     self.wells[id]["q_sp"]
@@ -1041,7 +1049,7 @@ class Model(Base):
                 raise ValueError("boundary cell can't have more than one neighbor")
 
     def solve(self, sparse=True, threading=False, check_MB=True, update=True):
-        """_summary_
+        """Solve a single simulation tstep.
 
         Parameters
         ----------
@@ -1097,6 +1105,19 @@ class Model(Base):
         return pressures
 
     def run(self, nsteps=10, sparse=True, threading=True, check_MB=True):
+        """Perform a simulation run for nsteps.
+
+        Parameters
+        ----------
+        nsteps : int, optional, by default 10
+            _description_
+        sparse : bool, optional, by default True
+            _description_
+        threading : bool, optional, by default True
+            _description_
+        check_MB : bool, optional, by default True
+            _description_
+        """
         start_time = time.time()
         self.nsteps += nsteps
         self.run_ctime = 0
@@ -1107,7 +1128,11 @@ class Model(Base):
             verbose_restore = False
         print(f"[info] Simulation run started: {nsteps} timesteps.")
         for _ in tqdm(
-            range(1, nsteps + 1), unit="steps", colour="green", position=0, leave=True
+            range(1, nsteps + 1),
+            unit="steps",
+            colour="green",
+            position=0,
+            leave=True,
         ):
             self.solve(sparse, threading, check_MB, True)
 
@@ -1119,6 +1144,7 @@ class Model(Base):
         )
         if check_MB:
             print(f"\n[info] Material Balance Error: {self.error}.")
+
         if verbose_restore:
             self.verbose = True
 
@@ -1194,6 +1220,13 @@ class Model(Base):
 
         time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
         df = pd.Series(time, name=f"Time" + time_str)
+        dates = pd.date_range(
+            start=self.start_date,
+            periods=self.tstep + 1,
+            freq=str(self.dt) + "D",
+        ).strftime("%d.%m.%Y")
+        dates = pd.Series(dates, name="Date")  # .dt
+        df = pd.concat([df, dates], axis=1)
         cells_id = self.grid.get_cells_id(boundary, False, "list")
 
         if c_rates:
@@ -1218,7 +1251,10 @@ class Model(Base):
             data.columns = labels
             df = pd.concat([df, data], axis=1)
 
+        df = df.dropna(axis=1, how="all")
+        df = df.loc[:, (df != 0).any(axis=0)]
         df.index.name = "steps"
+
         if save:
             df.to_csv("model_data.csv")
             print("[info] Model data was successfully saved.")
@@ -1229,16 +1265,16 @@ class Model(Base):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    def plot(self, property: str = "pressures", id: int = None, tstep: int = None):
+    def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
 
         if tstep is None:
             tstep = self.tstep
 
         if id is not None:
-            exec(f"plt.plot(self.{property}[:, id].flatten())")
+            exec(f"plt.plot(self.{prop}[:, id].flatten())")
             plt.xlabel("Days")
         elif tstep is not None:
-            exec(f"plt.plot(self.{property}[tstep, :].flatten())")
+            exec(f"plt.plot(self.{prop}[tstep, :].flatten())")
             plt.xlabel("Grid (id)")
             plt.xticks(ticks=range(0, self.grid.nx + 2))
         plt.grid()
@@ -1256,10 +1292,75 @@ class Model(Base):
         plt.xticks(ticks=range(0, 4), labels=range(1, 5))
         plt.show()
 
-    def show(
-        self, property: str, show_centers=True, show_boundary=False, show_bounds=False
-    ):
-        plots.show_grid(self, property, show_centers, show_boundary, show_bounds)
+    # def __show_wells(self, pl):
+    #     for w in model.wells:
+    #         # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
+    #         # y = model.grid.dy[w]//2
+    #         # z = 100
+    #         height = model.grid.dz[w] * 10
+    #         # well_cell_i = w if boundary else w - 1
+    #         well_cell_center = list(
+    #             model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
+    #         )
+    #         well_cell_center[2] = height // 2
+    #         well = pv.Cylinder(
+    #             center=well_cell_center,
+    #             height=height,
+    #             radius=model.wells[w]["r"],
+    #             direction=(0, 0, 1),
+    #         )
+    #         pl.add_mesh(well)
+
+    #     return pl
+
+    def show(self, property: str, centers=False, boundary=False, bounds=False):
+        plots.show(self, property, centers, boundary, bounds)
+
+    # def get_gif(self, prop, boundary=False, wells=True):
+    #     if prop in ['p', 'press', 'pressure', 'pressures']:
+    #         values = self.pressures
+    #     elif prop in ['q', 'Q', 'rete', 'rates']:
+    #         values = self.rates
+
+    #     grid = model.grid.get_pyvista_grid(boundary)
+    #     grid.cell_data[prop] = values[1]
+
+    #     pl = pv.Plotter(notebook=False, off_screen=True)
+
+    #     if wells:
+    #         pl = self.__show_wells(pl)
+
+    #     pl.add_mesh(
+    #         grid,
+    #         clim=limits,
+    #         # style='wireframe',
+    #         show_edges=True,
+    #         opacity=0.7,
+    #         lighting=True,
+    #         ambient=0.2,
+    #         n_colors=5,
+    #         colormap="Blues",
+    #         label=property,
+    #         categories=True,
+    #         # nan_color='gray',
+    #         nan_opacity=0.7,
+    #         # use_transparency=True,
+    #         scalars=values[-1],  # or str 'pressures'
+    #         scalar_bar_args=cbar_opt,
+    #         show_scalar_bar=True,
+    #         # annotations=annotations,
+    #     )
+    #     pl.open_gif("images/grid.gif")
+
+    #     pts = grid.points.copy()
+    #     for step in range(model.nsteps):
+    #         pl.update_coordinates(pts, render=False)
+    #         pl.update_scalars(values[step], render=False)
+    #         pl.render()
+    #         pl.write_frame()
+    #         # time.sleep(2)
+
+    #     pl.close()
 
     def copy(self):
         """Copy model (under development)
@@ -1297,24 +1398,24 @@ class Model(Base):
 
 if __name__ == "__main__":
     grid = grids.Cartesian(
-        nx=9,
-        ny=9,
+        nx=3,
+        ny=3,
         nz=1,
         dx=300,
         dy=350,
         dz=40,
         phi=0.27,
-        kx=270,
-        ky=200,
-        kz=200,
+        kx=5,
+        ky=5,
+        kz=0.1,
         comp=1 * 10**-6,
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = Model(grid, fluid, pi=4000, dtype="double")
-    grid.show("id", False)
-    model.set_well(id=60, q=-1000, pwf=1000, s=1.5, r=3.5)
-    # model.set_well(id=18, q=700, s=1.5, r=3.5)
-    model.run(12, False, False, False)
+    model = Model(grid, fluid, pi=4000, dt=5, dtype="double")
+    # grid.show("id", False)
+    model.set_well(id=6, q=-1000, pwf=1000, s=1.5, r=3.5)
+    # # model.set_well(id=18, q=700, s=1.5, r=3.5)
+    model.run(2, True, False, True)
     model.data()
-    model.show("pressures")
+    # model.show("pressures")

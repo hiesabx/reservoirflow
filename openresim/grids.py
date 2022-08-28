@@ -1963,9 +1963,9 @@ class Cartesian(Grid):
         ---------
         https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
         """
-        n = np.array(self.get_shape(boundary)) + 1
+        shape = np.array(self.get_shape(boundary)) + 1
         corners = self.get_corners(boundary)
-        pyvista_grid = pv.ExplicitStructuredGrid(n, corners)
+        pyvista_grid = pv.ExplicitStructuredGrid(shape, corners)
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
@@ -2755,10 +2755,10 @@ class Cartesian(Grid):
         ValueError
             label is not recognized.
         """
-        self.get_n_max(True)
+        # self.get_n_max(True)
         pyvista_grid = self.get_pyvista_grid(boundary)
 
-        transparent = self.get_n(boundary) < 100
+        transparent = True  # self.get_n(boundary) < 200
         if transparent:
             opacity = 0.8
         else:

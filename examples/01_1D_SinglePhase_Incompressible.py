@@ -28,8 +28,8 @@ model.set_boundaries(
 model.solve(sparse=False, check_MB=True, verbose=False)
 # Step 7: Show pressures in 3D grid
 #       : method 1 - directly using model method
-model.show(property="pressures", show_boundary=False)
+model.show(property="pressures", boundary=False)
 #       : method 2 - using wells module
-plots.show_grid(model, property="pressures", boundary=False, show_bounds=False)
+plots.show(model, property="pressures", boundary=False, bounds=False)
 # Step 8: Show report
 model.report()

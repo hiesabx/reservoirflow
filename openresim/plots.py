@@ -1,7 +1,7 @@
 import numpy as np
 import pyvista as pv
 from openresim import models
-import time
+import math
 
 
 # Default settings color bar:
@@ -21,7 +21,7 @@ import time
 # }
 
 
-def show_grid(model, property: str, centers=True, boundary=False, show_bounds=False):
+def show(model, property: str, centers=False, boundary=False, bounds=False):
     # Extract property values:
     props = list(vars(model))
     assert (
@@ -38,7 +38,7 @@ def show_grid(model, property: str, centers=True, boundary=False, show_bounds=Fa
 
     # Define limits:
     max_v = np.nanmax(values)
-    min_v = np.nanmin(values)
+    min_v = math.floor(np.nanmin(values) / 1000) * 1000
     limits = [min_v, max_v]  # [min_v - (min_v*0.2), max_v + (max_v*0.2)]
 
     # Number Format:
@@ -104,8 +104,7 @@ def show_grid(model, property: str, centers=True, boundary=False, show_bounds=Fa
             # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
             # y = model.grid.dy[w]//2
             # z = 100
-            # well_center = (x, y, z)
-            height = model.grid.dz[w] * 2
+            height = model.grid.dz[w] * 10
             # well_cell_i = w if boundary else w - 1
             well_cell_center = list(
                 model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
@@ -129,7 +128,7 @@ def show_grid(model, property: str, centers=True, boundary=False, show_bounds=Fa
     # pl.enable_zoom_style()
     pl.show_axes()
     pl.set_background("black", top="gray")
-    if show_bounds:
+    if bounds:
         pl.show_bounds(
             grid="front", location="outer", all_edges=True
         )  # or pl.show_axes() # or pl.show_grid()
