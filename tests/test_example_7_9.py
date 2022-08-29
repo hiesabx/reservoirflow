@@ -1,4 +1,3 @@
-from venv import create
 from openresim import grids, fluids, models
 import numpy as np
 import pandas as pd

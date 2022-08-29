@@ -21,6 +21,8 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import pyvista as pv
 from datetime import date
 
+# from numba import jit
+
 
 class Model(Base):
     """Model class used to create a reservoir simulation model.
@@ -87,7 +89,6 @@ class Model(Base):
 
         self.cells_terms = {}
         self.dt = dt
-        self.A = None
         self.nsteps = 0
         self.tstep = 0
         self.ctime = 0
@@ -118,7 +119,7 @@ class Model(Base):
 
         self.pi = pi
         if pi is not None:
-            self.pressures[0][self.grid.cells_id] = pi
+            self.pressures[0, self.grid.cells_id] = pi
 
         if start_date is None:
             self.start_date = date.today()
@@ -360,11 +361,6 @@ class Model(Base):
 
         self.wells[id]["r_eq"] = self.__calc_well_r_eq(id)
         self.wells[id]["G"] = self.__calc_well_G(id)
-        # if "q" not in self.wells[id] and "pwf" in self.wells[id]:
-        #     q = self.__calc_w_terms(id, self.pressures[self.tstep][id])
-        #     self.wells[id]["q"] = q
-        #     self.wells[id]["q_sp"] = q
-        #     self.wells[id]["constrain"] = "q"
         if "pwf" not in self.wells[id]:
             self.wells[id]["pwf"] = 0
             self.wells[id]["pwf_sp"] = 0
@@ -377,13 +373,13 @@ class Model(Base):
     # Boundaries:
     # -------------------------------------------------------------------------
 
-    def set_boundary(self, id: int, cond: str, v: float):
+    def set_boundary(self, id_b: int, cond: str, v: float):
         """Set a boundary condition in a cell.
 
         Parameters
         ----------
-        id : int, optional, by default None
-            well location using cell id based on natural order as int.
+        id_b : int, optional, by default None
+            boundary cell id based on natural order as int.
         cond : str
             boundary constant condition. Three conditions are possible:
             (2) Constant rate: str in ['rate', 'q'],
@@ -399,24 +395,19 @@ class Model(Base):
         """
 
         if cond in ["rate", "q"]:
-            self.rates[0][id] = v
+            self.rates[self.tstep, id_b] = v
         elif cond in ["pressure", "press", "p"]:
-            self.pressures[0][id] = v
+            self.pressures[self.tstep, id_b] = v
         elif cond in ["gradient", "grad", "g"]:
-            # n = self.grid.get_cell_neighbors(id, None, False, "tuple")
-            # print("neighbors:", n)
-            # T = self.get_cell_T(id, None, False)
-            # print("trans:", T)
-            # print("q:", self.rates)
-            # print("T:", self.T)
-            # print("d:", self.grid.d)
-            # self.rates[0][id] = self.T["x"][id] * self.grid.d["x"][id] * v
-            self.rates[0][id] = np.nan
+            ((id, T),) = self.get_cell_T(id_b, None, False).items()
+            n = self.grid.get_cell_neighbors(id_b, None, False, "dict")
+            dir = [dir for dir in n if id in n[dir]][0]
+            self.rates[self.tstep, id_b] = T * self.grid.d[dir][id] * v
         else:
             raise ValueError(f"cond argument {cond} is unknown.")
 
         if self.verbose:
-            print(f"[info] boundary cond in cell {id} was set to constant {cond}.")
+            print(f"[info] boundary in cell {id_b} was set to constant {cond}.")
 
     def set_boundaries(self, bdict: dict):
         """Set boundary conditions using a dictionary.
@@ -430,7 +421,7 @@ class Model(Base):
         """
         self.bdict = bdict
         boundaries = self.grid.get_boundaries("id", "set")
-        for id in bdict.keys():
+        for id in bdict:
             assert id in boundaries, f"cell {id} is not a boundary cell."
             cond, v = bdict[id]
             self.set_boundary(id, cond, v)
@@ -449,7 +440,7 @@ class Model(Base):
         v : int, float
             constant value to specify the condition in cond argument.
         """
-        boundaries = self.grid.get_boundaries("id", "set")
+        boundaries = self.grid.get_boundaries("id", "tuple")
         for id in boundaries:
             self.set_boundary(id, cond, v)
 
@@ -523,6 +514,7 @@ class Model(Base):
         dz = self.grid.z[id_n] - self.grid.z[id]
         return T * ((p_n - p) - (self.fluid.g * dz))
 
+    @_lru_cache(maxsize=None)
     def __calc_b_terms(self, id, id_b, p, T):
         """Calculates cell flow equation with a boundary cell.
 
@@ -563,18 +555,13 @@ class Model(Base):
         - T with matrix:
             self.T[dir][min(b_id,id)]
         """
-        p_b = self.pressures[self.tstep][id_b]
+        p_b = self.pressures[self.tstep, id_b]
 
         if not np.isnan(p_b):
             dz = self.grid.z[id_b] - self.grid.z[id]
             b_term = T * 2 * ((p_b - p) - (self.fluid.g * dz))
         else:
-            if id_b in self.bdict and self.bdict[id_b][0] == "gradient":
-                v = self.bdict[id_b][1]
-                n = self.grid.get_cell_neighbors(id_b, None, False, "dict")
-                dir = [dir for dir in n if id in n[dir]][0]
-                self.rates[self.tstep][id_b] = T * self.grid.d[dir][id] * v
-            b_term = self.rates[self.tstep][id_b]
+            b_term = self.rates[self.tstep, id_b]
 
         return b_term
 
@@ -642,9 +629,17 @@ class Model(Base):
             return 0
         else:
             try:
-                return self.RHS[id] * (p - self.pressures[self.tstep][id])
+                return self.RHS[id] * (p - self.pressures[self.tstep, id])
             except:
                 raise Exception("Initial pressure (pi) must be specified")
+
+    def __simplify_eq(self, cell_eq):
+        if (
+            cell_eq.lhs.as_coefficients_dict()[1] != 0
+            or cell_eq.rhs.as_coefficients_dict()[1] != 0
+        ):
+            cell_eq = cell_eq.simplify()
+        return cell_eq
 
     def get_cell_eq(self, id):
         """Return cell equation.
@@ -679,22 +674,14 @@ class Model(Base):
             f"n_term = self.T[dir][min(neighbor,id)] * ((p{n_id} - p{id})
             - (self.fluid.g * (self.grid.z[neighbor] - self.grid.z[id])))"
         )
-        - dict sort:
-            cell_eq_lhs = dict(
-                sorted(
-                    cell_eq.lhs.as_coefficients_dict().items(),
-                    key=lambda x: int(str(x[0])[1:]),
-                )
-            )
         """
-
-        assert id in self.grid.cells_id, f"id is out of range {self.grid.cells_id}."
         p = eval(f"sym.Symbol('p{id}')")
 
         if not id in self.cells_terms:
-            neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="tuple")
-            boundaries = self.grid.get_cell_boundaries(id=id, fmt="tuple")
-            terms = []
+            assert id in self.grid.cells_id, f"id is out of range {self.grid.cells_id}."
+            neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="array")
+            boundaries = self.grid.get_cell_boundaries(id=id, fmt="array")
+            terms = {"f_terms": [], "a_term": 0}
             T = self.get_cell_T(id, None, True)
             if self.verbose:
                 print(f"[info] cell id: {id}")
@@ -702,48 +689,42 @@ class Model(Base):
                 print(f"[info]    - Boundaries: {boundaries}")
             for id_n in neighbors:
                 n_terms = self.__calc_n_terms(id, id_n, p, T[id_n])
-                terms.append(n_terms)
+                terms["f_terms"].append(n_terms)
                 if self.verbose:
                     print(f"[info] Neighbor terms: {n_terms}")
             for id_b in boundaries:
                 b_terms = self.__calc_b_terms(id, id_b, p, T[id_b])
-                terms.append(b_terms)
+                terms["f_terms"].append(b_terms)
                 if self.verbose:
                     print(f"[info] Boundary terms: {b_terms}")
             if id in self.wells:
                 w_terms = self.__calc_w_terms(id, p)
-                terms.append(w_terms)
+                terms["f_terms"].append(w_terms)
                 if self.verbose:
                     print(f"[info] Well terms: {w_terms}")
+            terms["a_term"] = self.__calc_a_term(id, p)
+            if self.verbose:
+                print("[info] Accumulation term:", terms["a_term"])
             if self.verbose:
                 print("[info] terms:", terms)
-
             self.cells_terms[id] = terms
+
         else:
             terms = self.cells_terms[id]
+            if id in self.wells and self.wells[id]["constrain"] == "pwf":
+                w_terms = self.__calc_w_terms(id, p)
+                if self.verbose:
+                    print(f"[info] Well terms (updated): {w_terms}")
+                terms["f_terms"][-1] = w_terms
+            if self.comp_type == "compressible":
+                terms["a_term"] = self.__calc_a_term(id, p)
 
-        if id in self.wells and self.wells[id]["constrain"] == "pwf":
-            w_terms = self.__calc_w_terms(id, p)
-            if self.verbose:
-                print(f"[info] Well terms (updated): {w_terms}")
-            terms[-1] = w_terms
-
-        a_term = self.__calc_a_term(id, p)
-        if self.verbose:
-            print("[info] cell id:", id)
-            print("[info] Accumulation terms:", a_term)
-
-        cell_eq = sym.Eq(sum(terms), a_term)
-        if (
-            cell_eq.lhs.as_coefficients_dict()[1] != 0
-            or cell_eq.rhs.as_coefficients_dict()[1] != 0
-        ):
-            cell_eq = cell_eq.simplify()
+        cell_eq = sym.Eq(sum(terms["f_terms"]), terms["a_term"])
+        cell_eq = self.__simplify_eq(cell_eq)
+        cell_eq_lhs = cell_eq.lhs.as_coefficients_dict()
 
         if self.verbose:
             print("[info] Flow equation:", cell_eq)
-
-        cell_eq_lhs = cell_eq.lhs.as_coefficients_dict()
 
         return cell_eq_lhs, cell_eq.rhs
 
@@ -769,7 +750,7 @@ class Model(Base):
         return cells_eq
 
     # -------------------------------------------------------------------------
-    # Coefficient Matrix:
+    # Matrices:
     # -------------------------------------------------------------------------
 
     def __update_matrices(self, id):
@@ -785,13 +766,13 @@ class Model(Base):
         - arrays for lhs and rhs:
             self.d[i] = np.array(cell_rhs).astype(self.dtype)
             self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
+        - finding cell i:
+            ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
         """
-        i = self.cells_i[id]
         cell_lhs, cell_rhs = self.cells_eq[id]
-        ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
-        # print(i, ids)
-        self.d[i] = cell_rhs
-        self.A[i, ids] = list(cell_lhs.values())
+        ids = [self.cells_i[int(str(s)[1:])] for s in cell_lhs.keys()]
+        self.d[self.cells_i[id]] = cell_rhs
+        self.A[self.cells_i[id], ids] = list(cell_lhs.values())
         if self.verbose:
             print(f"[info] cell id: {id}")
             print(f"[info]      - ids: {ids}")
@@ -818,13 +799,11 @@ class Model(Base):
         ----
         - Update only required cells.
         """
-
         self.cells_eq = self.get_cells_eq(threading)
 
         if self.tstep == 0:
-            self.cells_id = self.grid.get_cells_id(False, False, "tuple")
+            self.cells_id = self.grid.get_cells_id(False, False, "list")
             n = self.grid.get_n(False)
-            self.boundaries = self.grid.get_boundaries("id", "list")
             self.cells_i = dict(zip(self.cells_id, range(n)))
             if sparse:
                 self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
@@ -834,7 +813,7 @@ class Model(Base):
                 self.A = np.zeros((n, n), dtype=self.dtype)
 
         if threading:
-            n_threads = self.grid.get_n(False) // 2
+            n_threads = self.grid.get_n(False)
             with ThreadPoolExecutor(n_threads) as executor:
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices, self.cells_id)
@@ -847,110 +826,6 @@ class Model(Base):
             print("[info] - d:\n", self.d)
 
         return self.A, self.d
-
-    def __update_matrix(self, id, sparse=True):
-        """
-        Update coefficient matrix (A) and result vector (d).
-        Note: arrays are passed by reference.
-        """
-        i_lhs, i_rhs = self.get_cell_eq(id)
-        i_lhs = list(i_lhs.values())
-        self.d[id - 1] = np.array(i_rhs).astype(self.dtype)
-
-        if self.tstep == 0:
-            if id == 1:
-                self.A[id - 1, id - 1 : id + 1] = i_lhs
-            elif id == self.grid.nx:
-                self.A[id - 1, id - 2 : id] = i_lhs
-            else:
-                self.A[id - 1, id - 2 : id + 1] = i_lhs
-
-    # @lru_cache(maxsize=None)
-    def get_matrix(self, sparse=True, verbose=False):
-        """Create coefficient matrix (A) and result vector (d)."""
-        if self.grid.D == 1:
-
-            # Construct d vector:
-            if all(self.RHS == 0):
-                self.d = ss.lil_matrix((self.grid.nx, 1), dtype=self.dtype)
-            else:
-                try:
-                    self.d = ss.lil_matrix(
-                        (-self.RHS[1:-1] * self.pressures[self.tstep][1:-1]).reshape(
-                            -1, 1
-                        )
-                    )
-                except:
-                    raise Exception("Initial pressure (pi) must be specified")
-            if not sparse:
-                self.d = self.d.toarray()  # ss.lil_matrix(self.d, dtype=self.dtype)
-
-            # Construct A matrix:
-            if self.tstep == 0:
-                self.A = ss.diags(
-                    [
-                        -self.T[1:] - self.T[:-1] - self.RHS[1:-1],
-                        self.T[1:-1],  # East trans for interior blocks
-                        self.T[1:-1],
-                    ],  # West trans for interior blocks
-                    [0, 1, -1],
-                    shape=(self.grid.nx, self.grid.nx),
-                    format="lil",  # “dia”, “csr”, “csc”, “lil”
-                    dtype=self.dtype,
-                )
-                self.A[0, 0] = -self.T[1] - self.RHS[1]
-                self.A[-1, -1] = -self.T[-2] - self.RHS[-1]
-                if not sparse:
-                    self.A = self.A.toarray()
-
-            # Update matrix if there is pressure or flow in 'west' boundary:
-            if (
-                not np.isnan(self.pressures[self.tstep][0])
-                or self.rates[self.tstep][0] != 0
-            ):
-                self.__update_matrix(1, sparse, verbose)
-
-            # Update matrix if there is pressure or flow in 'east' boundary:
-            if (
-                not np.isnan(self.pressures[self.tstep][-1])
-                or self.rates[self.tstep][-1] != 0
-            ):
-                # at last grid: self.grid.nx or -2
-                self.__update_matrix(self.grid.nx, sparse, verbose)
-
-            # Update matrix in wells i_blocks:
-            for i in self.wells.keys():
-                self.__update_matrix(i, sparse, verbose)
-
-            if verbose:
-                if sparse:
-                    print("- A:\n", self.A.toarray())
-                    print("- d:\n", self.d.toarray())
-                else:
-                    print("- A:\n", self.A)
-                    print("- d:\n", self.d)
-
-            return self.A, self.d
-
-    def get_d(self, sparse=False):
-        if self.comp_type == "incompressible":
-            n = self.grid.get_n(False)
-            self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
-        else:
-            pressures = self.pressures[self.tstep][self.grid.cells_id]
-            RHS = self.RHS[self.grid.cells_id]
-            try:
-                self.d = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
-            except:
-                raise Exception("Initial pressure (pi) must be specified")
-
-        if not sparse:
-            self.d = self.d.toarray()
-
-        if self.verbose:
-            print("[info] - d:\n", self.d)
-
-        return self.d
 
     # -------------------------------------------------------------------------
     # Numerical Solution:
@@ -993,7 +868,7 @@ class Model(Base):
         tstep_w_pressures = {}
         for id in self.wells:
             if "q_sp" in self.wells[id]:
-                pwf_est = self.pressures[self.tstep][id] + (
+                pwf_est = self.pressures[self.tstep, id] + (
                     self.wells[id]["q_sp"]
                     * self.fluid.B
                     * self.fluid.mu
@@ -1017,10 +892,10 @@ class Model(Base):
                 q_est = (
                     -self.wells[id]["G"]
                     / (self.fluid.B * self.fluid.mu)
-                    * (self.pressures[self.tstep][id] - pwf_est)
+                    * (self.pressures[self.tstep, id] - pwf_est)
                 )
 
-            self.wells[id]["q"] = self.rates[self.tstep][id] = q_est
+            self.wells[id]["q"] = self.rates[self.tstep, id] = q_est
             self.wells[id]["pwf"] = pwf_est
 
             if resolve:
@@ -1035,16 +910,16 @@ class Model(Base):
         return False
 
     def __update_boundaries(self):
-        for id_b in self.grid.get_boundaries("id", "tuple"):
+        for id_b in self.bdict:
             neighbors = self.grid.get_cell_neighbors(id_b, None, False, "list")
             if len(neighbors) == 0:
                 continue
-            if len(neighbors) == 1:
+            elif len(neighbors) == 1:
                 T = self.get_cell_T(id_b, None, False)
                 id_n = neighbors[0]
-                p_n = self.pressures[self.tstep][id_n]
+                p_n = self.pressures[self.tstep, id_n]
                 b_terms = self.__calc_b_terms(id_n, id_b, p_n, T[id_n])
-                self.rates[self.tstep][id_b] = b_terms
+                self.rates[self.tstep, id_b] = b_terms
             else:
                 raise ValueError("boundary cell can't have more than one neighbor")
 
@@ -1082,16 +957,15 @@ class Model(Base):
         if update:
             self.tstep += 1
             self.pressures = np.vstack([self.pressures, self.pressures[-1]])
-            self.pressures[self.tstep][self.grid.cells_id] = pressures
+            self.pressures[self.tstep, self.grid.cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
             self.__update_boundaries()
             resolve = self.__update_wells()
-
             if resolve:
                 self.rates = self.rates[: self.tstep]
                 self.pressures = self.pressures[: self.tstep]
                 self.tstep -= 1
-                self.solve(sparse, False, True)
+                self.solve(sparse, threading, False, True)
                 if self.verbose:
                     print(f"[info] Time step {self.tstep} was resolved.")
 
@@ -1167,8 +1041,8 @@ class Model(Base):
             self.error = (
                 self.RHS[self.grid.cells_id]
                 * (
-                    self.pressures[self.tstep][self.grid.cells_id]
-                    - self.pressures[self.tstep - 1][self.grid.cells_id]
+                    self.pressures[self.tstep, self.grid.cells_id]
+                    - self.pressures[self.tstep - 1, self.grid.cells_id]
                 )
             ).sum() / self.rates[self.tstep].sum()
             # error from initial timestep to current timestep: (less accurate)
@@ -1176,8 +1050,8 @@ class Model(Base):
                 self.RHS[self.grid.cells_id]
                 * self.dt
                 * (
-                    self.pressures[self.tstep][self.grid.cells_id]
-                    - self.pressures[0][self.grid.cells_id]
+                    self.pressures[self.tstep, self.grid.cells_id]
+                    - self.pressures[0, self.grid.cells_id]
                 )
             ).sum() / (self.dt * self.tstep * self.rates.sum())
             self.error = abs(self.error - 1)
@@ -1311,7 +1185,7 @@ class Model(Base):
         Returns
         -------
         DataFrame
-            simulation data as pandas dataframe.
+            simulation data as a dataframe.
         """
 
         col_dict = {
@@ -1487,25 +1361,47 @@ class Model(Base):
 
 
 if __name__ == "__main__":
-    grid = grids.Cartesian(
-        nx=3,
-        ny=3,
-        nz=1,
-        dx=300,
-        dy=350,
-        dz=40,
-        phi=0.27,
-        kx=5,
-        ky=5,
-        kz=0.1,
-        comp=1 * 10**-6,
-        dtype="double",
-    )
-    fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = Model(grid, fluid, pi=4000, dt=5, start_date="10.10.2018", dtype="double")
-    # grid.show("id", False)
-    model.set_well(id=6, q=-1000, pwf=1000, s=1.5, r=3.5)
-    # # model.set_well(id=18, q=700, s=1.5, r=3.5)
-    model.run(2, True, False, True)
-    model.get_dataframe()
+
+    def create_model_example_7_1():
+        grid = grids.Cartesian(
+            nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
+        )
+        fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
+        model = Model(grid, fluid, dtype="double", verbose=False)
+        model.set_well(id=4, q=-600, s=1.5, r=3.5)
+        model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
+        return model
+
+    def create_model_2d():
+        grid = grids.Cartesian(
+            nx=3,
+            ny=3,
+            nz=1,
+            dx=300,
+            dy=350,
+            dz=40,
+            phi=0.27,
+            kx=5,
+            ky=5,
+            kz=0.1,
+            comp=1 * 10**-6,
+            dtype="double",
+        )
+        fluid = fluids.SinglePhase(
+            mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
+        )
+        model = Model(
+            grid, fluid, pi=4000, dt=5, start_date="10.10.2018", dtype="double"
+        )
+        model.set_well(id=6, q=-1000, pwf=1000, s=1.5, r=3.5)
+        return model
+
+    model = create_model_example_7_1()
+    print(model.get_cells_eq())
+    print(model.init_matrices())
+    model.solve(False, False)
+    print(model.get_cells_eq())
+    print(model.init_matrices())
+    # model.run(2, False, False, True)
+    # model.get_dataframe()
     # model.show("pressures")

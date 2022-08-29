@@ -12,7 +12,7 @@ class TestApp(unittest.TestCase):
             dtype={None: "float64", "Time [Days]": "int32"},
         )
         model = create_model()
-        model.run(nsteps=27, sparse=True)
+        model.run(nsteps=27, sparse=True, threading=True)
         df = model.get_dataframe(
             boundary=False,
             units=True,
