@@ -3,12 +3,6 @@ import warnings
 from functools import lru_cache
 from numpy import ndarray
 import numpy as np
-import pandas as pd
-from functools import wraps
-import cProfile
-import pstats
-import io
-import re
 
 
 def _lru_cache(maxsize=None):
@@ -21,35 +15,6 @@ def _lru_cache(maxsize=None):
         # return wrapped_func
 
     return wrapper_cache
-
-
-def profile(sort_stats="tottime", print_output=True, save_output=False):
-    def decorator(func):
-        @wraps(func)
-        def wrapped_func(*args, **kwargs):
-            pr = cProfile.Profile()
-            s = io.StringIO()
-            pr.enable()
-            _func = func(*args, **kwargs)
-            pr.disable()
-            stats = pstats.Stats(pr, stream=s).sort_stats(sort_stats)
-            stats.print_stats()
-            result = s.getvalue()
-            result = [l.strip() for l in re.split("\n+", result)]
-            result = [re.sub("\s+", ",", r, count=5) for r in result]
-            result = result[2:-1]
-            result = "\n".join(result)
-            data = io.StringIO(result)
-            df = pd.read_csv(data, sep=",")
-            if print_output:
-                print(df)
-            if save_output:
-                df.to_csv(f"profile_{func.__qualname__}.csv")
-            return _func
-
-        return wrapped_func
-
-    return decorator
 
 
 #%%

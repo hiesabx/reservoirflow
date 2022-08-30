@@ -6,7 +6,7 @@ simulation model in combination with a Fluid class and Grid class.
 """
 import time
 from openresim.base import Base
-from openresim import grids, fluids, wells, plots
+from openresim import grids, fluids, wells, plots, profme
 from openresim.utils import _lru_cache
 import numpy as np
 import sympy as sym
@@ -913,18 +913,11 @@ class Model(Base):
         return False
 
     def __update_boundaries(self):
-        for id_b in self.bdict:
-            neighbors = self.grid.get_cell_neighbors(id_b, None, False, "list")
-            if len(neighbors) == 0:
-                continue
-            elif len(neighbors) == 1:
-                T = self.get_cell_T(id_b, None, False)
-                id_n = neighbors[0]
-                p_n = self.pressures[self.tstep, id_n]
-                b_terms = self.__calc_b_terms(id_n, id_b, p_n, T[id_n])
-                self.rates[self.tstep, id_b] = b_terms
-            else:
-                raise ValueError("boundary cell can't have more than one neighbor")
+        for id_b in self.bdict.keys():
+            ((id_n, T),) = self.get_cell_T(id_b, None, False).items()
+            p_n = self.pressures[self.tstep, id_n]
+            b_terms = self.__calc_b_terms(id_n, id_b, p_n, T)
+            self.rates[self.tstep, id_b] = b_terms
 
     def solve(self, sparse=True, threading=False, check_MB=True, update=True):
         """Solve a single simulation tstep.
@@ -1408,11 +1401,17 @@ if __name__ == "__main__":
         return model
 
     model = create_model_example_7_1()
-    print(model.get_cells_eq())
-    print(model.init_matrices())
-    model.solve(False, False)
-    print(model.get_cells_eq())
-    print(model.init_matrices())
-    # model.run(2, False, False, True)
-    # model.get_dataframe()
-    # model.show("pressures")
+
+    @profme.profile()
+    def benchmark():
+        # print(model.get_cells_eq())
+        print(model.init_matrices())
+        # model.solve(False, False)
+        # print(model.get_cells_eq())
+        # print(model.init_matrices())
+
+        # model.run(2, False, False, True)
+        # model.get_dataframe()
+        # model.show("pressures")
+
+    benchmark()
