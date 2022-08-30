@@ -10,6 +10,7 @@ from openresim import grids, fluids, wells, plots
 from openresim.utils import _lru_cache
 import numpy as np
 import sympy as sym
+import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
 import matplotlib.pyplot as plt
@@ -679,25 +680,28 @@ class Model(Base):
 
         if not id in self.cells_terms:
             assert id in self.grid.cells_id, f"id is out of range {self.grid.cells_id}."
-            neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="array")
-            boundaries = self.grid.get_cell_boundaries(id=id, fmt="array")
             terms = {"f_terms": [], "a_term": 0}
             T = self.get_cell_T(id, None, True)
             if self.verbose:
                 print(f"[info] cell id: {id}")
                 print(f"[info]    - Neighbors: {neighbors}")
                 print(f"[info]    - Boundaries: {boundaries}")
+
+            neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="array")
             for id_n in neighbors:
                 n_terms = self.__calc_n_terms(id, id_n, p, T[id_n])
                 terms["f_terms"].append(n_terms)
                 if self.verbose:
                     print(f"[info] Neighbor terms: {n_terms}")
+
+            boundaries = self.grid.get_cell_boundaries(id=id, fmt="array")
             for id_b in boundaries:
                 b_terms = self.__calc_b_terms(id, id_b, p, T[id_b])
                 terms["f_terms"].append(b_terms)
                 if self.verbose:
                     print(f"[info] Boundary terms: {b_terms}")
-            if id in self.wells:
+
+            if id in self.wells.keys():
                 w_terms = self.__calc_w_terms(id, p)
                 terms["f_terms"].append(w_terms)
                 if self.verbose:
@@ -711,7 +715,7 @@ class Model(Base):
 
         else:
             terms = self.cells_terms[id]
-            if id in self.wells and self.wells[id]["constrain"] == "pwf":
+            if id in self.wells.keys() and self.wells[id]["constrain"] == "pwf":
                 w_terms = self.__calc_w_terms(id, p)
                 if self.verbose:
                     print(f"[info] Well terms (updated): {w_terms}")
@@ -739,7 +743,6 @@ class Model(Base):
                 for id, eq in zip(self.grid.cells_id, equations):
                     cells_eq[id] = eq
         else:
-            cells_eq = {}
             for id in self.grid.cells_id:
                 cells_eq[id] = self.get_cell_eq(id)
                 if self.verbose:
@@ -866,7 +869,7 @@ class Model(Base):
         """
         resolve = False
         tstep_w_pressures = {}
-        for id in self.wells:
+        for id in self.wells.keys():
             if "q_sp" in self.wells[id]:
                 pwf_est = self.pressures[self.tstep, id] + (
                     self.wells[id]["q_sp"]
@@ -952,7 +955,15 @@ class Model(Base):
         if sparse:
             pressures = ssl.spsolve(self.A.tocsc(), self.d)
         else:
-            pressures = np.linalg.solve(self.A, self.d).flatten()
+            pressures = sl.solve(
+                self.A,
+                self.d,
+                assume_a="gen",  # "gen" or "sym"
+                overwrite_a=True,
+                overwrite_b=True,
+                check_finite=False,
+            ).flatten()
+            # pressures = np.linalg.solve(self.A, self.d).flatten()
 
         if update:
             self.tstep += 1
@@ -1107,7 +1118,7 @@ class Model(Base):
         else:
             rate_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        cells = [id for id in cells_id if id not in self.wells]
+        cells = [id for id in cells_id if id not in self.wells.keys()]
         labels = [f"q{str(id)}" + rate_str for id in cells]
         array = self.rates[:, cells]
         data = pd.DataFrame(array, columns=labels)
@@ -1129,7 +1140,7 @@ class Model(Base):
             rate_str = f" [{self.units['rate']}]"
         else:
             rate_str = ""
-        labels = [f"Q{str(id)}" + rate_str for id in self.wells]
+        labels = [f"Q{str(id)}" + rate_str for id in self.wells.keys()]
         array = self.rates[:, list(self.wells.keys())]
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
