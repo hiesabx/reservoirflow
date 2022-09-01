@@ -10,7 +10,7 @@ class TestApp(unittest.TestCase):
         np.testing.assert_array_equal(model.T["x"], trans_desired)
 
     def test_pressures(self):
-        pressures_desired = np.array(
+        p_desired = np.array(
             [
                 3989.437537513856,
                 3968.3126125415683,
@@ -18,27 +18,21 @@ class TestApp(unittest.TestCase):
                 3926.0627625969946,
             ]
         )
+
         model = create_model()
-        pressures_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        p_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
+
         model = create_model()
-        pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            pressures_sparse, pressures_not_sparse, decimal=5
-        )
-        np.testing.assert_almost_equal(pressures_sparse, pressures_desired, decimal=5)
+        p_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
+        np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            model.wells[4]["q"], -599.9563191829004, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[4]["r_eq"], 64.53681120105021, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[4]["G"], 11.08453575337366, decimal=5
-        )
+        np.testing.assert_almost_equal(model.wells[4]["q"], -599.95631, decimal=5)
+        np.testing.assert_almost_equal(model.wells[4]["r_eq"], 64.53681, decimal=5)
+        np.testing.assert_almost_equal(model.wells[4]["G"], 11.08453, decimal=5)
         np.testing.assert_almost_equal(model.wells[4]["pwf"], 3899, decimal=5)
 
     def test_rates(self):
@@ -62,4 +56,38 @@ def create_model():
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    model = create_model()
+    sparse = True
+    for step in range(20):
+        print("step:", step)
+        A, d = model.init_matrices(sparse)
+        A_, d_ = model.init_matrices_parallel(sparse)
+        if sparse:
+            A, d = A.toarray(), d.toarray()
+            A_, d_ = A_.toarray(), d_.toarray()
+        print("before solve:")
+        print(
+            np.concatenate(
+                [
+                    A,
+                    A_,
+                    np.subtract(A, A_),
+                ],
+                axis=0,
+            )
+        )
+        print(
+            np.concatenate(
+                [
+                    d,
+                    d_,
+                    np.subtract(d, d_),
+                ],
+                axis=1,
+            )
+        )
+        # print(A)
+        # print(A)
+        model.solve(sparse)
+        print()

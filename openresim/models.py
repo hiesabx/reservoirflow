@@ -352,8 +352,10 @@ class Model(Base):
             if pwf is not None:
                 self.wells[id]["pwf"] = pwf
                 self.wells[id]["pwf_sp"] = pwf
+                if "q" not in self.wells[id].keys():
+                    self.wells[id]["constrain"] = "pwf"
                 self.w_pressures[id].append(self.pressures[self.tstep, id])
-            if "constrain" not in self.wells[id]:
+            if "constrain" not in self.wells[id].keys():
                 self.wells[id]["constrain"] = None
             if r is not None:
                 self.wells[id]["r"] = r
@@ -362,7 +364,7 @@ class Model(Base):
 
         self.wells[id]["r_eq"] = self.__calc_well_r_eq(id)
         self.wells[id]["G"] = self.__calc_well_G(id)
-        if "pwf" not in self.wells[id]:
+        if "pwf" not in self.wells[id].keys():
             self.wells[id]["pwf"] = 0
             self.wells[id]["pwf_sp"] = 0
             self.w_pressures[id].append(self.pressures[self.tstep, id])
@@ -952,29 +954,95 @@ class Model(Base):
             self.d_[:] = (
                 -self.RHS[self.cells_id] * self.pressures[self.tstep, self.cells_id]
             ).reshape(-1, 1)
-            for id in self.wells.keys():
-                if self.wells[id]["constrain"] == "pwf":
-                    p = eval(f"sym.Symbol('p{id}')")
-                    w_term = self.__calc_w_terms(id, p)
-                    v0, v1 = w_term.as_coefficients_dict().values()
-                    if sparse:
-                        self.d_.data[self.cells_i[id]][0] -= v0
-                    else:
-                        self.d_[self.cells_i[id], 0] -= v0
 
-                    if not self.resolve:
-                        if sparse:
-                            self.A_.data[self.cells_i[id]][1] += v1
-                        else:
-                            self.A_[self.cells_i[id], self.cells_i[id]] += v1
-                        self.resolve = True
-
+        for id in self.wells.keys():
+            if self.wells[id]["constrain"] == "pwf":
+                p = eval(f"sym.Symbol('p{id}')")
+                w_term = self.__calc_w_terms(id, p)
+                v = w_term.as_coefficients_dict().values()
+                if len(v) == 1:
+                    ((v0),) = v
+                    v1 = 0
+                elif len(v) == 2:
+                    v0, v1 = v
                 else:
-                    w_term = self.__calc_w_terms(id, self.pressures[self.tstep, id])
+                    raise ValueError("unknown length")
+                # print(v0, v1)
+                if sparse:
+                    if len(self.d_.data[self.cells_i[id]]) > 0:
+                        if self.comp_type == "compressible":
+                            self.d_.data[self.cells_i[id]][0] -= v0
+                        else:
+                            self.d_.data[self.cells_i[id]][0] = -v0
+                    else:
+                        self.d_[self.cells_i[id]] = -v0
+                else:
+                    if self.comp_type == "compressible":
+                        self.d_[self.cells_i[id], 0] -= v0  # wrong
+                    else:
+                        self.d_[self.cells_i[id], 0] = -v0  # wrong
+
+                if not self.resolve:
                     if sparse:
+                        self.A_.data[self.cells_i[id]][1] += v1
+                    else:
+                        self.A_[self.cells_i[id], self.cells_i[id]] += v1
+                    self.resolve = True
+            if self.wells[id]["constrain"] == "q":
+                w_term = self.__calc_w_terms(id, self.pressures[self.tstep, id])
+                if sparse:
+                    if self.comp_type == "compressible":
                         self.d_.data[self.cells_i[id]][0] -= w_term
                     else:
+                        if len(self.d_.data[self.cells_i[id]]) > 0:
+                            self.d_.data[self.cells_i[id]][0] = -w_term
+                        else:
+                            self.d_[self.cells_i[id]] = -w_term
+                else:
+                    if self.comp_type == "compressible":
                         self.d_[self.cells_i[id]] -= w_term
+                    else:
+                        self.d_[self.cells_i[id]] = -w_term
+
+        for id_b in self.bdict.keys():
+            ((id, T),) = self.get_cell_T(id_b, None, False).items()
+            if self.bdict[id_b][0] in ["gradient", "rate"]:
+                v0 = self.rates[self.tstep, id_b]
+                if sparse:
+                    if len(self.d_.data[self.cells_i[id]]) > 0:
+                        self.d_.data[self.cells_i[id]][0] -= v0
+                    else:
+                        self.d_[self.cells_i[id]] -= v0
+                else:
+                    self.d_[self.cells_i[id]][0] -= v0
+
+        if self.tstep == 0:
+            for id_b in self.bdict.keys():
+                ((id, T),) = self.get_cell_T(id_b, None, False).items()
+                # if self.rates[self.tstep, id_b] != 0:
+                #     v0 = self.rates[self.tstep, id_b]
+                #     if sparse:
+                #         if len(self.d_.data[self.cells_i[id]]) > 0:
+                #             self.d_.data[self.cells_i[id]][0] -= v0
+                #         else:
+                #             self.d_[self.cells_i[id]] -= v0
+                #     else:
+                #         self.d_[self.cells_i[id]][0] -= v0
+
+                if id not in self.wells.keys():
+                    p = eval(f"sym.Symbol('p{id}')")
+                    b_term = self.__calc_b_terms(id, id_b, p, T)
+                    if isinstance(b_term, sym.Expr):
+                        v0, v1 = b_term.as_coefficients_dict().values()
+                        if sparse:
+                            if len(self.d_.data[self.cells_i[id]]) > 0:
+                                self.d_.data[self.cells_i[id]][0] = -v0
+                            else:
+                                self.d_[self.cells_i[id]] = -v0
+                            self.A_[self.cells_i[id], self.cells_i[id]] += v1
+                        else:
+                            self.d_[self.cells_i[id]][0] -= v0
+                            self.A_[self.cells_i[id], self.cells_i[id]] += v1
 
         return self.A_, self.d_
 
@@ -1181,8 +1249,8 @@ class Model(Base):
                 A,
                 d,
                 assume_a="gen",  # "gen" or "sym"
-                overwrite_a=True,
-                overwrite_b=True,
+                overwrite_a=False,
+                overwrite_b=False,
                 check_finite=False,
             ).flatten()
             # pressures = np.linalg.solve(self.A, self.d).flatten()
