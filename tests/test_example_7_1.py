@@ -13,9 +13,11 @@ class TestApp(unittest.TestCase):
         pressures_desired = np.array(
             [4000.0, 3989.4367685, 3968.31030549, 3947.18384248, 3926.05737947, np.nan]
         )
+        # sparse:
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
+        # dense:
         model = create_model()
         model.solve(sparse=False, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
@@ -24,23 +26,28 @@ class TestApp(unittest.TestCase):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.wells[4]["q"], -600, decimal=5)
-        np.testing.assert_almost_equal(
-            model.wells[4]["r_eq"], 64.53681120105021, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[4]["G"], 11.08453575337366, decimal=5
-        )
-        np.testing.assert_almost_equal(
-            model.wells[4]["pwf"], 3898.992646527117, decimal=5
-        )
+        np.testing.assert_almost_equal(model.wells[4]["r_eq"], 64.53681, decimal=5)
+        np.testing.assert_almost_equal(model.wells[4]["G"], 11.08453, decimal=5)
+        np.testing.assert_almost_equal(model.wells[4]["pwf"], 3898.99264, decimal=5)
 
     def test_rates(self):
         rates_desired = np.array(
             [600.0000000000169, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
         )
+        # sparse:
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        # dense:
+        model = create_model()
+        model.solve(sparse=False, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+
+    def test_simulation_run(self):
+        model = create_model()
+        model.run(30, False)
+        model = create_model()
+        model.run(30, True)
 
 
 def create_model():
@@ -55,38 +62,4 @@ def create_model():
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    model = create_model()
-    sparse = True
-    for step in range(20):
-        print("step:", step)
-        A, d = model.init_matrices(sparse)
-        A_, d_ = model.init_matrices_parallel(sparse)
-        if sparse:
-            A, d = A.toarray(), d.toarray()
-            A_, d_ = A_.toarray(), d_.toarray()
-        print("before solve:")
-        print(
-            np.concatenate(
-                [
-                    A,
-                    A_,
-                    np.subtract(A, A_),
-                ],
-                axis=0,
-            )
-        )
-        print(
-            np.concatenate(
-                [
-                    d,
-                    d_,
-                    np.subtract(d, d_),
-                ],
-                axis=1,
-            )
-        )
-        # print(A)
-        # print(A)
-        model.solve(sparse)
-        print()
+    unittest.main()

@@ -11,6 +11,20 @@ class TestApp(unittest.TestCase):
             index_col=0,
             dtype={None: "float64", "Time [Days]": "int32"},
         )
+        # dense:
+        model = create_model()
+        model.run(nsteps=27, sparse=False, threading=True)
+        df = model.get_dataframe(
+            boundary=False,
+            units=True,
+            columns=["time", "cells_pressure", "wells"],
+            save=False,
+            drop_nan=True,
+            drop_zero=True,
+        )
+        pd.testing.assert_frame_equal(df, df_desired)
+        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        # sparse:
         model = create_model()
         model.run(nsteps=27, sparse=True, threading=True)
         df = model.get_dataframe(
@@ -60,6 +74,12 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.wells[4]["q"], -400, 5)
         np.testing.assert_almost_equal(model.wells[4]["G"], 20.651804, 5)
 
+    def test_simulation_run(self):
+        model = create_model()
+        model.run(30, sparse=True)
+        model = create_model()
+        model.run(30, sparse=False)
+
 
 def create_model():
     dx = np.array([400, 400, 300, 150, 200, 250, 250])
@@ -86,38 +106,4 @@ def create_model():
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    model = create_model()
-    sparse = True
-    for step in range(20):
-        print("step:", step)
-        A, d = model.init_matrices(sparse)
-        A_, d_ = model.init_matrices_parallel(sparse)
-        if sparse:
-            A, d = A.toarray(), d.toarray()
-            A_, d_ = A_.toarray(), d_.toarray()
-        print("before solve:")
-        print(
-            np.concatenate(
-                [
-                    A,
-                    A_,
-                    np.subtract(A, A_),
-                ],
-                axis=0,
-            )
-        )
-        print(
-            np.concatenate(
-                [
-                    d,
-                    d_,
-                    np.subtract(d, d_),
-                ],
-                axis=1,
-            )
-        )
-        # print(A)
-        # print(A)
-        model.solve(sparse)
-        print()
+    unittest.main()

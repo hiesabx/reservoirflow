@@ -15,22 +15,17 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.fluid.g, gravity_desired, decimal=5)
 
     def test_pressures(self):
+        p_desired = np.array([3978.88469, 3936.65409, 3894.42348, 3852.19288])
+        # sparse:
         model = create_model()
-        pressures_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        model.solve(sparse=True, update=True, check_MB=True)
+        p_sparse = model.pressures[-1, model.cells_id]
+        np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
+        # dense:
         model = create_model()
-        pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        pressures_desired = np.array(
-            [
-                3978.884697751098,
-                3936.654093253294,
-                3894.423488755491,
-                3852.1928842576876,
-            ]
-        )
-        np.testing.assert_almost_equal(
-            pressures_sparse, pressures_not_sparse, decimal=5
-        )
-        np.testing.assert_almost_equal(pressures_sparse, pressures_desired, decimal=5)
+        model.solve(sparse=False, update=True, check_MB=True)
+        p_not_sparse = model.pressures[-1, model.cells_id]
+        np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
@@ -53,6 +48,12 @@ class TestApp(unittest.TestCase):
             [600.0000000000247, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
         )
         np.testing.assert_almost_equal(model.rates[-1], rates_desired, decimal=5)
+
+    def test_simulation_run(self):
+        model = create_model()
+        model.run(30, True)
+        model = create_model()
+        model.run(30, False)
 
 
 def create_model():

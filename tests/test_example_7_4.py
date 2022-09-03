@@ -10,7 +10,7 @@ class TestApp(unittest.TestCase):
         np.testing.assert_array_equal(model.T["x"], trans_desired)
 
     def test_pressures(self):
-        pressures_desired = np.array(
+        p_desired = np.array(
             [
                 3959.4367684962185,
                 3878.3103054886546,
@@ -18,14 +18,16 @@ class TestApp(unittest.TestCase):
                 3716.057379473528,
             ]
         )
+        # sparse:
         model = create_model()
-        pressures_sparse = model.solve(sparse=True, update=True, check_MB=True)
+        model.solve(sparse=True, update=True, check_MB=True)
+        p_sparse = model.pressures[-1, model.cells_id]
+        np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
+        # dense:
         model = create_model()
-        pressures_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(
-            pressures_sparse, pressures_not_sparse, decimal=5
-        )
-        np.testing.assert_almost_equal(pressures_sparse, pressures_desired, decimal=5)
+        model.solve(sparse=False, update=True, check_MB=True)
+        p_not_sparse = model.pressures[-1, model.cells_id]
+        np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
@@ -49,6 +51,12 @@ class TestApp(unittest.TestCase):
         model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
 
+    def test_simulation_run(self):
+        model = create_model()
+        model.run(30, True)
+        model = create_model()
+        model.run(30, False)
+
 
 def create_model():
     grid = grids.Cartesian(
@@ -62,38 +70,4 @@ def create_model():
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    model = create_model()
-    sparse = True
-    for step in range(20):
-        print("step:", step)
-        A, d = model.init_matrices(sparse)
-        A_, d_ = model.init_matrices_parallel(sparse)
-        if sparse:
-            A, d = A.toarray(), d.toarray()
-            A_, d_ = A_.toarray(), d_.toarray()
-        print("before solve:")
-        print(
-            np.concatenate(
-                [
-                    A,
-                    A_,
-                    np.subtract(A, A_),
-                ],
-                axis=0,
-            )
-        )
-        print(
-            np.concatenate(
-                [
-                    d,
-                    d_,
-                    np.subtract(d, d_),
-                ],
-                axis=1,
-            )
-        )
-        # print(A)
-        # print(A)
-        model.solve(sparse)
-        print()
+    unittest.main()

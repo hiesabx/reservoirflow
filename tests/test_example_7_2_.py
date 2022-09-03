@@ -18,12 +18,16 @@ class TestApp(unittest.TestCase):
                 3926.06,
             ]
         )
+        # sparse:
         model = create_model()
-        p_sparse = model.solve(sparse=True, update=True, check_MB=True)
-        model = create_model()
-        p_not_sparse = model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(p_sparse, p_not_sparse, decimal=2)
+        model.solve(sparse=True, update=True, check_MB=True)
+        p_sparse = model.pressures[-1, model.cells_id]
         np.testing.assert_almost_equal(p_sparse, p_desired, decimal=2)
+        # dense:
+        model = create_model()
+        model.solve(sparse=False, update=True, check_MB=True)
+        p_not_sparse = model.pressures[-1, model.cells_id]
+        np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=2)
 
     def test_well(self):
         model = create_model()
@@ -38,6 +42,12 @@ class TestApp(unittest.TestCase):
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=1)
+
+    def test_simulation_run(self):
+        model = create_model()
+        model.run(30, False)
+        model = create_model()
+        model.run(30, True)
 
 
 def create_model():

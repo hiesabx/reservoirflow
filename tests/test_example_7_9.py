@@ -92,6 +92,12 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.wells[4]["G"], 11.084535, decimal=5)
         np.testing.assert_almost_equal(model.wells[4]["pwf"], 3922.034614, decimal=5)
 
+    def test_simulation_run(self):
+        model = create_model()
+        model.run(30, True)
+        model = create_model()
+        model.run(30, False)
+
 
 def create_model():
     grid = grids.Cartesian(
@@ -114,4 +120,36 @@ def create_model():
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    model = create_model()
+    sparse = False
+    for step in range(10):
+        print("step:", step)
+        A, d = model.init_matrices(sparse)
+        A_, d_ = model.__get_matrices_vectorized(sparse)
+        if sparse:
+            A, d = A.toarray(), d.toarray()
+            A_, d_ = A_.toarray(), d_.toarray()
+        print("before solve:")
+        print(
+            np.concatenate(
+                [
+                    A,
+                    A_,
+                    np.subtract(A, A_),
+                ],
+                axis=0,
+            )
+        )
+        print(
+            np.concatenate(
+                [
+                    d,
+                    d_,
+                    np.subtract(d, d_),
+                ],
+                axis=1,
+            )
+        )
+        model.solve(sparse)
+        print()
