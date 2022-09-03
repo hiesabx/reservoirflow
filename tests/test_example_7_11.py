@@ -75,6 +75,7 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.wells[4]["G"], 20.651804, 5)
 
     def test_simulation_run(self):
+        # with self.assertWarns(Warning):
         model = create_model()
         model.run(30, sparse=True)
         model = create_model()

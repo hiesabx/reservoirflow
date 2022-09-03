@@ -10,17 +10,17 @@ class TestApp(unittest.TestCase):
         np.testing.assert_array_equal(model.T["x"], trans_desired)
 
     def test_pressures(self):
-        pressures_desired = np.array(
-            [4000.0, 3989.4367685, 3968.31030549, 3947.18384248, 3926.05737947, np.nan]
+        p_desired = np.array(
+            [4000.0, 3989.43676, 3968.310305, 3947.18384, 3926.05737, np.nan]
         )
         # sparse:
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
+        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
         # dense:
         model = create_model()
         model.solve(sparse=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], pressures_desired, decimal=5)
+        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()

@@ -12,22 +12,22 @@ class TestApp(unittest.TestCase):
     def test_pressures(self):
         p_desired = np.array(
             [
-                3989.437537513856,
-                3968.3126125415683,
-                3947.1876875692815,
-                3926.0627625969946,
+                4000.0,
+                3989.43753,
+                3968.31261,
+                3947.18768,
+                3926.06276,
+                np.nan,
             ]
         )
         # sparse:
         model = create_model()
         model.solve(sparse=True, update=True, check_MB=True)
-        p_sparse = model.pressures[-1, model.cells_id]
-        np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
+        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
         # dense:
         model = create_model()
         model.solve(sparse=False, update=True, check_MB=True)
-        p_not_sparse = model.pressures[-1, model.cells_id]
-        np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=5)
+        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
 
     def test_well(self):
         model = create_model()
@@ -66,6 +66,22 @@ def create_model():
     model.set_well(id=4, pwf=3899, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model
+
+
+def print_matrices():
+    sparse = True
+    model = create_model()
+    for s in range(20):
+        A, d = model.init_matrices(sparse)
+        A_, d_ = model.get_matrices_vectorized(sparse)
+        if sparse:
+            A, d = model.A2.toarray(), model.d2.toarray()
+            A_, d_ = model.A_.toarray(), model.d_.toarray()
+        print("step:", s)
+        print(np.concatenate([A, A_, A - A_], axis=0))
+        print(np.concatenate([d, d_, d - d_], axis=1))
+        model.solve()
+        print()
 
 
 if __name__ == "__main__":

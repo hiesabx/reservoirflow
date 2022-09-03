@@ -780,8 +780,8 @@ class Model(Base):
         """
         cell_lhs, cell_rhs = self.cells_eq[id]
         ids = [self.cells_i[int(str(s)[1:])] for s in cell_lhs.keys()]
-        self.d[self.cells_i[id]] = cell_rhs
-        self.A[self.cells_i[id], ids] = list(cell_lhs.values())
+        self.d2[self.cells_i[id]] = cell_rhs
+        self.A2[self.cells_i[id], ids] = list(cell_lhs.values())
         if self.verbose:
             print(f"[info] cell id: {id}")
             print(f"[info]      - ids: {ids}")
@@ -815,11 +815,11 @@ class Model(Base):
             n = self.grid.get_n(False)
             self.cells_i = dict(zip(self.cells_id, range(n)))
             if sparse:
-                self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
-                self.A = ss.lil_matrix((n, n), dtype=self.dtype)
+                self.d2 = ss.lil_matrix((n, 1), dtype=self.dtype)
+                self.A2 = ss.lil_matrix((n, n), dtype=self.dtype)
             else:
-                self.d = np.zeros((n, 1), dtype=self.dtype)
-                self.A = np.zeros((n, n), dtype=self.dtype)
+                self.d2 = np.zeros((n, 1), dtype=self.dtype)
+                self.A2 = np.zeros((n, n), dtype=self.dtype)
 
         if threading:
             n_threads = self.grid.get_n(False)
@@ -831,10 +831,10 @@ class Model(Base):
                 self.__update_matrices(id)
 
         if self.verbose:
-            print("[info] - A:\n", self.A)
-            print("[info] - d:\n", self.d)
+            print("[info] - A:\n", self.A2)
+            print("[info] - d:\n", self.d2)
 
-        return self.A, self.d
+        return self.A2, self.d2
 
     # -------------------------------------------------------------------------
     # Matrices: vectorized
@@ -895,7 +895,7 @@ class Model(Base):
                 if len(wells_i) > 0:
                     self.d_[wells_i] += v[wells_i]
 
-    def __get_matrices_vectorized(self, sparse=False, threading=False):
+    def get_matrices_vectorized(self, sparse=False, threading=False):
         """_summary_
 
         Parameters
@@ -1001,7 +1001,10 @@ class Model(Base):
         for id in self.wells.keys():
             if self.wells[id]["constrain"] == "q":
                 w_term = self.__calc_w_terms(id, self.pressures[self.tstep, id])
-                self.d_[self.cells_i[id], 0] -= w_term
+                if self.comp_type == "compressible":
+                    self.d_[self.cells_i[id], 0] -= w_term
+                else:
+                    self.d_[self.cells_i[id], 0] = -w_term
                 update_z = True
             elif self.wells[id]["constrain"] == "pwf":
                 p = eval(f"sym.Symbol('p{id}')")
@@ -1014,7 +1017,10 @@ class Model(Base):
                     v0, v1 = v
                 else:
                     raise ValueError("unknown length")
-                self.d_[self.cells_i[id], 0] -= v0
+                if self.comp_type == "compressible":
+                    self.d_[self.cells_i[id], 0] -= v0
+                else:
+                    self.d_[self.cells_i[id], 0] = -v0
                 if not self.resolve[id]:
                     self.A_[self.cells_i[id], self.cells_i[id]] += v1
                     self.resolve[id] = True
@@ -1032,91 +1038,25 @@ class Model(Base):
 
         return self.A_, self.d_
 
-    def get_matrix(self, sparse=True, verbose=False):
-        """Create coefficient matrix (A) and result vector (d)."""
-        if self.grid.D == 1:
-
-            # Construct d vector:
-            if all(self.RHS == 0):
-                self.d = ss.lil_matrix((self.grid.nx, 1), dtype=self.dtype)
-            else:
-                try:
-                    self.d = ss.lil_matrix(
-                        (-self.RHS[1:-1] * self.pressures[self.tstep][1:-1]).reshape(
-                            -1, 1
-                        )
-                    )
-                except:
-                    raise Exception("Initial pressure (pi) must be specified")
-            if not sparse:
-                self.d = self.d.toarray()  # ss.lil_matrix(self.d, dtype=self.dtype)
-
-            # Construct A matrix:
-            if self.tstep == 0:
-                self.A = ss.diags(
-                    [
-                        -self.T[1:] - self.T[:-1] - self.RHS[1:-1],
-                        self.T[1:-1],  # East trans for interior blocks
-                        self.T[1:-1],
-                    ],  # West trans for interior blocks
-                    [0, 1, -1],
-                    shape=(self.grid.nx, self.grid.nx),
-                    format="lil",  # “dia”, “csr”, “csc”, “lil”
-                    dtype=self.dtype,
-                )
-                self.A[0, 0] = -self.T[1] - self.RHS[1]
-                self.A[-1, -1] = -self.T[-2] - self.RHS[-1]
-                if not sparse:
-                    self.A = self.A.toarray()
-
-            # Update matrix if there is pressure or flow in 'west' boundary:
-            if (
-                not np.isnan(self.pressures[self.tstep][0])
-                or self.rates[self.tstep][0] != 0
-            ):
-                self.__update_matrix(1, sparse, verbose)
-
-            # Update matrix if there is pressure or flow in 'east' boundary:
-            if (
-                not np.isnan(self.pressures[self.tstep][-1])
-                or self.rates[self.tstep][-1] != 0
-            ):
-                # at last grid: self.grid.nx or -2
-                self.__update_matrix(self.grid.nx, sparse, verbose)
-
-            # Update matrix in wells i_blocks:
-            for i in self.wells.keys():
-                self.__update_matrix(i, sparse, verbose)
-
-            if verbose:
-                if sparse:
-                    print("- A:\n", self.A.toarray())
-                    print("- d:\n", self.d.toarray())
-                else:
-                    print("- A:\n", self.A)
-                    print("- d:\n", self.d)
-
-            return self.A, self.d
-
     def get_d(self, sparse=False):
         if self.comp_type == "incompressible":
             n = self.grid.get_n(False)
-            self.d = ss.lil_matrix((n, 1), dtype=self.dtype)
+            self.d2 = ss.lil_matrix((n, 1), dtype=self.dtype)
         else:
             pressures = self.pressures[self.tstep][self.grid.cells_id]
             RHS = self.RHS[self.grid.cells_id]
             try:
-                self.d = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
+                self.d2 = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
         if not sparse:
-            self.d = self.d.toarray()
+            self.d2 = self.d2.toarray()
 
         if self.verbose:
-            print("[info] - d:\n", self.d)
+            print("[info] - d:\n", self.d2)
 
-        return self.d
+        return self.d2
 
     # -------------------------------------------------------------------------
     # Numerical Solution:
@@ -1201,13 +1141,26 @@ class Model(Base):
             b_terms = self.__calc_b_terms(id_n, id_b, p_n, T)
             self.rates[self.tstep, id_b] = b_terms
 
+    def __print_arrays(self, sparse):
+        if sparse:
+            A, d = self.A2.toarray(), self.d2.toarray()
+            A_, d_ = self.A_.toarray(), self.d_.toarray()
+        else:
+            A, d = self.A2, self.d2
+            A_, d_ = self.A_, self.d_
+        print("step:", self.tstep)
+        print(np.concatenate([A, A_, A - A_], axis=0))
+        print(np.concatenate([d, d_, d - d_], axis=1))
+        print()
+
     def solve(
         self,
         sparse=True,
         threading=False,
-        # vectorize=True,
+        vectorize=True,
         check_MB=True,
         update=True,
+        print_arrays=False,
     ):
         """Solve a single simulation tstep.
 
@@ -1232,19 +1185,22 @@ class Model(Base):
         - another not sparse solutions:
             pressures = np.dot(np.linalg.inv(self.A), self.d)
         """
-        # if vectorize:
-        #     A, d = self.__get_matrices_vectorized(sparse, threading)
-        # else:
-        #     A, d = self.init_matrices(sparse, threading)
-        A, d = self.__get_matrices_vectorized(sparse, threading)
-        # A, d = self.init_matrices(sparse, threading)
+        if print_arrays:
+            self.init_matrices(sparse, threading)  #  has to be first
+            self.get_matrices_vectorized(sparse, threading)
+            self.__print_arrays(sparse)
+        else:
+            if vectorize:
+                self.get_matrices_vectorized(sparse, threading)
+            else:
+                self.init_matrices(sparse, threading)
 
         if sparse:
-            pressures = ssl.spsolve(A.tocsc(), d)
+            pressures = ssl.spsolve(self.A_.tocsc(), self.d_)
         else:
             pressures = sl.solve(
-                A,
-                d,
+                self.A_,
+                self.d_,
                 assume_a="gen",  # "gen" or "sym"
                 check_finite=False,
             ).flatten()
@@ -1261,7 +1217,7 @@ class Model(Base):
                 self.rates = self.rates[: self.tstep]
                 self.pressures = self.pressures[: self.tstep]
                 self.tstep -= 1
-                self.solve(sparse, threading, False, True)
+                self.solve(sparse, threading, vectorize, False, True, False)
                 if self.verbose:
                     print(f"[info] Time step {self.tstep} was resolved.")
 
@@ -1279,8 +1235,9 @@ class Model(Base):
         nsteps=10,
         sparse=True,
         threading=True,
-        # vectorize=True,
+        vectorize=True,
         check_MB=True,
+        print_arrays=False,
     ):
         """Perform a simulation run for nsteps.
 
@@ -1314,9 +1271,10 @@ class Model(Base):
             self.solve(
                 sparse,
                 threading,
-                # vectorize,
+                vectorize,
                 check_MB,
                 True,
+                print_arrays,
             )
 
         self.run_ctime = round(time.time() - start_time, 2)
