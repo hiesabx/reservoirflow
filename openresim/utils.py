@@ -204,3 +204,8 @@ def shape_error(in_shape, fshape):
         + f"required shape: {fshape}"
     )
     raise ValueError(msg)
+
+
+def remove_diag(arr):
+    # reference: https://stackoverflow.com/a/63531391/11549398
+    return arr[~np.eye(len(arr), dtype=bool)].reshape(len(arr), -1)

@@ -6,7 +6,7 @@ simulation model in combination with a Fluid class and Grid class.
 """
 import time
 from openresim.base import Base
-from openresim import grids, fluids, wells, plots, profme
+from openresim import grids, fluids, wells, plots, profme, utils
 from openresim.utils import _lru_cache
 import numpy as np
 import sympy as sym
@@ -134,6 +134,12 @@ class Model(Base):
         if well is not None:
             self.set_well(well)
 
+        self.n = self.grid.get_n(False)
+        self.cells_i = self.grid.get_cells_i(False)
+        self.cells_id = self.grid.get_cells_id(False, False, "list")
+        self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
+        self.boundaries_id = self.grid.get_boundaries("id", "array")
+
         if self.verbose:
             print("[info] the model was initialized.")
 
@@ -215,6 +221,16 @@ class Model(Base):
             cell_T[id_n] = cell_G[id_n] / (self.fluid.mu * self.fluid.B)
 
         return cell_T
+
+    def get_cells_T_array(self, boundary=True):
+        n = self.grid.get_n(True)
+        T_array = ss.lil_matrix((n, n), dtype=self.dtype)
+
+        for id in self.grid.cells_id:
+            T = self.get_cell_T(id, None, False)
+            for id_n in T.keys():
+                T_array[id, id_n] = T[id_n]
+        return T_array
 
     # -------------------------------------------------------------------------
     # Wells:
@@ -741,7 +757,7 @@ class Model(Base):
     def get_cells_eq(self, threading=False):
         """Return flow equations for all internal cells."""
         cells_eq = {}
-        n_threads = self.grid.get_n(False) // 2
+        n_threads = self.n // 2
         if threading:
             with ThreadPoolExecutor(n_threads) as executor:
                 # with ProcessPoolExecutor(2) as executor:
@@ -779,9 +795,9 @@ class Model(Base):
             ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
         """
         cell_lhs, cell_rhs = self.cells_eq[id]
-        ids = [self.cells_i[int(str(s)[1:])] for s in cell_lhs.keys()]
-        self.d2[self.cells_i[id]] = cell_rhs
-        self.A2[self.cells_i[id], ids] = list(cell_lhs.values())
+        ids = [self.cells_i_dict[int(str(s)[1:])] for s in cell_lhs.keys()]
+        self.d[self.cells_i_dict[id]] = cell_rhs
+        self.A[self.cells_i_dict[id], ids] = list(cell_lhs.values())
         if self.verbose:
             print(f"[info] cell id: {id}")
             print(f"[info]      - ids: {ids}")
@@ -811,19 +827,15 @@ class Model(Base):
         self.cells_eq = self.get_cells_eq(threading)
 
         if self.tstep == 0:
-            self.cells_id = self.grid.get_cells_id(False, False, "list")
-            n = self.grid.get_n(False)
-            self.cells_i = dict(zip(self.cells_id, range(n)))
             if sparse:
-                self.d2 = ss.lil_matrix((n, 1), dtype=self.dtype)
-                self.A2 = ss.lil_matrix((n, n), dtype=self.dtype)
+                self.d = ss.lil_matrix((self.n, 1), dtype=self.dtype)
+                self.A = ss.lil_matrix((self.n, self.n), dtype=self.dtype)
             else:
-                self.d2 = np.zeros((n, 1), dtype=self.dtype)
-                self.A2 = np.zeros((n, n), dtype=self.dtype)
+                self.d = np.zeros((self.n, 1), dtype=self.dtype)
+                self.A = np.zeros((self.n, self.n), dtype=self.dtype)
 
         if threading:
-            n_threads = self.grid.get_n(False)
-            with ThreadPoolExecutor(n_threads) as executor:
+            with ThreadPoolExecutor(self.n) as executor:
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices, self.cells_id)
         else:
@@ -831,45 +843,66 @@ class Model(Base):
                 self.__update_matrices(id)
 
         if self.verbose:
-            print("[info] - A:\n", self.A2)
-            print("[info] - d:\n", self.d2)
+            print("[info] - A:\n", self.A)
+            print("[info] - d:\n", self.d)
 
-        return self.A2, self.d2
+        return self.A, self.d
 
     # -------------------------------------------------------------------------
     # Matrices: vectorized
     # -------------------------------------------------------------------------
-    def __init_A(self, sparse):
-        self.A_ = ss.diags(
-            [
-                self.T["x"][1:-1],  # East trans
-                -self.T["x"][1:] - self.T["x"][:-1] - self.RHS[1:-1],
-                self.T["x"][1:-1],  # West trans
-            ],
-            [1, 0, -1],
-            shape=(self.n, self.n),
-            format="lil",  # “dia”, “csr”, “csc”, “lil”
-            dtype=self.dtype,
+
+    def init_A(self, sparse=False):
+        """Initialize A matrix.
+
+        A matrix initialization is needed on in timestep zero.
+
+        Parameters
+        ----------
+        sparse : bool, optional, by default False
+            _description_
+
+        Returns
+        -------
+        None
+            matrix A is initialized in place and can be accessed by
+            self.A_.
+        """
+        T = self.get_cells_T_array().toarray()
+        self.A_ = T[:, self.cells_id][self.cells_id]
+        self.A_[self.cells_i, self.cells_i] = (
+            -self.A_[self.cells_i, :].sum(axis=1) - self.RHS[self.cells_id]
         )
-        self.A_[0, 0] = -self.T["x"][1] - self.RHS[1]
-        self.A_[-1, -1] = -self.T["x"][-2] - self.RHS[-1]
-        if not sparse:
-            self.A_ = self.A_.toarray()
+        if sparse:
+            self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
 
     def __init_d(self, sparse):
-        if sparse:
-            self.d_ = ss.lil_matrix((self.n, 1), dtype=self.dtype)
-        else:
-            self.d_ = np.zeros((self.n, 1), dtype=self.dtype)
+        """Initialize d vector.
 
-    def __update_d_if_comp(self):
-        """Update d matrix (only if compressible system)
+        d vector initialization is needed in every timestep especially
+        if the system if compressible (i.g. changes in pressure affect
+        vector d values).
 
+        Parameters
+        ----------
+        sparse : bool, optional, by default False
+            _description_
+
+        Returns
+        -------
+        None
+            vector d is initialized in place and can be accessed by
+            self.d_.
         Raises
         ------
         Exception
             in case the initial reservoir pressure was not defined.
         """
+        if sparse:
+            self.d_ = ss.lil_matrix((self.n, 1), dtype=self.dtype)
+        else:
+            self.d_ = np.zeros((self.n, 1), dtype=self.dtype)
+
         if self.comp_type == "compressible":
             try:
                 self.d_[:] = (
@@ -880,6 +913,7 @@ class Model(Base):
                 raise Exception("Initial pressure (pi) must be specified")
 
     def __update_z(self):
+        # all 1D in x direction.
         z = self.grid.z[self.grid.cells_id]
         if not np.all(z == z[0]):
             z_l = np.append(z[1:], np.nan)
@@ -888,12 +922,7 @@ class Model(Base):
             dz_u = self.fluid.g * np.nan_to_num(z_u - z)
             T = self.T["x"][self.grid.cells_id]
             v = T * dz_l + T * dz_u
-            if self.tstep == 0:
-                self.d_ += v.reshape(-1, 1)
-            else:
-                wells_i = [self.cells_i[id] for id in self.wells.keys()]
-                if len(wells_i) > 0:
-                    self.d_[wells_i] += v[wells_i]
+            self.d_ += v.reshape(-1, 1)
 
     def get_matrices_vectorized(self, sparse=False, threading=False):
         """_summary_
@@ -909,102 +938,30 @@ class Model(Base):
         -------
         _type_
             _description_
-
-        Backup
-        ------
-            for id_b in self.bdict.keys():
-                ((id, T),) = self.get_cell_T(id_b, None, False).items()
-                if sparse:
-                    self.d_.data[self.cells_i[id]] = [0]
-                if id not in self.wells.keys():
-                    p = eval(f"sym.Symbol('p{id}')")
-                    b_term = self.__calc_b_terms(id, id_b, p, T)
-                    if isinstance(b_term, sym.Expr):
-                        v0, v1 = b_term.as_coefficients_dict().values()
-                        print(self.d_.data, v0)
-                        if sparse:
-                            self.d_.data[self.cells_i[id]][0] = -v0
-                            self.A_.data[self.cells_i[id]][1] += v1
-                        else:
-                            self.d_[self.cells_i[id]][0] -= v0
-                            self.A_[self.cells_i[id], self.cells_i[id]] += v1
-                        print(self.d_.data, v0)
-                    # else:
-                    #     if sparse:
-                    #         self.d_.data[self.cells_i[id]][0] = self.rates[self.tstep, id_b]
-                    #     else:
-                    #         self.d_[self.cells_i[id]][0] = self.rates[self.tstep, id_b]
-
-        if self.comp_type == "compressible":
-            self.d_[:] = (
-                -self.RHS[self.cells_id] * self.pressures[self.tstep, self.cells_id]
-            ).reshape(-1, 1)
-
-        for id in self.wells.keys():
-            print(id)
-            if self.wells[id]["constrain"] == "pwf":
-                p = eval(f"sym.Symbol('p{id}')")
-                w_term = self.__calc_w_terms(id, p)
-                print(w_term)
-                if isinstance(w_term, sym.Expr):
-                    v = w_term.as_coefficients_dict().values()
-                    if len(v) == 1:
-                        ((v0),) = v
-                        v1 = 0
-                    elif len(v) == 2:
-                        v0, v1 = v
-                    else:
-                        raise ValueError("unknown length")
-                    print(self.d_.data, v0)
-                    if sparse:
-                        self.d_.data[self.cells_i[id]][0] -= v0
-                    else:
-                        self.d_[self.cells_i[id], 0] -= v0
-                    print(self.d_.data, v0)
-
-                    if not self.resolve:
-                        if sparse:
-                            self.A_.data[self.cells_i[id]][1] += v1
-                        else:
-                            self.A_[self.cells_i[id], self.cells_i[id]] += v1
-                        self.resolve = True
-
-            else:
-                if self.tstep == 0:
-                    w_term = self.__calc_w_terms(id, self.pressures[self.tstep, id])
-                    if sparse:
-                        # self.d_.data[self.cells_i[id]][0] -= w_term
-                        self.d_.data[self.cells_i[id]] = [-w_term]
-                    else:
-                        self.d_[self.cells_i[id]] -= w_term
         """
         update_z = False
         if self.tstep == 0:
             self.resolve = defaultdict(lambda: False)
-            self.cells_id = self.grid.get_cells_id(False, False, "list")
-            self.n = self.grid.get_n(False)
-            self.cells_i = dict(zip(self.cells_id, range(self.n)))
-            self.__init_A(sparse)
-            self.__init_d(sparse)
-            for id_b in self.bdict.keys():
+            self.init_A(sparse)
+            bdict_keys = [
+                id_b for id_b in self.bdict.keys() if self.bdict[id_b][0] == "pressure"
+            ]
+            self.bdict_v = {}
+            for id_b in bdict_keys:
                 ((id, T),) = self.get_cell_T(id_b, None, False).items()
-                if id not in self.wells.keys():
-                    p = eval(f"sym.Symbol('p{id}')")
-                    b_term = self.__calc_b_terms(id, id_b, p, T)
-                    if isinstance(b_term, sym.Expr):
-                        v0, v1 = b_term.as_coefficients_dict().values()
-                        self.d_[self.cells_i[id], 0] -= v0
-                        self.A_[self.cells_i[id], self.cells_i[id]] += v1
+                p = eval(f"sym.Symbol('p{id}')")
+                b_term = self.__calc_b_terms(id, id_b, p, T)
+                v0, v1 = b_term.as_coefficients_dict().values()
+                self.bdict_v[id_b] = (v0, v1, id)
+                self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] += v1
+                # self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] -= T * 2
 
-        self.__update_d_if_comp()
+        self.__init_d(sparse)
 
         for id in self.wells.keys():
             if self.wells[id]["constrain"] == "q":
                 w_term = self.__calc_w_terms(id, self.pressures[self.tstep, id])
-                if self.comp_type == "compressible":
-                    self.d_[self.cells_i[id], 0] -= w_term
-                else:
-                    self.d_[self.cells_i[id], 0] = -w_term
+                self.d_[self.cells_i_dict[id], 0] -= w_term
                 update_z = True
             elif self.wells[id]["constrain"] == "pwf":
                 p = eval(f"sym.Symbol('p{id}')")
@@ -1017,21 +974,19 @@ class Model(Base):
                     v0, v1 = v
                 else:
                     raise ValueError("unknown length")
-                if self.comp_type == "compressible":
-                    self.d_[self.cells_i[id], 0] -= v0
-                else:
-                    self.d_[self.cells_i[id], 0] = -v0
+                self.d_[self.cells_i_dict[id], 0] -= v0
                 if not self.resolve[id]:
-                    self.A_[self.cells_i[id], self.cells_i[id]] += v1
+                    self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] += v1
                     self.resolve[id] = True
             else:
                 pass  # no constrain
 
         for id_b in self.bdict.keys():
             id = self.grid.get_cell_neighbors(id_b, None, False, "list")[0]
-            if self.bdict[id_b][0] in ["gradient", "rate"]:
-                v0 = self.rates[self.tstep, id_b]
-                self.d_[self.cells_i[id], 0] -= v0
+            if self.bdict[id_b][0] == "pressure":
+                self.d_[self.cells_i_dict[id], 0] -= self.bdict_v[id_b][0]
+            else:  # elif self.bdict[id_b][0] in ["gradient", "rate"]:
+                self.d_[self.cells_i_dict[id], 0] -= self.rates[self.tstep, id_b]
 
         if update_z:
             self.__update_z()
@@ -1040,23 +995,22 @@ class Model(Base):
 
     def get_d(self, sparse=False):
         if self.comp_type == "incompressible":
-            n = self.grid.get_n(False)
-            self.d2 = ss.lil_matrix((n, 1), dtype=self.dtype)
+            self.d = ss.lil_matrix((self.n, 1), dtype=self.dtype)
         else:
             pressures = self.pressures[self.tstep][self.grid.cells_id]
             RHS = self.RHS[self.grid.cells_id]
             try:
-                self.d2 = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
+                self.d = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
         if not sparse:
-            self.d2 = self.d2.toarray()
+            self.d = self.d.toarray()
 
         if self.verbose:
-            print("[info] - d:\n", self.d2)
+            print("[info] - d:\n", self.d)
 
-        return self.d2
+        return self.d
 
     # -------------------------------------------------------------------------
     # Numerical Solution:
@@ -1143,10 +1097,10 @@ class Model(Base):
 
     def __print_arrays(self, sparse):
         if sparse:
-            A, d = self.A2.toarray(), self.d2.toarray()
+            A, d = self.A.toarray(), self.d.toarray()
             A_, d_ = self.A_.toarray(), self.d_.toarray()
         else:
-            A, d = self.A2, self.d2
+            A, d = self.A, self.d
             A_, d_ = self.A_, self.d_
         print("step:", self.tstep)
         print(np.concatenate([A, A_, A - A_], axis=0))
@@ -1641,8 +1595,8 @@ if __name__ == "__main__":
 
     def create_model_2d():
         grid = grids.Cartesian(
-            nx=5,
-            ny=5,
+            nx=10,
+            ny=10,
             nz=3,
             dx=300,
             dy=350,
@@ -1660,17 +1614,21 @@ if __name__ == "__main__":
         model = Model(
             grid, fluid, pi=6000, dt=5, start_date="10.10.2018", dtype="double"
         )
-        model.set_well(id=122, q=-2000, s=1.5, r=3.5)
-        model.set_well(id=106, q=200, s=1.5, r=3.5)
-        model.set_well(id=110, q=200, s=1.5, r=3.5)
-        model.set_well(id=134, q=200, s=1.5, r=3.5)
-        model.set_well(id=138, q=200, s=1.5, r=3.5)
+
+        cells_id = model.grid.get_cells_id(False, True)[-1].flatten()
+        wells = np.random.choice(cells_id, 6, False)
+        for id in wells:
+            model.set_well(id=id, q=-300, pwf=100, s=1.5, r=3.5)
+
+        wells = np.random.choice(cells_id, 6, False)
+        for id in wells:
+            model.set_well(id=id, q=100, s=0, r=3.5)
+
         return model
 
     model = create_model_2d()
-    model.grid.show("id", False)
-    # model.run(30)
-    # model.show("pressures")
+    model.run(20)
+    model.show("pressures")
 
     @profme.profile()
     def benchmark():

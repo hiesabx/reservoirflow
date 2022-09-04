@@ -244,6 +244,7 @@ class Cartesian(Grid):
 
         return self.shape
 
+    @_lru_cache(maxsize=2)
     def get_n(self, boundary=True):
         """Returns the total number of grid cells as int.
 
@@ -512,6 +513,29 @@ class Cartesian(Grid):
     # -------------------------------------------------------------------------
     # Cells id and coordinates:
     # -------------------------------------------------------------------------
+
+    @_lru_cache(maxsize=2)
+    def get_cells_i(self, boundary=True):
+        """Returns range based on the number of cells.
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+
+        Returns
+        -------
+        int
+            total number of cells.
+        """
+        n = self.get_n(boundary)
+        self.cells_i = np.arange(n)
+
+        if self.verbose:
+            s = utils.get_boundary_str(boundary)
+            print(f"[info] cells_i {s} for {self.n} was computed.")
+
+        return self.cells_i
 
     @_lru_cache(maxsize=None)
     def get_cell_id(self, coords=[], boundary=True):
@@ -2793,6 +2817,8 @@ class Cartesian(Grid):
                 labels = self.get_cells_icoords(boundary, False, "tuple")
             elif label == "id":
                 labels = self.get_cells_id(boundary, False, "tuple")
+            elif label == "i":
+                labels = self.get_cells_i(boundary)
             elif label == "dx":
                 labels = self.get_cells_dx(boundary, False)
             elif label == "dy":
@@ -2903,11 +2929,11 @@ if __name__ == "__main__":
         unify=False,
     )
 
-    grid.show("id", True)
-    cells_id = grid.get_cells_id(False, False, "array")
-    Ay = grid.get_cells_Ay(False, False)
-    Ay_b = grid.get_cells_Ay(True, False)
-    print(Ay_b)
+    grid.show("i", True)
+    # cells_id = grid.get_cells_id(False, False, "array")
+    # Ay = grid.get_cells_Ay(False, False)
+    # Ay_b = grid.get_cells_Ay(True, False)
+    # print(Ay_b)
 
-    print(Ay)
-    print(Ay_b[cells_id])
+    # print(Ay)
+    # print(Ay_b[cells_id])

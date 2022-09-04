@@ -75,7 +75,7 @@ def print_matrices():
         A, d = model.init_matrices(sparse)
         A_, d_ = model.get_matrices_vectorized(sparse)
         if sparse:
-            A, d = model.A2.toarray(), model.d2.toarray()
+            A, d = model.A.toarray(), model.d.toarray()
             A_, d_ = model.A_.toarray(), model.d_.toarray()
         print("step:", s)
         print(np.concatenate([A, A_, A - A_], axis=0))
