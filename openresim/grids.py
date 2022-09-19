@@ -2620,32 +2620,188 @@ class Cartesian(Grid):
         ndarray
             array of G based on dir argument.
         """
-        k = self.get_cells_k(dir, boundary, False, "array")
-        A = self.get_cells_A(dir, boundary, False)
-        d = self.get_cells_d(dir, boundary, False)
+        if dir in ["x", "y", "z"]:
+            k = self.get_cells_k(dir, boundary, False, "array")
+            A = self.get_cells_A(dir, boundary, False)
+            d = self.get_cells_d(dir, boundary, False)
 
-        if self.is_homogeneous:
-            G = (
-                self.factors["transmissibility conversion"]
-                * self.__calc_G_homo_mean(k, boundary)
-                * self.__calc_G_homo_mean(A, boundary)
-                / self.__calc_G_homo_mean(d, boundary)
-            )
-        else:
-            G = (
-                2
-                * self.factors["transmissibility conversion"]
-                / self.__calc_G_hetro_denom(d, A, k, boundary)
-            )
+            if self.is_homogeneous:
+                G = (
+                    self.factors["transmissibility conversion"]
+                    * self.__calc_G_homo_mean(k, boundary)
+                    * self.__calc_G_homo_mean(A, boundary)
+                    / self.__calc_G_homo_mean(d, boundary)
+                )
+            else:
+                G = (
+                    2
+                    * self.factors["transmissibility conversion"]
+                    / self.__calc_G_hetro_denom(d, A, k, boundary)
+                )
 
-        if fshape:
-            shape = self.get_fshape(boundary, False)
-            shape = [n - 1 if n > 1 else n for n in shape]
-            G = G.reshape(shape)
+            if fshape:
+                shape = self.get_fshape(boundary, False)
+                shape = [n - 1 if n > 1 else n for n in shape]
+                G = G.reshape(shape)
+
+        elif dir in [None, "all", "-", ""]:
+            G = {}
+            for d in self.get_fdir():
+                G[d] = self.get_cells_G(d, boundary, fshape)
 
         return G
 
-    def get_cells_Gx(self, fshape=False):
+    def get_cells_G_vectorized(self, sparse=True):
+
+        n = self.get_n(False)
+
+        fdir = self.get_fdir()
+
+        if self.D >= 1:
+
+            if self.D == 1:
+                dir = fdir
+            else:
+                dir = fdir[0]
+
+            k = self.get_cells_k(dir, False, False, "array")
+            A = self.get_cells_A(dir, False, False)
+            d = self.get_cells_d(dir, False, False)
+
+            if self.is_homogeneous:
+                diag_1 = (
+                    self.factors["transmissibility conversion"]
+                    * self.__calc_G_homo_mean(k, False)
+                    * self.__calc_G_homo_mean(A, False)
+                    / self.__calc_G_homo_mean(d, False)
+                )
+            else:
+                diag_1 = (
+                    2
+                    * self.factors["transmissibility conversion"]
+                    / self.__calc_G_hetro_denom(d, A, k, False)
+                )
+
+        if self.D >= 2:
+            dir = fdir[1]
+            if fdir[0] == "x":
+                n2 = self.nx
+            elif fdir[0] == "y":
+                n2 = self.ny
+            n2_ = n - n2
+
+            diag_1[n2 - 1 :: n2] = 0
+
+            k = self.get_cells_k(dir, False, False, "array")
+            A = self.get_cells_A(dir, False, False)
+            d = self.get_cells_d(dir, False, False)
+
+            if self.is_homogeneous:
+                diag_2 = (
+                    self.factors["transmissibility conversion"]
+                    * ((k[:n2_] + k[n2:]) / 2)
+                    * ((A[:n2_] + A[n2:]) / 2)
+                    / ((d[:n2_] + d[n2:]) / 2)
+                )
+            else:
+                diag_2 = (
+                    2
+                    * self.factors["transmissibility conversion"]
+                    / ((d[:n2_] / (A[:n2_] * k[:n2_])) + (d[n2:] / (A[n2:] * k[n2:])))
+                )
+
+        if self.D == 3:
+
+            dir = fdir[-1]
+            n3 = self.nx * self.ny
+            n3_ = n3 - self.nx
+            n4 = n3 * self.nz - n3
+            diag_2_zero_ids = n3_ + np.arange(0, self.nx, n3)
+            diag_2[diag_2_zero_ids] = 0
+            # for i in range(self.nx):
+            #     diag_2[n3_ + i :: n3] = 0
+
+            # if np.argmax(self.get_shape(False)) == 2:
+            #     n3 = n3 + self.nz
+            #     n_ = n3 + self.nx
+            #     diag_2[n3::n3] = 0
+            #     diag_2[n3+1::n3] = 0
+
+            # s = np.argmax(self.get_shape(False))
+            # if s == 0:  # x:
+            #     n_ = self.get_n_max(False)
+            #     for i in range(n_):
+            #         diag_2[n_ + i :: n3] = 0
+            # elif s == 1:  # y:
+            #     n_ = n3 - self.nz
+            #     diag_2[n_::n3] = 0
+            #     diag_2[n_ + 1 :: n3] = 0
+            # # # z:
+            # elif s == 2:  # z:
+            #     n3 = n3 + self.nx
+            #     n_ = n3 + self.nx
+            #     diag_2[n3::n3] = 0
+            #     diag_2[n3+1::n3] = 0
+            # print("n:", n)
+            # print("n1:", n1)
+            # print("n2:", n2)
+            # print("n3:", n3)
+            # print("n_:", n_)
+            # print("n4:", n4)
+
+            k = self.get_cells_k(dir, False, False, "array")
+            A = self.get_cells_A(dir, False, False)
+            d = self.get_cells_d(dir, False, False)
+
+            if self.is_homogeneous:
+                diag_3 = (
+                    self.factors["transmissibility conversion"]
+                    * ((k[:n4] + k[n3:]) / 2)
+                    * ((A[:n4] + A[n3:]) / 2)
+                    / ((d[:n4] + d[n3:]) / 2)
+                )
+            else:
+                diag_3 = (
+                    2
+                    * self.factors["transmissibility conversion"]
+                    / ((d[:n4] / (A[:n4] * k[:n4])) + (d[n3:] / (A[n3:] * k[n3:])))
+                )
+
+        if sparse:
+            diag = ss.diags(
+                [diag_1, diag_1],
+                [1, -1],
+                dtype=self.dtype,
+            )
+        else:
+            diag = np.diag(diag_1, 1) + np.diag(diag_1, -1)
+
+        if self.D >= 2:
+            if sparse:
+                diag = diag + ss.diags(
+                    [diag_2, diag_2],
+                    [n2, -n2],
+                    dtype=self.dtype,
+                )
+            else:
+                diag = diag + np.diag(diag_2, n2) + np.diag(diag_2, -n2)
+
+        if self.D == 3:
+            if sparse:
+                diag = diag + ss.diags(
+                    [diag_3, diag_3],
+                    [n3, -n3],
+                    dtype=self.dtype,
+                )
+            else:
+                diag = diag + np.diag(diag_3, n3) + np.diag(diag_3, -n3)
+
+        if sparse:
+            return ss.lil_matrix(diag, dtype=self.dtype)
+        else:
+            return diag
+
+    def get_cells_Gx(self, boundary=False, fshape=False):
         """Returns cells geometric factor at x direction (Gx).
 
         Parameters
@@ -2659,10 +2815,10 @@ class Cartesian(Grid):
         ndarray
             array of Gx.
         """
-        self.Gx = self.get_cells_G("x", fshape)
+        self.Gx = self.get_cells_G("x", boundary, fshape)
         return self.Gx
 
-    def get_cells_Gy(self, fshape=False):
+    def get_cells_Gy(self, boundary=False, fshape=False):
         """Returns cells geometric factor at y direction (Gy).
 
         Parameters
@@ -2676,10 +2832,10 @@ class Cartesian(Grid):
         ndarray
             array of Gy (with fshape and boundary).
         """
-        self.Gy = self.get_cells_G("y", fshape)
+        self.Gy = self.get_cells_G("y", boundary, fshape)
         return self.Gy
 
-    def get_cells_Gz(self, fshape=False):
+    def get_cells_Gz(self, boundary=False, fshape=False):
         """Returns cells geometric factor at z direction (Gz).
 
         Parameters
@@ -2693,7 +2849,7 @@ class Cartesian(Grid):
         ndarray
             array of Gz (with fshape and boundary).
         """
-        self.Gz = self.get_cells_G("z", fshape)
+        self.Gz = self.get_cells_G("z", boundary, fshape)
         return self.Gz
 
     @_lru_cache(maxsize=None)
@@ -2702,8 +2858,6 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        dir : str
-            direction as string in ['x', 'y', 'z'].
         id : int, iterable of int, by default None
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
