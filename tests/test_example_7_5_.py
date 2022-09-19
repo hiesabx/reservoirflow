@@ -8,7 +8,8 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         model = create_model()
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
-        np.testing.assert_array_equal(model.T["x"], trans_desired)
+        trans = model.get_cells_T_diag(True, 1)
+        np.testing.assert_array_equal(trans, trans_desired)
 
     def test_fluid(self):
         model = create_model()

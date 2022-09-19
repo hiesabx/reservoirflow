@@ -2479,223 +2479,328 @@ class Cartesian(Grid):
     # Geometry Factor:
     # -------------------------------------------------------------------------
 
-    def __calc_G_hetro_denom(self, d, A, k, boundary):
-        """Calculated G heterogeneous denominator.
+    # def __calc_G_hetro_denom(self, d, A, k, boundary):
+    #     """Calculated G heterogeneous denominator.
 
-        Parameters
-        ----------
-        d : ndarray
-            array of dimensions in x, y, or z (e.g. dx).
-        area : ndarray
-            array of area in x, y, or z (e.g. Ax).
-        k : ndarray
-            array of permeability in x, y, or z (e.g. kx).
+    #     Parameters
+    #     ----------
+    #     d : ndarray
+    #         array of dimensions in x, y, or z (e.g. dx).
+    #     area : ndarray
+    #         array of area in x, y, or z (e.g. Ax).
+    #     k : ndarray
+    #         array of permeability in x, y, or z (e.g. kx).
 
-        Returns
-        -------
-        ndarray
-            denominator of G based on input values.
+    #     Returns
+    #     -------
+    #     ndarray
+    #         denominator of G based on input values.
 
-        Raises
-        ------
-        ValueError
-            Unknown dimensionality.
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Unknown dimensionality.
 
-        Backup
-        ------
-        if self.D == 3:  # or self.unify:
-            l = d[:-1, :-1, :-1] / (A[:-1, :-1, :-1] * k[:-1, :-1, :-1])
-            r = d[1:, 1:, 1:] / (A[1:, 1:, 1:] * k[1:, 1:, 1:])
-            return l + r
-        elif self.D == 0:
-            return d / (A * k)
-        elif self.D == 1:
-            l = d[:-1] / (A[:-1] * k[:-1])
-            r = d[1:] / (A[1:] * k[1:])
-            return l + r
-        elif self.D == 2:
-            l = d[:-1, :-1] / (A[:-1, :-1] * k[:-1, :-1])
-            r = d[1:, 1:] / (A[1:, 1:] * k[1:, 1:])
-            return l + r
+    #     Backup
+    #     ------
+    #     if self.D == 3:  # or self.unify:
+    #         l = d[:-1, :-1, :-1] / (A[:-1, :-1, :-1] * k[:-1, :-1, :-1])
+    #         r = d[1:, 1:, 1:] / (A[1:, 1:, 1:] * k[1:, 1:, 1:])
+    #         return l + r
+    #     elif self.D == 0:
+    #         return d / (A * k)
+    #     elif self.D == 1:
+    #         l = d[:-1] / (A[:-1] * k[:-1])
+    #         r = d[1:] / (A[1:] * k[1:])
+    #         return l + r
+    #     elif self.D == 2:
+    #         l = d[:-1, :-1] / (A[:-1, :-1] * k[:-1, :-1])
+    #         r = d[1:, 1:] / (A[1:, 1:] * k[1:, 1:])
+    #         return l + r
+    #     else:
+    #         raise ValueError("Unknown dimensionality.")
+    #     """
+    #     if boundary:
+    #         d_l = self.remove_boundaries(d, False, "right")
+    #         d_r = self.remove_boundaries(d, False, "left")
+    #         A_l = self.remove_boundaries(A, False, "right")
+    #         A_r = self.remove_boundaries(A, False, "left")
+    #         k_l = self.remove_boundaries(k, False, "right")
+    #         k_r = self.remove_boundaries(k, False, "left")
+    #         return (d_l / (A_l * k_l)) + (d_r / (A_r * k_r))
+    #     else:
+    #         return (d[:-1] / (A[:-1] * k[:-1])) + (d[1:] / (A[1:] * k[1:]))
+
+    # def __calc_G_homo_mean(self, prop, boundary, type="geometric"):
+    #     """Calculates G homogenous mean.
+
+    #     Parameters
+    #     ----------
+    #     prop : ndarray
+    #         array of a property.
+    #     type : str, optional, by default "geometric"
+    #         mean type in ['geometric'].
+
+    #     Returns
+    #     -------
+    #     ndarray
+    #         mean of a property based on type.
+
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Unknown dimensionality.
+    #     ValueError
+    #         Unknown mean type.
+
+    #     ToDo
+    #     ----
+    #     - Confirm the behavior of removing 'left' and 'right' boundaries
+    #     in case of 2D and 3D.
+
+    #     Backup
+    #     ------
+    #     - Faster calc in case of homogeneous d, k, A. However, this
+    #     implementation can be problematic since heterogeneous A and d
+    #     are not considered in is_homogeneous flag:
+    #         # code:
+    #         if self.is_homogeneous:
+    #             if self.D == 3 or self.unify:
+    #                 return prop[1:, 1:, 1:]
+    #             elif self.D == 0:
+    #                 return prop
+    #             elif self.D == 1:
+    #                 return prop[1:]
+    #             elif self.D == 2:
+    #                 return prop[1:, 1:]
+    #         else:
+    #             if self.D == 3:
+    #                 return (prop[:-1, :-1, :-1] + prop[1:, 1:, 1:]) / 2
+    #             elif self.D == 1:
+    #                 return (prop[:-1] + prop[1:]) / 2
+    #             elif self.D == 2:
+    #                 return (prop[:-1, :-1] + prop[1:, 1:]) / 2
+    #             else:
+    #                 raise ValueError("Unknown dimensionality.")
+    #     """
+    #     self.get_D()
+    #     if boundary:
+    #         l = self.remove_boundaries(prop, False, "right")
+    #         r = self.remove_boundaries(prop, False, "left")
+    #         if type == "geometric":
+    #             return (l + r) / 2
+    #         else:
+    #             raise ValueError("Unknown mean type.")
+    #     else:
+    #         return (prop[:-1] + prop[1:]) / 2
+
+    # test:
+    # print("Test:")
+    # cells_id = self.get_cells_id(True, False, "array")
+    # print(" - cells_id =", cells_id)
+    # l_ = self.remove_boundaries(cells_id, False, "right")
+    # print(" - cells_id (left) =", l_)
+    # r_ = self.remove_boundaries(cells_id, False, "left")
+    # print(" - cells_id (right) =", r_)
+
+    # @_lru_cache(maxsize=3)
+    # def get_cells_G(self, dir, boundary=False, fshape=False):
+    #     """Returns cells geometric factor (G).
+
+    #     Parameters
+    #     ----------
+    #     dir : str
+    #         direction as string in ['x', 'y', 'z'].
+    #     fshape : bool, optional, by default False
+    #         values in flow shape (True) or flatten (False). In this
+    #         case, fshape is for cells' boundaries.
+
+    #     Returns
+    #     -------
+    #     ndarray
+    #         array of G based on dir argument.
+    #     """
+    #     if dir in ["x", "y", "z"]:
+    #         k = self.get_cells_k(dir, boundary, False, "array")
+    #         A = self.get_cells_A(dir, boundary, False)
+    #         d = self.get_cells_d(dir, boundary, False)
+
+    #         if self.is_homogeneous:
+    #             G = (
+    #                 self.factors["transmissibility conversion"]
+    #                 * self.__calc_G_homo_mean(k, boundary)
+    #                 * self.__calc_G_homo_mean(A, boundary)
+    #                 / self.__calc_G_homo_mean(d, boundary)
+    #             )
+    #         else:
+    #             G = (
+    #                 2
+    #                 * self.factors["transmissibility conversion"]
+    #                 / self.__calc_G_hetro_denom(d, A, k, boundary)
+    #             )
+
+    #         if fshape:
+    #             shape = self.get_fshape(boundary, False)
+    #             shape = [n - 1 if n > 1 else n for n in shape]
+    #             G = G.reshape(shape)
+
+    #     elif dir in [None, "all", "-", ""]:
+    #         G = {}
+    #         for d in self.get_fdir():
+    #             G[d] = self.get_cells_G(d, boundary, fshape)
+
+    #     return G
+    def get_cells_G_diag_1(self, boundary):
+        if self.D == 1:
+            dir = self.fdir
         else:
-            raise ValueError("Unknown dimensionality.")
-        """
+            dir = self.fdir[0]
+        k = self.get_cells_k(dir, boundary, False, "array")
+        A = self.get_cells_A(dir, boundary, False)
+        d = self.get_cells_d(dir, boundary, False)
+        if self.is_homogeneous:
+            diag_1 = (
+                self.factors["transmissibility conversion"]
+                * ((k[:-1] + k[1:]) / 2)
+                * ((A[:-1] + A[1:]) / 2)
+                / ((d[:-1] + d[1:]) / 2)
+            )
+        else:
+            diag_1 = (
+                2
+                * self.factors["transmissibility conversion"]
+                / ((d[:-1] / (A[:-1] * k[:-1])) + (d[1:] / (A[1:] * k[1:])))
+            )
+        return diag_1
+
+    def get_cells_G_diag_2(self, boundary, diag_1=None):
+        n = self.get_n(boundary)
+        dir = self.fdir[1]
+        if self.fdir[0] == "x":
+            if boundary:
+                n2 = self.nx_b
+            else:
+                n2 = self.nx
+        elif self.fdir[0] == "y":
+            if boundary:
+                n2 = self.ny_b
+            else:
+                n2 = self.ny
+        n2_ = n - n2
+        if not diag_1 is None:
+            diag_1[n2 - 1 :: n2] = 0
+        k = self.get_cells_k(dir, boundary, False, "array")
+        A = self.get_cells_A(dir, boundary, False)
+        d = self.get_cells_d(dir, boundary, False)
+        if self.is_homogeneous:
+            diag_2 = (
+                self.factors["transmissibility conversion"]
+                * ((k[:n2_] + k[n2:]) / 2)
+                * ((A[:n2_] + A[n2:]) / 2)
+                / ((d[:n2_] + d[n2:]) / 2)
+            )
+        else:
+            diag_2 = (
+                2
+                * self.factors["transmissibility conversion"]
+                / ((d[:n2_] / (A[:n2_] * k[:n2_])) + (d[n2:] / (A[n2:] * k[n2:])))
+            )
+        return diag_2, n2
+
+    def get_cells_G_diag_3(self, boundary, diag_2=None):
+        dir = self.fdir[-1]
         if boundary:
-            d_l = self.remove_boundaries(d, False, "right")
-            d_r = self.remove_boundaries(d, False, "left")
-            A_l = self.remove_boundaries(A, False, "right")
-            A_r = self.remove_boundaries(A, False, "left")
-            k_l = self.remove_boundaries(k, False, "right")
-            k_r = self.remove_boundaries(k, False, "left")
-            return (d_l / (A_l * k_l)) + (d_r / (A_r * k_r))
+            n3 = self.nx_b * self.ny_b
+            n3_ = n3 - self.nx_b
+            n4 = n3 * self.nz_b - n3
+            diag_2_zero_ids = n3_ + np.arange(0, self.nx_b, n3)
         else:
-            return (d[:-1] / (A[:-1] * k[:-1])) + (d[1:] / (A[1:] * k[1:]))
+            n3 = self.nx * self.ny
+            n3_ = n3 - self.nx
+            n4 = n3 * self.nz - n3
+            diag_2_zero_ids = n3_ + np.arange(0, self.nx, n3)
+        if not diag_2 is None:
+            diag_2[diag_2_zero_ids] = 0
+        k = self.get_cells_k(dir, boundary, False, "array")
+        A = self.get_cells_A(dir, boundary, False)
+        d = self.get_cells_d(dir, boundary, False)
+        if self.is_homogeneous:
+            diag_3 = (
+                self.factors["transmissibility conversion"]
+                * ((k[:n4] + k[n3:]) / 2)
+                * ((A[:n4] + A[n3:]) / 2)
+                / ((d[:n4] + d[n3:]) / 2)
+            )
+        else:
+            diag_3 = (
+                2
+                * self.factors["transmissibility conversion"]
+                / ((d[:n4] / (A[:n4] * k[:n4])) + (d[n3:] / (A[n3:] * k[n3:])))
+            )
+        return diag_3, n3
 
-    def __calc_G_homo_mean(self, prop, boundary, type="geometric"):
-        """Calculates G homogenous mean.
+    def get_cells_G(self, boundary=False, sparse=True):
+        """Returns cells geometric factor (G) Matrix.
+
+        This matrix is essential to build the coefficient matrix (A).
+        Note that this matrix should not include boundary.
 
         Parameters
         ----------
-        prop : ndarray
-            array of a property.
-        type : str, optional, by default "geometric"
-            mean type in ['geometric'].
+        sparse : bool, optional, by default True
+            _description_
 
         Returns
         -------
-        ndarray
-            mean of a property based on type.
-
-        Raises
-        ------
-        ValueError
-            Unknown dimensionality.
-        ValueError
-            Unknown mean type.
-
-        ToDo
-        ----
-        - Confirm the behavior of removing 'left' and 'right' boundaries
-        in case of 2D and 3D.
-
-        Backup
-        ------
-        - Faster calc in case of homogeneous d, k, A. However, this
-        implementation can be problematic since heterogeneous A and d
-        are not considered in is_homogeneous flag:
-            # code:
-            if self.is_homogeneous:
-                if self.D == 3 or self.unify:
-                    return prop[1:, 1:, 1:]
-                elif self.D == 0:
-                    return prop
-                elif self.D == 1:
-                    return prop[1:]
-                elif self.D == 2:
-                    return prop[1:, 1:]
-            else:
-                if self.D == 3:
-                    return (prop[:-1, :-1, :-1] + prop[1:, 1:, 1:]) / 2
-                elif self.D == 1:
-                    return (prop[:-1] + prop[1:]) / 2
-                elif self.D == 2:
-                    return (prop[:-1, :-1] + prop[1:, 1:]) / 2
-                else:
-                    raise ValueError("Unknown dimensionality.")
+        ndarray or sparse matrix
+            G matrix for the entire grid model without boundary.
         """
-        self.get_D()
-        if boundary:
-            l = self.remove_boundaries(prop, False, "right")
-            r = self.remove_boundaries(prop, False, "left")
-            if type == "geometric":
-                return (l + r) / 2
-            else:
-                raise ValueError("Unknown mean type.")
-        else:
-            return (prop[:-1] + prop[1:]) / 2
 
-        # test:
-        # print("Test:")
-        # cells_id = self.get_cells_id(True, False, "array")
-        # print(" - cells_id =", cells_id)
-        # l_ = self.remove_boundaries(cells_id, False, "right")
-        # print(" - cells_id (left) =", l_)
-        # r_ = self.remove_boundaries(cells_id, False, "left")
-        # print(" - cells_id (right) =", r_)
-
-    @_lru_cache(maxsize=3)
-    def get_cells_G(self, dir, boundary=False, fshape=False):
-        """Returns cells geometric factor (G).
-
-        Parameters
-        ----------
-        dir : str
-            direction as string in ['x', 'y', 'z'].
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). In this
-            case, fshape is for cells' boundaries.
-
-        Returns
-        -------
-        ndarray
-            array of G based on dir argument.
-        """
-        if dir in ["x", "y", "z"]:
-            k = self.get_cells_k(dir, boundary, False, "array")
-            A = self.get_cells_A(dir, boundary, False)
-            d = self.get_cells_d(dir, boundary, False)
-
-            if self.is_homogeneous:
-                G = (
-                    self.factors["transmissibility conversion"]
-                    * self.__calc_G_homo_mean(k, boundary)
-                    * self.__calc_G_homo_mean(A, boundary)
-                    / self.__calc_G_homo_mean(d, boundary)
-                )
-            else:
-                G = (
-                    2
-                    * self.factors["transmissibility conversion"]
-                    / self.__calc_G_hetro_denom(d, A, k, boundary)
-                )
-
-            if fshape:
-                shape = self.get_fshape(boundary, False)
-                shape = [n - 1 if n > 1 else n for n in shape]
-                G = G.reshape(shape)
-
-        elif dir in [None, "all", "-", ""]:
-            G = {}
-            for d in self.get_fdir():
-                G[d] = self.get_cells_G(d, boundary, fshape)
-
-        return G
-
-    def get_cells_G_vectorized(self, sparse=True):
-
-        n = self.get_n(False)
-
+        n = self.get_n(boundary)
         fdir = self.get_fdir()
 
         if self.D >= 1:
-
-            if self.D == 1:
-                dir = fdir
-            else:
-                dir = fdir[0]
-
-            k = self.get_cells_k(dir, False, False, "array")
-            A = self.get_cells_A(dir, False, False)
-            d = self.get_cells_d(dir, False, False)
-
-            if self.is_homogeneous:
-                diag_1 = (
-                    self.factors["transmissibility conversion"]
-                    * self.__calc_G_homo_mean(k, False)
-                    * self.__calc_G_homo_mean(A, False)
-                    / self.__calc_G_homo_mean(d, False)
-                )
-            else:
-                diag_1 = (
-                    2
-                    * self.factors["transmissibility conversion"]
-                    / self.__calc_G_hetro_denom(d, A, k, False)
-                )
+            diag_1 = self.get_cells_G_diag_1(boundary)
+            # if self.D == 1:
+            #     dir = fdir
+            # else:
+            #     dir = fdir[0]
+            # k = self.get_cells_k(dir, boundary, False, "array")
+            # A = self.get_cells_A(dir, boundary, False)
+            # d = self.get_cells_d(dir, boundary, False)
+            # if self.is_homogeneous:
+            #     diag_1 = (
+            #         self.factors["transmissibility conversion"]
+            #         * ((k[:-1] + k[1:]) / 2)
+            #         * ((A[:-1] + A[1:]) / 2)
+            #         / ((d[:-1] + d[1:]) / 2)
+            #     )
+            # else:
+            #     diag_1 = (
+            #         2
+            #         * self.factors["transmissibility conversion"]
+            #         / ((d[:-1] / (A[:-1] * k[:-1])) + (d[1:] / (A[1:] * k[1:])))
+            #     )
 
         if self.D >= 2:
+            # diag_2, n2 = self.get_cells_G_diag_3(boundary, diag_1)
+
             dir = fdir[1]
             if fdir[0] == "x":
-                n2 = self.nx
+                if boundary:
+                    n2 = self.nx_b
+                else:
+                    n2 = self.nx
             elif fdir[0] == "y":
-                n2 = self.ny
+                if boundary:
+                    n2 = self.ny_b
+                else:
+                    n2 = self.ny
             n2_ = n - n2
-
             diag_1[n2 - 1 :: n2] = 0
-
-            k = self.get_cells_k(dir, False, False, "array")
-            A = self.get_cells_A(dir, False, False)
-            d = self.get_cells_d(dir, False, False)
-
+            k = self.get_cells_k(dir, boundary, False, "array")
+            A = self.get_cells_A(dir, boundary, False)
+            d = self.get_cells_d(dir, boundary, False)
             if self.is_homogeneous:
                 diag_2 = (
                     self.factors["transmissibility conversion"]
@@ -2711,61 +2816,35 @@ class Cartesian(Grid):
                 )
 
         if self.D == 3:
-
-            dir = fdir[-1]
-            n3 = self.nx * self.ny
-            n3_ = n3 - self.nx
-            n4 = n3 * self.nz - n3
-            diag_2_zero_ids = n3_ + np.arange(0, self.nx, n3)
-            diag_2[diag_2_zero_ids] = 0
-            # for i in range(self.nx):
-            #     diag_2[n3_ + i :: n3] = 0
-
-            # if np.argmax(self.get_shape(False)) == 2:
-            #     n3 = n3 + self.nz
-            #     n_ = n3 + self.nx
-            #     diag_2[n3::n3] = 0
-            #     diag_2[n3+1::n3] = 0
-
-            # s = np.argmax(self.get_shape(False))
-            # if s == 0:  # x:
-            #     n_ = self.get_n_max(False)
-            #     for i in range(n_):
-            #         diag_2[n_ + i :: n3] = 0
-            # elif s == 1:  # y:
-            #     n_ = n3 - self.nz
-            #     diag_2[n_::n3] = 0
-            #     diag_2[n_ + 1 :: n3] = 0
-            # # # z:
-            # elif s == 2:  # z:
-            #     n3 = n3 + self.nx
-            #     n_ = n3 + self.nx
-            #     diag_2[n3::n3] = 0
-            #     diag_2[n3+1::n3] = 0
-            # print("n:", n)
-            # print("n1:", n1)
-            # print("n2:", n2)
-            # print("n3:", n3)
-            # print("n_:", n_)
-            # print("n4:", n4)
-
-            k = self.get_cells_k(dir, False, False, "array")
-            A = self.get_cells_A(dir, False, False)
-            d = self.get_cells_d(dir, False, False)
-
-            if self.is_homogeneous:
-                diag_3 = (
-                    self.factors["transmissibility conversion"]
-                    * ((k[:n4] + k[n3:]) / 2)
-                    * ((A[:n4] + A[n3:]) / 2)
-                    / ((d[:n4] + d[n3:]) / 2)
-                )
-            else:
-                diag_3 = (
-                    2
-                    * self.factors["transmissibility conversion"]
-                    / ((d[:n4] / (A[:n4] * k[:n4])) + (d[n3:] / (A[n3:] * k[n3:])))
-                )
+            diag_3, n3 = self.get_cells_G_diag_3(boundary, diag_2)
+            # dir = fdir[-1]
+            # if boundary:
+            #     n3 = self.nx_b * self.ny_b
+            #     n3_ = n3 - self.nx_b
+            #     n4 = n3 * self.nz_b - n3
+            #     diag_2_zero_ids = n3_ + np.arange(0, self.nx_b, n3)
+            # else:
+            #     n3 = self.nx * self.ny
+            #     n3_ = n3 - self.nx
+            #     n4 = n3 * self.nz - n3
+            #     diag_2_zero_ids = n3_ + np.arange(0, self.nx, n3)
+            # diag_2[diag_2_zero_ids] = 0
+            # k = self.get_cells_k(dir, boundary, False, "array")
+            # A = self.get_cells_A(dir, boundary, False)
+            # d = self.get_cells_d(dir, boundary, False)
+            # if self.is_homogeneous:
+            #     diag_3 = (
+            #         self.factors["transmissibility conversion"]
+            #         * ((k[:n4] + k[n3:]) / 2)
+            #         * ((A[:n4] + A[n3:]) / 2)
+            #         / ((d[:n4] + d[n3:]) / 2)
+            #     )
+            # else:
+            #     diag_3 = (
+            #         2
+            #         * self.factors["transmissibility conversion"]
+            #         / ((d[:n4] / (A[:n4] * k[:n4])) + (d[n3:] / (A[n3:] * k[n3:])))
+            #     )
 
         if sparse:
             diag = ss.diags(
@@ -2801,60 +2880,9 @@ class Cartesian(Grid):
         else:
             return diag
 
-    def get_cells_Gx(self, boundary=False, fshape=False):
-        """Returns cells geometric factor at x direction (Gx).
-
-        Parameters
-        ----------
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). In this
-            case, fshape is for cells' boundaries.
-
-        Returns
-        -------
-        ndarray
-            array of Gx.
-        """
-        self.Gx = self.get_cells_G("x", boundary, fshape)
-        return self.Gx
-
-    def get_cells_Gy(self, boundary=False, fshape=False):
-        """Returns cells geometric factor at y direction (Gy).
-
-        Parameters
-        ----------
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). In this
-            case, fshape is for cells' boundaries.
-
-        Returns
-        -------
-        ndarray
-            array of Gy (with fshape and boundary).
-        """
-        self.Gy = self.get_cells_G("y", boundary, fshape)
-        return self.Gy
-
-    def get_cells_Gz(self, boundary=False, fshape=False):
-        """Returns cells geometric factor at z direction (Gz).
-
-        Parameters
-        ----------
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). In this
-            case, fshape is for cells' boundaries.
-
-        Returns
-        -------
-        ndarray
-            array of Gz (with fshape and boundary).
-        """
-        self.Gz = self.get_cells_G("z", boundary, fshape)
-        return self.Gz
-
     @_lru_cache(maxsize=None)
     def get_cell_G(self, id=None, coords=None, boundary=True):
-        """Returns cell geometric factor (G) at all cell faces.
+        """Returns cell geometric factor (G) with all cell neighbors.
 
         Parameters
         ----------

@@ -40,17 +40,11 @@ class TestApp(unittest.TestCase):
 
     def test_trans(self):
         trans_desired = np.array(
-            [
-                12.819625,
-                14.04424959,
-                15.71314387,
-                21.08469675,
-                20.16215385,
-                14.8764,
-            ]
+            [12.81962, 14.04424, 15.71314, 21.08469, 20.16215, 14.8764]
         )
         model = create_model()
-        np.testing.assert_almost_equal(model.T["x"], trans_desired, 5)
+        Tx = model.get_cells_T_diag(True, 1)
+        np.testing.assert_almost_equal(Tx, trans_desired, 5)
 
     def test_RHS(self):
         RHS_desired = np.array(

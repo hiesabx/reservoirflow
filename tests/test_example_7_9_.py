@@ -25,17 +25,10 @@ class TestApp(unittest.TestCase):
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
 
     def test_trans(self):
-        trans_desired = np.array(
-            [
-                28.4004,
-                28.4004,
-                28.4004,
-                28.4004,
-                28.4004,
-            ]
-        )
+        trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        np.testing.assert_array_equal(model.T["x"], trans_desired)
+        Tx = model.get_cells_T_diag(True, 1)
+        np.testing.assert_array_equal(Tx, trans_desired)
 
     def test_RHS(self):
         RHS_desired = np.array(
@@ -113,7 +106,7 @@ def create_model():
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = models.Model(grid, fluid, pi=4000, dtype="double", verbose=False)
+    model = models.Model(grid, fluid, pi=4000, dt=1, dtype="double", verbose=False)
     model.set_well(id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model
@@ -121,3 +114,7 @@ def create_model():
 
 if __name__ == "__main__":
     unittest.main()
+    # ToDo: minimize MBE at late time steps.
+    # model = create_model()
+    # model.run(30, True, True, True, print_arrays=True)
+    # model.get_dataframe(True, True, save=True)

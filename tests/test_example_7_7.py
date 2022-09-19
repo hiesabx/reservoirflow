@@ -26,11 +26,13 @@ class TestApp(unittest.TestCase):
         self.assertLess(model.ctime, 5)
 
     def test_trans(self):
-        T_x_desired = np.array([1.035, 1.035, 1.035])
-        T_y_desired = np.array([1.3524, 1.3524, 1.3524])
+        T_x_desired = np.array([1.035, 0, 1.035])
+        T_y_desired = np.array([1.3524, 1.3524])
         model = create_model()
-        T_x = model.get_cells_T("x", False, False)
-        T_y = model.get_cells_T("y", False, False)
+        T_x = model.get_cells_T_diag(False, 1)
+        T_y = model.get_cells_T_diag(False, 2)
+        # T_x = model.get_cells_T_vect("x", False, False)
+        # T_y = model.get_cells_T_vect("y", False, False)
         np.testing.assert_almost_equal(T_x, T_x_desired, decimal=5)
         np.testing.assert_almost_equal(T_y, T_y_desired, decimal=5)
 

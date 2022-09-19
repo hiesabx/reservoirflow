@@ -7,7 +7,8 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        np.testing.assert_array_equal(model.T["x"], trans_desired)
+        trans = model.get_cells_T_diag(True, 1)
+        np.testing.assert_array_equal(trans, trans_desired)
 
     def test_pressures(self):
         p_desired = np.array([4000.0, 3989.44, 3968.31, 3947.19, 3926.06, np.nan])

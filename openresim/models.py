@@ -96,7 +96,7 @@ class Model(Base):
 
         self.__initialize__(pi, start_date, well)
         self.__calc_comp()
-        self.__calc_dir_T()
+        # self.__calc_dir_T()
         self.__calc_RHS()
         self.bdict = {}
         # self.set_boundaries({})
@@ -159,38 +159,46 @@ class Model(Base):
 
     def __calc_dir_T(self):
         """Calculates transmissibility at every flow direction (fdir)."""
+        self.T = self.get_cells_T_vect(False, True)
 
-        self.T = {}
-        for dir in self.grid.get_fdir():
-            self.T[dir] = self.get_cells_T(dir, True, False)
+    # def get_cells_T(self, dir=None, boundary=False, fshape=False):
+    #     """Returns transmissibility (T) for all cells.
 
-        if self.verbose:
-            print("[info] transmissibility (T) in all directions was computed.")
+    #     Parameters
+    #     ----------
+    #     dir : str
+    #         direction as string in ['x', 'y', 'z']. If None or 'all',
+    #         transmissibility in all grid flow directions (fdir) will be
+    #         included in a dictionary.
+    #     fshape : bool, optional, by default False
+    #         values in flow shape (True) or flatten (False). In this
+    #         case, fshape is for cells' boundaries.
 
-    def get_cells_T(self, dir=None, boundary=False, fshape=False):
-        """Returns transmissibility (T) at all cells' boundaries.
+    #     Returns
+    #     -------
+    #     ndarray
+    #         array of transmissibility at all cells' boundaries.
+    #     """
+    #     if dir in ["x", "y", "z"]:
+    #         if self.verbose:
+    #             s0 = dir + " direction"
+    #         T = self.grid.get_cells_G(dir, boundary, fshape) / (
+    #             self.fluid.mu * self.fluid.B
+    #         )
+    #     elif dir in [None, "all", "-"]:
+    #         if self.verbose:
+    #             s0 = "all directions"
+    #         T = {}
+    #         for dir in self.grid.get_fdir():
+    #             T[dir] = self.get_cells_T(dir, boundary, fshape)
+    #     else:
+    #         raise ValueError("dir argument is given a wrong value.")
 
-        Parameters
-        ----------
-        dir : str
-            direction as string in ['x', 'y', 'z']. If None,
-            transmissibility in all grid flow directions (fdir) will be
-            included in a dictionary.
-        fshape : bool, optional, by default False
-            values in flow shape (True) or flatten (False). In this
-            case, fshape is for cells' boundaries.
+    #     if self.verbose:
+    #         s1, s2 = utils.get_verbose_str(boundary, fshape)
+    #         print(f"[info] transmissibility (T) in {s0} was computed ({s1} - {s2}).")
 
-        Returns
-        -------
-        ndarray
-            array of transmissibility at all cells' boundaries.
-        """
-        if dir is not None:
-            return self.grid.get_cells_G(dir, boundary, fshape) / (
-                self.fluid.mu * self.fluid.B
-            )
-        else:
-            return self.T
+    #     return T
 
     @_lru_cache(maxsize=None)
     def get_cell_T(self, id=None, coords=None, boundary=False):
@@ -219,18 +227,58 @@ class Model(Base):
         cell_T = {}
         for id_n in cell_G:
             cell_T[id_n] = cell_G[id_n] / (self.fluid.mu * self.fluid.B)
-
         return cell_T
 
-    def get_cells_T_array(self, boundary=True):
-        n = self.grid.get_n(True)
-        T_array = ss.lil_matrix((n, n), dtype=self.dtype)
+    def get_cells_T_loop(self, boundary=False, sparse=False):
+        """_summary_
 
-        for id in self.grid.cells_id:
-            T = self.get_cell_T(id, None, False)
-            for id_n in T.keys():
-                T_array[id, id_n] = T[id_n]
+        Parameters
+        ----------
+        boundary : bool, optional
+            _description_, by default True
+        sparse : bool, optional
+            _description_, by default False
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        n = self.grid.get_n(boundary)
+        if sparse:
+            T_array = ss.lil_matrix((n, n), dtype=self.dtype)
+        else:
+            T_array = np.zeros((n, n), dtype=self.dtype)
+
+        if boundary:
+            for id in self.grid.cells_id:
+                T = self.get_cell_T(id, None, False)
+                for id_n in T.keys():
+                    T_array[id, id_n] = T[id_n]
+        else:
+            for id in self.grid.cells_id:
+                i = self.cells_i_dict[id]
+                T = self.get_cell_T(id, None, False)
+                cells_i_n = [self.cells_i_dict[x] for x in T.keys()]
+                for id_n, i_n in zip(T.keys(), cells_i_n):
+                    T_array[i, i_n] = T[id_n]
         return T_array
+
+    def get_cells_T_vect(self, boundary=False, sparse=False):
+        return self.grid.get_cells_G(boundary, sparse) / (self.fluid.mu * self.fluid.B)
+
+    def get_cells_T_diag(self, boundary=False, diag_n=1):
+        if diag_n == 3:
+            diag, _ = self.grid.get_cells_G_diag_3(boundary)
+        elif diag_n == 2:
+            diag, _ = self.grid.get_cells_G_diag_2(boundary)
+            if self.grid.D > 2:
+                self.grid.get_cells_G_diag_3(boundary, diag)
+        elif diag_n == 1:
+            diag = self.grid.get_cells_G_diag_1(boundary)
+            if self.grid.D > 1:
+                self.grid.get_cells_G_diag_2(boundary, diag)
+        return diag / (self.fluid.mu * self.fluid.B)
 
     # -------------------------------------------------------------------------
     # Wells:
@@ -864,17 +912,28 @@ class Model(Base):
 
         Returns
         -------
-        None
+        ndarray
             matrix A is initialized in place and can be accessed by
             self.A_.
         """
-        T = self.get_cells_T_array().toarray()
-        self.A_ = T[:, self.cells_id][self.cells_id]
-        self.A_[self.cells_i, self.cells_i] = (
-            -self.A_[self.cells_i, :].sum(axis=1) - self.RHS[self.cells_id]
-        )
-        if sparse:
-            self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
+        # T = self.get_cells_T_array(True).toarray()
+        # self.A_ = T[:, self.cells_id][self.cells_id]
+        # self.A_[self.cells_i, self.cells_i] = (
+        #     -self.A_[self.cells_i, :].sum(axis=1) - self.RHS[self.cells_id]
+        # )
+        # if sparse:
+        #     self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
+
+        # return self.A_
+        # self.A_ = self.get_cells_T_array(False, True).toarray()
+        self.A_ = self.get_cells_T_vect(False, sparse)
+        v1 = -self.A_[self.cells_i, :].sum(axis=1).flatten()
+        v2 = self.RHS[self.cells_id].flatten()
+        v3 = v1 - v2
+        self.A_[self.cells_i, self.cells_i] = v3
+        # if sparse:
+        #     self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
+        return self.A_
 
     def __init_d(self, sparse):
         """Initialize d vector.
@@ -913,6 +972,14 @@ class Model(Base):
                 raise Exception("Initial pressure (pi) must be specified")
 
     def __update_z(self):
+        """_summary_
+
+
+
+        ToDo
+        ----
+        - T for different geometries is still not ready.
+        """
         # all 1D in x direction.
         z = self.grid.z[self.grid.cells_id]
         if not np.all(z == z[0]):
@@ -920,7 +987,9 @@ class Model(Base):
             z_u = np.append(np.nan, z[:-1])
             dz_l = self.fluid.g * np.nan_to_num(z_l - z)
             dz_u = self.fluid.g * np.nan_to_num(z_u - z)
-            T = self.T["x"][self.grid.cells_id]
+            # T = self.T["x"][self.grid.cells_id]
+            # T = np.diag(self.get_cells_T(True, False), 1)[self.cells_i]
+            T = self.get_cells_T_diag(True, 1)[self.cells_id]
             v = T * dz_l + T * dz_u
             self.d_ += v.reshape(-1, 1)
 
@@ -1140,21 +1209,21 @@ class Model(Base):
             pressures = np.dot(np.linalg.inv(self.A), self.d)
         """
         if print_arrays:
-            self.init_matrices(sparse, threading)  #  has to be first
+            A, d = self.init_matrices(sparse, threading)  #  has to be first
             self.get_matrices_vectorized(sparse, threading)
             self.__print_arrays(sparse)
         else:
             if vectorize:
-                self.get_matrices_vectorized(sparse, threading)
+                A, d = self.get_matrices_vectorized(sparse, threading)
             else:
-                self.init_matrices(sparse, threading)
+                A, d = self.init_matrices(sparse, threading)
 
         if sparse:
-            pressures = ssl.spsolve(self.A_.tocsc(), self.d_)
+            pressures = ssl.spsolve(A.tocsc(), d)
         else:
             pressures = sl.solve(
-                self.A_,
-                self.d_,
+                A,
+                d,
                 assume_a="gen",  # "gen" or "sym"
                 check_finite=False,
             ).flatten()
@@ -1595,12 +1664,12 @@ if __name__ == "__main__":
 
     def create_model_2d():
         grid = grids.Cartesian(
-            nx=10,
-            ny=10,
-            nz=3,
+            nx=70,
+            ny=70,
+            nz=10,
             dx=300,
             dy=350,
-            dz=40,
+            dz=20,
             phi=0.27,
             kx=1,
             ky=1,
@@ -1627,19 +1696,5 @@ if __name__ == "__main__":
         return model
 
     model = create_model_2d()
-    model.run(20)
+    model.run(30)
     model.show("pressures")
-
-    @profme.profile()
-    def benchmark():
-        # print(model.get_cells_eq())
-        print(model.init_matrices())
-        # model.solve(False, False)
-        # print(model.get_cells_eq())
-        # print(model.init_matrices())
-
-        # model.run(2, False, False, True)
-        # model.get_dataframe()
-        # model.show("pressures")
-
-    # benchmark()
