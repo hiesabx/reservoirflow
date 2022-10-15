@@ -2687,7 +2687,7 @@ class Cartesian(Grid):
             else:
                 n2 = self.ny
         n2_ = n - n2
-        if not diag_1 is None:
+        if diag_1 is not None:
             diag_1[n2 - 1 :: n2] = 0
         k = self.get_cells_k(dir, boundary, False, "array")
         A = self.get_cells_A(dir, boundary, False)
@@ -2756,8 +2756,8 @@ class Cartesian(Grid):
             G matrix for the entire grid model without boundary.
         """
 
-        n = self.get_n(boundary)
-        fdir = self.get_fdir()
+        # n = self.get_n(boundary)
+        # fdir = self.get_fdir()
 
         if self.D >= 1:
             diag_1 = self.get_cells_G_diag_1(boundary)
@@ -2783,37 +2783,37 @@ class Cartesian(Grid):
             #     )
 
         if self.D >= 2:
-            # diag_2, n2 = self.get_cells_G_diag_3(boundary, diag_1)
+            diag_2, n2 = self.get_cells_G_diag_2(boundary, diag_1)
 
-            dir = fdir[1]
-            if fdir[0] == "x":
-                if boundary:
-                    n2 = self.nx_b
-                else:
-                    n2 = self.nx
-            elif fdir[0] == "y":
-                if boundary:
-                    n2 = self.ny_b
-                else:
-                    n2 = self.ny
-            n2_ = n - n2
-            diag_1[n2 - 1 :: n2] = 0
-            k = self.get_cells_k(dir, boundary, False, "array")
-            A = self.get_cells_A(dir, boundary, False)
-            d = self.get_cells_d(dir, boundary, False)
-            if self.is_homogeneous:
-                diag_2 = (
-                    self.factors["transmissibility conversion"]
-                    * ((k[:n2_] + k[n2:]) / 2)
-                    * ((A[:n2_] + A[n2:]) / 2)
-                    / ((d[:n2_] + d[n2:]) / 2)
-                )
-            else:
-                diag_2 = (
-                    2
-                    * self.factors["transmissibility conversion"]
-                    / ((d[:n2_] / (A[:n2_] * k[:n2_])) + (d[n2:] / (A[n2:] * k[n2:])))
-                )
+            # dir = fdir[1]
+            # if fdir[0] == "x":
+            #     if boundary:
+            #         n2 = self.nx_b
+            #     else:
+            #         n2 = self.nx
+            # elif fdir[0] == "y":
+            #     if boundary:
+            #         n2 = self.ny_b
+            #     else:
+            #         n2 = self.ny
+            # n2_ = n - n2
+            # diag_1[n2 - 1 :: n2] = 0
+            # k = self.get_cells_k(dir, boundary, False, "array")
+            # A = self.get_cells_A(dir, boundary, False)
+            # d = self.get_cells_d(dir, boundary, False)
+            # if self.is_homogeneous:
+            #     diag_2 = (
+            #         self.factors["transmissibility conversion"]
+            #         * ((k[:n2_] + k[n2:]) / 2)
+            #         * ((A[:n2_] + A[n2:]) / 2)
+            #         / ((d[:n2_] + d[n2:]) / 2)
+            #     )
+            # else:
+            #     diag_2 = (
+            #         2
+            #         * self.factors["transmissibility conversion"]
+            #         / ((d[:n2_] / (A[:n2_] * k[:n2_])) + (d[n2:] / (A[n2:] * k[n2:])))
+            #     )
 
         if self.D == 3:
             diag_3, n3 = self.get_cells_G_diag_3(boundary, diag_2)
