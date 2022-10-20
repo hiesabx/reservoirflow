@@ -1219,7 +1219,9 @@ class Model(Base):
                 A, d = self.init_matrices(sparse, threading)
 
         if sparse:
-            pressures = ssl.spsolve(A.tocsc(), d)
+            # pressures = ssl.spsolve(A.tocsc(), d.todense())
+            pressures, exit_code = ssl.qmr(A.tocsc(), d.todense())
+            assert exit_code == 0, "unsuccessful convergence"
         else:
             pressures = sl.solve(
                 A,
@@ -1664,9 +1666,9 @@ if __name__ == "__main__":
 
     def create_model_2d():
         grid = grids.Cartesian(
-            nx=70,
-            ny=70,
-            nz=10,
+            nx=500,
+            ny=500,
+            nz=1,
             dx=300,
             dy=350,
             dz=20,
@@ -1696,5 +1698,5 @@ if __name__ == "__main__":
         return model
 
     model = create_model_2d()
-    model.run(30)
-    model.show("pressures")
+    model.run(10)
+    # model.show("pressures")
