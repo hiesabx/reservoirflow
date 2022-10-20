@@ -61,6 +61,7 @@ notebook==6.4.8
 numpy==1.21.5
 -e git+https://github.com/zakgrin/openresim.git@af0bd9f6c917b86385348599382a80466a629e7a#egg=openresim
 packaging==21.3
+pandas==1.3.5
 pandocfilters==1.5.0
 parso==0.8.3
 pathspec==0.9.0
