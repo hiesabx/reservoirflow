@@ -1,7 +1,4 @@
-#%%
-from openresim import grids, fluids, models, utils
-import numpy as np
-import pandas as pd
+from openresim import grids, fluids, models, profme
 
 
 def create_model():
@@ -23,7 +20,7 @@ def create_model():
     return model
 
 
-@utils.profile("tottime", True, True)
+@profme.cProfiler("tottime", True, True)
 def benchmark(sparse=True, threading=False, check_MB=True, update=True):
     model = create_model()
     model.run(1, sparse, threading, check_MB)

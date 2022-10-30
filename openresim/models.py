@@ -1184,29 +1184,43 @@ class Model(Base):
         check_MB=True,
         update=True,
         print_arrays=False,
+        isolver="cgs",
     ):
         """Solve a single simulation tstep.
 
         Parameters
         ----------
-        sparse : bool, optional
-            _description_, by default True
-        threading : bool, optional
-            _description_, by default True
-        check_MB : bool, optional
-            _description_, by default True
-        update : bool, optional
-            _description_, by default True
-
-        Returns
-        -------
-        _type_
+        sparse : bool, optional, by default True
             _description_
+        threading : bool, optional, by default True
+            _description_
+        vectorize : bool, optional, by default True
+            _description_
+        check_MB : bool, optional, by default True
+            _description_
+        update : bool, optional, by default True
+            _description_
+        print_arrays : bool, optional, by default False
+            _description_
+        isolver : str, optional, by default "cgs"
+            iterative solver for sparse matrices. Available solvers are
+            ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
+            "minres", "qmr", "gcrotmk", "tfqmr"].
+            If None, direct solver is used. Only relevant when argument
+            sparse=True. Option "cgs" is recommended to increase
+            performance while option "minres" is not recommended due to
+            high MB error. For more information check [1][2].
 
         Backup
         ------
-        - another not sparse solutions:
-            pressures = np.dot(np.linalg.inv(self.A), self.d)
+        - Direct solutions can also be obtained using matrix dot product
+        (usually slower) as following:
+            pressures = np.dot(np.linalg.inv(A), d).flatten()
+
+        References
+        ----------
+        [1] https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems
+        [2] https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers
         """
         if print_arrays:
             A, d = self.init_matrices(sparse, threading)  #  has to be first
@@ -1219,17 +1233,36 @@ class Model(Base):
                 A, d = self.init_matrices(sparse, threading)
 
         if sparse:
-            # pressures = ssl.spsolve(A.tocsc(), d.todense())
-            pressures, exit_code = ssl.qmr(A.tocsc(), d.todense())
-            assert exit_code == 0, "unsuccessful convergence"
+            if isolver:
+                if isolver == "bicg":
+                    solver = ssl.bicg
+                elif isolver == "bicgstab":
+                    solver = ssl.bicgstab
+                elif isolver == "cg":
+                    solver = ssl.cg
+                elif isolver == "cgs":
+                    solver = ssl.cgs
+                elif isolver == "gmres":
+                    solver = ssl.gmres
+                elif isolver == "lgmres":
+                    solver = ssl.lgmres
+                elif isolver == "minres":
+                    solver = ssl.minres
+                    warnings.warn("option isolver='minres' is not recommended.")
+                elif isolver == "qmr":
+                    solver = ssl.qmr
+                elif isolver == "gcrotmk":
+                    solver = ssl.gcrotmk
+                # elif isolver == "tfqmr":
+                # solver = ssl.tfqmr
+                else:
+                    raise ValueError("isolver is unknown.")
+                pressures, exit_code = solver(A.tocsc(), d.todense(), atol=0)
+                assert exit_code == 0, "unsuccessful convergence"
+            else:
+                pressures = ssl.spsolve(A.tocsc(), d.todense(), use_umfpack=True)
         else:
-            pressures = sl.solve(
-                A,
-                d,
-                assume_a="gen",  # "gen" or "sym"
-                check_finite=False,
-            ).flatten()
-            # pressures = np.linalg.solve(self.A, self.d).flatten()
+            pressures = sl.solve(A, d).flatten()
 
         if update:
             self.tstep += 1
@@ -1253,8 +1286,6 @@ class Model(Base):
             print("[info] Pressures:\n", self.pressures[self.tstep])
             print("[info] rates:\n", self.rates[self.tstep])
 
-        # return pressures
-
     def run(
         self,
         nsteps=10,
@@ -1263,6 +1294,7 @@ class Model(Base):
         vectorize=True,
         check_MB=True,
         print_arrays=False,
+        isolver="cgs",
     ):
         """Perform a simulation run for nsteps.
 
@@ -1276,6 +1308,19 @@ class Model(Base):
             _description_
         check_MB : bool, optional, by default True
             _description_
+        isolver : str, optional, by default "cgs"
+            iterative solver for sparse matrices. Available solvers are
+            ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
+            "minres", "qmr", "gcrotmk", "tfqmr"].
+            If None, direct solver is used. Only relevant when argument
+            sparse=True. Option "cgs" is recommended to increase
+            performance while option "minres" is not recommended due to
+            high MB error. For more information check [1][2].
+
+        References
+        ----------
+        [1] https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems
+        [2] https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers
         """
         start_time = time.time()
         self.nsteps += nsteps
@@ -1300,6 +1345,7 @@ class Model(Base):
                 check_MB,
                 True,
                 print_arrays,
+                isolver,
             )
 
         self.run_ctime = round(time.time() - start_time, 2)
@@ -1319,7 +1365,15 @@ class Model(Base):
     # -------------------------------------------------------------------------
 
     def check_MB(self, verbose=False, error_threshold=0.1):
-        """Material Balance Check"""
+        """Material Balance Check
+
+        Parameters
+        ----------
+        verbose : bool, optional, by default False
+            _description_
+        error_threshold : float, optional, by default 0.1
+            _description_
+        """
         if verbose:
             print(f"[info] Error in step {self.tstep}")
 
@@ -1664,11 +1718,11 @@ if __name__ == "__main__":
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
-    def create_model_2d():
+    def create_model():
         grid = grids.Cartesian(
-            nx=500,
-            ny=500,
-            nz=1,
+            nx=100,
+            ny=100,
+            nz=2,
             dx=300,
             dy=350,
             dz=20,
@@ -1697,6 +1751,6 @@ if __name__ == "__main__":
 
         return model
 
-    model = create_model_2d()
-    model.run(10)
-    # model.show("pressures")
+    model = create_model()
+    model.run(10, isolver="cgs")
+    model.show("pressures")
