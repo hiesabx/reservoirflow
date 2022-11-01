@@ -13,6 +13,7 @@ import sympy as sym
 import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import warnings
@@ -1752,5 +1753,6 @@ if __name__ == "__main__":
         return model
 
     model = create_model()
-    model.run(10, isolver="cgs")
+    # model.run(10, isolver="cgs")
+    model.run(10, isolver=None)
     model.show("pressures")
