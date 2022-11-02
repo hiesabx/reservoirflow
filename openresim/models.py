@@ -13,7 +13,6 @@ import sympy as sym
 import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
-import tensorflow as tf
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import warnings
@@ -932,8 +931,8 @@ class Model(Base):
         v2 = self.RHS[self.cells_id].flatten()
         v3 = v1 - v2
         self.A_[self.cells_i, self.cells_i] = v3
-        # if sparse:
-        #     self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
+        if sparse:
+            self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
         return self.A_
 
     def __init_d(self, sparse):
