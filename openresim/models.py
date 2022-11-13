@@ -6,7 +6,7 @@ simulation model in combination with a Fluid class and Grid class.
 """
 import time
 from openresim.base import Base
-from openresim import grids, fluids, wells, plots, profme, utils
+from openresim import grids, fluids, wells, plots, solvers, profme, utils
 from openresim.utils import _lru_cache
 import numpy as np
 import sympy as sym
@@ -70,7 +70,7 @@ class Model(Base):
         pi : int, optional, by default None
             Initial reservoir pressure.
         dt : int, optional, by default 1
-            Time duration for each time step.
+            Time step duration in days.
         dtype : str or `np.dtype`, optional, by default 'double'
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
@@ -99,8 +99,7 @@ class Model(Base):
         # self.__calc_dir_T()
         self.__calc_RHS()
         self.bdict = {}
-        # self.set_boundaries({})
-        # self.set_boundaries({0: ("rate", 0)})
+        self.bdict_update = []
 
     # -------------------------------------------------------------------------
     # Basic:
@@ -136,7 +135,7 @@ class Model(Base):
 
         self.n = self.grid.get_n(False)
         self.cells_i = self.grid.get_cells_i(False)
-        self.cells_id = self.grid.get_cells_id(False, False, "list")
+        self.cells_id = self.grid.get_cells_id(False, False, "array")  # or list
         self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
         self.boundaries_id = self.grid.get_boundaries("id", "array")
 
@@ -494,6 +493,10 @@ class Model(Base):
             assert id in boundaries, f"cell {id} is not a boundary cell."
             cond, v = bdict[id]
             self.set_boundary(id, cond, v)
+
+        self.bdict_update = [
+            id_b for id_b in self.bdict.keys() if self.bdict[id_b][0] == "pressure"
+        ]
 
     def set_all_boundaries(self, cond, v):
         """Set the same boundary condition in all boundaries.
@@ -1012,11 +1015,8 @@ class Model(Base):
         if self.tstep == 0:
             self.resolve = defaultdict(lambda: False)
             self.init_A(sparse)
-            bdict_keys = [
-                id_b for id_b in self.bdict.keys() if self.bdict[id_b][0] == "pressure"
-            ]
             self.bdict_v = {}
-            for id_b in bdict_keys:
+            for id_b in self.bdict_update:
                 ((id, T),) = self.get_cell_T(id_b, None, False).items()
                 p = eval(f"sym.Symbol('p{id}')")
                 b_term = self.__calc_b_terms(id, id_b, p, T)
@@ -1158,7 +1158,7 @@ class Model(Base):
         return False
 
     def __update_boundaries(self):
-        for id_b in self.bdict.keys():
+        for id_b in self.bdict_update:
             ((id_n, T),) = self.get_cell_T(id_b, None, False).items()
             p_n = self.pressures[self.tstep, id_n]
             b_terms = self.__calc_b_terms(id_n, id_b, p_n, T)
@@ -1209,18 +1209,13 @@ class Model(Base):
             If None, direct solver is used. Only relevant when argument
             sparse=True. Option "cgs" is recommended to increase
             performance while option "minres" is not recommended due to
-            high MB error. For more information check [1][2].
+            high MB error.
 
         Backup
         ------
         - Direct solutions can also be obtained using matrix dot product
         (usually slower) as following:
             pressures = np.dot(np.linalg.inv(A), d).flatten()
-
-        References
-        ----------
-        [1] https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems
-        [2] https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers
         """
         if print_arrays:
             A, d = self.init_matrices(sparse, threading)  #  has to be first
@@ -1234,30 +1229,13 @@ class Model(Base):
 
         if sparse:
             if isolver:
-                if isolver == "bicg":
-                    solver = ssl.bicg
-                elif isolver == "bicgstab":
-                    solver = ssl.bicgstab
-                elif isolver == "cg":
-                    solver = ssl.cg
-                elif isolver == "cgs":
-                    solver = ssl.cgs
-                elif isolver == "gmres":
-                    solver = ssl.gmres
-                elif isolver == "lgmres":
-                    solver = ssl.lgmres
-                elif isolver == "minres":
-                    solver = ssl.minres
-                    warnings.warn("option isolver='minres' is not recommended.")
-                elif isolver == "qmr":
-                    solver = ssl.qmr
-                elif isolver == "gcrotmk":
-                    solver = ssl.gcrotmk
-                # elif isolver == "tfqmr":
-                # solver = ssl.tfqmr
-                else:
-                    raise ValueError("isolver is unknown.")
-                pressures, exit_code = solver(A.tocsc(), d.todense(), atol=0)
+                solver = solvers.get_isolver(isolver)
+                pressures, exit_code = solver(
+                    A.tocsc(),
+                    d.todense(),
+                    atol=0,
+                    # x0=self.pressures[self.tstep, self.cells_id],
+                )
                 assert exit_code == 0, "unsuccessful convergence"
             else:
                 pressures = ssl.spsolve(A.tocsc(), d.todense(), use_umfpack=True)
@@ -1571,6 +1549,47 @@ class Model(Base):
 
         return df
 
+    def get_data(
+        self,
+        boundary=True,
+        units=False,
+        drop_nan=True,
+        # drop_zero=True,
+    ):
+
+        if units:
+            time_str = f"Time [{self.units['time']}]"
+        else:
+            time_str = "Time"
+
+        df = self.get_dataframe(
+            boundary=boundary,
+            units=units,
+            columns=["time", "cells_pressure"],
+            save=False,
+            drop_nan=False,
+            drop_zero=False,
+        )
+
+        data = (
+            df.iloc[1:, :]
+            .melt(
+                id_vars=time_str,
+                var_name="cells_id",
+                value_name="pressure",
+                ignore_index=False,
+            )
+            .reset_index(drop=False)
+        )
+
+        cells_id = self.grid.get_cells_id(boundary, False, "array")
+        data["cells_id"] = np.repeat(cells_id, self.nsteps)
+
+        if drop_nan:
+            data = data.dropna(axis=0, how="any")
+
+        return data
+
     # -------------------------------------------------------------------------
     # Visualization:
     # -------------------------------------------------------------------------
@@ -1752,6 +1771,6 @@ if __name__ == "__main__":
         return model
 
     model = create_model()
-    # model.run(10, isolver="cgs")
-    model.run(10, isolver=None)
+    model.run(10, isolver="cgs")
+    # model.run(10, isolver=None)
     model.show("pressures")
