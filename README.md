@@ -44,6 +44,10 @@ The author aims to create an open-source community for the oil & gas industry an
 | **Optimization**     |Reinforcement Learning | No   | `-`         |
 | **Quantum Computing**|                | No          | `-`         |
 
+## Vision
+
+This library brings reservoir simulation to the the Python ecosystem including data analytics and machine learning tools which is in itself a huge benefit. Having this option allows for a better integration and support with intelligent fields (e.g. software containers based on this library can built and deployed to improve production and reservoir management such as real-time well production optimization). In contrast to commercial softwares where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
+
 ## Motivation
 
 Open-source and reproducible research is very scarce in the oil & gas industry. This unfortunate reality has lead many reservoir engineers to be limited and dependant on commercial tools that are closed black-boxes. This has led to severe limitations when it comes to skills and innovation. For example, reservoir engineers can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why oil & gas industry is still behind in the AI revolution.
