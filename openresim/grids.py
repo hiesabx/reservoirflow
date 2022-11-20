@@ -126,27 +126,38 @@ class Cartesian(Grid):
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
         kx : int, float, array-like, optional, by default None
-            permeability in x-direction (relevant only if 'x' was in
-            fluid flow direction). In case of a list or array,
+            permeability (i.e. the capacity of the grid block to
+            transmit fluid through its interconnected pores).
+            Permeability is a directional property, check is_isotropic
+            property. Permeability in x-direction (relevant only if 'x'
+            was in fluid flow direction). In case of a list or array,
             the length should be equal to nx+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g. from
+            boundary cells. Vales should be in natural order (i.g.from
             left to right).
         ky : int, float, array-like, optional, by default None
-            permeability in y-direction (relevant only if 'y' was in
-            fluid flow direction). In case of a list or array,
+            permeability (i.e. the capacity of the grid block to
+            transmit fluid through its interconnected pores).
+            Permeability is a directional property, check is_isotropic
+            property. Permeability in y-direction (relevant only if 'y'
+            was in fluid flow direction). In case of a list or array,
             the length should be equal to ny+2 for all cells including
             boundary cells. Vales should be in natural order (i.g.from
             front to back).
         kz : int, float, array-like, optional, by default None
-            permeability in z-direction (relevant only if 'z' was in
-            fluid flow direction). In case of a list or array,
+            permeability (i.e. the capacity of the grid block to
+            transmit fluid through its interconnected pores).
+            Permeability is a directional property, check is_isotropic
+            property. Permeability in z-direction (relevant only if 'z'
+            was in fluid flow direction). In case of a list or array,
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
         phi : float, array-like, optional, by default None
-            porosity. In case of an array, the shape should be equal to
-            grid.shape with boundaries. Vales should be in natural
-            order.
+            porosity (i.e. effective porosity defined as the ratio of
+            interconnected pores to the grid bulk volume). Porosity is a
+            spacial property, check is_homogenous property.
+            In case of an array, the shape should be equal to grid.shape
+            with boundaries. Vales should be in natural order.
         z : int, float, array-like, optional, by default 0.
             depth of grid tops (NOT FULLY IMPLEMENTED).
         comp : float, optional, by default None
@@ -2439,21 +2450,17 @@ class Cartesian(Grid):
 
     @property
     def is_homogeneous(self):
-        """Returns homogeneity as bool
+        """Returns homogeneity as bool.
 
-        This property checks if kx, ky, kz, and phi are the same
-        across the grid.
+        This property checks if the porosity (phi) is the same across
+        all grids.
 
         Returns
         -------
         bool
             True if homogeneous, otherwise False.
-
-        ToDo
-        ----
-        - check across kx, ky as well. review the definition.
         """
-        props = ["kx", "ky", "kz", "phi"]
+        props = ["phi"]
         props = [name for name in props if self.__props__[name] is not None]
         for name in props:
             prop = self.get_prop(name, False, False)
@@ -2463,17 +2470,51 @@ class Cartesian(Grid):
 
     @property
     def is_heterogeneous(self):
-        """Returns heterogeneity as bool
+        """Returns heterogeneity as bool.
 
-        This property checks if kx, ky, kz, and phi are not the same
-        across the grid.
+        This property checks if the porosity (phi) is not the same
+        across all grids.
 
         Returns
         -------
         bool
-            True if heterogeneity, otherwise False.
+            True if heterogeneous, otherwise False.
         """
         return not self.is_homogeneous
+
+    @property
+    def is_isotropic(self):
+        """Returns isotropic as bool
+
+        This property checks if kx, ky, and kz are the same across all
+        grids.
+
+        Returns
+        -------
+        bool
+            True if isotropic, otherwise False.
+        """
+        props = ["kx", "ky", "kz"]
+        props = [name for name in props if self.__props__[name] is not None]
+        for name in props:
+            prop = self.get_prop(name, False, False)
+            if not np.all(prop == prop[0]):
+                return False
+        return True
+
+    @property
+    def is_anisotropic(self):
+        """Returns anisotropic as bool
+
+        This property checks if kx, ky, and kz are not the same across
+        all grids.
+
+        Returns
+        -------
+        bool
+            True if anisotropic, otherwise False.
+        """
+        return not self.is_isotropic
 
     # -------------------------------------------------------------------------
     # Geometry Factor:
