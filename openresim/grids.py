@@ -2449,6 +2449,7 @@ class Cartesian(Grid):
         return self.get_cell_k("z", id, coords)
 
     @property
+    @_lru_cache(maxsize=1)
     def is_homogeneous(self):
         """Returns homogeneity as bool.
 
@@ -2469,6 +2470,7 @@ class Cartesian(Grid):
         return True
 
     @property
+    @_lru_cache(maxsize=1)
     def is_heterogeneous(self):
         """Returns heterogeneity as bool.
 
@@ -2483,6 +2485,7 @@ class Cartesian(Grid):
         return not self.is_homogeneous
 
     @property
+    @_lru_cache(maxsize=1)
     def is_isotropic(self):
         """Returns isotropic as bool
 
@@ -2503,6 +2506,7 @@ class Cartesian(Grid):
         return True
 
     @property
+    @_lru_cache(maxsize=1)
     def is_anisotropic(self):
         """Returns anisotropic as bool
 
@@ -2516,6 +2520,41 @@ class Cartesian(Grid):
         """
         return not self.is_isotropic
 
+    @property
+    @_lru_cache(maxsize=1)
+    def is_regular(self):
+        """Returns regularity as bool
+
+        This property checks if dx, dy, and dz are the same across all
+        grids.
+
+        Returns
+        -------
+        bool
+            True if regular, otherwise False.
+        """
+        props = ["x", "y", "z"]
+        for name in props:
+            prop = self.get_cells_d(name, False, False)
+            if not np.all(prop == prop[0]):
+                return False
+        return True
+
+    @property
+    @_lru_cache(maxsize=1)
+    def is_irregular(self):
+        """Returns irregularity as bool
+
+        This property checks if dx, dy, and dz are the same across all
+        grids.
+
+        Returns
+        -------
+        bool
+            True if irregular, otherwise False.
+        """
+        return not self.is_regular
+
     # -------------------------------------------------------------------------
     # Geometry Factor:
     # -------------------------------------------------------------------------
@@ -2528,7 +2567,8 @@ class Cartesian(Grid):
         k = self.get_cells_k(dir, boundary, False, "array")
         A = self.get_cells_A(dir, boundary, False)
         d = self.get_cells_d(dir, boundary, False)
-        if self.is_homogeneous:
+
+        if self.is_isotropic and self.is_regular:
             diag_1 = (
                 self.factors["transmissibility conversion"]
                 * ((k[:-1] + k[1:]) / 2)
@@ -2563,7 +2603,8 @@ class Cartesian(Grid):
         k = self.get_cells_k(dir, boundary, False, "array")
         A = self.get_cells_A(dir, boundary, False)
         d = self.get_cells_d(dir, boundary, False)
-        if self.is_homogeneous:
+
+        if self.is_isotropic and self.is_regular:
             diag_2 = (
                 self.factors["transmissibility conversion"]
                 * ((k[:n2_] + k[n2:]) / 2)
@@ -2596,7 +2637,8 @@ class Cartesian(Grid):
         k = self.get_cells_k(dir, boundary, False, "array")
         A = self.get_cells_A(dir, boundary, False)
         d = self.get_cells_d(dir, boundary, False)
-        if self.is_homogeneous:
+
+        if self.is_isotropic and self.is_regular:
             diag_3 = (
                 self.factors["transmissibility conversion"]
                 * ((k[:n4] + k[n3:]) / 2)
@@ -2710,7 +2752,7 @@ class Cartesian(Grid):
                 d_n = self.get_cell_d(dir, id_n, None)
                 A_n = self.get_cell_A(dir, id_n, None)
                 k_n = self.get_cell_k(dir, id_n, None)
-                if self.is_homogeneous:
+                if self.is_isotropic:  # or regular grid (To do)
                     G[id_n] = (
                         self.factors["transmissibility conversion"]
                         * ((k + k_n) / 2)

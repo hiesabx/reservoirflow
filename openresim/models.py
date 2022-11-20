@@ -1739,8 +1739,8 @@ if __name__ == "__main__":
 
     def create_model():
         grid = grids.Cartesian(
-            nx=100,
-            ny=100,
+            nx=500,
+            ny=500,
             nz=2,
             dx=300,
             dy=350,

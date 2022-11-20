@@ -129,4 +129,20 @@ After solvers module: 12.11.2022
 6       qmr  0.002034  128.71
 5    lgmres  0.002043  121.59
 7   gcrotmk  0.002050  122.95
+
+############################################################
+After using cache in is_homogeneous and is_regular: 20.11.2022
+############################################################
+
+(nx=500, ny=500, nz=4)
+    isolver     error   ctime
+3       cgs  0.000221  111.37 > lowest error
+2        cg  0.001043  112.85
+0      bicg  0.001043  110.04
+1  bicgstab  0.001393  108.95 > fastest ctime
+5    lgmres  0.001991  122.98
+6       qmr  0.002034  134.56
+7   gcrotmk  0.002038  128.41
+4     gmres  0.002040  111.76
+
 """
