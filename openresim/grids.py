@@ -2490,7 +2490,10 @@ class Cartesian(Grid):
         """Returns isotropic as bool
 
         This property checks if kx, ky, and kz are the same across all
-        grids.
+        grids. In other words, `all(kx == kx[0])`, `all(ky == ky[0])`,
+        and `all(kz == kz[0])`. However, other isotropic conventions
+        where `kx = ky = kz` either across all cells or in single cells
+        are still not used.
 
         Returns
         -------

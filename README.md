@@ -4,13 +4,16 @@
 Petroleum Reservoir Simulation using Scientific Computing and Machine Learning With Python developed by [Zakariya ABUGRIN](https://github.com/zakgrin).
 --->
 
+![Alt Text](images/five_spot_single_phase.gif)
+*Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns*
+
 ## Introduction
 
-Open Reservoir Simulation Library, shortly `openresim`, is a modern open-source python library created by [Zakariya ABUGRIN](https://github.com/zakgrin). `openresim` helps reservoir engineers to be proficient scientists and engineers who are able to express their practical and scientific knowledge by coding.
+Open Reservoir Simulation Library, shortly `openresim`, is a modern open-source python library created by [Zakariya ABUGRIN](https://github.com/zakgrin). `openresim` helps (petroleum) reservoir engineers to be proficient scientists and engineers who are able to express their practical and scientific knowledge by coding.
 
 This library is designed based on the modern Python stack for data science and scientific computing. Hence, this library is directly integrated with AI and ML Python frameworks and libraries.
 
-`openresim` is designed to open the door towards achieving the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples for the problems that will be tackled in future:
+`openresim` is designed to open the door towards achieving the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples for the problems that will be tackled in the future:
 
 - History matching using machine learning.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).
@@ -18,7 +21,7 @@ This library is designed based on the modern Python stack for data science and s
 - Advanced computing such as: GPU Computing, and Quantum Computing.
 - Real-time reservoir management and production optimization using Cloud Computing and IoT.
 
-The author aims to create an open-source community for the oil & gas industry and to form a start-up that can take this duty as a business mention. A company that can provide cutting-edge software and engineering solutions as __open-source__ and then can profit from these softwares and provide more services such as training or consultation. If your company is interested in having this option, then please get in touch. Crating such a company, will put the oil & gas industry in the right direction for many years to come.
+The author aims to create an open-source community for the oil & gas industry and to form a start-up that can take this duty as a business mention. A company that can provide cutting-edge software and engineering solutions as __open-source__ and then can profit from its services such as training or consultation. If your company is interested in having this option, then please get in touch. Crating such a company, will put the oil & gas industry in the right direction for many years to come.
 
 ## Version
 
@@ -46,21 +49,21 @@ The author aims to create an open-source community for the oil & gas industry an
 
 ## Vision
 
-This library brings reservoir simulation to the the Python ecosystem including data analytics and machine learning tools which is in itself a huge benefit. Having this option allows for a better integration and support with intelligent fields (e.g. software containers based on this library can built and deployed to improve production and reservoir management such as real-time well production optimization). In contrast to commercial softwares where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
+This library brings reservoir simulation to the Python ecosystem including data analytics and machine learning tools which is in itself a huge benefit. Having this option allows for a better integration and support with intelligent fields (e.g. software containers based on this library can be built and deployed to improve production and reservoir management such as real-time well production optimization). In contrast to commercial software where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
 
 ## Motivation
 
-Open-source and reproducible research is very scarce in the oil & gas industry. This unfortunate reality has lead many reservoir engineers to be limited and dependant on commercial tools that are closed black-boxes. This has led to severe limitations when it comes to skills and innovation. For example, reservoir engineers can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why oil & gas industry is still behind in the AI revolution.
+Open-source and reproducible research is very scarce in the oil & gas industry. This unfortunate reality has lead many reservoir engineers to be limited and dependent on commercial tools that are closed black-boxes. This has led to severe limitations when it comes to skills and innovation. For example, reservoir engineers can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why oil & gas industry is still behind in the AI revolution.
 
-The author believes that this sad reality has to be changed as soon as possible. Reservoir engineers face difficult challenges to get careers in or outside of the oil & gas industry mainly due to the lack of soft-skills. Otherwise, a reservoir engineer, who has a great mix of science (i.e. mathematics, statistics, scientific computing, programming, chemistry, physics, fluid mechanics and thermodynamics, geology, etc.), should have no reason to stay unemployed.
+The author believes that this sad reality has to be changed as soon as possible. Reservoir engineers face difficult challenges to get careers in or outside the oil & gas industry mainly due to the lack of soft-skills. Otherwise, a reservoir engineer, who has a great mix of science (i.e. mathematics, statistics, scientific computing, programming, chemistry, physics, fluid mechanics and thermodynamics, geology, etc.), should have no reason to stay unemployed.
 
 This sad reality can be changed if reservoir engineers are trained to express their scientific and engineering knowledge with coding. In addition, this will bring more excitements and job satisfaction. Those who learn to do reservoir simulation in Python should be familiar with the scientific computing and machine learning stack in Python. Therefore, it will be easy for them to change careers and work as data scientists, data analysts, or ML engineer in other industries.
 
-On a larger scale, an open-source reservoir simulation library within Python eco-system will be very important to students, universities, researches or even service companies who can use this tool for commercial studies and applications. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil & gas community that we try to create. However, this brings us to the next topic of [Sponsorship](#sponsorship).
+On a larger scale, an open-source reservoir simulation library within Python ecosystem will be very important to students, universities, researches or even service companies who can use this tool for commercial studies and applications. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil & gas community that we try to create. However, this brings us to the next topic of [Sponsorship](#sponsorship).
 
 ## Sponsorship
 
-Any open-source tool requires resources that cost both time and money. Although much of open-source work is driven by the good intension of having an accessible and reproducible research, open-source have also proved to be a very successful business model especially when the tool grows to a production level. Compare for example Python with other commercial tools (e.g. Matlab). Python is open-source but also much more successful!
+Any open-source tool requires resources that cost both time and money. Although much of open-source work is driven by the good intention of having an accessible and reproducible research, open-source have also proved to be a very successful business model especially when the tool grows to a production level. Compare for example Python with other commercial tools (e.g. Matlab). Python is open-source but also much more successful!
 
 To reach a stable and production level, we will need enough investment to develop, upgrade, and maintain this tool. Here comes the role of oil & gas companies (i.e. especially operation companies) who may benefit a lot from this tool to Sponsorship this project. This will help us as a community to dedicate more resources and to add new features (i.e. let it be Quantum Computing!) or fix some bugs.
 
@@ -89,12 +92,12 @@ If you are a developer or want to be one, you need additionally to:
 
 **Companies:**
 
-If you are a company who may use this tool for commercial application, then the best way is to [Sponsorship](#sponsorship) this project. Additionally you can do the following:
+If you are a company who may use this tool for commercial application, then the best way is to [Sponsorship](#sponsorship) this project. Additionally, you can do the following:
 
 - Use this tool for your internal projects.
-- In case new features are needed, then open a new request under [issues](https://github.com/zakgrin/openresim/issues). In contrast, we also expect some [Sponsorship](#sponsorship) so we have the required resources to develop this feature specifically for you. 
+- In case new features are needed, then open a new request under [issues](https://github.com/zakgrin/openresim/issues). In contrast, we also expect some [Sponsorship](#sponsorship), so we have the required resources to develop this feature specifically for you.
 - Encourage your RE teams to participate in this project as developers and not only as normal users. If you do not have any, hire one who can do so.
-- Use our future offers that we will announce latter once the community grow enough (i.e. trainings, consultation, special use cases etc).
+- Use our future offers that we will announce latter once the community grow enough (i.e. trainings, consultation, special use cases etc.).
 
 ## Installation
 
@@ -106,7 +109,6 @@ If you are a company who may use this tool for commercial application, then the 
 git clone https://github.com/zakgrin/openresim.git
 cd openresim
 ```
-
 
 ### Setup a python environment
 
@@ -137,7 +139,7 @@ An excellent library needs two things: a clean code and a clean documentation. T
 - [PEP8](https://peps.python.org/pep-0008/) to produce a clean code that can be easily understood by others (PEP8 is given the highest priority).
 - [PEP257](https://peps.python.org/pep-0257/) to produce a clean documentation.
 
-The author follows the intuitive pythonic way ([PEP20](https://peps.python.org/pep-0020/)) to design this library. This should allow to build complex reservoir simulation models that are both innovative and efficient.
+The author follows the intuitive pythonic way ([PEP20](https://peps.python.org/pep-0020/)) to design this library. This should allow building complex reservoir simulation models that are both innovative and efficient.
 
 Future developers and engineers who intend to contribute to this library should always keep in mind this convention to keep the source code clean and easy to follow.
 
@@ -158,5 +160,4 @@ This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareA
 ### License Disclaimer
 
 The current license does not allow commercial use. The author would like to change the license to
-[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. 
-However, this depends on the level of sponsorship that is offered by the community for this project.
+[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. However, this depends on the level of sponsorship that is offered by the community for this project.
