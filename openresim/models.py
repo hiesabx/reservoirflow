@@ -122,6 +122,9 @@ class Model(Base):
         self.pi = pi
         if pi is not None:
             self.pressures[0, self.grid.cells_id] = pi
+        else:
+            warnings.warn("Initial reservoir pressure is not defined.")
+            print(f"[warning] Pi is by default set to {self.pi}.")
 
         if start_date is None:
             self.start_date = date.today()
@@ -1403,16 +1406,19 @@ class Model(Base):
             return df
         return data
 
-    def __add_time(self, units, df=None):
+    def __add_time(self, units, melt, boundary, df=None):
         if units:
             time_str = f" [{self.units['time']}]"
         else:
             time_str = ""
         time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
+        if melt:
+            n_cells = self.grid.get_n(boundary)
+            time = np.repeat(time, n_cells)
         data = pd.Series(time, name="Time" + time_str)
         return self.__concat(data, df)
 
-    def __add_date(self, units, df=None):
+    def __add_date(self, units, melt, boundary, df=None):
         if units:
             date_str = f" [d.m.y]"
         else:
@@ -1423,42 +1429,54 @@ class Model(Base):
             freq=str(self.dt) + "D",
         ).strftime("%d.%m.%Y")
         data = pd.Series(date_series, name="Date" + date_str)
+        if melt:
+            n_cells = self.grid.get_n(boundary)
+            data = data.repeat(n_cells).reset_index(drop=True)
         return self.__concat(data, df)
 
-    def __add_cells_rate(self, units, boundary, df=None):
+    def __add_cells_rate(self, units, melt, boundary, df=None):
         if units:
             rate_str = f" [{self.units['rate']}]"
         else:
             rate_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        cells = [id for id in cells_id if id not in self.wells.keys()]
-        labels = [f"q{str(id)}" + rate_str for id in cells]
-        array = self.rates[:, cells]
+        if melt:
+            labels = ["Q" + rate_str]
+            array = self.rates[:, cells_id].reshape(-1, 1)
+        else:
+            cells = [id for id in cells_id if id not in self.wells.keys()]
+            labels = [f"Q{str(id)}" + rate_str for id in cells]
+            array = self.rates[:, cells]
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_cells_pressures(self, units, boundary, df=None):
+    def __add_cells_pressures(self, units, melt, boundary, df=None):
         if units:
             press_str = f" [{self.units['pressure']}]"
         else:
             press_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        labels = [f"P{str(id)}" + press_str for id in cells_id]
         array = self.pressures[:, cells_id]
+        if melt:
+            labels = ["P" + press_str]
+            array = array.flatten()
+        else:
+            labels = [f"P{str(id)}" + press_str for id in cells_id]
+
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_wells_rate(self, units, boundary, df=None):
+    def __add_wells_rate(self, units, df=None):
         if units:
             rate_str = f" [{self.units['rate']}]"
         else:
             rate_str = ""
-        labels = [f"Q{str(id)}" + rate_str for id in self.wells.keys()]
+        labels = [f"Qw{str(id)}" + rate_str for id in self.wells.keys()]
         array = self.rates[:, list(self.wells.keys())]
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_wells_pressures(self, units, boundary, df=None):
+    def __add_wells_pressures(self, units, df=None):
         if units:
             press_str = f" [{self.units['pressure']}]"
         else:
@@ -1472,8 +1490,9 @@ class Model(Base):
         self,
         boundary=True,
         units=True,
+        melt=True,
         columns=["time", "date", "wells"],
-        save=True,
+        save=False,
         drop_nan=True,
         drop_zero=True,
     ):
@@ -1486,6 +1505,10 @@ class Model(Base):
             It is only relevant when cells columns are selected.
         units : bool, optional, by default True
             column names with units (True) or without units (False).
+        melt : bool, optional, by default False
+            to melt columns of the same property to one column. By
+            default, cells id, x, y, z, step columns are included while
+            wells columns (wells_rate, wells_pressure) are ignored.
         columns : list, optional, by default ["time", "date", "wells"]
             selected columns to be added to the dataframe. The following
             options are available:
@@ -1502,9 +1525,11 @@ class Model(Base):
         save : bool, optional, by default True
             save output as a csv file.
         drop_nan : bool, optional, by default True
-            drop columns which contain only nan values.
+            drop columns which contain only nan values if melt is False.
+            if melt is True, drop rows which contain any nan values.
         drop_zero : bool, optional, by default True
-            drop columns which contain only zero values.
+            drop columns which contain only zero values. This argument
+            is ignored if melt is True.
 
         Returns
         -------
@@ -1520,29 +1545,46 @@ class Model(Base):
             "wells_rate": ["q", "rates", "wells", "wells_rate"],
             "wells_pressure": ["p", "pressures", "wells", "wells_pressure"],
         }
+        col_vals = sum(col_dict.values(), [])
 
-        df = None
+        df = pd.DataFrame()
+        if melt:
+            n_cells = self.grid.get_n(boundary)
+            cells_id = self.grid.get_cells_id(boundary, False, "array")
+            cells_center = self.grid.get_cells_center(boundary, False, False)
+            df["id"] = np.tile(cells_id, self.nsteps + 1)
+            df["x"] = np.tile(cells_center[:, 0], self.nsteps + 1)
+            df["y"] = np.tile(cells_center[:, 1], self.nsteps + 1)
+            df["z"] = np.tile(cells_center[:, 2], self.nsteps + 1)
+            df["step"] = np.repeat(np.arange(self.nsteps + 1), n_cells)
+
         for c in columns:
+            if c.lower() not in col_vals:
+                raise ValueError(f"column {c} does not exist.")
             if c.lower() in col_dict["time"]:
-                df = self.__add_time(units, df)
+                df = self.__add_time(units, melt, boundary, df)
             if c.lower() in col_dict["date"]:
-                df = self.__add_date(units, df)
+                df = self.__add_date(units, melt, boundary, df)
             if c.lower() in col_dict["cells_rate"]:
-                df = self.__add_cells_rate(units, boundary, df)
+                df = self.__add_cells_rate(units, melt, boundary, df)
             if c.lower() in col_dict["cells_pressure"]:
-                df = self.__add_cells_pressures(units, boundary, df)
-            if c.lower() in col_dict["wells_rate"]:
-                df = self.__add_wells_rate(units, boundary, df)
-            if c.lower() in col_dict["wells_pressure"]:
-                df = self.__add_wells_pressures(units, boundary, df)
+                df = self.__add_cells_pressures(units, melt, boundary, df)
+            if c.lower() in col_dict["wells_rate"] and not melt:
+                df = self.__add_wells_rate(units, df)
+            if c.lower() in col_dict["wells_pressure"] and not melt:
+                df = self.__add_wells_pressures(units, df)
 
-        if drop_nan:
-            df = df.dropna(axis=1, how="all")
+        if melt:
+            if drop_nan:
+                df = df.dropna(axis=0, how="any")
+                df.reset_index(drop=True, inplace=True)
+        else:
+            if drop_nan:
+                df = df.dropna(axis=1, how="all")
+            if drop_zero:
+                df = df.loc[:, (df != 0).any(axis=0)]
+            df.index.name = "step"
 
-        if drop_zero:
-            df = df.loc[:, (df != 0).any(axis=0)]
-
-        df.index.name = "steps"
         if save:
             df.to_csv("model_data.csv")
             print("[info] Model data was successfully saved.")
@@ -1565,13 +1607,14 @@ class Model(Base):
         df = self.get_dataframe(
             boundary=boundary,
             units=units,
+            melt=False,
             columns=["time", "cells_pressure"],
             save=False,
             drop_nan=False,
             drop_zero=False,
         )
 
-        data = (
+        df = (
             df.iloc[1:, :]
             .melt(
                 id_vars=time_str,
@@ -1583,19 +1626,33 @@ class Model(Base):
         )
 
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        data["cells_id"] = np.repeat(cells_id, self.nsteps)
+        cells_center = self.grid.get_cells_center(boundary, False, False)
+        df["id"] = np.repeat(cells_id, self.nsteps)
+        df["x"] = np.repeat(cells_center[:, 0], self.nsteps)
+        df["y"] = np.repeat(cells_center[:, 1], self.nsteps)
+        df["z"] = np.repeat(cells_center[:, 2], self.nsteps)
 
         if drop_nan:
-            data = data.dropna(axis=0, how="any")
+            df = df.dropna(axis=0, how="any")
 
-        return data
+        return df
 
     # -------------------------------------------------------------------------
     # Visualization:
     # -------------------------------------------------------------------------
 
     def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
+        """Show values in a cartesian plot.
 
+        Parameters
+        ----------
+        prop : str, optional, by default "pressures"
+            property name from ["rates", "pressures"].
+        id : int, optional, by default None
+            cell id. If None, all cells is selected.
+        tstep : int, optional, by default None
+            time step. If None, the last time step is selected.
+        """
         if tstep is None:
             tstep = self.tstep
 
