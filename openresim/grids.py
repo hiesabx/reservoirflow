@@ -1347,7 +1347,7 @@ class Cartesian(Grid):
         return (self.dx, self.dy, self.dz)
 
     @_lru_cache(maxsize=None)
-    def get_cells_d(self, dir, boundary=True, fshape=True):
+    def get_cells_d(self, dir, boundary=True, fshape=False):
         """Returns cells dimensional meshgrid.
 
         Parameters
@@ -1393,7 +1393,7 @@ class Cartesian(Grid):
 
         return cells_d
 
-    def get_cells_dx(self, boundary=True, fshape=True):
+    def get_cells_dx(self, boundary=True, fshape=False):
         """Returns cells dx.
 
         Parameters
@@ -1410,7 +1410,7 @@ class Cartesian(Grid):
         """
         return self.get_cells_d("x", boundary, fshape)
 
-    def get_cells_dy(self, boundary=True, fshape=True):
+    def get_cells_dy(self, boundary=True, fshape=False):
         """Returns cells dy.
 
         Parameters
@@ -1427,7 +1427,7 @@ class Cartesian(Grid):
         """
         return self.get_cells_d("y", boundary, fshape)
 
-    def get_cells_dz(self, boundary=True, fshape=True):
+    def get_cells_dz(self, boundary=True, fshape=False):
         """Returns cells dz.
 
         Parameters
