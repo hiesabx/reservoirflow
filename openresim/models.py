@@ -21,6 +21,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import pyvista as pv
 from datetime import date
+from sklearn.preprocessing import MinMaxScaler
 
 # from numba import jit
 
@@ -1406,12 +1407,14 @@ class Model(Base):
             return df
         return data
 
-    def __add_time(self, units, melt, boundary, df=None):
+    def __add_time(self, units, melt, boundary, scale, df=None):
         if units:
             time_str = f" [{self.units['time']}]"
         else:
             time_str = ""
         time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
+        if scale:
+            time = self.time_scaler.transform(time.reshape(-1, 1)).flatten()
         if melt:
             n_cells = self.grid.get_n(boundary)
             time = np.repeat(time, n_cells)
@@ -1434,7 +1437,7 @@ class Model(Base):
             data = data.repeat(n_cells).reset_index(drop=True)
         return self.__concat(data, df)
 
-    def __add_cells_rate(self, units, melt, boundary, df=None):
+    def __add_cells_rate(self, units, melt, boundary, scale, df=None):
         if units:
             rate_str = f" [{self.units['rate']}]"
         else:
@@ -1444,19 +1447,26 @@ class Model(Base):
             labels = ["Q" + rate_str]
             array = self.rates[:, cells_id].reshape(-1, 1)
         else:
-            cells = [id for id in cells_id if id not in self.wells.keys()]
-            labels = [f"Q{str(id)}" + rate_str for id in cells]
-            array = self.rates[:, cells]
+            cells_id = [id for id in cells_id if id not in self.wells.keys()]
+            labels = [f"Q{str(id)}" + rate_str for id in cells_id]
+            array = self.rates[:, cells_id]
+        if scale:
+            array = self.rates_scaler.transform(array.reshape(-1, 1))
+            if not melt:
+                array = array.reshape(-1, len(cells_id))
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_cells_pressures(self, units, melt, boundary, df=None):
+    def __add_cells_pressures(self, units, melt, boundary, scale, df=None):
         if units:
             press_str = f" [{self.units['pressure']}]"
         else:
             press_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
         array = self.pressures[:, cells_id]
+        if scale:
+            array = self.pressures_scaler.transform(array.reshape(-1, 1))
+            array = array.reshape(-1, len(cells_id))
         if melt:
             labels = ["P" + press_str]
             array = array.flatten()
@@ -1466,32 +1476,75 @@ class Model(Base):
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_wells_rate(self, units, df=None):
+    def __add_wells_rate(self, units, scale, df=None):
         if units:
             rate_str = f" [{self.units['rate']}]"
         else:
             rate_str = ""
         labels = [f"Qw{str(id)}" + rate_str for id in self.wells.keys()]
         array = self.rates[:, list(self.wells.keys())]
+        if scale:
+            array = self.rates_scaler.transform(array.reshape(-1, 1))
+            array = array.reshape(-1, len(labels))
+
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_wells_pressures(self, units, df=None):
+    def __add_wells_pressures(self, units, boundary, scale, df=None):
         if units:
             press_str = f" [{self.units['pressure']}]"
         else:
             press_str = ""
         labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
         data = pd.DataFrame(self.w_pressures)
+        if scale:
+            data = self.pressures_scaler.transform(data.values.reshape(-1, 1))
+            data = pd.DataFrame(data.reshape(-1, len(labels)))
         data.columns = labels
         return self.__concat(data, df)
 
+    def __get_xyz(self, boundary):
+        pass
+
+    def __get_time(self):
+        pass
+
+    def __init_scalers(self, boundary):
+
+        config = {
+            "boundary": boundary,
+            "units": False,
+            "melt": False,
+            "scale": False,
+            "save": False,
+            "drop_nan": True,
+            "drop_zero": True,
+        }
+
+        # time scaler:
+        self.time_scaler = MinMaxScaler(feature_range=(0, 1))
+        time = self.get_dataframe(columns=["time"], **config)
+        self.time_scaler.fit(time.values.reshape(-1, 1))
+
+        # space scaler:
+
+        # pressures scaler:
+        self.pressures_scaler = MinMaxScaler(feature_range=(-1, 1))
+        pressures = self.get_dataframe(columns=["pressures"], **config)
+        self.pressures_scaler.fit(pressures.values.reshape(-1, 1))
+
+        # rates scaler:
+        self.rates_scaler = MinMaxScaler(feature_range=(-1, 1))
+        rates = self.get_dataframe(columns=["rates"], **config)
+        self.rates_scaler.fit(rates.values.reshape(-1, 1))
+
     def get_dataframe(
         self,
+        columns=["time", "date", "wells"],
         boundary=True,
         units=True,
         melt=True,
-        columns=["time", "date", "wells"],
+        scale=True,
         save=False,
         drop_nan=True,
         drop_zero=True,
@@ -1500,15 +1553,6 @@ class Model(Base):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
-            values with boundary (True) or without boundary (False).
-            It is only relevant when cells columns are selected.
-        units : bool, optional, by default True
-            column names with units (True) or without units (False).
-        melt : bool, optional, by default False
-            to melt columns of the same property to one column. By
-            default, cells id, x, y, z, step columns are included while
-            wells columns (wells_rate, wells_pressure) are ignored.
         columns : list, optional, by default ["time", "date", "wells"]
             selected columns to be added to the dataframe. The following
             options are available:
@@ -1522,6 +1566,20 @@ class Model(Base):
             "cells_pressure": for all cells pressures.
             "wells_rate": for all wells rates.
             "wells_pressure": for all wells pressures.
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+            It is only relevant when cells columns are selected.
+        units : bool, optional, by default True
+            column names with units (True) or without units (False).
+        melt : bool, optional, by default False
+            to melt columns of the same property to one column. By
+            default, cells id, x, y, z, step columns are included while
+            wells columns (wells_rate, wells_pressure) are ignored.
+        scale : bool, optional, by default False
+            scale spatial domain values (x, y, z) and pressures between
+            -1 and 1 and timesteps between 0 and 1. Sklearn scalers are
+            used to scale values. To inverse the scaling, use the
+            method scaler.inverse_transform(values, 'property').
         save : bool, optional, by default True
             save output as a csv file.
         drop_nan : bool, optional, by default True
@@ -1535,6 +1593,7 @@ class Model(Base):
         -------
         DataFrame
             simulation data as a dataframe.
+
         """
 
         col_dict = {
@@ -1548,31 +1607,43 @@ class Model(Base):
         col_vals = sum(col_dict.values(), [])
 
         df = pd.DataFrame()
+
+        if scale:
+            self.__init_scalers(boundary)
+
         if melt:
             n_cells = self.grid.get_n(boundary)
             cells_id = self.grid.get_cells_id(boundary, False, "array")
+
             cells_center = self.grid.get_cells_center(boundary, False, False)
+            if scale:
+                self.space_scaler = MinMaxScaler(feature_range=(-1, 1))
+                cells_center = self.space_scaler.fit_transform(
+                    cells_center.reshape(-1, 1)
+                )
+                cells_center = cells_center.reshape(-1, 3)
+
             df["id"] = np.tile(cells_id, self.nsteps + 1)
             df["x"] = np.tile(cells_center[:, 0], self.nsteps + 1)
             df["y"] = np.tile(cells_center[:, 1], self.nsteps + 1)
             df["z"] = np.tile(cells_center[:, 2], self.nsteps + 1)
-            df["step"] = np.repeat(np.arange(self.nsteps + 1), n_cells)
+            df["Step"] = np.repeat(np.arange(self.nsteps + 1), n_cells)
 
         for c in columns:
             if c.lower() not in col_vals:
                 raise ValueError(f"column {c} does not exist.")
             if c.lower() in col_dict["time"]:
-                df = self.__add_time(units, melt, boundary, df)
+                df = self.__add_time(units, melt, boundary, scale, df)
             if c.lower() in col_dict["date"]:
                 df = self.__add_date(units, melt, boundary, df)
             if c.lower() in col_dict["cells_rate"]:
-                df = self.__add_cells_rate(units, melt, boundary, df)
+                df = self.__add_cells_rate(units, melt, boundary, scale, df)
             if c.lower() in col_dict["cells_pressure"]:
-                df = self.__add_cells_pressures(units, melt, boundary, df)
+                df = self.__add_cells_pressures(units, melt, boundary, scale, df)
             if c.lower() in col_dict["wells_rate"] and not melt:
-                df = self.__add_wells_rate(units, df)
+                df = self.__add_wells_rate(units, scale, df)
             if c.lower() in col_dict["wells_pressure"] and not melt:
-                df = self.__add_wells_pressures(units, df)
+                df = self.__add_wells_pressures(units, boundary, scale, df)
 
         if melt:
             if drop_nan:
@@ -1583,7 +1654,7 @@ class Model(Base):
                 df = df.dropna(axis=1, how="all")
             if drop_zero:
                 df = df.loc[:, (df != 0).any(axis=0)]
-            df.index.name = "step"
+            df.index.name = "Step"
 
         if save:
             df.to_csv("model_data.csv")
