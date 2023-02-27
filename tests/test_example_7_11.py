@@ -9,32 +9,41 @@ class TestApp(unittest.TestCase):
         df_desired = pd.read_csv(
             "tests/test_example_7_11.csv",
             index_col=0,
-            dtype={None: "float64", "Time [Days]": "int32"},
+            dtype={"Step": "int32", "Time [Days]": "int32"},
         )
+        df_desired.index = df_desired.index.astype(int)
         # dense:
         model = create_model()
         model.run(nsteps=27, sparse=False, threading=True)
-        df = model.get_dataframe(
+        df = model.get_df(
+            columns=["time", "cells_pressure", "wells"],
             boundary=False,
             units=True,
-            columns=["time", "cells_pressure", "wells"],
-            save=False,
+            melt=False,
+            scale=False,
+            save=True,
             drop_nan=True,
             drop_zero=True,
         )
+        df.index = df.index.astype(int)
+
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
         # sparse:
         model = create_model()
         model.run(nsteps=27, sparse=True, threading=True)
-        df = model.get_dataframe(
+        df = model.get_df(
+            columns=["time", "cells_pressure", "wells"],
             boundary=False,
             units=True,
-            columns=["time", "cells_pressure", "wells"],
-            save=False,
+            melt=False,
+            scale=False,
+            save=True,
             drop_nan=True,
             drop_zero=True,
         )
+        df.index = df.index.astype(int)
+
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
 

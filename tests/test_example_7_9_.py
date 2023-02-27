@@ -13,10 +13,12 @@ class TestApp(unittest.TestCase):
         )
         model = create_model()
         model.run(nsteps=10, sparse=False)
-        df = model.get_dataframe(
+        df = model.get_df(
+            columns=["time", "cells_rate", "cells_pressure", "wells"],
             boundary=True,
             units=True,
-            columns=["time", "cells_rate", "cells_pressure", "wells"],
+            melt=False,
+            scale=False,
             save=False,
             drop_nan=False,
             drop_zero=False,
@@ -117,4 +119,4 @@ if __name__ == "__main__":
     # ToDo: minimize MBE at late time steps.
     # model = create_model()
     # model.run(30, True, True, True, print_arrays=True)
-    # model.get_dataframe(True, True, save=True)
+    # model.get_df(True, True, save=True)
