@@ -8,6 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
+    requirements = [r for r in requirements if r[:2] != "-e"]
 
 setup(
     name="openresim",
