@@ -164,45 +164,6 @@ class Model(Base):
         """Calculates transmissibility at every flow direction (fdir)."""
         self.T = self.get_cells_T_vect(False, True)
 
-    # def get_cells_T(self, dir=None, boundary=False, fshape=False):
-    #     """Returns transmissibility (T) for all cells.
-
-    #     Parameters
-    #     ----------
-    #     dir : str
-    #         direction as string in ['x', 'y', 'z']. If None or 'all',
-    #         transmissibility in all grid flow directions (fdir) will be
-    #         included in a dictionary.
-    #     fshape : bool, optional, by default False
-    #         values in flow shape (True) or flatten (False). In this
-    #         case, fshape is for cells' boundaries.
-
-    #     Returns
-    #     -------
-    #     ndarray
-    #         array of transmissibility at all cells' boundaries.
-    #     """
-    #     if dir in ["x", "y", "z"]:
-    #         if self.verbose:
-    #             s0 = dir + " direction"
-    #         T = self.grid.get_cells_G(dir, boundary, fshape) / (
-    #             self.fluid.mu * self.fluid.B
-    #         )
-    #     elif dir in [None, "all", "-"]:
-    #         if self.verbose:
-    #             s0 = "all directions"
-    #         T = {}
-    #         for dir in self.grid.get_fdir():
-    #             T[dir] = self.get_cells_T(dir, boundary, fshape)
-    #     else:
-    #         raise ValueError("dir argument is given a wrong value.")
-
-    #     if self.verbose:
-    #         s1, s2 = utils.get_verbose_str(boundary, fshape)
-    #         print(f"[info] transmissibility (T) in {s0} was computed ({s1} - {s2}).")
-
-    #     return T
-
     @_lru_cache(maxsize=None)
     def get_cell_T(self, id=None, coords=None, boundary=False):
         """Returns transmissibility (T) at all cell faces.
@@ -1313,13 +1274,15 @@ class Model(Base):
         else:
             verbose_restore = False
         print(f"[info] Simulation run started: {nsteps} timesteps.")
-        for _ in tqdm(
+        pbar = tqdm(
             range(1, nsteps + 1),
             unit="steps",
             colour="green",
             position=0,
             leave=True,
-        ):
+        )
+
+        for step in pbar:
             self.solve(
                 sparse,
                 threading,
@@ -1329,6 +1292,7 @@ class Model(Base):
                 print_arrays,
                 isolver,
             )
+            pbar.set_description(f"[step]: {step} - ")
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime += self.run_ctime
@@ -1393,8 +1357,9 @@ class Model(Base):
         if abs(self.error) > error_threshold:
             warnings.warn("High material balance error.")
             print(
-                f"[warning] Material balance error ({self.error}) higher",
-                f" than the allowed error ({error_threshold}).",
+                f"[warning] Material balance error ({self.error})",
+                f"in step {self.tstep}",
+                f"is higher than the allowed error ({error_threshold}).",
             )
 
     # -------------------------------------------------------------------------
@@ -1409,10 +1374,13 @@ class Model(Base):
 
     def __add_time(self, units, melt, boundary, scale, df=None):
         if units:
-            time_str = f" [{self.units['time']}]"
+            if scale:
+                time_str = " [Scaled]"
+            else:
+                time_str = f" [{self.units['time']}]"
         else:
             time_str = ""
-        time = np.arange(0, (self.tstep + 1) * self.dt, self.dt)
+        time = self.__get_time_vector()
         if scale:
             time = self.time_scaler.transform(time.reshape(-1, 1)).flatten()
         if melt:
@@ -1423,7 +1391,7 @@ class Model(Base):
 
     def __add_date(self, units, melt, boundary, df=None):
         if units:
-            date_str = f" [d.m.y]"
+            date_str = " [d.m.y]"
         else:
             date_str = ""
         date_series = pd.date_range(
@@ -1439,7 +1407,10 @@ class Model(Base):
 
     def __add_cells_rate(self, units, melt, boundary, scale, df=None):
         if units:
-            rate_str = f" [{self.units['rate']}]"
+            if scale:
+                rate_str = " [Scaled]"
+            else:
+                rate_str = f" [{self.units['rate']}]"
         else:
             rate_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
@@ -1447,7 +1418,7 @@ class Model(Base):
             labels = ["Q" + rate_str]
             array = self.rates[:, cells_id].reshape(-1, 1)
         else:
-            cells_id = [id for id in cells_id if id not in self.wells.keys()]
+            # cells_id = [id for id in cells_id if id not in self.wells.keys()]
             labels = [f"Q{str(id)}" + rate_str for id in cells_id]
             array = self.rates[:, cells_id]
         if scale:
@@ -1459,7 +1430,10 @@ class Model(Base):
 
     def __add_cells_pressures(self, units, melt, boundary, scale, df=None):
         if units:
-            press_str = f" [{self.units['pressure']}]"
+            if scale:
+                press_str = " [Scaled]"
+            else:
+                press_str = f" [{self.units['pressure']}]"
         else:
             press_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
@@ -1478,7 +1452,10 @@ class Model(Base):
 
     def __add_wells_rate(self, units, scale, df=None):
         if units:
-            rate_str = f" [{self.units['rate']}]"
+            if scale:
+                rate_str = " [Scaled]"
+            else:
+                rate_str = f" [{self.units['rate']}]"
         else:
             rate_str = ""
         labels = [f"Qw{str(id)}" + rate_str for id in self.wells.keys()]
@@ -1492,7 +1469,10 @@ class Model(Base):
 
     def __add_wells_pressures(self, units, boundary, scale, df=None):
         if units:
-            press_str = f" [{self.units['pressure']}]"
+            if scale:
+                press_str = " [Scaled]"
+            else:
+                press_str = f" [{self.units['pressure']}]"
         else:
             press_str = ""
         labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
@@ -1503,15 +1483,41 @@ class Model(Base):
         data.columns = labels
         return self.__concat(data, df)
 
-    def __get_xyz(self, boundary):
-        pass
+    def __add_xyz(self, boundary, melt, scale, df=None):
+        if melt:
+            cells_center = self.get_centers(scale, boundary).flatten()
+            array = np.tile(cells_center, self.nsteps + 1).reshape(-1, 3)
+            data = pd.DataFrame(array, columns=["x", "y", "z"])
+            return self.__concat(data, df)
+        return df
 
-    def __get_time(self):
-        pass
+    def __get_time_vector(self):
+        return np.arange(0, (self.tstep + 1) * self.dt, self.dt)
 
-    def __init_scalers(self, boundary):
+    def __init_time_scaler(self, feature_range=(0, 1)):
+        self.time_scaler = MinMaxScaler(feature_range=feature_range)
+        time = self.__get_time_vector()
+        self.time_scaler.fit(time.reshape(-1, 1))
 
-        config = {
+    def __init_space_scaler(self, boundary, feature_range=(0, 1)):
+        self.space_scaler = MinMaxScaler(feature_range=feature_range)
+        cells_center = self.grid.get_cells_center(boundary, False, False)
+        self.space_scaler.fit(cells_center.reshape(-1, 1))
+
+    def __init_pressures_scaler(self, boundary, feature_range=(0, 1)):
+        config = self.__get_scalers_config(boundary)
+        self.pressures_scaler = MinMaxScaler(feature_range=feature_range)
+        pressures = self.get_df(columns=["cells_pressure"], **config)
+        self.pressures_scaler.fit(pressures.values.reshape(-1, 1))
+
+    def __init_rates_scaler(self, boundary, feature_range=(0, 1)):
+        config = self.__get_scalers_config(boundary)
+        self.rates_scaler = MinMaxScaler(feature_range=feature_range)
+        rates = self.get_df(columns=["rates"], **config)
+        self.rates_scaler.fit(rates.values.reshape(-1, 1))
+
+    def __get_scalers_config(self, boundary):
+        return {
             "boundary": boundary,
             "units": False,
             "melt": False,
@@ -1521,30 +1527,48 @@ class Model(Base):
             "drop_zero": True,
         }
 
-        # time scaler:
-        self.time_scaler = MinMaxScaler(feature_range=(0, 1))
-        time = self.get_dataframe(columns=["time"], **config)
-        self.time_scaler.fit(time.values.reshape(-1, 1))
+    def init_scalers(self, boundary):
+        self.__init_time_scaler()
+        self.__init_pressures_scaler(boundary)
+        self.__init_rates_scaler(boundary)
 
-        # space scaler:
+    def get_time(self, scale=False):
+        time = self.__get_time_vector()
+        if scale:
+            self.__init_time_scaler()
+            time = self.time_scaler.transform(time.reshape(-1, 1)).flatten()
+        return time
 
-        # pressures scaler:
-        self.pressures_scaler = MinMaxScaler(feature_range=(-1, 1))
-        pressures = self.get_dataframe(columns=["pressures"], **config)
-        self.pressures_scaler.fit(pressures.values.reshape(-1, 1))
+    def get_centers(self, scale=False, boundary=True):
+        centers = self.grid.get_cells_center(boundary, False, False)
+        if scale:
+            self.__init_space_scaler(boundary)
+            centers = self.space_scaler.transform(centers.reshape(-1, 1))
+            return centers.reshape(-1, 3)
+        return centers
 
-        # rates scaler:
-        self.rates_scaler = MinMaxScaler(feature_range=(-1, 1))
-        rates = self.get_dataframe(columns=["rates"], **config)
-        self.rates_scaler.fit(rates.values.reshape(-1, 1))
+    def get_domain(self, scale, boundary, dir="xyz"):
+        t = self.get_time(scale)
+        centers = self.get_centers(scale, boundary)
+        if dir.lower() in ["all", "xyz"] or set(dir.lower()) == set("xyz"):
+            pass
+        elif dir.lower() == "x":
+            centers = centers[:, 0]
+        elif dir.lower() == "y":
+            centers = centers[:, 1]
+        elif dir.lower() == "z":
+            centers = centers[:, 2]
+        else:
+            raise ValueError("dir must be in ['x', 'y', 'z', 'all', 'xyz', None'].")
+        return t, centers
 
-    def get_dataframe(
+    def get_df(
         self,
         columns=["time", "date", "wells"],
         boundary=True,
-        units=True,
-        melt=True,
-        scale=True,
+        units=False,
+        melt=False,
+        scale=False,
         save=False,
         drop_nan=True,
         drop_zero=True,
@@ -1558,18 +1582,18 @@ class Model(Base):
             options are available:
             "time": for time steps as specified in dt.
             "date": for dates as specified in dt and start_date.
-            "q", "rates": for all rates including cells and wells.
-            "p", "pressures": for all pressures including cells and wells.
+            "q", "rates": for all (cells and wells) rates.
+            "p", "pressures": for all (cells and wells) pressures.
             "cells": for all cells rates and pressures.
             "wells": for all wells rates and pressures.
-            "cells_rate": for all cells rates.
+            "cells_rate": for all cells rates (including wells' cells).
             "cells_pressure": for all cells pressures.
             "wells_rate": for all wells rates.
             "wells_pressure": for all wells pressures.
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
             It is only relevant when cells columns are selected.
-        units : bool, optional, by default True
+        units : bool, optional, by default False
             column names with units (True) or without units (False).
         melt : bool, optional, by default False
             to melt columns of the same property to one column. By
@@ -1609,25 +1633,16 @@ class Model(Base):
         df = pd.DataFrame()
 
         if scale:
-            self.__init_scalers(boundary)
+            # self.__init_scalers(boundary)
+            self.init_scalers(True)
 
         if melt:
             n_cells = self.grid.get_n(boundary)
             cells_id = self.grid.get_cells_id(boundary, False, "array")
 
-            cells_center = self.grid.get_cells_center(boundary, False, False)
-            if scale:
-                self.space_scaler = MinMaxScaler(feature_range=(-1, 1))
-                cells_center = self.space_scaler.fit_transform(
-                    cells_center.reshape(-1, 1)
-                )
-                cells_center = cells_center.reshape(-1, 3)
-
             df["id"] = np.tile(cells_id, self.nsteps + 1)
-            df["x"] = np.tile(cells_center[:, 0], self.nsteps + 1)
-            df["y"] = np.tile(cells_center[:, 1], self.nsteps + 1)
-            df["z"] = np.tile(cells_center[:, 2], self.nsteps + 1)
             df["Step"] = np.repeat(np.arange(self.nsteps + 1), n_cells)
+            df = self.__add_xyz(boundary, melt, scale, df)
 
         for c in columns:
             if c.lower() not in col_vals:
@@ -1649,6 +1664,7 @@ class Model(Base):
             if drop_nan:
                 df = df.dropna(axis=0, how="any")
                 df.reset_index(drop=True, inplace=True)
+                df.index = df.index.astype(int, copy=False)
         else:
             if drop_nan:
                 df = df.dropna(axis=1, how="all")
@@ -1675,7 +1691,7 @@ class Model(Base):
         else:
             time_str = "Time"
 
-        df = self.get_dataframe(
+        df = self.get_df(
             boundary=boundary,
             units=units,
             melt=False,
@@ -1720,7 +1736,7 @@ class Model(Base):
         prop : str, optional, by default "pressures"
             property name from ["rates", "pressures"].
         id : int, optional, by default None
-            cell id. If None, all cells is selected.
+            cell id. If None, all cells are selected.
         tstep : int, optional, by default None
             time step. If None, the last time step is selected.
         """
@@ -1733,7 +1749,12 @@ class Model(Base):
         elif tstep is not None:
             exec(f"plt.plot(self.{prop}[tstep, :].flatten())")
             plt.xlabel("Grid (id)")
-            plt.xticks(ticks=range(0, self.grid.nx + 2))
+            boundary = True
+            x_skip = 5
+            x_ticks = np.arange(0, self.grid.get_n(boundary), x_skip)
+            x_labels = self.grid.get_cells_id(boundary, fshape=False, fmt="array")
+            x_labels = x_labels[::x_skip]
+            plt.xticks(ticks=x_ticks, labels=x_labels)
         plt.grid()
         plt.show()
 
@@ -1867,9 +1888,9 @@ if __name__ == "__main__":
 
     def create_model():
         grid = grids.Cartesian(
-            nx=500,
-            ny=500,
-            nz=2,
+            nx=10,
+            ny=10,
+            nz=3,
             dx=300,
             dy=350,
             dz=20,

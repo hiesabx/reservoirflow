@@ -105,11 +105,14 @@ class Cartesian(Grid):
         Parameters
         ----------
         nx : int
-            number of grids in x-direction and must be >= 1.
+            number of grids in x-direction (excluding boundary cells)
+            and must be >= 1. Boundary cells are added automatically.
         ny : int
-            number of grids in y-direction and must be >= 1.
+            number of grids in y-direction (excluding boundary cells)
+            and must be >= 1. Boundary cells are added automatically.
         nz : int
-            number of grids in z-direction and must be >= 1.
+            number of grids in z-direction (excluding boundary cells)
+            and must be >= 1. Boundary cells are added automatically.
         dx : int, float, array-like
             grid dimension in x-direction. In case of a list or array,
             the length should be equal to nx+2 for all cells including
