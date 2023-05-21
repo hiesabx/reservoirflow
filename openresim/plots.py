@@ -2,6 +2,7 @@ import numpy as np
 import pyvista as pv
 from openresim import models
 import math
+import os
 
 
 # Default settings color bar:
@@ -158,6 +159,10 @@ def show(model, property: str, centers=False, boundary=False, bounds=False):
         show_scalar_bar=True,
         # annotations=annotations,
     )
+
+    if not os.path.exists("images/"):
+        os.makedirs("images/")
+
     pl.open_gif("images/grid.gif")
 
     pts = grid.points.copy()
