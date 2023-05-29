@@ -122,7 +122,8 @@ class Model(Base):
 
         self.pi = pi
         if pi is not None:
-            self.pressures[0, self.grid.cells_id] = pi
+            # self.pressures[0, self.grid.cells_id] = pi
+            self.pressures[0, :] = pi
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
             print(f"[warning] Pi is by default set to {self.pi}.")
@@ -426,7 +427,7 @@ class Model(Base):
         ----
         - d is taken at x direction for gradient.
         """
-
+        cond = cond.lower()
         if cond in ["rate", "q"]:
             self.rates[self.tstep, id_b] = v
         elif cond in ["pressure", "press", "p"]:
@@ -1031,7 +1032,7 @@ class Model(Base):
         if self.comp_type == "incompressible":
             self.d = ss.lil_matrix((self.n, 1), dtype=self.dtype)
         else:
-            pressures = self.pressures[self.tstep][self.grid.cells_id]
+            pressures = self.pressures[self.tstep, self.grid.cells_id]
             RHS = self.RHS[self.grid.cells_id]
             try:
                 self.d = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
@@ -1485,9 +1486,11 @@ class Model(Base):
 
     def __add_xyz(self, boundary, melt, scale, df=None):
         if melt:
-            cells_center = self.get_centers(scale, boundary).flatten()
-            array = np.tile(cells_center, self.nsteps + 1).reshape(-1, 3)
-            data = pd.DataFrame(array, columns=["x", "y", "z"])
+            cells_center, fdir = self.get_centers(scale, boundary)
+            array = np.tile(cells_center.flatten(), self.nsteps + 1).reshape(
+                -1, len(fdir)
+            )
+            data = pd.DataFrame(array, columns=fdir)
             return self.__concat(data, df)
         return df
 
@@ -1499,12 +1502,12 @@ class Model(Base):
         time = self.__get_time_vector()
         self.time_scaler.fit(time.reshape(-1, 1))
 
-    def __init_space_scaler(self, boundary, feature_range=(0, 1)):
+    def __init_space_scaler(self, boundary, feature_range=(-1, 1)):
         self.space_scaler = MinMaxScaler(feature_range=feature_range)
-        cells_center = self.grid.get_cells_center(boundary, False, False)
+        cells_center, _ = self.get_centers(False, boundary)
         self.space_scaler.fit(cells_center.reshape(-1, 1))
 
-    def __init_pressures_scaler(self, boundary, feature_range=(0, 1)):
+    def __init_pressures_scaler(self, boundary, feature_range=(-1, 1)):
         config = self.__get_scalers_config(boundary)
         self.pressures_scaler = MinMaxScaler(feature_range=feature_range)
         pressures = self.get_df(columns=["cells_pressure"], **config)
@@ -1533,33 +1536,46 @@ class Model(Base):
         self.__init_rates_scaler(boundary)
 
     def get_time(self, scale=False):
-        time = self.__get_time_vector()
+        time = self.__get_time_vector().reshape(-1, 1)
         if scale:
             self.__init_time_scaler()
-            time = self.time_scaler.transform(time.reshape(-1, 1)).flatten()
+            time = self.time_scaler.transform(time)
         return time
 
     def get_centers(self, scale=False, boundary=True):
+        def get_fdir_cols(s):
+            if s == "x":
+                return 0
+            elif s == "y":
+                return 1
+            elif s == "z":
+                return 2
+            else:
+                return None
+
         centers = self.grid.get_cells_center(boundary, False, False)
+        fdir = list(self.grid.get_fdir())
+        fdir_cols = list(map(get_fdir_cols, fdir))
+        centers = centers[:, fdir_cols]
         if scale:
             self.__init_space_scaler(boundary)
             centers = self.space_scaler.transform(centers.reshape(-1, 1))
-            return centers.reshape(-1, 3)
-        return centers
+            return centers.reshape(-1, self.grid.D), fdir
+        return centers, fdir
 
-    def get_domain(self, scale, boundary, dir="xyz"):
+    def get_domain(self, scale, boundary):
         t = self.get_time(scale)
-        centers = self.get_centers(scale, boundary)
-        if dir.lower() in ["all", "xyz"] or set(dir.lower()) == set("xyz"):
-            pass
-        elif dir.lower() == "x":
-            centers = centers[:, 0]
-        elif dir.lower() == "y":
-            centers = centers[:, 1]
-        elif dir.lower() == "z":
-            centers = centers[:, 2]
-        else:
-            raise ValueError("dir must be in ['x', 'y', 'z', 'all', 'xyz', None'].")
+        centers, _ = self.get_centers(scale, boundary)
+        # if dir.lower() in ["all", "xyz"] or set(dir.lower()) == set("xyz"):
+        #     pass
+        # elif dir.lower() == "x":
+        #     centers = centers[:, 0]
+        # elif dir.lower() == "y":
+        #     centers = centers[:, 1]
+        # elif dir.lower() == "z":
+        #     centers = centers[:, 2]
+        # else:
+        #     raise ValueError("dir must be in ['x', 'y', 'z', 'all', 'xyz', None'].")
         return t, centers
 
     def get_df(
@@ -1597,8 +1613,9 @@ class Model(Base):
             column names with units (True) or without units (False).
         melt : bool, optional, by default False
             to melt columns of the same property to one column. By
-            default, cells id, x, y, z, step columns are included while
-            wells columns (wells_rate, wells_pressure) are ignored.
+            default, cells id, xyz (based on grid fdir), step columns
+            are included while wells columns (wells_rate,
+            wells_pressure) are ignored.
         scale : bool, optional, by default False
             scale spatial domain values (x, y, z) and pressures between
             -1 and 1 and timesteps between 0 and 1. Sklearn scalers are
@@ -1652,11 +1669,11 @@ class Model(Base):
             if c.lower() in col_dict["date"]:
                 df = self.__add_date(units, melt, boundary, df)
             if c.lower() in col_dict["cells_rate"]:
-                df = self.__add_cells_rate(units, melt, boundary, scale, df)
+                df = self.__add_cells_rate(units, melt, boundary, False, df)
             if c.lower() in col_dict["cells_pressure"]:
                 df = self.__add_cells_pressures(units, melt, boundary, scale, df)
             if c.lower() in col_dict["wells_rate"] and not melt:
-                df = self.__add_wells_rate(units, scale, df)
+                df = self.__add_wells_rate(units, False, df)
             if c.lower() in col_dict["wells_pressure"] and not melt:
                 df = self.__add_wells_pressures(units, boundary, scale, df)
 
@@ -1685,7 +1702,6 @@ class Model(Base):
         drop_nan=True,
         # drop_zero=True,
     ):
-
         if units:
             time_str = f"Time [{self.units['time']}]"
         else:
