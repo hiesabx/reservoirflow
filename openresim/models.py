@@ -91,7 +91,7 @@ class Model(Base):
 
         self.cells_terms = {}
         self.dt = dt
-        self.nsteps = 0
+        self.nsteps = 1
         self.tstep = 0
         self.ctime = 0
 
@@ -1487,9 +1487,7 @@ class Model(Base):
     def __add_xyz(self, boundary, melt, scale, df=None):
         if melt:
             cells_center, fdir = self.get_centers(scale, boundary)
-            array = np.tile(cells_center.flatten(), self.nsteps + 1).reshape(
-                -1, len(fdir)
-            )
+            array = np.tile(cells_center.flatten(), self.nsteps).reshape(-1, len(fdir))
             data = pd.DataFrame(array, columns=fdir)
             return self.__concat(data, df)
         return df
@@ -1657,8 +1655,8 @@ class Model(Base):
             n_cells = self.grid.get_n(boundary)
             cells_id = self.grid.get_cells_id(boundary, False, "array")
 
-            df["id"] = np.tile(cells_id, self.nsteps + 1)
-            df["Step"] = np.repeat(np.arange(self.nsteps + 1), n_cells)
+            df["id"] = np.tile(cells_id, self.nsteps)
+            df["Step"] = np.repeat(np.arange(self.nsteps), n_cells)
             df = self.__add_xyz(boundary, melt, scale, df)
 
         for c in columns:
