@@ -151,6 +151,9 @@ class Model(Base):
     # Properties:
     # -------------------------------------------------------------------------
 
+    def get_shape(self, boundary=True):
+        return (self.nsteps, self.grid.get_n(boundary))
+
     def __calc_comp(self):
         """Calculates total compressibility."""
         if self.fluid.comp_type == self.grid.comp_type == "incompressible":
@@ -1511,7 +1514,26 @@ class Model(Base):
         pressures = self.get_df(columns=["cells_pressure"], **config)
         self.pressures_scaler.fit(pressures.values.reshape(-1, 1))
 
-    def __init_rates_scaler(self, boundary, feature_range=(0, 1)):
+    def __init_rates_scaler(self, boundary=True, feature_range=(0, 1)):
+        """Flow rates scaler *** DISABLED ***
+
+        Parameters
+        ----------
+        boundary : bool, optional, by default True
+            values with boundary (True) or without boundary (False).
+        feature_range : tuple, optional
+            scaling range, by default (0, 1)
+
+        Notes
+        -----
+        Disabled:
+            this scaler is disabled since the scaling argument for both
+            __add_cells_rate() and __add_wells_rate() is set to False.
+        Error:
+            When boundary argument is False but no wells, the scaler
+            will fail since rows with zeros and nans are removed, no
+            rates will remain for scaling (i.e. empty array).
+        """
         config = self.__get_scalers_config(boundary)
         self.rates_scaler = MinMaxScaler(feature_range=feature_range)
         rates = self.get_df(columns=["rates"], **config)
@@ -1528,10 +1550,11 @@ class Model(Base):
             "drop_zero": True,
         }
 
-    def init_scalers(self, boundary):
-        self.__init_time_scaler()
+    def __init_scalers(self, boundary):
+        # self.__init_time_scaler()
+        # self.__init_space_scaler(boundary)
         self.__init_pressures_scaler(boundary)
-        self.__init_rates_scaler(boundary)
+        self.__init_rates_scaler(True)
 
     def get_time(self, scale=False):
         time = self.__get_time_vector().reshape(-1, 1)
@@ -1556,7 +1579,8 @@ class Model(Base):
         fdir_cols = list(map(get_fdir_cols, fdir))
         centers = centers[:, fdir_cols]
         if scale:
-            self.__init_space_scaler(boundary)
+            # self.__init_space_scaler(boundary)
+            self.__init_space_scaler(True)
             centers = self.space_scaler.transform(centers.reshape(-1, 1))
             return centers.reshape(-1, self.grid.D), fdir
         return centers, fdir
@@ -1648,13 +1672,11 @@ class Model(Base):
         df = pd.DataFrame()
 
         if scale:
-            # self.__init_scalers(boundary)
-            self.init_scalers(True)
+            self.__init_scalers(True)
 
         if melt:
             n_cells = self.grid.get_n(boundary)
             cells_id = self.grid.get_cells_id(boundary, False, "array")
-
             df["id"] = np.tile(cells_id, self.nsteps)
             df["Step"] = np.repeat(np.arange(self.nsteps), n_cells)
             df = self.__add_xyz(boundary, melt, scale, df)
@@ -1690,51 +1712,6 @@ class Model(Base):
         if save:
             df.to_csv("model_data.csv")
             print("[info] Model data was successfully saved.")
-
-        return df
-
-    def get_data(
-        self,
-        boundary=True,
-        units=False,
-        drop_nan=True,
-        # drop_zero=True,
-    ):
-        if units:
-            time_str = f"Time [{self.units['time']}]"
-        else:
-            time_str = "Time"
-
-        df = self.get_df(
-            boundary=boundary,
-            units=units,
-            melt=False,
-            columns=["time", "cells_pressure"],
-            save=False,
-            drop_nan=False,
-            drop_zero=False,
-        )
-
-        df = (
-            df.iloc[1:, :]
-            .melt(
-                id_vars=time_str,
-                var_name="cells_id",
-                value_name="pressure",
-                ignore_index=False,
-            )
-            .reset_index(drop=False)
-        )
-
-        cells_id = self.grid.get_cells_id(boundary, False, "array")
-        cells_center = self.grid.get_cells_center(boundary, False, False)
-        df["id"] = np.repeat(cells_id, self.nsteps)
-        df["x"] = np.repeat(cells_center[:, 0], self.nsteps)
-        df["y"] = np.repeat(cells_center[:, 1], self.nsteps)
-        df["z"] = np.repeat(cells_center[:, 2], self.nsteps)
-
-        if drop_nan:
-            df = df.dropna(axis=0, how="any")
 
         return df
 
