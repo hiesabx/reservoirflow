@@ -53,13 +53,15 @@ This library brings reservoir simulation to the Python ecosystem including data 
 
 ## Motivation
 
-Open-source and reproducible research is very scarce in the oil & gas industry. This unfortunate reality has lead many reservoir engineers to be limited and dependent on commercial tools that are closed black-boxes. This has led to severe limitations when it comes to skills and innovation. For example, reservoir engineers can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why oil & gas industry is still behind in the AI revolution.
+Open-source and reproducible research is very scarce in the oil & gas industry. This unfortunate reality has led many reservoir engineers to be limited and dependent on commercial tools that are closed black-boxes which led to severe limitations when it comes to skills and innovation. For example, reservoir engineers can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why oil & gas industry is still behind in the AI revolution.
 
 The author believes that this sad reality has to be changed as soon as possible. Reservoir engineers face difficult challenges to get careers in or outside the oil & gas industry mainly due to the lack of soft-skills. Otherwise, a reservoir engineer, who has a great mix of science (i.e. mathematics, statistics, scientific computing, programming, chemistry, physics, fluid mechanics and thermodynamics, geology, etc.), should have no reason to stay unemployed.
 
 This sad reality can be changed if reservoir engineers are trained to express their scientific and engineering knowledge with coding. In addition, this will bring more excitements and job satisfaction. Those who learn to do reservoir simulation in Python should be familiar with the scientific computing and machine learning stack in Python. Therefore, it will be easy for them to change careers and work as data scientists, data analysts, or ML engineer in other industries.
 
-On a larger scale, an open-source reservoir simulation library within Python ecosystem will be very important to students, universities, researches or even service companies who can use this tool for commercial studies and applications. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil & gas community that we try to create. However, this brings us to the next topic of [Sponsorship](#sponsorship).
+On a larger scale, an open-source reservoir simulation library within Python ecosystem will be very important to students, universities, and researchers. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil & gas community that we try to create. However, this brings us to the next topic of [Sponsorship](#sponsorship).
+
+Unfortunately, this work is not sponsored. As a result, the current license does not allow for commercial applications. Companies who are interested to use and support this tool for commercial applications must get in touch to get a proper license.
 
 ## Sponsorship
 
