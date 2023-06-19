@@ -119,6 +119,9 @@ class Model(Base):
         ones = self.grid.get_ones(True, False, False)[np.newaxis]
         self.pressures = ones * np.nan
         self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
+        self.ds = self.grid.get_zeros(False, False, False)[np.newaxis]
+        n = self.grid.get_n(False)
+        self.As = np.zeros((1, n * n), dtype=self.dtype)
 
         self.pi = pi
         if pi is not None:
@@ -1197,17 +1200,19 @@ class Model(Base):
                 A, d = self.init_matrices(sparse, threading)
 
         if sparse:
+            A, d = A.tocsc(), d.todense()
             if isolver:
                 solver = solvers.get_isolver(isolver)
                 pressures, exit_code = solver(
-                    A.tocsc(),
-                    d.todense(),
+                    A,
+                    d,
                     atol=0,
                     # x0=self.pressures[self.tstep, self.cells_id],
                 )
                 assert exit_code == 0, "unsuccessful convergence"
             else:
-                pressures = ssl.spsolve(A.tocsc(), d.todense(), use_umfpack=True)
+                pressures = ssl.spsolve(A, d, use_umfpack=True)
+            A = A.todense()
         else:
             pressures = sl.solve(A, d).flatten()
 
@@ -1216,6 +1221,8 @@ class Model(Base):
             self.pressures = np.vstack([self.pressures, self.pressures[-1]])
             self.pressures[self.tstep, self.grid.cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
+            self.As = np.vstack([self.As, A.reshape(1, -1)])
+            self.ds = np.vstack([self.ds, d.reshape(1, -1)])
             self.__update_boundaries()
             resolve = self.__update_wells()
             if resolve:
@@ -1511,8 +1518,8 @@ class Model(Base):
     def __init_pressures_scaler(self, boundary, feature_range=(-1, 1)):
         config = self.__get_scalers_config(boundary)
         self.pressures_scaler = MinMaxScaler(feature_range=feature_range)
-        pressures = self.get_df(columns=["cells_pressure"], **config)
-        self.pressures_scaler.fit(pressures.values.reshape(-1, 1))
+        pressures = self.get_df(columns=["pressures"], **config).values
+        self.pressures_scaler.fit(pressures.reshape(-1, 1))
 
     def __init_rates_scaler(self, boundary=True, feature_range=(0, 1)):
         """Flow rates scaler *** DISABLED ***
@@ -1527,7 +1534,7 @@ class Model(Base):
         Notes
         -----
         Disabled:
-            this scaler is disabled since the scaling argument for both
+            This scaler is disabled since the scaling argument for both
             __add_cells_rate() and __add_wells_rate() is set to False.
         Error:
             When boundary argument is False but no wells, the scaler
@@ -1536,8 +1543,8 @@ class Model(Base):
         """
         config = self.__get_scalers_config(boundary)
         self.rates_scaler = MinMaxScaler(feature_range=feature_range)
-        rates = self.get_df(columns=["rates"], **config)
-        self.rates_scaler.fit(rates.values.reshape(-1, 1))
+        rates = self.get_df(columns=["rates"], **config).values
+        self.rates_scaler.fit(rates.reshape(-1, 1))
 
     def __get_scalers_config(self, boundary):
         return {
@@ -1550,10 +1557,12 @@ class Model(Base):
             "drop_zero": True,
         }
 
-    def __init_scalers(self, boundary):
-        # self.__init_time_scaler()
-        # self.__init_space_scaler(boundary)
-        self.__init_pressures_scaler(boundary)
+    def __init_scalers(self):
+        """Initialize scaler at boundary (True).
+        """
+        # self.__init_time_scaler() # get_time()
+        # self.__init_space_scaler(True) # get_centers()
+        self.__init_pressures_scaler(True)
         self.__init_rates_scaler(True)
 
     def get_time(self, scale=False):
@@ -1579,7 +1588,6 @@ class Model(Base):
         fdir_cols = list(map(get_fdir_cols, fdir))
         centers = centers[:, fdir_cols]
         if scale:
-            # self.__init_space_scaler(boundary)
             self.__init_space_scaler(True)
             centers = self.space_scaler.transform(centers.reshape(-1, 1))
             return centers.reshape(-1, self.grid.D), fdir
@@ -1588,16 +1596,6 @@ class Model(Base):
     def get_domain(self, scale, boundary):
         t = self.get_time(scale)
         centers, _ = self.get_centers(scale, boundary)
-        # if dir.lower() in ["all", "xyz"] or set(dir.lower()) == set("xyz"):
-        #     pass
-        # elif dir.lower() == "x":
-        #     centers = centers[:, 0]
-        # elif dir.lower() == "y":
-        #     centers = centers[:, 1]
-        # elif dir.lower() == "z":
-        #     centers = centers[:, 2]
-        # else:
-        #     raise ValueError("dir must be in ['x', 'y', 'z', 'all', 'xyz', None'].")
         return t, centers
 
     def get_df(
@@ -1672,7 +1670,7 @@ class Model(Base):
         df = pd.DataFrame()
 
         if scale:
-            self.__init_scalers(True)
+            self.__init_scalers()
 
         if melt:
             n_cells = self.grid.get_n(boundary)
