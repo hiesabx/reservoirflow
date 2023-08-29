@@ -6,7 +6,7 @@ simulation model in combination with a Fluid class and Grid class.
 """
 import time
 from openresim.base import Base
-from openresim import grids, fluids, wells, plots, solvers, profme, utils
+from openresim import grids, fluids, wells, plots, solvers, profme, utils, scalers
 from openresim.utils import _lru_cache
 import numpy as np
 import sympy as sym
@@ -21,7 +21,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import pyvista as pv
 from datetime import date
-from sklearn.preprocessing import MinMaxScaler
+# from sklearn.preprocessing import MinMaxScaler
 
 # from numba import jit
 
@@ -146,6 +146,14 @@ class Model(Base):
         self.cells_id = self.grid.get_cells_id(False, False, "array")  # or list
         self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
         self.boundaries_id = self.grid.get_boundaries("id", "array")
+
+        self.scalers_dict = {
+            'time':['MinMaxScaler',(0,1)],
+            'space':['MinMaxScaler',(-1,1)],
+            'pressure':['MinMaxScaler',(-1,1)],
+            'rate':[None,None]
+        }
+        self.set_scalers(self.scalers_dict)
 
         if self.verbose:
             print("[info] the model was initialized.")
@@ -1312,7 +1320,7 @@ class Model(Base):
             f"finished in {self.run_ctime} seconds.",
         )
         if check_MB:
-            print(f"\n[info] Material Balance Error: {self.error}.")
+            print(f"[info] Material Balance Error: {self.error}.")
 
         if verbose_restore:
             self.verbose = True
@@ -1393,7 +1401,7 @@ class Model(Base):
             time_str = ""
         time = self.__get_time_vector()
         if scale:
-            time = self.time_scaler.transform(time.reshape(-1, 1)).flatten()
+            time = self.time_scaler.transform(time).flatten()
         if melt:
             n_cells = self.grid.get_n(boundary)
             time = np.repeat(time, n_cells)
@@ -1425,17 +1433,14 @@ class Model(Base):
         else:
             rate_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
+        array = self.rates[:, cells_id]
+        if scale:
+            array = self.rates_scaler.transform(array)
         if melt:
             labels = ["Q" + rate_str]
-            array = self.rates[:, cells_id].reshape(-1, 1)
+            array = array.flatten()
         else:
-            # cells_id = [id for id in cells_id if id not in self.wells.keys()]
             labels = [f"Q{str(id)}" + rate_str for id in cells_id]
-            array = self.rates[:, cells_id]
-        if scale:
-            array = self.rates_scaler.transform(array.reshape(-1, 1))
-            if not melt:
-                array = array.reshape(-1, len(cells_id))
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
@@ -1450,14 +1455,12 @@ class Model(Base):
         cells_id = self.grid.get_cells_id(boundary, False, "array")
         array = self.pressures[:, cells_id]
         if scale:
-            array = self.pressures_scaler.transform(array.reshape(-1, 1))
-            array = array.reshape(-1, len(cells_id))
+            array = self.pressures_scaler.transform(array)
         if melt:
             labels = ["P" + press_str]
             array = array.flatten()
         else:
             labels = [f"P{str(id)}" + press_str for id in cells_id]
-
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
@@ -1472,13 +1475,11 @@ class Model(Base):
         labels = [f"Qw{str(id)}" + rate_str for id in self.wells.keys()]
         array = self.rates[:, list(self.wells.keys())]
         if scale:
-            array = self.rates_scaler.transform(array.reshape(-1, 1))
-            array = array.reshape(-1, len(labels))
-
+            array = self.rates_scaler.transform(array)
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
-    def __add_wells_pressures(self, units, boundary, scale, df=None):
+    def __add_wells_pressures(self, units, scale, df=None):
         if units:
             if scale:
                 press_str = " [Scaled]"
@@ -1489,8 +1490,8 @@ class Model(Base):
         labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
         data = pd.DataFrame(self.w_pressures)
         if scale:
-            data = self.pressures_scaler.transform(data.values.reshape(-1, 1))
-            data = pd.DataFrame(data.reshape(-1, len(labels)))
+            data = self.pressures_scaler.transform(data.values)
+            data = pd.DataFrame(data)
         data.columns = labels
         return self.__concat(data, df)
 
@@ -1505,31 +1506,26 @@ class Model(Base):
     def __get_time_vector(self):
         return np.arange(0, (self.tstep + 1) * self.dt, self.dt)
 
-    def __init_time_scaler(self, feature_range=(0, 1)):
-        self.time_scaler = MinMaxScaler(feature_range=feature_range)
+    def __update_time_scaler(self):
         time = self.__get_time_vector()
-        self.time_scaler.fit(time.reshape(-1, 1))
+        self.time_scaler.fit(time, axis=0)
 
-    def __init_space_scaler(self, boundary, feature_range=(-1, 1)):
-        self.space_scaler = MinMaxScaler(feature_range=feature_range)
+    def __update_space_scaler(self, boundary):
         cells_center, _ = self.get_centers(False, boundary)
-        self.space_scaler.fit(cells_center.reshape(-1, 1))
+        self.space_scaler.fit(cells_center, axis=0)
 
-    def __init_pressures_scaler(self, boundary, feature_range=(-1, 1)):
+    def __update_pressures_scaler(self, boundary):
         config = self.__get_scalers_config(boundary)
-        self.pressures_scaler = MinMaxScaler(feature_range=feature_range)
-        pressures = self.get_df(columns=["pressures"], **config).values
-        self.pressures_scaler.fit(pressures.reshape(-1, 1))
+        pressures = self.get_df(columns=["cells_pressure"], **config).values
+        self.pressures_scaler.fit(pressures, axis=None)
 
-    def __init_rates_scaler(self, boundary=True, feature_range=(0, 1)):
-        """Flow rates scaler *** DISABLED ***
+    def __update_rates_scaler(self, boundary):
+        """Flow rates scaler
 
         Parameters
         ----------
         boundary : bool, optional, by default True
             values with boundary (True) or without boundary (False).
-        feature_range : tuple, optional
-            scaling range, by default (0, 1)
 
         Notes
         -----
@@ -1542,9 +1538,8 @@ class Model(Base):
             rates will remain for scaling (i.e. empty array).
         """
         config = self.__get_scalers_config(boundary)
-        self.rates_scaler = MinMaxScaler(feature_range=feature_range)
         rates = self.get_df(columns=["rates"], **config).values
-        self.rates_scaler.fit(rates.reshape(-1, 1))
+        self.rates_scaler.fit(rates, axis=None)
 
     def __get_scalers_config(self, boundary):
         return {
@@ -1557,18 +1552,16 @@ class Model(Base):
             "drop_zero": True,
         }
 
-    def __init_scalers(self):
-        """Initialize scaler at boundary (True).
-        """
-        # self.__init_time_scaler() # get_time()
-        # self.__init_space_scaler(True) # get_centers()
-        self.__init_pressures_scaler(True)
-        self.__init_rates_scaler(True)
+    def update_scalers(self, boundary):
+        self.__update_time_scaler() # get_time
+        self.__update_space_scaler(boundary) # get_centers() and __add_xyz()
+        self.__update_pressures_scaler(boundary)
+        self.__update_rates_scaler(boundary)
 
     def get_time(self, scale=False):
         time = self.__get_time_vector().reshape(-1, 1)
         if scale:
-            self.__init_time_scaler()
+            self.__update_time_scaler()
             time = self.time_scaler.transform(time)
         return time
 
@@ -1582,25 +1575,88 @@ class Model(Base):
                 return 2
             else:
                 return None
-
         centers = self.grid.get_cells_center(boundary, False, False)
         fdir = list(self.grid.get_fdir())
         fdir_cols = list(map(get_fdir_cols, fdir))
         centers = centers[:, fdir_cols]
         if scale:
-            self.__init_space_scaler(True)
-            centers = self.space_scaler.transform(centers.reshape(-1, 1))
-            return centers.reshape(-1, self.grid.D), fdir
+            self.__update_space_scaler(True)
+            centers = self.space_scaler.transform(centers)
         return centers, fdir
 
     def get_domain(self, scale, boundary):
         t = self.get_time(scale)
         centers, _ = self.get_centers(scale, boundary)
         return t, centers
+    
+    def set_scalers(self, scalers_dict: dict):
+        """Set scalers configuration
+        
+        To change the scaling settings. Current settings can be shown 
+        under scalers_dict. By default the following settings are used: 
+            `scalers_dict = {
+                'time':['MinMaxScaler', (0,1)],
+                'space':['MinMaxScaler', (-1,1)],
+                'pressure':['MinMaxScaler', (-1,1)],
+                'rate':[None,None]
+            }`
+            
+        Note that be default rates are not scaled, time is scaled 
+        between 0 and 1, while space and pressure are scaled between
+        -1 and 1. By default, MinMaxScaler is used for all dimensions.
+
+        Parameters
+        ----------
+        scalers_dict : dict
+            scalers setting as dict in the following 
+            format: {'time': [scaler_type, scaler_range]} were 
+            scaler_type can be e.g. 'MinMaxScaler' and scaler_range is a 
+            tuple of output_range of the scaler e.g. (-1,1). The keys 
+            must be in ['time', 'space', 'pressure', 'rate']. 
+        """
+        
+        def create_scaler(scaler_type, output_range):
+            if scaler_type is None or output_range is None:
+                return scalers.DummyScaler(None), None
+            elif scaler_type.lower() in ['minmax', "minmaxscaler"]:
+                return scalers.MinMaxScaler(output_range=output_range), 'MinMax'
+            else:
+                raise ValueError("scaler type is not defined.")
+        
+        col_dict = {
+            "time": ["t", "time", "all"],
+            "space": ["space", "spatial", "xyz", "x","y","z", "all"],
+            "pressure": ["p", "pressures", "pressure", "all"],
+            "rate": ["q", "rates", "rate","all"],
+        }
+        col_vals = sum(col_dict.values(), [])
+        
+        for column in scalers_dict.keys():
+            scaler_type = scalers_dict[column][0]
+            output_range = scalers_dict[column][1]
+            if column.lower() not in col_vals:
+                raise ValueError(f"column {column} does not exist.")
+            if column.lower() in col_dict["time"]:
+                self.time_scaler, s_str = create_scaler(scaler_type, output_range)
+                column_str = 'time'
+            if column.lower() in col_dict["space"]:
+                self.space_scaler, s_str = create_scaler(scaler_type, output_range)
+                column_str = 'space'
+            if column.lower() in col_dict["pressure"]:
+                self.pressures_scaler, s_str = create_scaler(scaler_type, output_range)
+                column_str = 'pressure'
+            if column.lower() in col_dict["rate"]:
+                self.rates_scaler, s_str = create_scaler(scaler_type, output_range)
+                column_str = 'rate'
+            
+            if scaler_type is None or output_range is None:
+                self.scalers_dict[column_str] = [None, None]
+            else: 
+                self.scalers_dict[column_str] = [s_str, scalers_dict[column][1]]
 
     def get_df(
         self,
-        columns=["time", "date", "wells"],
+        columns=["time", "cells", "wells"],
         boundary=True,
         units=False,
         melt=False,
@@ -1613,7 +1669,7 @@ class Model(Base):
 
         Parameters
         ----------
-        columns : list, optional, by default ["time", "date", "wells"]
+        columns : list, optional, by default ["time", "cells", "wells"]
             selected columns to be added to the dataframe. The following
             options are available:
             "time": for time steps as specified in dt.
@@ -1637,10 +1693,15 @@ class Model(Base):
             are included while wells columns (wells_rate,
             wells_pressure) are ignored.
         scale : bool, optional, by default False
-            scale spatial domain values (x, y, z) and pressures between
-            -1 and 1 and timesteps between 0 and 1. Sklearn scalers are
-            used to scale values. To inverse the scaling, use the
-            method scaler.inverse_transform(values, 'property').
+            scale time, space (x, y, z), rates, and pressures. To change 
+            the scaling settings use set_scalers(). Current settings
+            can be shown under scalers_dict. By default: 
+                `scalers_dict = {
+                'time':['MinMaxScaler', (0,1)],
+                'space':['MinMaxScaler', (-1,1)],
+                'pressure':['MinMaxScaler', (-1,1)],
+                'rate':[None,None]
+                }`
         save : bool, optional, by default True
             save output as a csv file.
         drop_nan : bool, optional, by default True
@@ -1670,7 +1731,7 @@ class Model(Base):
         df = pd.DataFrame()
 
         if scale:
-            self.__init_scalers()
+            self.update_scalers(True)
 
         if melt:
             n_cells = self.grid.get_n(boundary)
@@ -1687,25 +1748,25 @@ class Model(Base):
             if c.lower() in col_dict["date"]:
                 df = self.__add_date(units, melt, boundary, df)
             if c.lower() in col_dict["cells_rate"]:
-                df = self.__add_cells_rate(units, melt, boundary, False, df)
+                df = self.__add_cells_rate(units, melt, boundary, scale, df)
             if c.lower() in col_dict["cells_pressure"]:
                 df = self.__add_cells_pressures(units, melt, boundary, scale, df)
             if c.lower() in col_dict["wells_rate"] and not melt:
-                df = self.__add_wells_rate(units, False, df)
+                df = self.__add_wells_rate(units, scale, df)
             if c.lower() in col_dict["wells_pressure"] and not melt:
-                df = self.__add_wells_pressures(units, boundary, scale, df)
+                df = self.__add_wells_pressures(units, scale, df)
 
         if melt:
             if drop_nan:
                 df = df.dropna(axis=0, how="any")
                 df.reset_index(drop=True, inplace=True)
-                df.index = df.index.astype(int, copy=False)
         else:
             if drop_nan:
                 df = df.dropna(axis=1, how="all")
             if drop_zero:
                 df = df.loc[:, (df != 0).any(axis=0)]
             df.index.name = "Step"
+        df.index = df.index.astype(int, copy=False)
 
         if save:
             df.to_csv("model_data.csv")

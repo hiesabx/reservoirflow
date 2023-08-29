@@ -9,7 +9,7 @@ class TestApp(unittest.TestCase):
         df_desired = pd.read_csv(
             "tests/test_example_7_9.csv",
             index_col=0,
-            dtype={None: "float64", "Time [Days]": "int32"},
+            dtype={"Step": "int32", "Time [Days]": "int32"},
         )
         model = create_model()
         model.run(nsteps=10, sparse=False)
@@ -23,6 +23,7 @@ class TestApp(unittest.TestCase):
             drop_nan=False,
             drop_zero=False,
         )
+
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
 

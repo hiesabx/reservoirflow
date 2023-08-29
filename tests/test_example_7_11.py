@@ -25,7 +25,6 @@ class TestApp(unittest.TestCase):
             drop_nan=True,
             drop_zero=True,
         )
-        df.index = df.index.astype(int)
 
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
