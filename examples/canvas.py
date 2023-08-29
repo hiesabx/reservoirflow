@@ -1,5 +1,5 @@
 #%% # Import
-from openresim import grids
+from reservoirflow import grids
 
 #%% # Create Grid:
 def get_d(d_0, n):

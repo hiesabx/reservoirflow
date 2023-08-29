@@ -1,6 +1,6 @@
 from re import S
 from numpy import size
-from openresim import grids
+from reservoirflow import grids
 import pyvista as pv
 import numpy as np
 

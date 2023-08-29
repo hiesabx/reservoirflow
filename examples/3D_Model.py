@@ -1,4 +1,4 @@
-from openresim import grids, fluids, wells, models
+from reservoirflow import grids, fluids, wells, models
 
 
 grid = grids.Cartesian(

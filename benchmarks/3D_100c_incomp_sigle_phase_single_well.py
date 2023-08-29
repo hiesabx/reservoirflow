@@ -1,4 +1,4 @@
-from openresim import grids, fluids, models, profme
+from reservoirflow import grids, fluids, models, profme
 
 
 def create_model():

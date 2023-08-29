@@ -1,4 +1,4 @@
-from openresim import grids
+from reservoirflow import grids
 import numpy as np
 import unittest
 
