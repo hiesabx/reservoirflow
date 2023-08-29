@@ -1,6 +1,6 @@
 # usage: pip install --editable .
 from setuptools import setup, find_packages
-from openresim.__init__ import __version__
+from reservoirflow.__init__ import __version__
 from pathlib import Path
 
 this_directory = Path(__file__).parent
@@ -11,12 +11,12 @@ with open("requirements.txt") as f:
     requirements = [r for r in requirements if r[:2] != "-e"]
 
 setup(
-    name="openresim",
+    name="reservoirflow",
     version=__version__,
-    packages=find_packages(include=["openresim"]),
+    packages=find_packages(include=["reservoirflow"]),
     author="ZAKARIYA ABUGRIN",
     author_email="zakariya.abugrin@gmail.com",
-    description="Open Reservoir Simulation Library",
+    description="a Petroleum Reservoir Simulation Library in Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="""

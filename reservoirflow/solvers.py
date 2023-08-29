@@ -1,5 +1,5 @@
 import warnings
-from openresim.utils import _lru_cache
+from reservoirflow.utils import _lru_cache
 import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl

@@ -1,5 +1,5 @@
 #%%
-from openresim import grids, fluids, models, profme
+from reservoirflow import grids, fluids, models, profme
 import numpy as np
 import pandas as pd
 

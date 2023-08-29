@@ -1,4 +1,4 @@
-from openresim import grids, fluids, models
+from reservoirflow import grids, fluids, models
 import numpy as np
 import unittest
 

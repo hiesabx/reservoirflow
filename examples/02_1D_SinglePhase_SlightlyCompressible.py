@@ -1,8 +1,8 @@
-from openresim import models, grids, fluids, wells, plots
+from reservoirflow import models, grids, fluids, wells, plots
 
 """
 This is a 1D Model for single-phase incompressible fluid
-The workflow of openresim library consists of 8 steps as following:
+The workflow of reservoirflow library consists of 8 steps as following:
 (default: dtype='double', unit='field')
 """
 # Step 1: Define 1D grid (default dtype: 'double')

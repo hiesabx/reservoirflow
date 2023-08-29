@@ -1,5 +1,5 @@
 from email.errors import BoundaryError
-from openresim import grids
+from reservoirflow import grids
 import time
 
 

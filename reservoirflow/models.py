@@ -5,9 +5,9 @@ This module contains all model classes used to create a reservoir
 simulation model in combination with a Fluid class and Grid class.
 """
 import time
-from openresim.base import Base
-from openresim import grids, fluids, wells, plots, solvers, profme, utils, scalers
-from openresim.utils import _lru_cache
+from reservoirflow.base import Base
+from reservoirflow import grids, fluids, wells, plots, solvers, profme, utils, scalers
+from reservoirflow.utils import _lru_cache
 import numpy as np
 import sympy as sym
 import scipy.linalg as sl

@@ -6,12 +6,12 @@ Model class. Grid class represents both the rock geometry and the rock
 properties which are required for the fluid-flow in porous-media 
 calculations.
 """
-from openresim.base import Base
+from reservoirflow.base import Base
 import numpy as np
 import scipy.sparse as ss
 import pyvista as pv
-from openresim.utils import _lru_cache
-from openresim import utils
+from reservoirflow.utils import _lru_cache
+from reservoirflow import utils
 
 
 class Grid(Base):
@@ -2898,7 +2898,7 @@ class Cartesian(Grid):
                 fdir = "xz"
         pl.camera_position = fdir
         pl.set_background("black", top="gray")
-        pl.show(title="openresim 3D show", full_screen=True)
+        pl.show(title="ReservoirFlow 3D show", full_screen=True)
 
     # -------------------------------------------------------------------------
     # Synonyms:

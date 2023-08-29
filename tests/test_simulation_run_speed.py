@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from openresim import fluids, grids, models
+from reservoirflow import fluids, grids, models
 import matplotlib.pyplot as plt
 import seaborn as sns
 
