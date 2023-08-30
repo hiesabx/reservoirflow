@@ -1,12 +1,4 @@
-#%% 1. Import Statements:
-from reservoirflow.base import Base
-import numpy as np
-
-
-#%% 2. Fluid Class:
-class Fluid(Base):
-    def __init__(self, unit, dtype, verbose):
-        super().__init__(unit, dtype, verbose)
+from reservoirflow.fluids.fluid import Fluid
 
 
 class SinglePhase(Fluid):

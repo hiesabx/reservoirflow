@@ -1,34 +1,9 @@
-"""
-Scaler classes to build scalers for reservoir simulation models.
-
-This module contains all scaler classes used to create a scalers 
-for reservoir simulation model arrays.
-"""
-
-class DummyScaler:
-    def __init__(self, output_range=None, input_range=None):
-        pass
-
-    def set_output_range(self, output_range):
-        return self
-    
-    def fit(self, v, axis=0):
-        return self
-
-    def transform(self, v):
-        return v
-    scale = transform
-
-    def inverse_transform(self, vbar):
-        return vbar
-    descale = inverse_transform
-
-    def fit_transform(self, v, axis=0):
-        self.fit(v, axis)
-        return self.transform(v)
+from reservoirflow.scalers.scaler import Scaler
+import numpy as np
 
 
-class MinMaxScaler:
+class MinMax(Scaler):
+    name = "Min Max Scaler"
     def __init__(self, output_range, input_range=None):
         self.Vmin = output_range[0]
         self.Vmax = output_range[1]
@@ -83,3 +58,9 @@ class MinMaxScaler:
                 + "Use fit (or fit_transform) or define input_range in initialization."
             )
             raise ValueError(msg)
+
+
+
+if __name__ == "__main__":
+    scaler = MinMax(output_range=(0,1))
+    print(scaler)

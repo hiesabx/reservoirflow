@@ -1,4 +1,5 @@
-from reservoirflow import grids, fluids, models, profme
+from reservoirflow import grids, fluids, models
+from reservoirflow.utils import profme
 
 
 def create_model():
@@ -14,7 +15,7 @@ def create_model():
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-    model = models.Model(grid, fluid, dtype="double", dt=1, verbose=False)
+    model = models.Numerical(grid, fluid, dtype="double", dt=1, verbose=False)
     model.set_well(id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model
