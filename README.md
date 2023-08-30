@@ -52,6 +52,11 @@ source .venv/Scripts/activate
 
 ```bash
 source .venv/Scripts/activate
+```
+
+#### Instal requirements
+
+```bash
 pip install -r requirements.txt
 pip install .
 ```
