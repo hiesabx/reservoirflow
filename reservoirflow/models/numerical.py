@@ -1,23 +1,23 @@
 import time
-from reservoirflow.models.model import Model
-from reservoirflow import fluids, grids, scalers, utils, wells
-from reservoirflow.utils.helpers import _lru_cache
+import warnings
+from datetime import date
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from tqdm import tqdm
 import numpy as np
 import sympy as sym
 import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import warnings
 import pandas as pd
-from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from datetime import date
+import matplotlib.pyplot as plt
+
+from reservoirflow.models.model import Model
+from reservoirflow import fluids, grids, scalers, utils, wells
+from reservoirflow.utils.helpers import _lru_cache
 
 
 class Numerical(Model):
-# class Model(Base):
     """Model class used to create a reservoir simulation model.
 
     Model class represents the fluid flow process in a reservoir
@@ -139,10 +139,10 @@ class Numerical(Model):
         self.boundaries_id = self.grid.get_boundaries("id", "array")
 
         self.scalers_dict = {
-            'time':['MinMaxScaler',(0,1)],
-            'space':['MinMaxScaler',(-1,1)],
-            'pressure':['MinMaxScaler',(-1,1)],
-            'rate':[None,None]
+            "time": ["MinMaxScaler", (0, 1)],
+            "space": ["MinMaxScaler", (-1, 1)],
+            "pressure": ["MinMaxScaler", (-1, 1)],
+            "rate": [None, None],
         }
         self.set_scalers(self.scalers_dict)
 
@@ -375,11 +375,15 @@ class Numerical(Model):
         if well is not None:
             if id is None:
                 id = well.id
-            assert id in self.grid.cells_id, "a well must be placed within the reservoir"
+            assert (
+                id in self.grid.cells_id
+            ), "a well must be placed within the reservoir"
             self.wells[id] = vars(well)
         else:
             assert id is not None, "id must be defined"
-            assert id in self.grid.cells_id, "a well must be placed within the reservoir"
+            assert (
+                id in self.grid.cells_id
+            ), "a well must be placed within the reservoir"
             if not id in self.wells.keys():
                 self.wells[id] = {}
             if q is not None:
@@ -1545,8 +1549,8 @@ class Numerical(Model):
         }
 
     def update_scalers(self, boundary):
-        self.__update_time_scaler() # get_time
-        self.__update_space_scaler(boundary) # get_centers() and __add_xyz()
+        self.__update_time_scaler()  # get_time
+        self.__update_space_scaler(boundary)  # get_centers() and __add_xyz()
         self.__update_pressures_scaler(boundary)
         self.__update_rates_scaler(boundary)
 
@@ -1567,6 +1571,7 @@ class Numerical(Model):
                 return 2
             else:
                 return None
+
         centers = self.grid.get_cells_center(boundary, False, False)
         fdir = list(self.grid.get_fdir())
         fdir_cols = list(map(get_fdir_cols, fdir))
@@ -1580,49 +1585,49 @@ class Numerical(Model):
         t = self.get_time(scale)
         centers, _ = self.get_centers(scale, boundary)
         return t, centers
-    
+
     def set_scalers(self, scalers_dict: dict):
         """Set scalers configuration
-        
-        To change the scaling settings. Current settings can be shown 
-        under scalers_dict. By default the following settings are used: 
+
+        To change the scaling settings. Current settings can be shown
+        under scalers_dict. By default the following settings are used:
             `scalers_dict = {
                 'time':['MinMaxScaler', (0,1)],
                 'space':['MinMaxScaler', (-1,1)],
                 'pressure':['MinMaxScaler', (-1,1)],
                 'rate':[None,None]
             }`
-            
-        Note that be default rates are not scaled, time is scaled 
+
+        Note that be default rates are not scaled, time is scaled
         between 0 and 1, while space and pressure are scaled between
         -1 and 1. By default, MinMaxScaler is used for all dimensions.
 
         Parameters
         ----------
         scalers_dict : dict
-            scalers setting as dict in the following 
-            format: {'time': [scaler_type, scaler_range]} were 
-            scaler_type can be e.g. 'MinMaxScaler' and scaler_range is a 
-            tuple of output_range of the scaler e.g. (-1,1). The keys 
-            must be in ['time', 'space', 'pressure', 'rate']. 
+            scalers setting as dict in the following
+            format: {'time': [scaler_type, scaler_range]} were
+            scaler_type can be e.g. 'MinMaxScaler' and scaler_range is a
+            tuple of output_range of the scaler e.g. (-1,1). The keys
+            must be in ['time', 'space', 'pressure', 'rate'].
         """
-        
+
         def create_scaler(scaler_type, output_range):
             if scaler_type is None or output_range is None:
                 return scalers.Dummy(None), None
-            elif scaler_type.lower() in ['minmax', "minmaxscaler"]:
-                return scalers.MinMax(output_range=output_range), 'MinMax'
+            elif scaler_type.lower() in ["minmax", "minmaxscaler"]:
+                return scalers.MinMax(output_range=output_range), "MinMax"
             else:
                 raise ValueError("scaler type is not defined.")
-        
+
         col_dict = {
             "time": ["t", "time", "all"],
-            "space": ["space", "spatial", "xyz", "x","y","z", "all"],
+            "space": ["space", "spatial", "xyz", "x", "y", "z", "all"],
             "pressure": ["p", "pressures", "pressure", "all"],
-            "rate": ["q", "rates", "rate","all"],
+            "rate": ["q", "rates", "rate", "all"],
         }
         col_vals = sum(col_dict.values(), [])
-        
+
         for column in scalers_dict.keys():
             scaler_type = scalers_dict[column][0]
             output_range = scalers_dict[column][1]
@@ -1630,20 +1635,20 @@ class Numerical(Model):
                 raise ValueError(f"column {column} does not exist.")
             if column.lower() in col_dict["time"]:
                 self.time_scaler, s_str = create_scaler(scaler_type, output_range)
-                column_str = 'time'
+                column_str = "time"
             if column.lower() in col_dict["space"]:
                 self.space_scaler, s_str = create_scaler(scaler_type, output_range)
-                column_str = 'space'
+                column_str = "space"
             if column.lower() in col_dict["pressure"]:
                 self.pressures_scaler, s_str = create_scaler(scaler_type, output_range)
-                column_str = 'pressure'
+                column_str = "pressure"
             if column.lower() in col_dict["rate"]:
                 self.rates_scaler, s_str = create_scaler(scaler_type, output_range)
-                column_str = 'rate'
-            
+                column_str = "rate"
+
             if scaler_type is None or output_range is None:
                 self.scalers_dict[column_str] = [None, None]
-            else: 
+            else:
                 self.scalers_dict[column_str] = [s_str, scalers_dict[column][1]]
 
     def get_df(
@@ -1685,9 +1690,9 @@ class Numerical(Model):
             are included while wells columns (wells_rate,
             wells_pressure) are ignored.
         scale : bool, optional, by default False
-            scale time, space (x, y, z), rates, and pressures. To change 
+            scale time, space (x, y, z), rates, and pressures. To change
             the scaling settings use set_scalers(). Current settings
-            can be shown under scalers_dict. By default: 
+            can be shown under scalers_dict. By default:
                 `scalers_dict = {
                 'time':['MinMaxScaler', (0,1)],
                 'space':['MinMaxScaler', (-1,1)],

@@ -54,11 +54,20 @@ source .venv/Scripts/activate
 source .venv/Scripts/activate
 ```
 
-#### Instal requirements
+#### Install requirements
 
 ```bash
 pip install -r requirements.txt
+```
+
+```bash
 pip install .
+```
+
+or
+
+```bash
+python setup.py install
 ```
 
 ### Import Convention

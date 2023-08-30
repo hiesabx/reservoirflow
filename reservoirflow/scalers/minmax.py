@@ -1,9 +1,10 @@
-from reservoirflow.scalers.scaler import Scaler
 import numpy as np
+from reservoirflow.scalers.scaler import Scaler
 
 
 class MinMax(Scaler):
     name = "Min Max Scaler"
+
     def __init__(self, output_range, input_range=None):
         self.Vmin = output_range[0]
         self.Vmax = output_range[1]
@@ -18,12 +19,14 @@ class MinMax(Scaler):
         self.Vmin = output_range[0]
         self.Vmax = output_range[1]
         return self
-    
+
     def fit(self, v, axis=0):
-        if len(v.shape)>2 and axis==0:
-            msg = ("axis=0 is not allowed with input len(shape) > 2. "+
-            "Use axis=None instead. "+
-            "Note that in this case overall min and max are used for scaling.")
+        if len(v.shape) > 2 and axis == 0:
+            msg = (
+                "axis=0 is not allowed with input len(shape) > 2. "
+                + "Use axis=None instead. "
+                + "Note that in this case overall min and max are used for scaling."
+            )
             raise ValueError(msg)
         self.vmin = v.min(axis=axis)
         self.vmax = v.max(axis=axis)
@@ -60,7 +63,6 @@ class MinMax(Scaler):
             raise ValueError(msg)
 
 
-
 if __name__ == "__main__":
-    scaler = MinMax(output_range=(0,1))
+    scaler = MinMax(output_range=(0, 1))
     print(scaler)

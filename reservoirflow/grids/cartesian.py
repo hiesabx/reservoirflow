@@ -1,7 +1,7 @@
-from reservoirflow.grids.grid import Grid
 import numpy as np
 import scipy.sparse as ss
 import pyvista as pv
+from reservoirflow.grids.grid import Grid
 from reservoirflow.utils.helpers import _lru_cache
 from reservoirflow import utils
 
