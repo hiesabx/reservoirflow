@@ -1,5 +1,4 @@
 from reservoirflow.base import Base
-import numpy as np
 
 
 class Fluid(Base):
