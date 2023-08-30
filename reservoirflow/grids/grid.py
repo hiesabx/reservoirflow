@@ -57,9 +57,9 @@ class Grid(Base):
 
 
 if __name__ == "__main__":
-    dtype="double"
-    unit="field"
-    verbose=False
+    dtype = "double"
+    unit = "field"
+    verbose = False
     unify = True
     grid = Grid(unit, dtype, verbose, unify)
     print(grid)

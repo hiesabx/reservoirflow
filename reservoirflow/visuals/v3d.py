@@ -2,7 +2,6 @@ from reservoirflow.visuals.visual import Visual
 
 
 class v3D(Visual):
-
     name = "3D Visual"
 
     def __init__(

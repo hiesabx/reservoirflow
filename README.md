@@ -52,8 +52,22 @@ source .venv/Scripts/activate
 
 ```bash
 source .venv/Scripts/activate
+```
+
+#### Install requirements
+
+```bash
 pip install -r requirements.txt
+```
+
+```bash
 pip install .
+```
+
+or
+
+```bash
+python setup.py install
 ```
 
 ### Import Convention
@@ -91,6 +105,10 @@ By this, engineers should remember that `rf` refers to `reservoirflow` where all
 | **Optimization**     |Reinforcement Learning | No   | `-`         |
 | **Quantum Computing**|                | No          | `-`         |
 ---
+
+## Version History
+
+- v0.0.1 - First Release.
 
 ## Vision
 
@@ -135,6 +153,24 @@ As a normal user, you can support this project in many ways:
 If you are a developer or want to be one, you need additionally to:
 
 - [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
+- Create your feature branch:
+
+    ```Bash
+    git checkout -b my_new_feature
+    ```
+
+- Commit your changes:
+
+    ```Bash
+    git commit -am "Add my new feature"
+    ```
+
+- Push to the branch:
+ 
+    ```Bash
+    git push origin my_new_feature
+    ```
+
 - [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/reservoirflow/pulls) to add features or solve bugs under [Issues](https://github.com/zakgrin/reservoirflow/issues). Please keep in mind that you need to stick with the project [Convention and Rules](#convention-and-rules).
 
 **Companies:**

@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-from reservoirflow import fluids, grids, models
 import matplotlib.pyplot as plt
 import seaborn as sns
+from reservoirflow import fluids, grids, models
 
 generate_data = False
 show_result = False

@@ -1,4 +1,4 @@
-#%%
+# %%
 import warnings
 from functools import lru_cache
 from numpy import ndarray
@@ -17,7 +17,7 @@ def _lru_cache(maxsize=None):
     return wrapper_cache
 
 
-#%%
+# %%
 def get_boundary_str(boundary):
     return "with boundary" if boundary else "without boundary"
 

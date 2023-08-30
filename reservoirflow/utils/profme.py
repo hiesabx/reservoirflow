@@ -1,10 +1,10 @@
-import cProfile
-import pstats
-import io
 import re
+import io
+import time
+import pstats
+import cProfile
 from functools import wraps
 import pandas as pd
-import time
 from line_profiler import LineProfiler
 
 
@@ -158,7 +158,6 @@ def timeit(f):
 
 
 if __name__ == "__main__":
-
     # @timeit
     # @cProfiler(print_output=True)
     # @profile

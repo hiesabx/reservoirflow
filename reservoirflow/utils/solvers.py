@@ -1,6 +1,6 @@
 import warnings
-from reservoirflow.utils.helpers import _lru_cache
 import scipy.sparse.linalg as ssl
+from reservoirflow.utils.helpers import _lru_cache
 
 
 def get_dsolver(name):

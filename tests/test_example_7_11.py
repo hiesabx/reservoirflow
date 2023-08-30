@@ -1,7 +1,7 @@
-from reservoirflow import grids, fluids, models
+import unittest
 import numpy as np
 import pandas as pd
-import unittest
+from reservoirflow import grids, fluids, models
 
 
 class TestApp(unittest.TestCase):

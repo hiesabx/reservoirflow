@@ -25,7 +25,7 @@ class SingleGrid(Well):
 
     def set_constrain(self, constrain):
         self.constrain = constrain
-        
+
     def set_props(self, id=None, q=None, s=None, r=None, constrain=None):
         if id:
             self.set_id(id)

@@ -2,7 +2,6 @@ from reservoirflow.plots.plot import Plot
 
 
 class p2D(Plot):
-
     name = "2D Plot"
 
     def __init__(
