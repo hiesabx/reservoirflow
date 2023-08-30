@@ -106,6 +106,10 @@ By this, engineers should remember that `rf` refers to `reservoirflow` where all
 | **Quantum Computing**|                | No          | `-`         |
 ---
 
+## Version History
+
+- v0.0.1 - First Release.
+
 ## Vision
 
 This library brings reservoir simulation to the Python ecosystem including data analytics and machine learning tools which is in itself a huge benefit. Having this option allows for better integration and support with intelligent fields (e.g. software containers based on this library can be built and deployed to improve production and reservoir management such as real-time well production optimization). In contrast to commercial software where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
@@ -149,6 +153,24 @@ As a normal user, you can support this project in many ways:
 If you are a developer or want to be one, you need additionally to:
 
 - [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository in your machine and start learning about the source-code.
+- Create your feature branch:
+
+    ```Bash
+    git checkout -b my_new_feature
+    ```
+
+- Commit your changes:
+
+    ```Bash
+    git commit -am "Add my new feature"
+    ```
+
+- Push to the branch:
+ 
+    ```Bash
+    git push origin my_new_feature
+    ```
+
 - [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/reservoirflow/pulls) to add features or solve bugs under [Issues](https://github.com/zakgrin/reservoirflow/issues). Please keep in mind that you need to stick with the project [Convention and Rules](#convention-and-rules).
 
 **Companies:**
