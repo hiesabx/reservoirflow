@@ -1,5 +1,6 @@
 #%%
-from reservoirflow import grids, fluids, models, profme
+from reservoirflow import grids, fluids, models
+from reservoirflow.utils import profme
 import numpy as np
 import pandas as pd
 
@@ -20,7 +21,7 @@ def create_model():
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = models.Model(
+    model = models.Numerical(
         grid, fluid, pi=6000, dt=5, start_date="10.10.2018", dtype="double"
     )
 

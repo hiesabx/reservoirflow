@@ -127,7 +127,7 @@ def create_model():
         rho=50,
         dtype="double",
     )
-    model = models.Model(grid, fluid, dtype="double", verbose=False)
+    model = models.Numerical(grid, fluid, dtype="double", verbose=False)
     model.set_well(id=6, pwf=2000, s=0, r=3)
     model.set_well(id=9, q=-600, s=0, r=3)
     model.set_boundaries(

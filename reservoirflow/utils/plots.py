@@ -1,6 +1,5 @@
 import numpy as np
 import pyvista as pv
-from reservoirflow import models
 import math
 import os
 

@@ -1,13 +1,7 @@
-"""
-Model classes to create reservoir simulation models.
-
-This module contains all model classes used to create a reservoir 
-simulation model in combination with a Fluid class and Grid class.
-"""
 import time
-from reservoirflow.base import Base
-from reservoirflow import grids, fluids, wells, plots, solvers, profme, utils, scalers
-from reservoirflow.utils import _lru_cache
+from reservoirflow.models.model import Model
+from reservoirflow import fluids, grids, scalers, utils, wells
+from reservoirflow.utils.helpers import _lru_cache
 import numpy as np
 import sympy as sym
 import scipy.linalg as sl
@@ -19,14 +13,11 @@ import warnings
 import pandas as pd
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import pyvista as pv
 from datetime import date
-# from sklearn.preprocessing import MinMaxScaler
-
-# from numba import jit
 
 
-class Model(Base):
+class Numerical(Model):
+# class Model(Base):
     """Model class used to create a reservoir simulation model.
 
     Model class represents the fluid flow process in a reservoir
@@ -44,7 +35,7 @@ class Model(Base):
         Model object.
     """
 
-    name = "Model"
+    name = "Numerical Model"
 
     def __init__(
         self,
@@ -381,13 +372,14 @@ class Model(Base):
         ----
         - Change production to positive and injection to negative.
         """
-        assert id in self.grid.cells_id, "a well must be placed within the reservoir"
         if well is not None:
             if id is None:
                 id = well.id
+            assert id in self.grid.cells_id, "a well must be placed within the reservoir"
             self.wells[id] = vars(well)
         else:
             assert id is not None, "id must be defined"
+            assert id in self.grid.cells_id, "a well must be placed within the reservoir"
             if not id in self.wells.keys():
                 self.wells[id] = {}
             if q is not None:
@@ -1210,7 +1202,7 @@ class Model(Base):
         if sparse:
             A, d = A.tocsc(), d.todense()
             if isolver:
-                solver = solvers.get_isolver(isolver)
+                solver = utils.solvers.get_isolver(isolver)
                 pressures, exit_code = solver(
                     A,
                     d,
@@ -1617,9 +1609,9 @@ class Model(Base):
         
         def create_scaler(scaler_type, output_range):
             if scaler_type is None or output_range is None:
-                return scalers.DummyScaler(None), None
+                return scalers.Dummy(None), None
             elif scaler_type.lower() in ['minmax', "minmaxscaler"]:
-                return scalers.MinMaxScaler(output_range=output_range), 'MinMax'
+                return scalers.MinMax(output_range=output_range), 'MinMax'
             else:
                 raise ValueError("scaler type is not defined.")
         
@@ -1842,7 +1834,7 @@ class Model(Base):
     #     return pl
 
     def show(self, property: str, centers=False, boundary=False, bounds=False):
-        plots.show(self, property, centers, boundary, bounds)
+        utils.plots.show(self, property, centers, boundary, bounds)
 
     # def get_gif(self, prop, boundary=False, wells=True):
     #     if prop in ['p', 'press', 'pressure', 'pressures']:
@@ -1931,7 +1923,7 @@ if __name__ == "__main__":
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-        model = Model(grid, fluid, dtype="double", verbose=False)
+        model = Numerical(grid, fluid, dtype="double", verbose=False)
         model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
@@ -1954,7 +1946,7 @@ if __name__ == "__main__":
         fluid = fluids.SinglePhase(
             mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
         )
-        model = Model(
+        model = Numerical(
             grid, fluid, pi=6000, dt=5, start_date="10.10.2018", dtype="double"
         )
 

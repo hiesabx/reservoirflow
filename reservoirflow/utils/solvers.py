@@ -1,7 +1,5 @@
 import warnings
-from reservoirflow.utils import _lru_cache
-import scipy.linalg as sl
-import scipy.sparse as ss
+from reservoirflow.utils.helpers import _lru_cache
 import scipy.sparse.linalg as ssl
 
 

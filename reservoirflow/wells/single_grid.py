@@ -1,18 +1,15 @@
-#%% 1. Import Statements:
-from reservoirflow.base import Base
-import numpy as np
+from reservoirflow.wells.well import Well
 
 
-#%% 2. Well Class:
-class Well(Base):
+class SingleGrid(Well):
     """
-    Well class to create a well.
+    Single Grid class.
     """
 
-    name = "Well"
+    name = "Single Grid Well"
 
-    def __init__(self, id=None, q=None, s=None, r=None):
-        self.set_props(id, q, s, r)
+    def __init__(self, id=None, q=None, s=None, r=None, constrain=None):
+        self.set_props(id, q, s, r, constrain)
 
     def set_id(self, id):
         self.id = id
@@ -26,7 +23,10 @@ class Well(Base):
     def set_r(self, r):
         self.r = r
 
-    def set_props(self, id=None, q=None, s=None, r=None):
+    def set_constrain(self, constrain):
+        self.constrain = constrain
+        
+    def set_props(self, id=None, q=None, s=None, r=None, constrain=None):
         if id:
             self.set_id(id)
         if q:
@@ -35,6 +35,7 @@ class Well(Base):
             self.set_s(s)
         if r:
             self.set_r(r)
+        self.set_constrain(constrain)
 
     # -------------------------------------------------------------------------
     # Synonyms:
@@ -55,5 +56,5 @@ class Well(Base):
 
 
 if __name__ == "__main__":
-    well = Well(id=4, q=-600, s=1.5, r=3.5)
+    well = SingleGrid(id=4, q=-600, s=1.5, r=3.5)
     print(well)
