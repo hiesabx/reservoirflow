@@ -2,21 +2,24 @@
 # usage  (fixed ): python setup.py install
 # usage (listen): pip install --editable .
 # usage (listen): python setup.py develop
-
+import re
 from setuptools import setup, find_packages
-from reservoirflow.__init__ import __version__
 from pathlib import Path
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
+
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
     requirements = [r for r in requirements if r[:2] != "-e"]
 
+with open("reservoirflow/__init__.py") as f:
+    version = re.findall("__version__.*(\d.\d.\d).*", f.read())[0]
+
 setup(
     name="reservoirflow",
-    version=__version__,
+    version=version,
     author="Zakariya Abugrin",
     author_email="zakariya.abugrin@gmail.com",
     maintainer="Zakariya Abugrin",
@@ -37,8 +40,7 @@ setup(
         "sympy": "https://sympy.org/",
     },
     python_requires=">=3.7",
-    packages=find_packages("reservoirflow"),
-    package_dir={"": "reservoirflow"},
+    packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
     classifiers=[

@@ -1,4 +1,3 @@
-from email.errors import BoundaryError
 from reservoirflow import grids
 import time
 
