@@ -40,18 +40,24 @@ cd reservoirflow
 python -m venv .venv
 ```
 
-#### Choose one option
+#### Activate your environment
 
 ##### 1. For Windows
 
 ```bash
-source .venv/Scripts/activate
+source .venv/Scripts/Activate
 ```
 
 ##### 2. For Linux or Mac
 
 ```bash
-source .venv/Scripts/activate
+source .venv/bin/activate
+```
+
+#### Update pip
+
+```bash
+pip install --upgrade pip
 ```
 
 #### Install requirements
