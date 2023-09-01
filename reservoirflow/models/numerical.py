@@ -39,8 +39,8 @@ class Numerical(Model):
 
     def __init__(
         self,
-        grid: grids.Grid,
-        fluid: fluids.Fluid,
+        grid: grids.Cartesian,
+        fluid: fluids.SinglePhase,
         well: wells.Well = None,
         pi: int = None,
         dt: int = 1,
@@ -729,6 +729,7 @@ class Numerical(Model):
             assert id in self.grid.cells_id, f"id is out of range {self.grid.cells_id}."
             neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="array")
             boundaries = self.grid.get_cell_boundaries(id=id, fmt="array")
+            # f_terms: flow terms, a_terms: accumulation terms
             terms = {"f_terms": [], "a_term": 0}
             T = self.get_cell_T(id, None, True)
             if self.verbose:

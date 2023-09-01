@@ -55,6 +55,41 @@ class Grid(Base):
         self.A = {}
         self.__props__ = dict.fromkeys(props_keys)
 
+    def set_comp(self, comp: float):
+        """Grid compressibility
+
+        Parameters
+        ----------
+        comp : float
+            grid compressibility
+
+        Raises
+        ------
+        ValueError
+            Unknown compressibility type.
+        """
+        self.comp = comp
+        if comp == 0:
+            self.comp_type = "incompressible"
+        elif comp > 0:
+            self.comp_type = "compressible"
+        else:
+            self.comp_type = None
+            raise ValueError("Compressibility smaller than zero is not allowed.")
+
+    # -------------------------------------------------------------------------
+    # Synonyms:
+    # -------------------------------------------------------------------------
+
+    def allow_synonyms(self):
+        self.set_compressibility = self.set_comp
+        self.compressibility = self.comp
+        self.compressibility_type = self.comp_type
+
+    # -------------------------------------------------------------------------
+    # End
+    # -------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     dtype = "double"

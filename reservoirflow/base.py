@@ -11,24 +11,26 @@ units_dict = {
     "metric": {"transmissibility": "M3/D-bar", "error": "M3/D"},
 }
 
+factors_dict = {
+    "field": {
+        "transmissibility conversion": 0.001127,
+        "gravity conversion": 0.21584 * 10**-3,
+        "gravitational acceleration": 32.174,
+        "volume conversion": 5.614583,
+    },
+    "metric": {
+        "transmissibility conversion": 0,
+        "gravity conversion": 0,
+        "gravitational acceleration": 0,
+        "volume conversion": 1,
+    },
+}
+
 
 class Base:
     name = None
     units_dict = units_dict
-    factors_dict = {
-        "field": {
-            "transmissibility conversion": 0.001127,
-            "gravity conversion": 0.21584 * 10**-3,
-            "gravitational acceleration": 32.174,
-            "volume conversion": 5.614583,
-        },
-        "metric": {
-            "transmissibility conversion": 0,
-            "gravity conversion": 0,
-            "gravitational acceleration": 0,
-            "volume conversion": 1,
-        },
-    }
+    factors_dict = factors_dict
 
     unit = "field"
     units = units_dict[unit]
@@ -46,17 +48,6 @@ class Base:
             self.factors = self.factors_dict[unit]
         else:
             raise ValueError(f"The selected unit system ({unit}) is unknown!")
-
-    def set_comp(self, comp):
-        """ """
-        self.comp = comp
-        if comp == 0:
-            self.comp_type = "incompressible"
-        elif comp > 0:
-            self.comp_type = "compressible"
-        else:
-            self.comp_type = None
-            raise ValueError("Compressibility type is unknown!")
 
     def report(self, prop=None, ifmt=0):
         props = vars(self)
@@ -88,10 +79,10 @@ class Base:
     # Synonyms:
     # -------------------------------------------------------------------------
 
-    def allow_synonyms(self):
-        self.set_compressibility = self.set_comp
-        self.compressibility = self.comp
-        self.compressibility_type = self.comp_type
+    # def allow_synonyms(self):
+    #     self.set_compressibility = self.set_comp
+    #     self.compressibility = self.comp
+    #     self.compressibility_type = self.comp_type
 
     # -------------------------------------------------------------------------
     # End
