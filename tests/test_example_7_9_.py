@@ -109,7 +109,7 @@ def create_model():
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = models.Numerical(grid, fluid, pi=4000, dt=1, dtype="double", verbose=False)
+    model = models.BlackOil(grid, fluid, pi=4000, dt=1, dtype="double", verbose=False)
     model.set_well(id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model

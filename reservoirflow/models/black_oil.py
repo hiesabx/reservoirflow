@@ -17,7 +17,7 @@ from reservoirflow import fluids, grids, scalers, utils, wells
 from reservoirflow.utils.helpers import _lru_cache
 
 
-class Numerical(Model):
+class BlackOil(Model):
     """Model class used to create a reservoir simulation model.
 
     Model class represents the fluid flow process in a reservoir
@@ -40,7 +40,7 @@ class Numerical(Model):
     def __init__(
         self,
         grid: grids.Cartesian,
-        fluid: fluids.SinglePhase,
+        fluid: fluids.Fluid,
         well: wells.Well = None,
         pi: int = None,
         dt: int = 1,
@@ -1929,7 +1929,7 @@ if __name__ == "__main__":
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-        model = Numerical(grid, fluid, dtype="double", verbose=False)
+        model = BlackOil(grid, fluid, dtype="double", verbose=False)
         model.set_well(id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
@@ -1952,7 +1952,7 @@ if __name__ == "__main__":
         fluid = fluids.SinglePhase(
             mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
         )
-        model = Numerical(
+        model = BlackOil(
             grid, fluid, pi=6000, dt=5, start_date="10.10.2018", dtype="double"
         )
 

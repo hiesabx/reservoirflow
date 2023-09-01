@@ -52,7 +52,7 @@ Construct a `Numerical` model from `models`module::
 
 """
 
-from .base import *
+from .base import units_dict, factors_dict
 from . import fluids, grids, models, scalers, utils
 
 __version__ = "0.0.1"

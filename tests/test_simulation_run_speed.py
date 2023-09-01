@@ -26,7 +26,7 @@ if generate_data:
         fluid = fluids.SinglePhase(
             mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double"
         )
-        model = models.Numerical(grid, fluid, pi=3000, dt=5, dtype="double")
+        model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
         id = grid.cells_id[0]
         model.set_well(id=id, q=-400, pwf=1500, s=0, r=3)
         # model.set_boundaries({0: ("rate", 0)})

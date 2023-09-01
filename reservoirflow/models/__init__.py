@@ -1,2 +1,2 @@
 from .model import Model
-from .numerical import Numerical
+from .black_oil import BlackOil
