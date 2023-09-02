@@ -18,12 +18,11 @@ class Cartesian(Grid):
     -------
     Cartesian
         Cartesian Grid object.
-
-    ToDo
-    ----
-    - make default calc all flatten because flatten > reshape is faster
-      than reshape > flatten.
     """
+    # ToDo
+    # ----
+    # - make default calc all flatten because flatten > reshape is faster
+    #   than reshape > flatten.
 
     name = "Cartesian Grid"
 
@@ -128,12 +127,12 @@ class Cartesian(Grid):
             each other or with 3D shape.
         verbose : bool, optional, by default False
             print information for debugging.
-
-        ToDo
-        ----
-        Complete unify feature to be compatible with all class
-        components.
         """
+
+        # ToDo
+        # ----
+        # Complete unify feature to be compatible with all class
+        # components.
         super().__init__(unit, dtype, verbose, unify)
         assert nx >= 1, "nx must be 1 or larger."
         assert ny >= 1, "ny must be 1 or larger."
@@ -414,10 +413,10 @@ class Cartesian(Grid):
         array
             array in flow shape filled with ones.
 
-        ToDo
-        ----
-        - Make sure sparse option is valid.
         """
+        # ToDo
+        # ----
+        # - Make sure sparse option is valid.
         if fshape:
             shape = self.get_fshape(boundary, False)
         else:
@@ -451,10 +450,10 @@ class Cartesian(Grid):
         array
             array in flow shape filled with ones.
 
-        ToDo
-        ----
-        - Make sure sparse option is valid.
         """
+        # ToDo
+        # ----
+        # - Make sure sparse option is valid.
         if fshape:
             shape = self.get_fshape(boundary, False)
         else:
@@ -548,10 +547,10 @@ class Cartesian(Grid):
         ndarray
             cells id in natural order as array.
 
-        ToDo
-        ----
-        can be a generator instead.
         """
+        # ToDo
+        # ----
+        # can be a generator instead.
         cells_id = self.get_order("natural", boundary, fshape)
 
         if not fshape:
@@ -613,11 +612,11 @@ class Cartesian(Grid):
         ndarray
             cells coords in (i,j,k) as array.
 
-        ToDo
-        ----
-        - can be a generator instead?
-        - check if needs optimization.
         """
+        # ToDo
+        # ----
+        # - can be a generator instead?
+        # - check if needs optimization.
         cells_id = self.get_cells_id(boundary, False, "array")
         pyvista_grid = self.get_pyvista_grid(True)
         cells_coords = pyvista_grid.cell_coords(cells_id)
@@ -656,10 +655,10 @@ class Cartesian(Grid):
         tuple/list of tuples
             internal coords (icoords)
 
-        ToDo
-        ----
-        - very slow, improve isin method..
         """
+        # ToDo
+        # ----
+        # - very slow, improve isin method..
 
         if not isinstance(coords[0], tuple):
             cells_coords = self.get_cells_coords(True, False, "array")
@@ -698,10 +697,10 @@ class Cartesian(Grid):
         ndarray
             cells coords in (i,j,k) as array.
 
-        ToDo
-        ----
-        - Finish implementation.
         """
+        # ToDo
+        # ----
+        # - Finish implementation.
         cells_coords = self.get_cells_coords(boundary, False, "tuple")
         cells_icoords = self.get_cell_icoords(cells_coords)
 
@@ -770,10 +769,10 @@ class Cartesian(Grid):
         ValueError
             Unknown str value was used for fmt argument.
 
-        ToDo
-        ----
-        [Empty]
         """
+        # ToDo
+        # ----
+        # [Empty]
         cell_neighbors = {"x": [], "y": [], "z": []}
 
         if id is not None:
@@ -871,10 +870,10 @@ class Cartesian(Grid):
         ValueError
             Unknown str value was used for fmt argument.
 
-        ToDo
-        ----
-        [Empty]
         """
+        # ToDo
+        # ----
+        # [Empty]
         cell_boundaries = {"x": [], "y": [], "z": []}
 
         if id is not None:
@@ -941,10 +940,10 @@ class Cartesian(Grid):
         --------
         extract_boundaries: keep only boundary cells from input data.
 
-        ToDo
-        ----
-        add fmt argument.
         """
+        # ToDo
+        # ----
+        # add fmt argument.
         if isinstance(in_data, np.ndarray):
             if points is None:
                 points = utils.ispoints(in_data)
@@ -1052,11 +1051,11 @@ class Cartesian(Grid):
         --------
         remove_boundaries: remove boundary cells from input data.
 
-        ToDo
-        ----
-        The fshape might be checked automatically based on the provided data.
-        Confirm the behavior of when self.unify set to True.
         """
+        # ToDo
+        # ----
+        # The fshape might be checked automatically based on the provided data.
+        # Confirm the behavior of when self.unify set to True.
         if isinstance(in_data, np.ndarray):
             if points is None:
                 points = utils.ispoints(in_data)
@@ -1270,10 +1269,10 @@ class Cartesian(Grid):
         tuple
             tuple of len 3 for dimension meshgrid as Dx, Dy, Dz.
 
-        ToDo
-        ----
-        - Do we need any fmt here?
         """
+        # ToDo
+        # ----
+        # - Do we need any fmt here?
         if fshape:
             shape = self.get_fshape(True, False)
         else:
@@ -1313,10 +1312,10 @@ class Cartesian(Grid):
         ndarray
             array of dx, dy, or dz based on dir argument.
 
-        ToDo
-        ----
-        - Allow dict for all directions.
         """
+        # ToDo
+        # ----
+        # - Allow dict for all directions.
 
         if dir == "x":
             cells_d = self.dx
@@ -1420,10 +1419,10 @@ class Cartesian(Grid):
         ValueError
             id or coords argument must be defined.
 
-        ToDo
-        ----
-        - check if id or coords in range.
         """
+        # ToDo
+        # ----
+        # - check if id or coords in range.
         cells_D = self.get_cells_d(dir=dir, boundary=True, fshape=True)
 
         if id is not None:
@@ -1539,10 +1538,10 @@ class Cartesian(Grid):
         ndarray
             array of Ax, Ay, or Az based on dir argument.
 
-        ToDo
-        ----
-        - Allow dict for all directions.
         """
+        # ToDo
+        # ----
+        # - Allow dict for all directions.
         if dir == "x":
             cells_A = self.Ax
         elif dir == "y":
@@ -2090,10 +2089,10 @@ class Cartesian(Grid):
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..). NotFullyImplemented.
 
-        ToDo
-        ----
-        - allow iterables for id and coords.
         """
+        # ToDo
+        # ----
+        # - allow iterables for id and coords.
         if kx is not None:
             self.set_prop("kx", kx, id, coords)
             self.kx = self.k["x"] = self.__props__["kx"]
@@ -2159,21 +2158,21 @@ class Cartesian(Grid):
         ValueError
             Property name is unknown or not defined.
 
-        ToDo
-        ----
-        - allow iterables for id and coords.
-        - check for id or coords inside grid.
-        - make get_ones(#, False, #) > with flatt as default.
-
-        Backup
-        ------
-        - Code for id part:
-            prop = self.props[name].flatten()
-            prop[id] = value
-            fshape = self.get_fshape(True, False)
-            self.props[name] = prop.reshape(fshape)
-            s = "cell id " + str(id)
         """
+        # ToDo
+        # ----
+        # - allow iterables for id and coords.
+        # - check for id or coords inside grid.
+        # - make get_ones(#, False, #) > with flatt as default.
+
+        # Backup
+        # ------
+        # - Code for id part:
+        #     prop = self.props[name].flatten()
+        #     prop[id] = value
+        #     fshape = self.get_fshape(True, False)
+        #     self.props[name] = prop.reshape(fshape)
+        #     s = "cell id " + str(id)
         if name in self.__props__.keys():
             if id is None and coords is None:
                 self.__props__[name] = self.get_ones(True, False, False) * value
@@ -2221,10 +2220,10 @@ class Cartesian(Grid):
         ValueError
             Property name is unknown or not defined.
 
-        ToDo
-        ----
-        - flatten when fmt not array and in fshape.
         """
+        # ToDo
+        # ----
+        # - flatten when fmt not array and in fshape.
         if name in self.__props__.keys() and self.__props__[name] is not None:
             prop = self.__props__[name]
 
@@ -2271,10 +2270,10 @@ class Cartesian(Grid):
         ValueError
             dir must be in ['x', 'y', 'z'].
 
-        ToDo
-        ----
-        - flatten when fmt not array and in fshape.
         """
+        # ToDo
+        # ----
+        # - flatten when fmt not array and in fshape.
         if dir in ["x", "y", "z"]:
             name = "k" + dir
         else:
@@ -2688,10 +2687,10 @@ class Cartesian(Grid):
         ndarray
             array of G based on dir argument.
 
-        ToDo
-        ----
-        - for now use only with id
         """
+        # ToDo
+        # ----
+        # - for now use only with id
         neighbors = self.get_cell_neighbors(id, coords, boundary, fmt="dict")
         G = {}
 

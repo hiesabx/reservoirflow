@@ -53,11 +53,11 @@ def isin(x: tuple, in_data):
     Boolean
         True is x in data, otherwise False
 
-    ToDo
-    ----
-    test if data contains points data and x is i,j,k tuple.
-    - must use sets to check instead of fore loops.
     """
+    # ToDo
+    # ----
+    # test if data contains points data and x is i,j,k tuple.
+    # - must use sets to check instead of fore loops.
     if not isinstance(x, tuple) and not isinstance(x, (np.integer, int)):
         x = tuple(x)
     if isinstance(in_data, np.ndarray):

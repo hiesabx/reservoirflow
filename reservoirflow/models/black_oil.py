@@ -188,10 +188,10 @@ class BlackOil(Model):
         ndarray
             array of G based on dir argument.
 
-        ToDo
-        ----
-        - for now use only with id
         """
+        # ToDo
+        # ----
+        # - for now use only with id
 
         cell_G = self.grid.get_cell_G(id, coords, boundary)
         cell_T = {}
@@ -267,10 +267,10 @@ class BlackOil(Model):
         float
             well geometry factor G.
 
-        ToDo
-        ----
-        - use k and d based on well direction.
         """
+        # ToDo
+        # ----
+        # - use k and d based on well direction.
         fdir = self.grid.get_fdir()
         if fdir == "x":
             k_H = self.grid.k["x"][id]
@@ -309,10 +309,10 @@ class BlackOil(Model):
         float
             well equivalent radius (r_eq).
 
-        ToDo
-        ----
-        - use k and d based on well direction.
         """
+        # ToDo
+        # ----
+        # - use k and d based on well direction.
         fdir = self.grid.get_fdir()
         if fdir in ["x", "y"]:
             d = self.grid.d["x"][id] ** 2 + self.grid.d["y"][id] ** 2
@@ -368,10 +368,10 @@ class BlackOil(Model):
         s : int, float, optional, by default None
             well skin factor
 
-        ToDo
-        ----
-        - Change production to positive and injection to negative.
         """
+        # ToDo
+        # ----
+        # - Change production to positive and injection to negative.
         if well is not None:
             if id is None:
                 id = well.id
@@ -433,10 +433,10 @@ class BlackOil(Model):
         v : int, float
             constant value to specify the condition in cond argument.
 
-        ToDo
-        ----
-        - d is taken at x direction for gradient.
         """
+        # ToDo
+        # ----
+        # - d is taken at x direction for gradient.
         cond = cond.lower()
         if cond in ["rate", "q"]:
             self.rates[self.tstep, id_b] = v
@@ -500,10 +500,10 @@ class BlackOil(Model):
     def __calc_RHS(self):
         """Calculates flow equation for RHS.
 
-        ToDo
-        ----
-        - make sure RHS is suitable in case of floats.
         """
+        # ToDo
+        # ----
+        # - make sure RHS is suitable in case of floats.
         if self.comp_type == "incompressible":
             n = self.grid.get_n(True)
             self.RHS = np.zeros(n, dtype=self.dtype)
@@ -669,10 +669,10 @@ class BlackOil(Model):
         Exception
             _description_
 
-        ToDo
-        ----
-        - consider unifying RHS or if cond.
         """
+        # ToDo
+        # ----
+        # - consider unifying RHS or if cond.
         if self.comp_type == "incompressible":
             return 0
         else:
@@ -702,27 +702,27 @@ class BlackOil(Model):
         tuple
             cell equation as a tuple of (lhs, rhs).
 
-        ToDo
-        ----
-        - n_term naming.
-
-        Backup
-        ------
-        - constant pressure:
-            # exec(f"p{i}=sym.Symbol('p{i}')")
-            # ToDo: keep pressure constant at specific cell (requires A adjust)
-            # if not np.isnan(self.pressures[self.tstep][i]):
-            #     exec(f"p{i} = {self.pressures[self.tstep][i]}")
-        - n_term to use pressure values:
-            # To Do: keep pressure constant at specific cell (requires A adjust)
-            # if not np.isnan(self.pressures[self.tstep][neighbor]):
-            #     exec(f"p{neighbor} = {self.pressures[self.tstep][neighbor]}")
-        - n_term in one calc.
-        exec(
-            f"n_term = self.T[dir][min(neighbor,id)] * ((p{n_id} - p{id})
-            - (self.fluid.g * (self.grid.z[neighbor] - self.grid.z[id])))"
-        )
         """
+        # ToDo
+        # ----
+        # - n_term naming.
+
+        # Backup
+        # ------
+        # - constant pressure:
+        #     # exec(f"p{i}=sym.Symbol('p{i}')")
+        #     # ToDo: keep pressure constant at specific cell (requires A adjust)
+        #     # if not np.isnan(self.pressures[self.tstep][i]):
+        #     #     exec(f"p{i} = {self.pressures[self.tstep][i]}")
+        # - n_term to use pressure values:
+        #     # To Do: keep pressure constant at specific cell (requires A adjust)
+        #     # if not np.isnan(self.pressures[self.tstep][neighbor]):
+        #     #     exec(f"p{neighbor} = {self.pressures[self.tstep][neighbor]}")
+        # - n_term in one calc.
+        # exec(
+        #     f"n_term = self.T[dir][min(neighbor,id)] * ((p{n_id} - p{id})
+        #     - (self.fluid.g * (self.grid.z[neighbor] - self.grid.z[id])))"
+        # )
         p = eval(f"sym.Symbol('p{id}')")
 
         if not id in self.cells_terms:
@@ -848,10 +848,10 @@ class BlackOil(Model):
         _type_
             _description_
 
-        ToDo
-        ----
-        - Update only required cells.
         """
+        # ToDo
+        # ----
+        # - Update only required cells.
         self.cells_eq = self.get_cells_eq(threading)
 
         if self.tstep == 0:
@@ -956,10 +956,11 @@ class BlackOil(Model):
 
 
 
-        ToDo
-        ----
-        - T for different geometries is still not ready.
         """
+        # ToDo
+        # ----
+        # - T for different geometries is still not ready.
+        
         # all 1D in x direction.
         z = self.grid.z[self.grid.cells_id]
         if not np.all(z == z[0]):

@@ -20,20 +20,19 @@ def cProfiler(sort_stats="tottime", print_output=True, save_output=True):
     save_output : bool, optional, by default False
         save output as csv file in the current working dir. The file
         name will be 'cProfiler_{function_name}.csv'.
-
-    Backup:
-    - Other ways to store csv:
-        1. using csv module: result must be a list
-                with open(
-                    f"profile_{func.__qualname__}.csv", mode="w", newline=""
-                ) as f:
-                    writer = csv.writer(f, delimiter=",")
-                    writer.writerows([r.split(",") for r in result])
-        2. using pandas:
-                data = io.StringIO("\n".join(result))
-                df = pd.read_csv(data, sep=",")
-                df.to_csv(f"profile_{func.__qualname__}.csv", index=False)
     """
+    # Backup:
+    # - Other ways to store csv:
+    #     1. using csv module: result must be a list
+    #             with open(
+    #                 f"profile_{func.__qualname__}.csv", mode="w", newline=""
+    #             ) as f:
+    #                 writer = csv.writer(f, delimiter=",")
+    #                 writer.writerows([r.split(",") for r in result])
+    #     2. using pandas:
+    #             data = io.StringIO("\n".join(result))
+    #             df = pd.read_csv(data, sep=",")
+    #             df.to_csv(f"profile_{func.__qualname__}.csv", index=False)
 
     def decorator(func):
         @wraps(func)
@@ -73,13 +72,12 @@ def lProfiler(print_output=True, save_output=True):
     save_output : bool, optional, by default False
         save output as csv file in the current working dir. The file
         name will be 'lProfiler_{function_name}.csv'.
-
-    Backup
-    ------
-    - info can also be accessed in indices range(0:4):
-        info = "\n ".join(result[:4])
-        print("[info]:\n", info)
     """
+    # Backup
+    # ------
+    # - info can also be accessed in indices range(0:4):
+    #     info = "\n ".join(result[:4])
+    #     print("[info]:\n", info)
 
     def decorator(func):
         @wraps(func)
