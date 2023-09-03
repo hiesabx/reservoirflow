@@ -7,7 +7,7 @@ properties which are required for the fluid-flow in porous-media
 calculations.
 """
 # from ..base import Base
-from reservoirflow.base import Base
+from reservoirflow._base import Base
 
 
 class Grid(Base):

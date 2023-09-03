@@ -1,4 +1,4 @@
-from reservoirflow.wells.well import Well
+from reservoirflow.wells._well import Well
 
 
 class SingleGrid(Well):

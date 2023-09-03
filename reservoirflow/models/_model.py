@@ -1,19 +1,20 @@
-from reservoirflow.base import Base
+from reservoirflow._base import Base
 
 
-class Fluid(Base):
-    name = "Fluid"
+class Model(Base):
+    name = "Model"
 
     def __init__(self, unit, dtype, verbose):
         super().__init__(unit, dtype, verbose)
 
     def set_comp(self, comp: float):
-        """Fluid compressibility
+        """Model compressibility
 
         Parameters
         ----------
         comp : float
-            fluid compressibility.
+            model compressibility which is the total compressibility
+            of Grid and Fluid classes.
 
         Raises
         ------
@@ -47,5 +48,5 @@ if __name__ == "__main__":
     dtype = "double"
     unit = "field"
     verbose = False
-    fluid = Fluid(unit, dtype, verbose)
-    print(fluid)
+    model = Model(unit, dtype, verbose)
+    print(model)

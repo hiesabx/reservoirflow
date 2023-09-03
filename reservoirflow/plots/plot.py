@@ -1,4 +1,4 @@
-from reservoirflow.base import Base
+from reservoirflow._base import Base
 
 
 class Plot(Base):

@@ -1,4 +1,4 @@
-from reservoirflow.scalers.scaler import Scaler
+from reservoirflow.scalers._scaler import Scaler
 
 
 class Dummy(Scaler):

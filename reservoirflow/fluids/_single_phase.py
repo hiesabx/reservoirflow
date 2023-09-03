@@ -1,4 +1,4 @@
-from reservoirflow.fluids.fluid import Fluid
+from reservoirflow.fluids._fluid import Fluid
 
 
 class SinglePhase(Fluid):

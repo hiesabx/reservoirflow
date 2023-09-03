@@ -12,7 +12,7 @@ import scipy.sparse.linalg as ssl
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from reservoirflow.models.model import Model
+from reservoirflow.models._model import Model
 from reservoirflow import fluids, grids, scalers, utils, wells
 from reservoirflow.utils.helpers import _lru_cache
 
@@ -35,13 +35,13 @@ class BlackOil(Model):
         Model object.
     """
 
-    name = "Numerical Model"
+    name = "BlackOil Model"
 
     def __init__(
         self,
         grid: grids.Cartesian,
-        fluid: fluids.Fluid,
-        well: wells.Well = None,
+        fluid: fluids.SinglePhase,
+        well=None,  # wells.Well = None,
         pi: int = None,
         dt: int = 1,
         start_date: date = None,
@@ -498,9 +498,7 @@ class BlackOil(Model):
 
     @_lru_cache(maxsize=1)
     def __calc_RHS(self):
-        """Calculates flow equation for RHS.
-
-        """
+        """Calculates flow equation for RHS."""
         # ToDo
         # ----
         # - make sure RHS is suitable in case of floats.
@@ -952,15 +950,11 @@ class BlackOil(Model):
                 raise Exception("Initial pressure (pi) must be specified")
 
     def __update_z(self):
-        """_summary_
-
-
-
-        """
+        """_summary_"""
         # ToDo
         # ----
         # - T for different geometries is still not ready.
-        
+
         # all 1D in x direction.
         z = self.grid.z[self.grid.cells_id]
         if not np.all(z == z[0]):

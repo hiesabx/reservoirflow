@@ -2,7 +2,8 @@
 ReservoirFlow `<reservoirflow>`
 ===============================
 
-a Petroleum Reservoir Simulation Library in Python developed by `Zakariya Abugrin`
+a Petroleum Reservoir Simulation Library in Python developed by 
+`Zakariya Abugrin`.
 
 Available subpackages
 ---------------------
@@ -43,16 +44,15 @@ Create a `SinglePhase` fluid from `fluids` module::
 
   >>> fluid = rf.fluids.SinglePhase()
     
-Construct a `Numerical` model from `models`module::
+Construct a `BlackOil` model from `models` module::
 
-  >>> model = rf.models.Numerical(
+  >>> model = rf.models.BlackOil(
         grid=grid,
         fluid=fluid,
-    )
-
+      )
 """
 
-from .base import units_dict, factors_dict
+from ._base import units_dict, factors_dict
 from . import fluids, grids, models, scalers, utils
 
 __version__ = "0.0.1"

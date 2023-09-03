@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as ss
 import pyvista as pv
-from reservoirflow.grids.grid import Grid
+from reservoirflow.grids._grid import Grid
 from reservoirflow.utils.helpers import _lru_cache
 from reservoirflow import utils
 
@@ -19,6 +19,7 @@ class Cartesian(Grid):
     Cartesian
         Cartesian Grid object.
     """
+
     # ToDo
     # ----
     # - make default calc all flatten because flatten > reshape is faster

@@ -1,5 +1,4 @@
-import numpy as np
-from reservoirflow.base import Base
+from reservoirflow._base import Base
 
 
 class Scaler(Base):
