@@ -2,9 +2,23 @@ from reservoirflow.scalers._scaler import Scaler
 
 
 class Dummy(Scaler):
+    """Dummy Scaler
+
+    Returns data without scaling.
+    """
+
     name = "Dummy Scaler"
 
-    def __init__(self, output_range=None, input_range=None):
+    def __init__(self, output_range: tuple = None, input_range: tuple = None):
+        """Dummy Scaler
+
+        Parameters
+        ----------
+        output_range : tuple, optional
+            output range, by default None
+        input_range : tuple, optional
+            input range, by default None
+        """
         pass
 
     def set_output_range(self, output_range):
