@@ -1,6 +1,5 @@
 # Doc ReadMe
 
-
 ## Environment
 
 You can create a separate environment for documentation using the following commands:
@@ -20,23 +19,23 @@ sphinx-quickstart
 ### bash
 
 ´´´bash
-sphinx-apidoc -o . ../reservoirflow/ -f -M -E
+sphinx-apidoc -o modules/ ../reservoirflow/ -f -M -T
 sphinx-build -b html ./ _build/html/
 ```
 
 ```
-sphinx-apidoc -o doc/ reservoirflow/ -f -M -E
+sphinx-apidoc -o doc/modules reservoirflow/ -f -M -T
 sphinx-build -b html doc/ doc/_build/html/
 ```
 
 ### cmd 
 
 ´´´bash
-sphinx-apidoc -o .\ ..\reservoirflow\ -f -M -E
+sphinx-apidoc -o modules\ ..\reservoirflow\ -f -M -T
 make.bat clean html | make.bat html #(69 warnings) or
 sphinx-build -b html .\ _build\html # (69 warnings)
 
-sphinx-apidoc -o doc\ reservoirflow\ -f -M -E
+sphinx-apidoc -o doc\modules\ reservoirflow\ -f -M -T
 doc\make.bat clean html | doc\make.bat html 
 sphinx-build -b html doc\ doc\_build\html\ # (6 warnings)
 ```
