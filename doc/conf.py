@@ -10,9 +10,6 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(".."))
-# sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
-# sys.path.insert(0, os.chdir(".."))
-
 
 project = "ReservoirFlow"
 copyright = "2023, Zakariya Abugrin"
@@ -42,3 +39,4 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 
 myst_enable_extension = []
+# add_module_names = False
