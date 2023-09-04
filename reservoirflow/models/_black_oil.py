@@ -872,12 +872,12 @@ class BlackOil(Model):
     def init_A(self, sparse: bool = False):
         """Initialize ceofficient matrix (`A`).
 
-        For a linear system of equations `Au=d`, `A` is the
+        For a system of linear equations `Au=d`, `A` is the
         ceofficient matrix (known), `d` is the constant vector (known),
         and `u` is the variable vector (unknown e.g., pressure).
 
         This function initialize the ceofficient matrix (`A`) which is
-        needed only at timestep zero.
+        needed only at initial timestep (i.e., `timestep=0`).
 
         Parameters
         ----------
@@ -911,7 +911,7 @@ class BlackOil(Model):
     def init_d(self, sparse):
         """Initialize constant vector (`d`).
 
-        For a linear system of equations `Au=d`, `A` is the
+        For a system of linear equations `Au=d`, `A` is the
         ceofficient matrix (known), `d` is the constant vector (known),
         and `u` is the variable vector (unknown e.g., pressure).
 

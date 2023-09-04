@@ -1,11 +1,25 @@
 # ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
 
+![](/images/logo.png)
 <!--- 
 Petroleum Reservoir Simulation using Scientific Computing and Machine Learning With Python developed by [Zakariya ABUGRIN](https://github.com/zakgrin).
 --->
 
-![Alt Text](../images/five_spot_single_phase.gif)
+![](/images/five_spot_single_phase.gif)
 *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns*
+
+- [ReservoirFlow: a Petroleum Reservoir Simulation Library in Python](#reservoirflow-a-petroleum-reservoir-simulation-library-in-python)
+  - [Introduction](#introduction)
+  - [Installation](#installation)
+  - [Import Convention](#import-convention)
+  - [Version](#version)
+  - [Capabilities](#capabilities)
+  - [Vision](#vision)
+  - [Motivation](#motivation)
+  - [Sponsorship](#sponsorship)
+  - [How Can I Support This Project?](#how-can-i-support-this-project)
+  - [Convention and Rules](#convention-and-rules)
+  - [License](#license)
 
 ## Introduction
 
@@ -65,7 +79,7 @@ The author aims to open a start-up that can provide accessible cutting-edge soft
       python -m venv .venv
       ```
 
-  - Activate your environment: 
+  - Activate your environment:
 
     - Windows:
 
@@ -109,33 +123,62 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 ## Version
 
-[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until the first stable version is reached. The first version `v0.1.0` was released on April 1, 2022. The current version is `v0.1.0`. Supported capabilities are shown below:
+[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until the first stable version is reached. The first version `v0.1.0` was released on January 1, 2024. The current version is `v0.1.0`.
 
-| **Feature**          | **Type**       | **Support** | **Starting From** |
-| --------------------- | ---------------- | ----------- | ------------- |
-| **Grid Type**        | Cartesian      | Yes         | `v0.1.0`    |
-|                      | Radial         | No          | `-`         |
-| **Dimension**        | 1D             | Yes         | `v0.1.0`    |
-|                      | 2D             | Yes         | `v0.1.0`    |
-|                      | 3D             | Yes         | `v0.1.0`    |
-| **Phases**           | Single Phase   | Yes         | `v0.1.0`    |
-|                      | Two Phases     | No          | `-`         |
-|                      | Three Phases   | No          | `-`         |
-|                      | Compositional  | No          | `-`         |
-| **Compressibility**  | Incompressible | Yes         | `v0.1.0`    |
-|                      | Slightly Compressible   | Yes          | `v0.1.0`    |
-|                      | Compressible   | Yes          | `v0.1.0`    |
-| **Experiments**      | Core-Flooding  | No          | `-`         |
-|                      | Slim-Tube      | No          | `-`         |
-| **History Matching** | Conventional   | No          | `-`         |
-|                      | Machine Learning | No        | `-`         |
-| **Optimization**     |Reinforcement Learning | No   | `-`         |
-| **Quantum Computing**|                | No          | `-`         |
----
+**Version History**
+||**Version**|**Status**|**Release Date (dd.mm.yyyy)**|
+|-|-|-|-|
+|1|`v0.1.0`|current version|01.01.2024|
+|2|`v0.1.1`|*under development*|*ongoing*|
 
-## Version History
+## Capabilities
 
-1. v0.0.1 - 01.01.2024
+A long-term plan with high ambitions is already in place for this library. As of now, this tool is still very small relative to the entire scope of work (i.e. only about 5%). Supported capabilities for far are shown below:
+
+|**Feature**|**Type**|**Support**|**Starting From**|**Comment**|
+|-----------|--------|-----------|-----------------|-----------|
+|**Model Type**|Black Oil|YES|`v0.1.0`|Only single phase on Cartesian grid.|
+| |Compositional|No|`-`| |
+|**Flow Dimensions**|1D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
+| |2D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
+| |3D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
+|**Grid Types**|Regular Cartesian|Yes|`v0.1.0`| |
+| |Single Well Radial|No|`-`| |
+| |Cartesian|No|`-`| |
+| **Fluid Phases**| Single Phase| Yes| `v0.1.0`| |
+| |Two Phases|No|`-`| |
+| |Three Phases|No|`-`| |
+|**Fluid Compressibility**| Incompressible |Yes|`v0.1.0`| |
+| | Slightly Compressible|Yes|`v0.1.0`| |
+| | Compressible|No|`-`| |
+|**Rock Compressibility**| Incompressible |Yes|`v0.1.0`| |
+| | Slightly Compressible|Yes|`v0.1.0`| |
+|**Experiments**|Core-Flooding|No|`-`| |
+| | Slim-Tube|No|`-`| |
+|**Well Types**|Single Cell|Yes|`v0.1.0`| |
+| |Multiple Cells|No|`-`| |
+| |Horizontal|No|`-`| |
+| |Slanted|No|`-`| |
+|**History Matching**|Conventional|No| `-`| |
+| | Machine Learning |No| `-`| |
+|**Production Optimization**|Reinforcement Learning|No|`-`| |
+|**Solutions**|Numerical [FDM]|Yes|`v0.1.0`|Requires an `Initializer` and a `Solver`|
+| |Analytical [1D]|Yes|`v0.1.0`|Available only for `1D Single Phase` problems.|
+| |Neurical [1D]|Yes|`v0.1.0`|Neural networks based solution (e.g., PINNs).|
+|**Numerical Initializers**|Vectorized|Yes|`v0.1.0`|Used for efficient computing.|
+| |Symbolic|Yes|`v0.1.0`|Used for debugging.|
+|**Numerical Solvers**|Iterative Solvers|Yes|`v0.1.0`|Requires sparse matrices.|
+| |Neurical Solvers*|No|`-`|Solving a system of linear equations using neural networks.|
+|**Efficient Computing**|Sparse Matrices|Yes|`v0.1.0`|Required for iterative solvers.|
+| |Threading|Yes|`v0.1.0`|Used for numerical symbolic initializers.|
+| |Concurrent|Yes|`v0.1.0`|Used for numerical symbolic initializers.|
+| |GPU Computing|No|`-`| |
+| |TPU Computing|No|`-`| |
+| |Quantum Computing|No|`-`| |
+|
+
+_(*) Innovative solution introduced within this work._
+
 
 ## Vision
 
@@ -193,7 +236,7 @@ If you are a developer or want to be one, you need additionally to:
     ```
 
 - Push to the branch:
- 
+
     ```Bash
     git push origin my_new_feature
     ```
@@ -224,4 +267,4 @@ Future developers and engineers who intend to contribute to this library should 
 
 This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Detailed license can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 
-The current license does not allow commercial use. The author would like to change the license to [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. In particular, we are seeking support and sponsorship from oil and gas operation companies worldwide.
+The current license does not allow commercial use. The author would like to change the license to [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. However, this depends on the level of sponsorship and support that is offered for this project especially from oil and gas operation companies.

@@ -1,27 +1,26 @@
 # Welcome to ReservoirFlow's documentation
 
+![Alt Text](../images/logo.png)
+
 ```{note}
 This project is under active development.
 ```
 
-![Alt Text](../images/five_spot_single_phase.gif)
-
-
 ```{toctree}
 ---
-maxdepth: 5
+maxdepth: 2
 caption: |
    Contents
 ---
 readme_link
 about
-<!-- readme -->
-<!-- api -->
+readme
+api
 ```
 
 ```{toctree}
 ---
-maxdepth: 4
+maxdepth: 5
 caption: |
    API
 ---
