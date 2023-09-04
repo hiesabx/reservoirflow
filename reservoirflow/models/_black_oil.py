@@ -18,21 +18,12 @@ from reservoirflow.utils.helpers import _lru_cache
 
 
 class BlackOil(Model):
-    """Model class used to create a reservoir simulation model.
-
-    Model class represents the fluid flow process in a reservoir
-    due to pressure change cause by boundary conditions or by
-    (production or injection) wells.
-
-    Parameters
-    ----------
-    Base : class
-        Base class with universal settings.
+    """Black oil model class.
 
     Returns
     -------
     Model
-        Model object.
+        BlackOil model object.
     """
 
     name = "BlackOil Model"
@@ -134,7 +125,7 @@ class BlackOil(Model):
 
         self.n = self.grid.get_n(False)
         self.cells_i = self.grid.get_cells_i(False)
-        self.cells_id = self.grid.get_cells_id(False, False, "array")  # or list
+        self.cells_id = self.grid.get_cells_id(False, False, "array")
         self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
         self.boundaries_id = self.grid.get_boundaries("id", "array")
 
@@ -878,21 +869,25 @@ class BlackOil(Model):
     # Matrices: vectorized
     # -------------------------------------------------------------------------
 
-    def init_A(self, sparse=False):
-        """Initialize A matrix.
+    def init_A(self, sparse: bool = False):
+        """Initialize ceofficient matrix (`A`).
 
-        A matrix initialization is needed on in timestep zero.
+        For a linear system of equations `Au=d`, `A` is the
+        ceofficient matrix (known), `d` is the constant vector (known),
+        and `u` is the variable vector (unknown e.g., pressure).
+
+        This function initialize the ceofficient matrix (`A`) which is
+        needed only at timestep zero.
 
         Parameters
         ----------
         sparse : bool, optional, by default False
-            _description_
+            use sparse matrices instead of dense matrices.
 
         Returns
         -------
         ndarray
-            matrix A is initialized in place and can be accessed by
-            self.A_.
+            ceofficient A is initialized in place.
         """
         # T = self.get_cells_T_array(True).toarray()
         # self.A_ = T[:, self.cells_id][self.cells_id]
@@ -913,12 +908,17 @@ class BlackOil(Model):
             self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
         return self.A_
 
-    def __init_d(self, sparse):
-        """Initialize d vector.
+    def init_d(self, sparse):
+        """Initialize constant vector (`d`).
 
-        d vector initialization is needed in every timestep especially
-        if the system if compressible (i.g. changes in pressure affect
-        vector d values).
+        For a linear system of equations `Au=d`, `A` is the
+        ceofficient matrix (known), `d` is the constant vector (known),
+        and `u` is the variable vector (unknown e.g., pressure).
+
+        This function initialize the constant vector (`d`) which is
+        needed at every timestep in case of a compressible system. In
+        case of an incompressible system, a constant zero vector is
+        used.
 
         Parameters
         ----------
@@ -997,7 +997,7 @@ class BlackOil(Model):
                 self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] += v1
                 # self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] -= T * 2
 
-        self.__init_d(sparse)
+        self.init_d(sparse)
 
         for id in self.wells.keys():
             if self.wells[id]["constrain"] == "q":
@@ -1587,12 +1587,13 @@ class BlackOil(Model):
 
         To change the scaling settings. Current settings can be shown
         under scalers_dict. By default the following settings are used:
-            `scalers_dict = {
-                'time':['MinMaxScaler', (0,1)],
-                'space':['MinMaxScaler', (-1,1)],
-                'pressure':['MinMaxScaler', (-1,1)],
-                'rate':[None,None]
-            }`
+
+        `scalers_dict = {
+            'time':['MinMaxScaler', (0,1)],
+            'space':['MinMaxScaler', (-1,1)],
+            'pressure':['MinMaxScaler', (-1,1)],
+            'rate':[None,None]
+        }`
 
         Note that be default rates are not scaled, time is scaled
         between 0 and 1, while space and pressure are scaled between

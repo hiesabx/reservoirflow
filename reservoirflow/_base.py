@@ -1,6 +1,6 @@
 from tabulate import tabulate
 
-units_dict = {
+UNITS = {
     "field": {
         "transmissibility": "STB/D-psi",
         "error": "STB/D",
@@ -11,7 +11,7 @@ units_dict = {
     "metric": {"transmissibility": "M3/D-bar", "error": "M3/D"},
 }
 
-factors_dict = {
+FACTORS = {
     "field": {
         "transmissibility conversion": 0.001127,
         "gravity conversion": 0.21584 * 10**-3,
@@ -28,37 +28,35 @@ factors_dict = {
 
 
 class Base:
-    name = None
-    units_dict = units_dict
-    factors_dict = factors_dict
+    name = "Base"
 
-    unit = "field"
-    units = units_dict[unit]
-    factors = factors_dict[unit]
-
-    def __init__(self, unit="field", dtype="double", verbose=True):
+    def __init__(self, unit: str = "field", dtype="double", verbose: bool = True):
         self.set_units(unit)
         self.dtype = dtype
         self.verbose = verbose
 
-    def set_units(self, unit="field"):
-        if unit in self.units_dict.keys():
+    def set_units(self, unit: str = "field"):
+        if unit in UNITS.keys():
             self.unit = unit
-            self.units = self.units_dict[unit]
-            self.factors = self.factors_dict[unit]
+            self.units = UNITS[unit]
+            self.factors = FACTORS[unit]
         else:
             raise ValueError(f"The selected unit system ({unit}) is unknown!")
 
-    def report(self, prop=None, ifmt=0):
+    def report(self, prop: str = None, showindex: bool = True, ifmt: int = 0):
         props = vars(self)
         tablefmt = ["pipe", "plain", "simple", "fancy_grid", "presto", "orgtbl"]
         ignore_lst = ["units", "factors", "pv_grid", "corners", "centers"]
         if prop == None:
             print(f"{self.name} Information: \n")
             table = tabulate(
-                [(str(k), str(v)) for k, v in props.items() if k not in ignore_lst],
-                headers=["Property", "Value"],
-                showindex="always",
+                [
+                    (str(k), str(v), "-")
+                    for k, v in props.items()
+                    if k not in ignore_lst
+                ],
+                headers=["Property", "Value", "Unit"],
+                showindex=showindex,
                 tablefmt=tablefmt[ifmt],
             )
             print(table)

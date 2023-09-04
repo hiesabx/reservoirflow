@@ -2,8 +2,12 @@ from reservoirflow.fluids._fluid import Fluid
 
 
 class SinglePhase(Fluid):
-    """
-    Fluid class to create a fluid.
+    """Single phase fluid class.
+
+    Returns
+    -------
+    Fluid
+        SinglePhase fluid object.
     """
 
     name = "Single Phase Fluid"

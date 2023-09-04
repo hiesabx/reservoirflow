@@ -7,17 +7,12 @@ from reservoirflow import utils
 
 
 class Cartesian(Grid):
-    """Cartesian grid class with explicit structure.
-
-    Parameters
-    ----------
-    Grid : class
-        parent grid class with universal grid settings.
+    """Cartesian grid class.
 
     Returns
     -------
-    Cartesian
-        Cartesian Grid object.
+    Grid
+        Cartesian grid object.
     """
 
     # ToDo
@@ -205,7 +200,7 @@ class Cartesian(Grid):
         return self.shape
 
     @_lru_cache(maxsize=2)
-    def get_n(self, boundary=True):
+    def get_n(self, boundary: bool = True) -> int:
         """Returns the total number of grid cells as int.
 
         Parameters

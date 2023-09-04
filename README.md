@@ -4,7 +4,7 @@
 Petroleum Reservoir Simulation using Scientific Computing and Machine Learning With Python developed by [Zakariya ABUGRIN](https://github.com/zakgrin).
 --->
 
-![Alt Text](images/five_spot_single_phase.gif)
+![Alt Text](../images/five_spot_single_phase.gif)
 *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns*
 
 ## Introduction
@@ -25,58 +25,79 @@ The author aims to open a start-up that can provide accessible cutting-edge soft
 
 ## Installation
 
-### Install Python
+- Install `reservoirflow` directly from [PyPi](https://pypi.org/):
 
-### Install `reservoirflow`
+    ```bash
+    pip install reservoirflow
+    ```
 
-```bash
-git clone https://github.com/zakgrin/reservoirflow.git
-cd reservoirflow
-```
+    You need to install python (see next step). In addition, You may need to create a project directory with a dedicated virtual environment.
 
-#### Setup a Python environment
+- Install Python:
 
-```bash
-python -m venv .venv
-```
+    For this project, `python==3.7.9` is recommended. To download the executable installer files directly:
 
-#### Activate your environment
+  - Windows: [Windows x86-64 executable installer](https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe)
+  - macOS: [macOS 64-bit installer](https://www.python.org/ftp/python/3.7.9/python-3.7.9-macosx10.9.pkg)
+  - Linux/UNIX: [Gzipped source tarball](https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz).
 
-##### 1. For Windows
+  More download options can be found at the official website [python.org](https://www.python.org/downloads/release/python-379/).
 
-```bash
-source .venv/Scripts/Activate
-```
+- Load from GitHub (for developers):
 
-##### 2. For Linux or Mac
+    You can load project files directly from the official GitHub repository. Skip this step if you want to install this library using `pip` command directly.
 
-```bash
-source .venv/bin/activate
-```
+  - Download [reservoirflow](https://github.com/zakgrin/reservoirflow) repository from GitHub:
 
-#### Update pip
+    ```bash
+    git clone https://github.com/zakgrin/reservoirflow.git
+    ```
 
-```bash
-pip install --upgrade pip
-```
+  - Navigate to the project folder:
 
-#### Install requirements
+    ```bash
+    cd reservoirflow
+    ```
 
-```bash
-pip install -r requirements.txt
-```
+  - Setup a Python virtual environment:
 
-```bash
-pip install -e .
-```
+      ```bash
+      python -m venv .venv
+      ```
 
-or
+  - Activate your environment: 
 
-```bash
-python setup.py install
-```
+    - Windows:
 
-### Import Convention
+        ```bash
+        source .venv/Scripts/Activate
+        ```
+
+    - Linux or Mac:
+
+        ```bash
+        source .venv/bin/activate
+        ```
+
+  - Update `pip`:
+
+      ```bash
+      pip install --upgrade pip
+      ```
+
+  - Setup the library:
+
+    ```bash
+    pip install -e .
+    ```
+
+    or
+
+    ```bash
+    python setup.py install
+    ```
+
+## Import Convention
 
 The following convention is used to import `reservoirflow` after installation:
 
@@ -84,11 +105,11 @@ The following convention is used to import `reservoirflow` after installation:
 import reservoirflow as rf
 ```
 
-By this, engineers should remember that `rf` refers to `reservoirflow` where all modules under this library can be accessed.
+The abbreviation `rf` refers to `reservoirflow` where all modules under this library can be accessed. `rf` is also used throughout the documentation. We recommend our users to stick with this convention.
 
 ## Version
 
-[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until a stable version is reached. The first version `v0.1.0` was released on April 1, 2022. The current version is `v0.1.0`. Supported capabilities are shown below:
+[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until the first stable version is reached. The first version `v0.1.0` was released on April 1, 2022. The current version is `v0.1.0`. Supported capabilities are shown below:
 
 | **Feature**          | **Type**       | **Support** | **Starting From** |
 | --------------------- | ---------------- | ----------- | ------------- |
@@ -114,7 +135,7 @@ By this, engineers should remember that `rf` refers to `reservoirflow` where all
 
 ## Version History
 
-- v0.0.1 - First Release.
+1. v0.0.1 - 01.01.2024
 
 ## Vision
 
@@ -203,7 +224,4 @@ Future developers and engineers who intend to contribute to this library should 
 
 This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Detailed license can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 
-### License Disclaimer
-
-The current license does not allow commercial use. The author would like to change the license to
-[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. However, this depends on the level of sponsorship and support that is offered by the community for this project.
+The current license does not allow commercial use. The author would like to change the license to [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause) which allows for commercial use. In particular, we are seeking support and sponsorship from oil and gas operation companies worldwide.
