@@ -1,10 +1,10 @@
-# Welcome to ReservoirFlow's documentation
-
-![Alt Text](../images/logo.png)
+# Welcome to ReservoirFlow's Documentation
 
 ```{note}
 This project is under active development.
 ```
+
+![Alt Text](../images/five_spot_single_phase.gif)
 
 ```{toctree}
 ---
@@ -13,21 +13,25 @@ caption: |
    Contents
 ---
 readme_link
-about
-readme
-api
+getting_started
+doc_readme
+modules/reservoirflow
+
 ```
+
+
+
+<!-- 
+
 
 ```{toctree}
 ---
-maxdepth: 5
+maxdepth: 2
 caption: |
    API
 ---
 modules/reservoirflow
 ```
-
-<!-- 
 
 ## Example
 

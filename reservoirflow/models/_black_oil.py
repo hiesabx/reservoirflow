@@ -1,23 +1,29 @@
 import time
 import warnings
-from datetime import date
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from tqdm import tqdm
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from datetime import date
+
+import matplotlib.pyplot as plt
 import numpy as np
-import sympy as sym
+import pandas as pd
 import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
-import pandas as pd
-import matplotlib.pyplot as plt
+import sympy as sym
+from tqdm import tqdm
 
-from reservoirflow.models._model import Model
 from reservoirflow import fluids, grids, scalers, utils, wells
+from reservoirflow.models._model import _Model
 from reservoirflow.utils.helpers import _lru_cache
 
+# if __name__ == "__main__":
+#     from _model import _Model
+# else:
+#     from ._model import _Model
 
-class BlackOil(Model):
+
+class BlackOil(_Model):
     """Black oil model class.
 
     Returns
@@ -40,29 +46,29 @@ class BlackOil(Model):
         unit="field",
         verbose=False,
     ):
-        """Reservoir simulation Model class.
+        """Create a BlackOil reservoir simulation model.
 
         Parameters
         ----------
-        grid : grids.Grid
-            Grid object .
-        fluid : fluids.Fluid
+        grid : rf.grids.Grid
+            Grid object.
+        fluid : rf.fluids.Fluid
             Fluid object.
-        well : wells.Well, optional, by default None
+        well : rf.wells.Well, optional
             Well object.
-        pi : int, optional, by default None
+        pi : int, optional
             Initial reservoir pressure.
-        dt : int, optional, by default 1
+        dt : int, optional
             Time step duration in days.
-        dtype : str or `np.dtype`, optional, by default 'double'
+        dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
-        unit : str ('field', 'metric'), optional, by default 'field'
+        unit : str ('field', 'metric'), optional
             units used in input and output. Parameters can be defined as
             `unit='field'` (default) or `unit='metric'`. `units`
             attribute can be accessed from this class using
             (`Model.units`).
-        verbose : bool, optional, by default False
+        verbose : bool, optional
             print information for debugging.
         """
         super().__init__(unit, dtype, verbose)
@@ -107,8 +113,12 @@ class BlackOil(Model):
 
         self.pi = pi
         if pi is not None:
-            # self.pressures[0, self.grid.cells_id] = pi
-            self.pressures[0, :] = pi
+            self.pressures[0, self.grid.cells_id] = pi
+            # self.pressures[0, :] = pi
+            # setting boundaries with Pi have wrong effect on
+            # __calc_b_terms() method where pressure is taken instead of
+            # taking rate specified at the boundary.
+
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
             print(f"[warning] Pi is by default set to {self.pi}.")
@@ -144,7 +154,7 @@ class BlackOil(Model):
     # Properties:
     # -------------------------------------------------------------------------
 
-    def get_shape(self, boundary=True):
+    def get_shape(self, boundary=True) -> int:
         return (self.nsteps, self.grid.get_n(boundary))
 
     def __calc_comp(self):
@@ -167,11 +177,11 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int.
-        coords : iterable of int, by default None
+        coords : iterable of int
             cell coordinates (i,j,k) as a tuple of int.
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -196,9 +206,9 @@ class BlackOil(Model):
         Parameters
         ----------
         boundary : bool, optional
-            _description_, by default True
+            _description_
         sparse : bool, optional
-            _description_, by default False
+            _description_
 
         Returns
         -------
@@ -250,7 +260,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        id : int, optional, by default None
+        id : int, optional
             cell id based on natural order as int.
 
         Returns
@@ -292,7 +302,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        id : int, optional, by default None
+        id : int, optional
             cell id based on natural order as int.
 
         Returns
@@ -341,22 +351,22 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        well : Well class, optional, by default None
+        well : Well class, optional
             well information. If this class was used as input, all other
             arguments will be ignored except id will be used instead of
             well.id.
-        id : int, optional, by default None
+        id : int, optional
             well location using cell id based on natural order as int.
             This value is given a higher priority over well.id.
-        q : int, float, optional, by default None
+        q : int, float, optional
             well rate as positive for injection or negative for
             production
-        pwf : int, float, optional, by default None
+        pwf : int, float, optional
             bottom hole flowing pressure (BHFP). If was not defined,
             None value will be set to zero.
-        r : int, float, optional, by default None
+        r : int, float, optional
             well radius.
-        s : int, float, optional, by default None
+        s : int, float, optional
             well skin factor
 
         """
@@ -375,7 +385,7 @@ class BlackOil(Model):
             assert (
                 id in self.grid.cells_id
             ), "a well must be placed within the reservoir"
-            if not id in self.wells.keys():
+            if id not in self.wells:
                 self.wells[id] = {}
             if q is not None:
                 self.wells[id]["q"] = q
@@ -413,7 +423,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        id_b : int, optional, by default None
+        id_b : int, optional
             boundary cell id based on natural order as int.
         cond : str
             boundary constant condition. Three conditions are possible:
@@ -826,9 +836,9 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        sparse : bool, optional, by default False
+        sparse : bool, optional
             use sparse matrices instead of dense matrices.
-        threading : bool, optional, by default False
+        threading : bool, optional
             use multiple threads for concurrence workers. The maximum
             number of threads are set to the half number of grids.
 
@@ -881,7 +891,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        sparse : bool, optional, by default False
+        sparse : bool, optional
             use sparse matrices instead of dense matrices.
 
         Returns
@@ -922,7 +932,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        sparse : bool, optional, by default False
+        sparse : bool, optional
             _description_
 
         Returns
@@ -949,6 +959,8 @@ class BlackOil(Model):
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
+        # return self.d_
+
     def __update_z(self):
         """_summary_"""
         # ToDo
@@ -974,9 +986,9 @@ class BlackOil(Model):
         Parameters
         ----------
         sparse : bool, optional
-            _description_, by default False
+            _description_
         threading : bool, optional
-            _description_, by default False
+            _description_
 
         Returns
         -------
@@ -1162,19 +1174,19 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        sparse : bool, optional, by default True
+        sparse : bool, optional
             _description_
-        threading : bool, optional, by default True
+        threading : bool, optional
             _description_
-        vectorize : bool, optional, by default True
+        vectorize : bool, optional
             _description_
-        check_MB : bool, optional, by default True
+        check_MB : bool, optional
             _description_
-        update : bool, optional, by default True
+        update : bool, optional
             _description_
-        print_arrays : bool, optional, by default False
+        print_arrays : bool, optional
             _description_
-        isolver : str, optional, by default "cgs"
+        isolver : str, optional
             iterative solver for sparse matrices. Available solvers are
             ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
             "minres", "qmr", "gcrotmk", "tfqmr"].
@@ -1254,15 +1266,15 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        nsteps : int, optional, by default 10
+        nsteps : int, optional
             _description_
-        sparse : bool, optional, by default True
+        sparse : bool, optional
             _description_
-        threading : bool, optional, by default True
+        threading : bool, optional
             _description_
-        check_MB : bool, optional, by default True
+        check_MB : bool, optional
             _description_
-        isolver : str, optional, by default "cgs"
+        isolver : str, optional
             iterative solver for sparse matrices. Available solvers are
             ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
             "minres", "qmr", "gcrotmk", "tfqmr"].
@@ -1326,9 +1338,9 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        verbose : bool, optional, by default False
+        verbose : bool, optional
             _description_
-        error_threshold : float, optional, by default 0.1
+        error_threshold : float, optional
             _description_
         """
         if verbose:
@@ -1516,7 +1528,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Notes
@@ -1663,7 +1675,7 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        columns : list, optional, by default ["time", "cells", "wells"]
+        columns : list, optional
             selected columns to be added to the dataframe. The following
             options are available:
             "time": for time steps as specified in dt.
@@ -1676,17 +1688,17 @@ class BlackOil(Model):
             "cells_pressure": for all cells pressures.
             "wells_rate": for all wells rates.
             "wells_pressure": for all wells pressures.
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
             It is only relevant when cells columns are selected.
-        units : bool, optional, by default False
+        units : bool, optional
             column names with units (True) or without units (False).
-        melt : bool, optional, by default False
+        melt : bool, optional
             to melt columns of the same property to one column. By
             default, cells id, xyz (based on grid fdir), step columns
             are included while wells columns (wells_rate,
             wells_pressure) are ignored.
-        scale : bool, optional, by default False
+        scale : bool, optional
             scale time, space (x, y, z), rates, and pressures. To change
             the scaling settings use set_scalers(). Current settings
             can be shown under scalers_dict. By default:
@@ -1696,12 +1708,12 @@ class BlackOil(Model):
                 'pressure':['MinMaxScaler', (-1,1)],
                 'rate':[None,None]
                 }`
-        save : bool, optional, by default True
+        save : bool, optional
             save output as a csv file.
-        drop_nan : bool, optional, by default True
+        drop_nan : bool, optional
             drop columns which contain only nan values if melt is False.
             if melt is True, drop rows which contain any nan values.
-        drop_zero : bool, optional, by default True
+        drop_zero : bool, optional
             drop columns which contain only zero values. This argument
             is ignored if melt is True.
 
@@ -1777,11 +1789,11 @@ class BlackOil(Model):
 
         Parameters
         ----------
-        prop : str, optional, by default "pressures"
+        prop : str, optional
             property name from ["rates", "pressures"].
-        id : int, optional, by default None
+        id : int, optional
             cell id. If None, all cells are selected.
-        tstep : int, optional, by default None
+        tstep : int, optional
             time step. If None, the last time step is selected.
         """
         if tstep is None:
@@ -1891,7 +1903,7 @@ class BlackOil(Model):
             _type_: _description_
         """
         # https://stackoverflow.com/questions/48338847/how-to-copy-a-python-class-instance-if-deepcopy-does-not-work
-        copy_model = Model(
+        copy_model = _Model(
             grid=self.grid,
             fluid=self.fluid,
             pi=self.pi,

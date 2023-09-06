@@ -1,7 +1,7 @@
-from reservoirflow._base import Base
+from reservoirflow._base import _Base
 
 
-class Fluid(Base):
+class _Fluid(_Base):
     name = "Fluid"
 
     def __init__(self, unit, dtype, verbose):
@@ -47,5 +47,5 @@ if __name__ == "__main__":
     dtype = "double"
     unit = "field"
     verbose = False
-    fluid = Fluid(unit, dtype, verbose)
+    fluid = _Fluid(unit, dtype, verbose)
     print(fluid)

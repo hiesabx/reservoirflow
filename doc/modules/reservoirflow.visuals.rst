@@ -9,7 +9,7 @@ reservoirflow.visuals
 Submodules
 ----------
 
-reservoirflow.visuals.v3d module
+reservoirflow.visuals.v3d
 --------------------------------
 
 .. automodule:: reservoirflow.visuals.v3d
@@ -17,7 +17,7 @@ reservoirflow.visuals.v3d module
    :undoc-members:
    :show-inheritance:
 
-reservoirflow.visuals.visual module
+reservoirflow.visuals.visual
 -----------------------------------
 
 .. automodule:: reservoirflow.visuals.visual

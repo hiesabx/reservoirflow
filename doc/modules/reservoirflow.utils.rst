@@ -9,7 +9,7 @@ reservoirflow.utils
 Submodules
 ----------
 
-reservoirflow.utils.helpers module
+reservoirflow.utils.helpers
 ----------------------------------
 
 .. automodule:: reservoirflow.utils.helpers
@@ -17,7 +17,7 @@ reservoirflow.utils.helpers module
    :undoc-members:
    :show-inheritance:
 
-reservoirflow.utils.plots module
+reservoirflow.utils.plots
 --------------------------------
 
 .. automodule:: reservoirflow.utils.plots
@@ -25,7 +25,7 @@ reservoirflow.utils.plots module
    :undoc-members:
    :show-inheritance:
 
-reservoirflow.utils.profme module
+reservoirflow.utils.profme
 ---------------------------------
 
 .. automodule:: reservoirflow.utils.profme
@@ -33,7 +33,7 @@ reservoirflow.utils.profme module
    :undoc-members:
    :show-inheritance:
 
-reservoirflow.utils.solvers module
+reservoirflow.utils.solvers
 ----------------------------------
 
 .. automodule:: reservoirflow.utils.solvers

@@ -1,7 +1,7 @@
-from reservoirflow._base import Base
+from reservoirflow._base import _Base
 
 
-class Scaler(Base):
+class _Scaler(_Base):
     name = "Scaler"
 
     def __init__(self, unit, dtype, verbose):
@@ -12,5 +12,5 @@ if __name__ == "__main__":
     dtype = "double"
     unit = "field"
     verbose = False
-    scaler = Scaler(unit, dtype, verbose)
+    scaler = _Scaler(unit, dtype, verbose)
     print(scaler)

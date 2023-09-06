@@ -1,7 +1,7 @@
-from reservoirflow._base import Base
+from reservoirflow._base import _Base
 
 
-class Well(Base):
+class Well(_Base):
     name = "Well"
 
     def __init__(self):

@@ -52,7 +52,7 @@ Construct a `BlackOil` model from `models` module::
       )
 """
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 from ._base import UNITS, FACTORS
 from . import fluids, grids, models, scalers, utils

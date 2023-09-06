@@ -1,4 +1,6 @@
-# ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
+# ReadMe
+
+`ReservoirFlow: a Petroleum Reservoir Simulation Library in Python`
 
 ![](/images/logo.png)
 <!--- 
@@ -8,26 +10,27 @@ Petroleum Reservoir Simulation using Scientific Computing and Machine Learning W
 ![](/images/five_spot_single_phase.gif)
 *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns*
 
-- [ReservoirFlow: a Petroleum Reservoir Simulation Library in Python](#reservoirflow-a-petroleum-reservoir-simulation-library-in-python)
-  - [Introduction](#introduction)
-  - [Installation](#installation)
-  - [Import Convention](#import-convention)
-  - [Version](#version)
-  - [Capabilities](#capabilities)
-  - [Vision](#vision)
-  - [Motivation](#motivation)
-  - [Sponsorship](#sponsorship)
-  - [How Can I Support This Project?](#how-can-i-support-this-project)
-  - [Convention and Rules](#convention-and-rules)
-  - [License](#license)
+**Table of Content:**
+
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Import Convention](#import-convention)
+- [Version](#version)
+- [Capabilities](#capabilities)
+- [Vision](#vision)
+- [Motivation](#motivation)
+- [Sponsorship](#sponsorship)
+- [How Can I Support This Project?](#how-can-i-support-this-project)
+- [Convention and Rules](#convention-and-rules)
+- [License](#license)
 
 ## Introduction
 
-ReservoirFlow <`reservoirflow`>, is a modern open-source Python library created by [Zakariya ABUGRIN](https://github.com/zakgrin). ReservoirFlow helps mathematicians, researchers, and engineers to study and model the phenomenon of fluid flow in porous media using different approaches including analytical solutions, numerical solutions, and machine learning solutions. Studying different solution techniques for solving Partial Differential Equations (PDEs) gives great insight into developing more efficient solutions.
+_ReservoirFlow_ <`reservoirflow`>, is a modern open-source Python library created by [Zakariya Abugrin](https://github.com/zakgrin). _ReservoirFlow_ helps mathematicians, researchers, and engineers to study and model the phenomenon of fluid flow in porous media using different approaches including analytical solutions, numerical solutions, and machine learning solutions. Studying different solution techniques for solving Partial Differential Equations (PDEs) gives great insight into developing more efficient solutions.
 
 This library is designed based on the modern Python stack for data science and scientific computing. Hence, this library is directly integrated with AI and ML Python frameworks and libraries.
 
-ReservoirFlow is designed to open the door towards achieving the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength of scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples of the problems that will be tackled in the future:
+_ReservoirFlow_ is designed to open the door towards achieving the highest quality use cases and research for reservoir engineering and simulation. Solutions that can combine the strength of scientific computing with the power of machine learning including the state-of-the-art deep learning models. Below are some examples of the problems that will be tackled in the future:
 
 - History matching using machine learning.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).
@@ -125,7 +128,8 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 [Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under development, `major=0` is used until the first stable version is reached. The first version `v0.1.0` was released on January 1, 2024. The current version is `v0.1.0`.
 
-**Version History**
+**Version History:**
+
 ||**Version**|**Status**|**Release Date (dd.mm.yyyy)**|
 |-|-|-|-|
 |1|`v0.1.0`|current version|01.01.2024|
@@ -138,47 +142,46 @@ A long-term plan with high ambitions is already in place for this library. As of
 |**Feature**|**Type**|**Support**|**Starting From**|**Comment**|
 |-----------|--------|-----------|-----------------|-----------|
 |**Model Type**|Black Oil|YES|`v0.1.0`|Only single phase on Cartesian grid.|
-| |Compositional|No|`-`| |
+||Compositional|No|`-`||
 |**Flow Dimensions**|1D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
-| |2D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
-| |3D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
-|**Grid Types**|Regular Cartesian|Yes|`v0.1.0`| |
-| |Single Well Radial|No|`-`| |
-| |Cartesian|No|`-`| |
-| **Fluid Phases**| Single Phase| Yes| `v0.1.0`| |
-| |Two Phases|No|`-`| |
-| |Three Phases|No|`-`| |
-|**Fluid Compressibility**| Incompressible |Yes|`v0.1.0`| |
-| | Slightly Compressible|Yes|`v0.1.0`| |
-| | Compressible|No|`-`| |
-|**Rock Compressibility**| Incompressible |Yes|`v0.1.0`| |
-| | Slightly Compressible|Yes|`v0.1.0`| |
-|**Experiments**|Core-Flooding|No|`-`| |
-| | Slim-Tube|No|`-`| |
-|**Well Types**|Single Cell|Yes|`v0.1.0`| |
-| |Multiple Cells|No|`-`| |
-| |Horizontal|No|`-`| |
-| |Slanted|No|`-`| |
-|**History Matching**|Conventional|No| `-`| |
-| | Machine Learning |No| `-`| |
-|**Production Optimization**|Reinforcement Learning|No|`-`| |
+||2D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
+||3D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
+|**Grid Types**|Regular Cartesian|Yes|`v0.1.0`||
+||Single Well Radial|No|`-`||
+||Cartesian|No|`-`||
+|**Fluid Phases**| Single Phase|Yes|`v0.1.0`||
+||Two Phases|No|`-`||
+||Three Phases|No|`-`||
+|**Fluid Compressibility**| Incompressible |Yes|`v0.1.0`||
+|| Slightly Compressible|Yes|`v0.1.0`||
+|| Compressible|No|`-`||
+|**Rock Compressibility**| Incompressible |Yes|`v0.1.0`||
+|| Slightly Compressible|Yes|`v0.1.0`||
+|**Experiments**|Core-Flooding|No|`-`||
+|| Slim-Tube|No|`-`||
+|**Well Types**|Single Cell|Yes|`v0.1.0`||
+||Multiple Cells|No|`-`||
+||Horizontal|No|`-`||
+||Slanted|No|`-`||
+|**History Matching**|Conventional|No| `-`||
+||Machine Learning|No|`-`||
+|**Production Optimization**|Reinforcement Learning|No|`-`||
 |**Solutions**|Numerical [FDM]|Yes|`v0.1.0`|Requires an `Initializer` and a `Solver`|
-| |Analytical [1D]|Yes|`v0.1.0`|Available only for `1D Single Phase` problems.|
-| |Neurical [1D]|Yes|`v0.1.0`|Neural networks based solution (e.g., PINNs).|
+||Analytical [1D]|Yes|`v0.1.0`|Available only for `1D Single Phase` problems.|
+||Neurical [1D]|Yes|`v0.1.0`|Neural networks based solution (e.g., PINNs).|
 |**Numerical Initializers**|Vectorized|Yes|`v0.1.0`|Used for efficient computing.|
-| |Symbolic|Yes|`v0.1.0`|Used for debugging.|
+||Symbolic|Yes|`v0.1.0`|Used for debugging.|
 |**Numerical Solvers**|Iterative Solvers|Yes|`v0.1.0`|Requires sparse matrices.|
-| |Neurical Solvers*|No|`-`|Solving a system of linear equations using neural networks.|
+||Neurical Solvers*|No|`-`|Solving a system of linear equations using neural networks.|
 |**Efficient Computing**|Sparse Matrices|Yes|`v0.1.0`|Required for iterative solvers.|
-| |Threading|Yes|`v0.1.0`|Used for numerical symbolic initializers.|
-| |Concurrent|Yes|`v0.1.0`|Used for numerical symbolic initializers.|
-| |GPU Computing|No|`-`| |
-| |TPU Computing|No|`-`| |
-| |Quantum Computing|No|`-`| |
+||Threading|Yes|`v0.1.0`|Used for numerical symbolic initializers.|
+||Concurrent|Yes|`v0.1.0`|Used for numerical symbolic initializers.|
+||GPU Computing|No|`-`||
+||TPU Computing|No|`-`||
+||Quantum Computing|No|`-`||
 |
 
-_(*) Innovative solution introduced within this work._
-
+(*) Innovative solution introduced within this work.
 
 ## Vision
 
@@ -200,7 +203,7 @@ Unfortunately, this work is not sponsored. As a result, the current license does
 
 Any open-source tool requires resources that cost both time and money. Although much of open-source work is driven by the good intention of having accessible and reproducible research, open-source has also proved to be a very successful business model especially when the tool grows to a production level. Compare for example Python with other commercial tools (e.g. Matlab). Python is open-source but also much more successful!
 
-To reach a stable production level, we will need enough investment to develop, upgrade, and maintain this tool. Here comes the role of oil & gas companies (i.e. especially operation companies) who may benefit a lot from this tool to Sponsorship of this project. This will help us as a community to dedicate more resources and to add new features (i.e. let it be Quantum Computing!) or fix some bugs.
+To reach a stable production level, we will need enough investment to develop, upgrade, and maintain this tool. Here comes the role of oil & gas companies (i.e. especially operation companies) who may benefit a lot from this tool to sponsor this project. This will help us to dedicate more resources and to add new features (i.e. let it be Quantum Computing!) or fix some bugs.
 
 If you are an individual who may benefit from this work, consider supporting this project by [Sponsorship on Patreon](https://www.patreon.com/zakgrin) or by any means. Even by just starting to use this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to always keep this tool open-source.
 
@@ -215,7 +218,7 @@ As a normal user, you can support this project in many ways:
 - Give a star in GitHub for [`reservoirflow`](https://github.com/zakgrin/reservoirflow) (you need a GitHub Account).
 - Start using `reservoirflow` for your projects or thesis.
 - Compare `reservoirflow` with other commercial tools and openly share your feedback.
-- Share your progress and experience on [LinkedIn](https://www.linkedin.com/feed/) or any other platform. Use `#reservoirflow` hashtag so the community can interact with your work. Mention [Zakariya ABUGRIN](https://www.linkedin.com/in/zakariya-abugrin/) so the author can give you quick feedback.
+- Share your progress and experience on [LinkedIn](https://www.linkedin.com/feed/) or any other platform. Use `#reservoirflow` hashtag, so the community can interact with your work. Mention [Zakariya Abugrin](https://www.linkedin.com/in/zakariya-abugrin/), so the author can give you quick feedback.
 - Report some issues you face under [Issues](https://github.com/zakgrin/reservoirflow/issues).
 
 **Developers:**
@@ -256,12 +259,12 @@ If you are a company that may use this tool for commercial application, then the
 
 An excellent library needs two things: clean code and clean documentation. The author tried to follow most of the Python enhancement proposals mentioned in [PEP0](https://peps.python.org/pep-0000/). Mainly:
 
-- [PEP8](https://peps.python.org/pep-0008/) to produce a clean code that can be easily understood by others (PEP8 is given the highest priority).
-- [PEP257](https://peps.python.org/pep-0257/) to produce a clean documentation.
+- [PEP20](https://peps.python.org/pep-0020/): guiding principles for Python’s design.
+- [PEP8](https://peps.python.org/pep-0008/): a clean code that can be easily understood by others.
+- [PEP257](https://peps.python.org/pep-0257/): a clean documentation.
+- [PEP484](https://peps.python.org/pep-0484/): a standard syntax for type annotations.
 
-The author follows the intuitive Pythonic way ([PEP20](https://peps.python.org/pep-0020/)) to design this library. This should allow developing complex reservoir simulation models that are both innovative and efficient.
-
-Future developers and engineers who intend to contribute to this library should always keep in mind this convention to keep the source code clean and easy to follow.
+Future developers and engineers who intend to contribute to this library should always keep in mind these standards to keep the source code clean and easy to follow. This should allow developing complex reservoir simulation models that are both innovative and efficient.
 
 ## License
 

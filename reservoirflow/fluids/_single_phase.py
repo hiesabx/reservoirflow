@@ -1,7 +1,8 @@
-from reservoirflow.fluids._fluid import Fluid
+import reservoirflow as rf
+from reservoirflow.fluids._fluid import _Fluid
 
 
-class SinglePhase(Fluid):
+class SinglePhase(_Fluid):
     """Single phase fluid class.
 
     Returns

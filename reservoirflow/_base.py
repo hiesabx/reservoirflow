@@ -27,7 +27,7 @@ FACTORS = {
 }
 
 
-class Base:
+class _Base:
     name = "Base"
 
     def __init__(self, unit: str = "field", dtype="double", verbose: bool = True):
@@ -88,10 +88,10 @@ class Base:
 
 
 if __name__ == "__main__":
-    b = Base("metric", "single", True)
+    b = _Base("metric", "single", True)
     b.name = "b"
     print(repr(b))
-    k = Base("metric", "single", True)
+    k = _Base("metric", "single", True)
     k.name = "k"
     b.report()
     k.report()

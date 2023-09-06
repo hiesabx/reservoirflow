@@ -1,9 +1,10 @@
-import re
-import io
-import time
-import pstats
 import cProfile
+import io
+import pstats
+import re
+import time
 from functools import wraps
+
 import pandas as pd
 from line_profiler import LineProfiler
 
@@ -13,11 +14,11 @@ def cProfiler(sort_stats="tottime", print_output=True, save_output=True):
 
     Parameters
     ----------
-    sort_stats : str, optional, by default "tottime"
+    sort_stats : str, optional
         sort table values by ['tottime', 'cumtime', 'ncalls', 'percall']
-    print_output : bool, optional, by default True
+    print_output : bool, optional
         print output as a dataframe.
-    save_output : bool, optional, by default False
+    save_output : bool, optional
         save output as csv file in the current working dir. The file
         name will be 'cProfiler_{function_name}.csv'.
     """
@@ -67,9 +68,9 @@ def lProfiler(print_output=True, save_output=True):
 
     Parameters
     ----------
-    print_output : bool, optional, by default True
+    print_output : bool, optional
         print output as a dataframe.
-    save_output : bool, optional, by default False
+    save_output : bool, optional
         save output as csv file in the current working dir. The file
         name will be 'lProfiler_{function_name}.csv'.
     """

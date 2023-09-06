@@ -7,10 +7,10 @@ properties which are required for the fluid-flow in porous-media
 calculations.
 """
 # from ..base import Base
-from reservoirflow._base import Base
+from reservoirflow._base import _Base
 
 
-class Grid(Base):
+class _Grid(_Base):
     """Base Grid class.
 
     Grid class represents both the rock geometry and the rock properties
@@ -29,22 +29,22 @@ class Grid(Base):
 
         Parameters
         ----------
-        dtype : str or `np.dtype`, optional, by default 'double'
+        dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
-        unit : str ('field', 'metric'), optional, by default 'field'
+        unit : str ('field', 'metric'), optional
             units used in input and output. Parameters can be defined as
             `unit='field'` (default) or `unit='metric'`. `units`
             attribute can be accessed from this class using
             (`Cartesian.units`) or from the base class (`Grid.units`).
-        unify : bool, optional, by default False
+        unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
             flow direction as tuple. This option is only relevant in
             case of 1D or 2D flow. This option may be required to make
             1D and 2D shapes shapes of this class more consistent with
             each other or with 3D shape.
-        verbose : bool, optional, by default False
+        verbose : bool, optional
             print information for debugging.
         """
         super().__init__(unit, dtype, verbose)
@@ -96,5 +96,5 @@ if __name__ == "__main__":
     unit = "field"
     verbose = False
     unify = True
-    grid = Grid(unit, dtype, verbose, unify)
+    grid = _Grid(unit, dtype, verbose, unify)
     print(grid)

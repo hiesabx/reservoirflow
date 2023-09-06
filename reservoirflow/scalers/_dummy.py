@@ -1,7 +1,7 @@
-from reservoirflow.scalers._scaler import Scaler
+from reservoirflow.scalers._scaler import _Scaler
 
 
-class Dummy(Scaler):
+class Dummy(_Scaler):
     """Dummy Scaler
 
     Returns data without scaling.
@@ -15,9 +15,9 @@ class Dummy(Scaler):
         Parameters
         ----------
         output_range : tuple, optional
-            output range, by default None
+            output range
         input_range : tuple, optional
-            input range, by default None
+            input range
         """
         pass
 

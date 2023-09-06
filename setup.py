@@ -7,7 +7,8 @@ from setuptools import setup, find_packages
 from pathlib import Path
 
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+readme = (this_directory / "README.md").read_text()
+license = (this_directory / "LICENSE").read_text()
 
 
 with open("requirements.txt") as f:
@@ -25,14 +26,11 @@ setup(
     maintainer="Zakariya Abugrin",
     maintainer_email="zakariya.abugrin@gmail.com",
     description="a Petroleum Reservoir Simulation Library in Python",
-    long_description=long_description,
+    long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/zakgrin/reservoirflow",
     download_url="https://github.com/zakgrin/reservoirflow.git",
-    license="""
-        Creative Commons Attribution-NonCommercial-ShareAlike 4.0 
-        International License
-    """,
+    license=license,
     keywords=["Petroleum", "Reservoir", "Simulation", "Scientific Computing"],
     project_urls={
         "numpy": "https://numpy.org/",

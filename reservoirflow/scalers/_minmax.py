@@ -1,8 +1,9 @@
 import numpy as np
-from reservoirflow.scalers._scaler import Scaler
+
+from reservoirflow.scalers._scaler import _Scaler
 
 
-class MinMax(Scaler):
+class MinMax(_Scaler):
     name = "Min Max Scaler"
 
     def __init__(self, output_range, input_range=None):

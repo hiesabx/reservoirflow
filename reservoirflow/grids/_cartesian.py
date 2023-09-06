@@ -1,12 +1,18 @@
 import numpy as np
-import scipy.sparse as ss
 import pyvista as pv
-from reservoirflow.grids._grid import Grid
-from reservoirflow.utils.helpers import _lru_cache
+import scipy.sparse as ss
+
 from reservoirflow import utils
+from reservoirflow.grids._grid import _Grid
+from reservoirflow.utils.helpers import _lru_cache
+
+# if __name__ == "__main__":
+#     from _grid import _Grid
+# else:
+#     from ._grid import _Grid
 
 
-class Cartesian(Grid):
+class Cartesian(_Grid):
     """Cartesian grid class.
 
     Returns
@@ -69,7 +75,7 @@ class Cartesian(Grid):
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
-        kx : int, float, array-like, optional, by default None
+        kx : int, float, array-like, optional
             permeability (i.e. the capacity of the grid block to
             transmit fluid through its interconnected pores).
             Permeability is a directional property, check is_isotropic
@@ -78,7 +84,7 @@ class Cartesian(Grid):
             the length should be equal to nx+2 for all cells including
             boundary cells. Vales should be in natural order (i.g.from
             left to right).
-        ky : int, float, array-like, optional, by default None
+        ky : int, float, array-like, optional
             permeability (i.e. the capacity of the grid block to
             transmit fluid through its interconnected pores).
             Permeability is a directional property, check is_isotropic
@@ -87,7 +93,7 @@ class Cartesian(Grid):
             the length should be equal to ny+2 for all cells including
             boundary cells. Vales should be in natural order (i.g.from
             front to back).
-        kz : int, float, array-like, optional, by default None
+        kz : int, float, array-like, optional
             permeability (i.e. the capacity of the grid block to
             transmit fluid through its interconnected pores).
             Permeability is a directional property, check is_isotropic
@@ -96,32 +102,32 @@ class Cartesian(Grid):
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
-        phi : float, array-like, optional, by default None
+        phi : float, array-like, optional
             porosity (i.e. effective porosity defined as the ratio of
             interconnected pores to the grid bulk volume). Porosity is a
             spacial property, check is_homogenous property.
             In case of an array, the shape should be equal to grid.shape
             with boundaries. Vales should be in natural order.
-        z : int, float, array-like, optional, by default 0.
+        z : int, float, array-like, optional.
             depth of grid tops (NOT FULLY IMPLEMENTED).
-        comp : float, optional, by default None
+        comp : float, optional
             compressibility.
-        dtype : str or `np.dtype`, optional, by default 'double'
+        dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
-        unit : str ('field', 'metric'), optional, by default 'field'
+        unit : str ('field', 'metric'), optional
             units used in input and output. Parameters can be defined as
             `unit='field'` (default) or `unit='metric'`. `units`
             attribute can be accessed from this class using
             (`Cartesian.units`) or from the base class (`Grid.units`).
-        unify : bool, optional, by default False
+        unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
             flow direction as tuple. This option is only relevant in
             case of 1D or 2D flow. This option may be required to make
             1D and 2D shapes shapes of this class more consistent with
             each other or with 3D shape.
-        verbose : bool, optional, by default False
+        verbose : bool, optional
             print information for debugging.
         """
 
@@ -167,7 +173,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default False
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -205,7 +211,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -228,7 +234,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -290,9 +296,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        points : bool, optional, by default False
+        points : bool, optional
             True for points (e.g. coords, icoords) and False for scaler
             values (e.g. id).
 
@@ -357,12 +363,12 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        type : str, optional, by default "natural"
+        type : str, optional
             grid order type in which grids are numbered. Currently, only
             "natural" order is supported.
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -397,11 +403,11 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
-        sparse : bool, optional, by default False
+        sparse : bool, optional
             values as sparse matrix (True) or as ndarray (False).
 
         Returns
@@ -434,11 +440,11 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
-        sparse : bool, optional, by default False
+        sparse : bool, optional
             values as sparse matrix (True) or as ndarray (False).
 
         Returns
@@ -475,7 +481,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -503,7 +509,7 @@ class Cartesian(Grid):
             cells, tuple of tuples of int as ((i,j,k),(i,j,k),..).
             Warning: providing an unhashable type (e.g. list, ndarray)
             is not supported and will cause TypeError.
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -525,12 +531,12 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default False
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default True
+        fshape : bool, optional
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : str, optional, by default "tuple"
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
@@ -569,7 +575,7 @@ class Cartesian(Grid):
             tuple of int (id,id,...). Warning: providing an unhashable
             type (e.g. list, ndarray) is not supported and will cause
             TypeError.
-        boundary : bool, optional, by default False
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -590,12 +596,12 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
@@ -675,12 +681,12 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
@@ -738,16 +744,16 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
         coords : iterable of int, iterable of tuples of int, by default
             None cell coordinates (i,j,k) as a tuple of int. For
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..).
-        boundary : bool, optional, by default False
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fmt : str, optional, by default 'dict'
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set',
             'dict']. Use 'dict' to output neighbors in x,y,z directions
             as keys. Use 'tuple' or 'list' for list of neighbors when
@@ -841,14 +847,14 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
         coords : iterable of int, iterable of tuples of int, by default
             None cell coordinates (i,j,k) as a tuple of int. For
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..).
-        fmt : str, optional, by default 'dict'
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set',
             'dict']. Use 'dict' to output neighbors in x,y,z directions
             as keys. Use 'tuple' or 'list' for list of neighbors when
@@ -908,7 +914,7 @@ class Cartesian(Grid):
             input data where boundaries need to be removed. Input data
             must be an ndarray with boundaries. Input data as dict with
             keys for these arrays is also possible.
-        points : bool, optional, by default None
+        points : bool, optional
             True for points (i.e. tuples of len 3 like coords, icoords)
             and False for scaler values (e.g. id). If value is set to
             None, bool value is calculated automatically. Warning:
@@ -916,7 +922,7 @@ class Cartesian(Grid):
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
             check the utility function `utils.ispoints()`.
-        remove : str, optional, by default 'both'.
+        remove : str, optional
             boundaries to remove as str in ['both', 'left', 'right'].
 
         Returns
@@ -1019,7 +1025,7 @@ class Cartesian(Grid):
         ----------
         in_data : ndarray
             input array must contain all cells including boundary cell.
-        points : bool, optional, by default None
+        points : bool, optional
             True for points (i.e. tuples of len 3 like coords, icoords)
             and False for scaler values (e.g. id). If value is set to
             None, bool value is calculated automatically. Warning:
@@ -1027,7 +1033,7 @@ class Cartesian(Grid):
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
             check the utility function `utils.ispoints()`.
-        fmt : str, optional, by default "tuple"
+        fmt : str, optional
             format of output data as str in ['tuple', 'list', 'set',
             'array'].
 
@@ -1135,10 +1141,10 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        by : str, optional, by default 'id'
+        by : str, optional
             output boundaries as 'id' or 'coords'. Other undefined str
             values will raise ValueError.
-        fmt : str, optional, by default "tuple"
+        fmt : str, optional
             format of output data as str in ['tuple', 'list', 'set',
             'array']. When option 'array' is used, utils.isin() must be
             used to check if a tuple of 3 is in the array. For a better
@@ -1256,7 +1262,7 @@ class Cartesian(Grid):
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
 
@@ -1298,9 +1304,9 @@ class Cartesian(Grid):
         ----------
         dir : str
             direction str in ['x', 'y', 'z'].
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1342,9 +1348,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1359,9 +1365,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1376,9 +1382,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1396,7 +1402,7 @@ class Cartesian(Grid):
         ----------
         dir : str
             direction str in ['x', 'y', 'z'].
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1434,7 +1440,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1460,7 +1466,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1486,7 +1492,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1524,9 +1530,9 @@ class Cartesian(Grid):
         ----------
         dir : str
             direction str in ['x', 'y', 'z'].
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1567,9 +1573,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1584,9 +1590,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1601,9 +1607,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
 
         Returns
@@ -1621,7 +1627,7 @@ class Cartesian(Grid):
         ----------
         dir : str
             direction str in ['x', 'y', 'z'].
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1655,7 +1661,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1681,7 +1687,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1707,7 +1713,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1742,9 +1748,9 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        pyvista : bool, optional, by default False
+        pyvista : bool, optional
             use built-in pyvista calculations.
 
         Returns
@@ -1766,11 +1772,11 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
-        pyvista : bool, optional, by default False
+        pyvista : bool, optional
             use built-in pyvista calculations.
 
         Returns
@@ -1803,7 +1809,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1842,11 +1848,11 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False).
-        pyvista : bool, optional, by default False
+        pyvista : bool, optional
             use built-in pyvista calculations.
 
         Returns
@@ -1891,7 +1897,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -1930,7 +1936,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -2050,33 +2056,33 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        kx : int, float, array-like, optional, by default None
+        kx : int, float, array-like, optional
             permeability in x-direction (relevant only if 'x' was in
             fluid flow direction). In case of a list or array,
             the length should be equal to nx+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             left to right).
-        ky : int, float, array-like, optional, by default None
+        ky : int, float, array-like, optional
             permeability in y-direction (relevant only if 'y' was in
             fluid flow direction). In case of a list or array,
             the length should be equal to ny+2 for all cells including
             boundary cells. Vales should be in natural order (i.g.from
             front to back).
-        kz : int, float, array-like, optional, by default None
+        kz : int, float, array-like, optional
             permeability in z-direction (relevant only if 'z' was in
             fluid flow direction). In case of a list or array,
             the length should be equal to nz+2 for all cells including
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
-        phi : float, array-like, optional, by default None
+        phi : float, array-like, optional
             porosity. In case of an array, the shape should be equal to
             grid.shape with boundaries. Vales should be in natural
             order.
-        z : int, float, array-like, optional, by default 0.
+        z : int, float, array-like, optional
             depth of grid tops (NOT FULLY IMPLEMENTED).
-        comp : float, optional, by default None
+        comp : float, optional
             compressibility.
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -2139,7 +2145,7 @@ class Cartesian(Grid):
             property value. In case of an array, the shape should be
             equal to grid.shape with boundaries. Vales should be in
             natural order.
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...). If None,
             then all cells are selected. NotFullyImplemented.
@@ -2197,12 +2203,12 @@ class Cartesian(Grid):
         ----------
         name : str
             property name as a string from props attribute keys.
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
@@ -2247,12 +2253,12 @@ class Cartesian(Grid):
         ----------
         name : str
             property name as a string from props attribute keys.
-        boundary : bool, optional, by default True
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        fshape : bool, optional, by default False
+        fshape : bool, optional
             values in flow shape (True) or flatten (False). If set to
             True, fmt argument will be ignored.
-        fmt : str, optional, by default 'tuple'
+        fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
@@ -2285,7 +2291,7 @@ class Cartesian(Grid):
         ----------
         dir : str
             direction str in ['x', 'y', 'z'].
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -2319,7 +2325,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -2345,7 +2351,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -2371,7 +2377,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -2609,7 +2615,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        sparse : bool, optional, by default True
+        sparse : bool, optional
             _description_
 
         Returns
@@ -2667,7 +2673,7 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        id : int, iterable of int, by default None
+        id : int, iterable of int
             cell id based on natural order as int. For multiple cells,
             list of int [id,id,..] or tuple of int (id,id,...).
             NotFullyImplemented.
@@ -2675,7 +2681,7 @@ class Cartesian(Grid):
             None cell coordinates (i,j,k) as a tuple of int. For
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..). NotFullyImplemented.
-        boundary : bool, optional, by default False
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
 
         Returns
@@ -2728,13 +2734,13 @@ class Cartesian(Grid):
 
         Parameters
         ----------
-        label : str, optional, by default None
+        label : str, optional
             label of grid centers as str in ['id', 'coords', 'icoords',
             'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center']. If None,
             then a sphere shape at the center will appear.
-        boundary : bool, optional, by default False
+        boundary : bool, optional
             values with boundary (True) or without boundary (False).
-        corners : bool, optional, by default False
+        corners : bool, optional
 
 
         Raises

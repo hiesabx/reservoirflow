@@ -1,7 +1,7 @@
-from reservoirflow._base import Base
+from reservoirflow._base import _Base
 
 
-class Model(Base):
+class _Model(_Base):
     """Model class.
 
     Model class used to create a reservoir simulation model.
@@ -57,5 +57,5 @@ if __name__ == "__main__":
     dtype = "double"
     unit = "field"
     verbose = False
-    model = Model(unit, dtype, verbose)
+    model = _Model(unit, dtype, verbose)
     print(model)

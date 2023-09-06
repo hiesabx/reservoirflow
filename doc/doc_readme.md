@@ -19,7 +19,7 @@ sphinx-quickstart
 ### bash
 
 ´´´bash
-sphinx-apidoc -o modules/ ../reservoirflow/ -f -M -T
+sphinx-apidoc -o modules_/ ../reservoirflow/ -f -M -T
 sphinx-build -b html ./ _build/html/
 ```
 

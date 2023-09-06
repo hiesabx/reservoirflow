@@ -1,8 +1,9 @@
 # %%
 import warnings
 from functools import lru_cache
-from numpy import ndarray
+
 import numpy as np
+from numpy import ndarray
 
 
 def _lru_cache(maxsize=None):
@@ -151,9 +152,9 @@ def reformat(in_data, fmt="tuple"):
     in_data : _type_
         input data to be reformated. If data is ndarray, it must be
         flatten before reformated.
-    points : bool, optional, by default False
+    points : bool, optional
         _description_
-    fmt : str, optional, by default "tuple"
+    fmt : str, optional
         output format as str from ['array', 'list', 'tuple', 'set']. For
         a better performance, use 'set' to check if an item is in a list
         or not. Use tuples to iterate through items. When option 'array'
