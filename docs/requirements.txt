@@ -1,0 +1,8 @@
+sphinx
+sphinx_rtd_theme
+sphinx_copybutton
+livereload
+myst-parser
+mypy
+# sphinx-automodapi
+pydata-sphinx-theme

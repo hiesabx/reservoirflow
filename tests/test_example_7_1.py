@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
-from reservoirflow import grids, fluids, models
+
+from reservoirflow import fluids, grids, models
 
 
 class TestApp(unittest.TestCase):
@@ -53,12 +55,36 @@ class TestApp(unittest.TestCase):
 
 def create_model():
     grid = grids.Cartesian(
-        nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
+        nx=4,
+        ny=1,
+        nz=1,
+        dx=300,
+        dy=350,
+        dz=40,
+        phi=0.27,
+        kx=270,
+        dtype="double",
     )
-    fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-    model = models.BlackOil(grid, fluid, dtype="double", verbose=False)
-    model.set_well(id=4, q=-600, s=1.5, r=3.5)
-    model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
+    fluid = fluids.SinglePhase(
+        mu=0.5,
+        B=1,
+        dtype="double",
+    )
+    model = models.BlackOil(
+        grid,
+        fluid,
+        dtype="double",
+        verbose=False,
+    )
+    model.set_well(
+        id=4,
+        q=-600,
+        s=1.5,
+        r=3.5,
+    )
+    model.set_boundaries(
+        {0: ("pressure", 4000), 5: ("rate", 0)},
+    )
     return model
 
 

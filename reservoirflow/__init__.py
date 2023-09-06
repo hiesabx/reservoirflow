@@ -14,7 +14,7 @@ grids
 models
     Model classes to combine Grid and Fluid to build a simulation model.
 plots
-    Plot classes to plot data i
+    Plot classes to plot data.
 scalers
     Scaler classes to scale model data.
 utils
@@ -54,5 +54,5 @@ Construct a `BlackOil` model from `models` module::
 
 __version__ = "0.1.0"
 
-from ._base import UNITS, FACTORS
 from . import fluids, grids, models, scalers, utils
+from ._base import FACTORS, UNITS

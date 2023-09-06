@@ -1,0 +1,22 @@
+# Navigate to doc folder:
+cd doc
+python run_livereload.py
+
+# Create: 
+    ## Create Environment: 
+    python -m venv .denv
+    source .denv/Scripts/Activat
+    pip install --upgrade pip
+    pip install -r requirements.txt
+
+    # Create a new project: (Not needed)
+    sphinx-quickstart 
+
+    # Generate rst files: (Not needed)
+    sphinx-apidoc -o source/modules/ ../reservoirflow/ -f -M -T
+
+# Build html:
+    ## sphinx-build:
+    sphinx-build -b html source/ build/html/
+    ## cmd:
+    make.bat clean html | make.bat html
