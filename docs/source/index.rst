@@ -18,6 +18,7 @@ Welcome to ReservoirFlow's documentation!
    getting_started/index
    development/index
    api/index
+   capabilities
    release_notes/index
 
 Indices and tables
