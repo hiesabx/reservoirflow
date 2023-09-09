@@ -1,6 +1,5 @@
 # Navigate to doc folder:
 cd doc
-python run_livereload.py
 
 # Create: 
     ## Create Environment: 
@@ -15,8 +14,14 @@ python run_livereload.py
     # Generate rst files: (Not needed)
     sphinx-apidoc -o source/modules/ ../reservoirflow/ -f -M -T
 
+# Install reservoirflow library:
+pip install -e ..
+
 # Build html:
     ## sphinx-build:
     sphinx-build -b html source/ build/html/
     ## cmd:
     make.bat clean html | make.bat html
+
+# Run livereload:
+python run_livereload.py

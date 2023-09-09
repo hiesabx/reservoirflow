@@ -1,4 +1,4 @@
-Welcome to ReservoirFlow's documentation!
+Welcome to ReservoirFlow's Documentation
 =========================================
 
 .. note:: 
@@ -9,17 +9,24 @@ Welcome to ReservoirFlow's documentation!
   :alt: five_spot_single_phase
   :align: center
 
+|
+
+.. include:: ../../README.md
+   :start-after: ## Introduction
+   :parser: myst_parser.sphinx_
+
+Documentation Contents
+======================
+
 .. toctree::
    :maxdepth: 1
-   :caption: Contents
 
-   readme
-   sponsorship
-   getting_started/index
-   development/index
-   api/index
+   user_guide/user_guide
+   research_development/research_development
+   api/api
    capabilities
-   release_notes/index
+   support_us
+   release_notes/release_notes
 
 Indices and tables
 ==================

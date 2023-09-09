@@ -1,8 +1,0 @@
-# API
-
-This is the doc.
-
-```{eval-rst}
-.. autoclass:: reservoirflow.models.BlackOil
-    :members:
-```

@@ -12,7 +12,6 @@ extensions = [
     "sphinx.ext.autodoc",  # extract docs
     "sphinx.ext.napoleon",  # enhance parameters section
     "myst_parser",  # add md files
-    # "sphinx_mdinclude",
 ]
 
 templates_path = ["_templates"]
@@ -24,7 +23,26 @@ myst_all_links_external = True
 # html:
 html_theme = "pydata_sphinx_theme"
 html_title = project  # + release
+html_logo = "_static/logo.png"
+html_favicon = "_static/logo_grid.png"
 html_static_path = ["_static"]
+html_show_sourcelink = False
+html_theme_options = {
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/zakgrin/reservoirflow",
+            "icon": "fab fa-github",
+            "type": "fontawesome",
+        },
+        {
+            "name": "LinkedIn",
+            "url": "https://www.linkedin.com/in/zakariya-abugrin/",
+            "icon": "fab fa-linkedin-in",
+        },
+    ],
+    "footer_start": ["copyright"],  # remove PyData and Sphinx notes.
+}
 
 # autodoc:
 autoclass_content = "init"
