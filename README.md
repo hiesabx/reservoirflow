@@ -1,4 +1,4 @@
-# ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
+# ReservoirFlow: a Petroleum Reservoir Simulation Library in Python (Private)
 
 ![](/images/logo.png)
 ![](/images/five_spot_single_phase.gif)
