@@ -1,7 +1,9 @@
 import unittest
+
 import numpy as np
 import pandas as pd
-from reservoirflow import grids, fluids, models
+
+from reservoirflow import fluids, grids, models
 
 
 class TestApp(unittest.TestCase):
@@ -9,7 +11,7 @@ class TestApp(unittest.TestCase):
         df_desired = pd.read_csv(
             "tests/test_example_7_9.csv",
             index_col=0,
-            dtype={"Step": "int32", "Time [Days]": "int32"},
+            dtype={"Step": "int32", "Time [days]": "int32"},
         )
         model = create_model()
         model.run(nsteps=10, sparse=False)
@@ -23,7 +25,7 @@ class TestApp(unittest.TestCase):
             drop_nan=False,
             drop_zero=False,
         )
-        # df.to_csv("tests/test_example_7_9_.csv")
+        df.to_csv("tests/test_example_7_9_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
 
@@ -96,7 +98,7 @@ class TestApp(unittest.TestCase):
 
 
 def create_model():
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=4,
         ny=1,
         nz=1,

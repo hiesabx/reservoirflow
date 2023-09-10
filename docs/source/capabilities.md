@@ -4,7 +4,7 @@ A long-term plan with high ambitions is already in place for this library. As of
 
 |**Feature**|**Type**|**Support**|**Starting From**|**Comment**|
 |-----------|--------|-----------|-----------------|-----------|
-|**Model Type**|Black Oil|YES|`v0.1.0`|Only single phase on Cartesian grid.|
+|**Model Type**|Black Oil|YES|`v0.1.0`|Only single phase on regular cartesian grid.|
 ||Compositional|No|`-`||
 |**Flow Dimensions**|1D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
 ||2D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|

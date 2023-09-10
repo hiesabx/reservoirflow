@@ -54,7 +54,7 @@ class TestApp(unittest.TestCase):
 
 
 def create_model():
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=4,
         ny=1,
         nz=1,

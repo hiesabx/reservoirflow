@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
+
 from reservoirflow import fluids, grids, models
 
 generate_data = False
@@ -10,7 +11,7 @@ show_result = False
 if generate_data:
 
     def create_model(n):
-        grid = grids.Cartesian(
+        grid = grids.RegularCartesian(
             nx=n,
             ny=1,
             nz=1,

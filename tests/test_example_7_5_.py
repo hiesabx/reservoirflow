@@ -1,7 +1,9 @@
 import unittest
 import warnings
+
 import numpy as np
-from reservoirflow import grids, fluids, models
+
+from reservoirflow import fluids, grids, models
 
 
 class TestApp(unittest.TestCase):
@@ -60,7 +62,7 @@ class TestApp(unittest.TestCase):
 
 def create_model():
     z = np.array([3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62])
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=4,
         ny=1,
         nz=1,

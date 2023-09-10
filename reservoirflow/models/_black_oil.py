@@ -36,7 +36,7 @@ class BlackOil(_Model):
 
     def __init__(
         self,
-        grid: grids.Cartesian,
+        grid: grids.RegularCartesian,
         fluid: fluids.SinglePhase,
         well=None,  # wells.Well = None,
         pi: int = None,
@@ -1933,7 +1933,7 @@ class BlackOil(_Model):
 if __name__ == "__main__":
 
     def create_model_example_7_1():
-        grid = grids.Cartesian(
+        grid = grids.RegularCartesian(
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
@@ -1943,7 +1943,7 @@ if __name__ == "__main__":
         return model
 
     def create_model():
-        grid = grids.Cartesian(
+        grid = grids.RegularCartesian(
             nx=10,
             ny=10,
             nz=3,

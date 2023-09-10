@@ -1,7 +1,6 @@
-from reservoirflow import grids, fluids, wells, models
+from reservoirflow import fluids, grids, models, wells
 
-
-grid = grids.Cartesian(
+grid = grids.RegularCartesian(
     nx=2,
     ny=2,
     nz=1,

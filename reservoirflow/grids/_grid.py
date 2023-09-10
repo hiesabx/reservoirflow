@@ -34,9 +34,7 @@ class _Grid(_Base):
             `np.single` or `np.double` can be used.
         unit : str ('field', 'metric'), optional
             units used in input and output. Parameters can be defined as
-            `unit='field'` (default) or `unit='metric'`. `units`
-            attribute can be accessed from this class using
-            (`Cartesian.units`) or from the base class (`Grid.units`).
+            `unit='field'` (default) or `unit='metric'`.
         unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in

@@ -18,19 +18,17 @@
 
 ## Introduction
 
-*ReservoirFlow* <`reservoirflow`>, is a modern open-source Python library created by [Zakariya Abugrin](https://github.com/zakgrin), the CEO of *Bayanatics*.
-
-*ReservoirFlow* helps mathematicians, researchers, students and engineers to study and model the phenomenon of fluid flow in porous media using different approaches including analytical solutions, numerical solutions, and machine learning solutions. This library is designed based on the modern Python stack for data science and scientific computing. Hence, this library is directly integrated with AI and ML Python frameworks and libraries.
+*ReservoirFlow* <`reservoirflow`>, is a modern open-source Python library created by [Zakariya Abugrin](https://github.com/zakgrin). *ReservoirFlow* helps mathematicians, researchers, students and engineers to study and model the phenomenon of fluid flow in porous media using different approaches including analytical solutions, numerical solutions, and machine learning solutions. This library is designed based on the modern Python stack for data science and scientific computing. Hence, this library is directly integrated with AI and ML Python frameworks and libraries.
 
 ## Installation
 
-- Install `reservoirflow` directly from [PyPi](https://pypi.org/):
+Install `reservoirflow` directly from [PyPi](https://pypi.org/):
 
-    ```bash
-    pip install reservoirflow
-    ```
+```bash
+pip install reservoirflow
+```
 
-    You need to install python (see next step). In addition, You may need to create a project directory with a dedicated virtual environment. (see: Installation section under Getting Started in the documentation).
+For more information about the installation process, see: [Getting Started](/user_guide/getting_started.html) in the documentation.
 
 ## Import Convention
 

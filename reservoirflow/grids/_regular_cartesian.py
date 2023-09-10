@@ -12,13 +12,13 @@ from reservoirflow.utils.helpers import _lru_cache
 #     from ._grid import _Grid
 
 
-class Cartesian(_Grid):
-    """Cartesian grid class.
+class RegularCartesian(_Grid):
+    """Regular Cartesian grid class.
 
     Returns
     -------
     Grid
-        Cartesian grid object.
+        Regular Cartesian grid object.
     """
 
     # ToDo
@@ -26,7 +26,7 @@ class Cartesian(_Grid):
     # - make default calc all flatten because flatten > reshape is faster
     #   than reshape > flatten.
 
-    name = "Cartesian Grid"
+    name = "Regular Cartesian Grid"
 
     def __init__(
         self,
@@ -47,7 +47,7 @@ class Cartesian(_Grid):
         unify=True,
         verbose=False,
     ):
-        """Cartesian grid class with explicit structure.
+        """Regular Cartesian grid class with explicit structure.
 
         Parameters
         ----------
@@ -119,7 +119,7 @@ class Cartesian(_Grid):
             units used in input and output. Parameters can be defined as
             `unit='field'` (default) or `unit='metric'`. `units`
             attribute can be accessed from this class using
-            (`Cartesian.units`) or from the base class (`Grid.units`).
+            (`RegularCartesian.units`) or from the base class (`Grid.units`).
         unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
@@ -2883,7 +2883,7 @@ if __name__ == "__main__":
     dy = get_d(10, ny)
     dz = get_d(10, nz)
 
-    grid = Cartesian(
+    grid = RegularCartesian(
         nx=nx,
         ny=ny,
         nz=nz,

@@ -2,27 +2,55 @@ from tabulate import tabulate
 
 UNITS = {
     "field": {
-        "transmissibility": "STB/D-psi",
-        "error": "STB/D",
-        "pressure": "Psia",
-        "time": "Days",
-        "rate": "STB/Day",
+        "transmissibility": "stb/d-psi",
+        "error": "stb/d",
+        "pressure": "psia",
+        "time": "days",
+        "rate": "stb/day",
+        "length": "ft",
+        "area": "ft^2",
+        "volume": "ft^3",
     },
-    "metric": {"transmissibility": "M3/D-bar", "error": "M3/D"},
+    "metric": {
+        "transmissibility": "m^3/D-bar",
+        "error": "m^3/day",
+        "pressure": "kpa",
+        "time": "days",
+        "rate": "m^3/day",
+        "length": "m",
+        "area": "m^2",
+        "volume": "m^3",
+    },
+    "lab": {
+        "transmissibility": "cm^3/sec-atm",
+        "error": "cm^3/sec",
+        "pressure": "atm",
+        "time": "sec",
+        "rate": "cm^3/sec",
+        "length": "cm",
+        "area": "cm^2",
+        "volume": "cm^3",
+    },
 }
 
 FACTORS = {
     "field": {
-        "transmissibility conversion": 0.001127,
-        "gravity conversion": 0.21584 * 10**-3,
-        "gravitational acceleration": 32.174,
-        "volume conversion": 5.614583,
+        "gravitational acceleration": 32.174,  #: {ft}/{sec^2}
+        "transmissibility conversion": 0.001127,  #: dimensionless
+        "gravity conversion": 0.21584e-3,  #: dimensionless
+        "volume conversion": 5.614583,  #: dimensionless
     },
     "metric": {
-        "transmissibility conversion": 0,
-        "gravity conversion": 0,
-        "gravitational acceleration": 0,
-        "volume conversion": 1,
+        "gravitational acceleration": 9.806635,  #: {m}/{sec^2}
+        "transmissibility conversion": 0.0864,  #: dimensionless
+        "gravity conversion": 0.001,  #: dimensionless
+        "volume conversion": 1,  #: dimensionless
+    },
+    "lab": {
+        "gravitational acceleration": 980.6635,  #: {cm}/{sec^2}
+        "transmissibility conversion": 1,  #: dimensionless
+        "gravity conversion": 0.986923e-6,  #: dimensionless
+        "volume conversion": 1,  #: dimensionless
     },
 }
 

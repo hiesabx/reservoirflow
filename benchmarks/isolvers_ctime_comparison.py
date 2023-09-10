@@ -1,12 +1,13 @@
 # %%
-from reservoirflow import grids, fluids, models
-from reservoirflow.utils import profme
 import numpy as np
 import pandas as pd
 
+from reservoirflow import fluids, grids, models
+from reservoirflow.utils import profme
+
 
 def create_model():
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=500,
         ny=500,
         nz=4,

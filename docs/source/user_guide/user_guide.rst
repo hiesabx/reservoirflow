@@ -10,12 +10,11 @@ Contents
     :maxdepth: 1
 
     getting_started
-    examples/examples
-
-
+    tutorials/tutorials
 
 .. toctree::
    :hidden:
    :caption: Extras
 
+   units_factors
    glossary

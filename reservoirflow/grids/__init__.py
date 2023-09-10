@@ -1,6 +1,6 @@
 __all__ = [
-    "Cartesian",
+    "RegularCartesian",
     # "_Grid",
 ]
 
-from ._cartesian import Cartesian
+from ._regular_cartesian import RegularCartesian

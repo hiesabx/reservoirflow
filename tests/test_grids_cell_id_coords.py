@@ -1,5 +1,7 @@
 import unittest
+
 import numpy as np
+
 from reservoirflow import grids
 
 
@@ -33,7 +35,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(grid.get_cell_coords(93, boundary=True), (3, 3, 3))
 
 
-grid = grids.Cartesian(
+grid = grids.RegularCartesian(
     nx=3, ny=3, nz=3, dx=10, dy=10, dz=10, phi=0.27, kx=270, ky=270, kz=270
 )
 

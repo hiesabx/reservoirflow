@@ -7,7 +7,7 @@ The workflow of reservoirflow library consists of 8 steps as following:
 import reservoirflow as rf
 
 # Step 1: Define 1D grid (default dtype: 'double')
-grid = rf.grids.Cartesian(
+grid = rf.grids.RegularCartesian(
     nx=4,
     ny=1,
     nz=1,
