@@ -1,7 +1,9 @@
 import unittest
+
 import numpy as np
 import pandas as pd
-from reservoirflow import grids, fluids, models
+
+from reservoirflow import fluids, grids, models
 
 
 class TestApp(unittest.TestCase):
@@ -9,7 +11,7 @@ class TestApp(unittest.TestCase):
         df_desired = pd.read_csv(
             "tests/test_example_7_11.csv",
             index_col=0,
-            dtype={"Step": "int32", "Time [Days]": "int32"},
+            dtype={"Step": "int32", "Time [days]": "int32"},
         )
         df_desired.index = df_desired.index.astype(int)
         # dense:
@@ -25,7 +27,7 @@ class TestApp(unittest.TestCase):
             drop_nan=True,
             drop_zero=True,
         )
-
+        # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
         # sparse:
@@ -88,7 +90,7 @@ def create_model():
     dx = np.array([400, 400, 300, 150, 200, 250, 250])
     phi = np.array([0.21, 0.21, 0.17, 0.10, 0.25, 0.13, 0.13])
     kx = np.array([273, 273, 248, 127, 333, 198, 198])
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=5,
         ny=1,
         nz=1,
@@ -102,7 +104,7 @@ def create_model():
         unify=False,
     )
     fluid = fluids.SinglePhase(mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double")
-    model = models.Numerical(grid, fluid, pi=3000, dt=5, dtype="double")
+    model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
     model.set_well(id=4, q=-400, pwf=1500, s=0, r=3)
     model.set_boundaries({0: ("rate", 0), 6: ("rate", 0)})
     return model

@@ -1,7 +1,7 @@
-from reservoirflow.base import Base
+from reservoirflow._base import _Base
 
 
-class Visual(Base):
+class Visual(_Base):
     name = "Visual"
 
     def __init__(self):

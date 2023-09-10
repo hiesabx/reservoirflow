@@ -1,7 +1,8 @@
-#%% # Import
+# %% # Import
 from reservoirflow import grids
 
-#%% # Create Grid:
+
+# %% # Create Grid:
 def get_d(d_0, n):
     if n > 1:
         return [d_0] + [d_0 + (i * d_0) for i in range(1, n + 1)] + [d_0]
@@ -10,9 +11,8 @@ def get_d(d_0, n):
 
 
 def model_1(n, unify):
-
     nx, ny, nz = n
-    g = grids.Cartesian(
+    g = grids.RegularCartesian(
         nx=nx,
         ny=ny,
         nz=nz,
@@ -26,13 +26,13 @@ def model_1(n, unify):
     return g
 
 
-#%% Show:
+# %% Show:
 def show(label="id"):
     g.show(label=label, boundary=True)
     # g.show(label=label, boundary=False)
 
 
-#%% Check Neighbors:
+# %% Check Neighbors:
 def neighbors():
     fmt = "set"
     id = g.get_cells_id(False, False)

@@ -1,5 +1,7 @@
 import warnings
+
 import scipy.sparse.linalg as ssl
+
 from reservoirflow.utils.helpers import _lru_cache
 
 
@@ -15,7 +17,7 @@ def get_isolver(name):
 
     Parameters
     ----------
-    name : str, optional, by default "cgs"
+    name : str, optional
         name of th eiterative solver. Available solvers are
         ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
         "minres", "qmr", "gcrotmk", "tfqmr"].

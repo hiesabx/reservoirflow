@@ -1,4 +1,4 @@
-from reservoirflow import models, grids, fluids, wells
+from reservoirflow import fluids, grids, models, wells
 
 """
 This is a 1D Model for single-phase incompressible fluid
@@ -6,13 +6,13 @@ The workflow of reservoirflow library consists of 8 steps as following:
 (default: dtype='double', unit='field')
 """
 # Step 1: Define 1D grid (default dtype: 'double')
-grid = grids.Cartesian(
+grid = grids.RegularCartesian(
     nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, comp=1 * 10**-6
 )
 # Step 2: Define a fluid (single phase incompressible fluid)
 fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5)
 # Step 3: Create a model
-model = models.Numerical(grid, fluid, pi=4000)
+model = models.BlackOil(grid, fluid, pi=4000)
 # Step 4: Add a well
 model.set_well(id=4, q=-600, s=1.5, r=3.5)  # well 1 (Producer)
 # Step 5: Define boundary conditions

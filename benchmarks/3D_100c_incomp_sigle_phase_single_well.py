@@ -1,9 +1,9 @@
-from reservoirflow import grids, fluids, models
+from reservoirflow import fluids, grids, models
 from reservoirflow.utils import profme
 
 
 def create_model():
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=4,
         ny=1,
         nz=1,
@@ -15,7 +15,7 @@ def create_model():
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-    model = models.Numerical(grid, fluid, dtype="double", dt=1, verbose=False)
+    model = models.BlackOil(grid, fluid, dtype="double", dt=1, verbose=False)
     model.set_well(id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model

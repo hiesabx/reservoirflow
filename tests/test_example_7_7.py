@@ -1,7 +1,9 @@
 import unittest
+
 import numpy as np
 import pandas as pd
-from reservoirflow import grids, fluids, models
+
+from reservoirflow import fluids, grids, models
 
 
 class TestApp(unittest.TestCase):
@@ -9,7 +11,7 @@ class TestApp(unittest.TestCase):
         df_desired = pd.read_csv(
             "tests/test_example_7_7.csv",
             index_col=0,
-            dtype={"Step": "int32", "Time [Days]": "int32"},
+            dtype={"Step": "int32", "Time [days]": "int32"},
         )
         df_desired.index = df_desired.index.astype(int)
 
@@ -26,6 +28,7 @@ class TestApp(unittest.TestCase):
             drop_zero=False,
         )
         df.index = df.index.astype(int)
+        # df.to_csv("tests/test_example_7_7_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
         self.assertLess(model.ctime, 5)
@@ -108,7 +111,7 @@ class TestApp(unittest.TestCase):
 
 
 def create_model():
-    grid = grids.Cartesian(
+    grid = grids.RegularCartesian(
         nx=2,
         ny=2,
         nz=1,
@@ -127,7 +130,7 @@ def create_model():
         rho=50,
         dtype="double",
     )
-    model = models.Numerical(grid, fluid, dtype="double", verbose=False)
+    model = models.BlackOil(grid, fluid, dtype="double", verbose=False)
     model.set_well(id=6, pwf=2000, s=0, r=3)
     model.set_well(id=9, q=-600, s=0, r=3)
     model.set_boundaries(
