@@ -2,8 +2,8 @@ from tabulate import tabulate
 
 UNITS = {
     "field": {
-        "transmissibility": "stb/d-psi",
-        "error": "stb/d",
+        "transmissibility": "stb/(day.psi)",
+        "error": "stb/day",
         "pressure": "psia",
         "time": "days",
         "rate": "stb/day",
@@ -12,7 +12,7 @@ UNITS = {
         "volume": "ft^3",
     },
     "metric": {
-        "transmissibility": "m^3/D-bar",
+        "transmissibility": "m^3/(day.bar)",
         "error": "m^3/day",
         "pressure": "kpa",
         "time": "days",
@@ -22,7 +22,7 @@ UNITS = {
         "volume": "m^3",
     },
     "lab": {
-        "transmissibility": "cm^3/sec-atm",
+        "transmissibility": "cm^3/(sec.atm)",
         "error": "cm^3/sec",
         "pressure": "atm",
         "time": "sec",

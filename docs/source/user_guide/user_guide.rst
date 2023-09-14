@@ -9,12 +9,13 @@ Contents
 .. toctree::
     :maxdepth: 1
 
-    getting_started
+    getting_started/getting_started
     tutorials/tutorials
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
    :caption: Extras
 
-   units_factors
-   glossary
+   units_factors/units_factors
+   equations/equations
+   glossary/glossary

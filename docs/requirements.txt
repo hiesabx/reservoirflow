@@ -6,3 +6,9 @@ myst-parser
 mypy
 # sphinx-automodapi
 pydata-sphinx-theme
+# IPython
+# ipykernel
+# nbsphinx
+# pandoc
+myst-nb
+sphinx-gallery

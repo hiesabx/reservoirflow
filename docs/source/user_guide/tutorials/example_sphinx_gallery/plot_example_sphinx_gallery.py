@@ -1,10 +1,45 @@
 """
-This is a 3D Model for single-phase compressible fluid
-The workflow of reservoirflow library consists of 8 steps as following:
-(default: dtype='double', unit='field')
-"""
 
+Example (Sphinx Gallery)
+========================
+
+This is a 3D Model for single-phase compressible fluid
+
+Simulation Steps
+################
+
+Simulation steps can be done in 8 steps:
+  - Define 1D grid
+  - Define a fluid
+  - Create a model
+  - Add a well
+  - Define boundary conditions
+  - Run the model
+  - Show pressures
+  - Show DataFrame
+"""
+# %%
+# sphinx_gallery_thumbnail_path = "user_guide/tutorials/example_sphinx_gallery/_static/example_image.png"
+
+###############################################################################
+# Head 1
+# ======
+
+# This to show that markdown `works` fine here.
+# $a=\frac{a}{4}$
+
+# __List__
+
+# - one
+# - two
+# - two
+
+# example 1
 import reservoirflow as rf
+
+rf.__version__
+
+# %%
 
 # Step 1: Define 1D grid (default dtype: 'double')
 grid = rf.grids.RegularCartesian(
@@ -53,9 +88,18 @@ model.set_boundaries(
 # Step 6: Run the model (single time step)
 model.solve(sparse=False, check_MB=False)
 
-# # Step 7: Show pressures in 3D grid
-model.show(property="pressures", boundary=False)
+
+# %%
+# show the 3D model
+
+# Step 7: Show pressures in 3D grid
+# model.show(property="pressures", boundary=False)
+
+# %%
+###############################################################################
+# Model DataFrame
+# ++++++++++++++++
 
 # Step 8: Show report
 df = model.get_df()
-print(df)
+df

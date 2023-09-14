@@ -25,4 +25,5 @@ reservoirflow.fluids
 reservoirflow.utils
 ^^^^^^^^^^^^^^^^^^^
 - Import Eclipse Files
+- Unit converter
 
