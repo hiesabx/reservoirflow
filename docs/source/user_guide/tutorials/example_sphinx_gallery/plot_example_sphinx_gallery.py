@@ -19,17 +19,16 @@ Simulation steps can be done in 8 steps:
   - Show DataFrame
 """
 # %%
-# sphinx_gallery_thumbnail_path = "user_guide/tutorials/example_sphinx_gallery/_static/example_image.png"
 
 ###############################################################################
 # Head 1
 # ======
-
+#
 # This to show that markdown `works` fine here.
 # $a=\frac{a}{4}$
-
+#
 # __List__
-
+#
 # - one
 # - two
 # - two
@@ -38,6 +37,7 @@ Simulation steps can be done in 8 steps:
 import reservoirflow as rf
 
 rf.__version__
+# sphinx_gallery_thumbnail_path = "user_guide/tutorials/example_sphinx_gallery/_static/example_image.png"
 
 # %%
 

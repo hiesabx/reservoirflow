@@ -9,5 +9,5 @@ This section includes tutorials to help the user learn how to use `reservoirflow
 
     example_markdown/example_markdown
     example_notebook/example_notebook
-    example_sphinx_gallery/build/index
+.. example_sphinx_gallery/build/index
     

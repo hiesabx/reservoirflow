@@ -12,3 +12,4 @@ pydata-sphinx-theme
 # pandoc
 myst-nb
 sphinx-gallery
+sphinx-comments

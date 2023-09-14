@@ -25,6 +25,7 @@ Documentation Contents
    research_development/research_development
    api/api
    capabilities
+   community/community
    support_us
    release_notes/release_notes
 

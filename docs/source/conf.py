@@ -16,9 +16,8 @@ extensions = [
     "sphinx.ext.autodoc",  # extract docs
     "sphinx.ext.napoleon",  # enhance parameters section
     "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
-    "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
-    # "sphinx.ext.autosummary",
-    # "sphinx.ext.mathjax",  # read latex
+    # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
+    "sphinx_comments",  # allow comments
 ]
 
 
@@ -31,32 +30,19 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = []
 
-# myst:
+# myst and myst-nb: https://myst-nb.readthedocs.io/en/latest/render/format_code_cells.html
 myst_all_links_external = True
 myst_admonition_enable = True
 myst_amsmath_enable = True
 myst_html_img_enable = True
 myst_url_schemes = ("http", "https", "mailto")
-# myst_enable_extensions = [
-#     "amsmath",
-#     "colon_fence",
-#     "deflist",
-#     "dollarmath",
-#     "html_image",
-# ]
-# myst_url_schemes = ("http", "https", "mailto")
-
-# myst-nb: https://myst-nb.readthedocs.io/en/latest/render/format_code_cells.html
-# nb_number_source_lines = True
-# nb_output_stderr = (
-#     "show"  # ['show', 'remove', 'remove-warn', 'warn', 'error', 'severe']
-# )
-# nb_merge_streams = True
-# nb_mime_priority_overrides = [
-#     ("html", "text/plain", 0),
-#     ("latex", "image/jpeg", None),
-#     ("*", "customtype", 20),
-# ]
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
 
 # switcher: (rc: release candidate)
 switcher_version = version
@@ -99,6 +85,7 @@ html_theme_options = {
     "check_switcher": False,
 }
 
+
 # autodoc:
 autoclass_content = "init"
 autodoc_class_signature = "mixed"
@@ -110,21 +97,26 @@ autodoc_typehints_format = "short"
 autodoc_inherit_docstrings = False
 autodoc_preserve_defaults = False
 
-# sphinx gallery
-examples_dirs = ["user_guide/tutorials/example_sphinx_gallery"]
-gallery_dirs = [d + "/build" for d in examples_dirs]
-exclude_patterns.extend([d + "/*.ipynb" for d in gallery_dirs])
-sphinx_gallery_conf = {
-    "examples_dirs": examples_dirs,
-    "gallery_dirs": gallery_dirs,
-    "line_numbers": True,
-    # "show_memory": True,
-    # "notebook_images": True,
-    "remove_config_comments": True,
-    "first_notebook_cell": f"# {project} ({release}),  {copyright}",
-    "last_notebook_cell": "# The End.",
-    "capture_repr": ("_repr_html_", "__repr__", "__str__"),
-    "default_thumb_file": "source/_static/logo_grid.png",
+# sphinx gallery:
+# examples_dirs = ["user_guide/tutorials/example_sphinx_gallery"]
+# gallery_dirs = [d + "/build" for d in examples_dirs]
+# exclude_patterns.extend([d + "/*.ipynb" for d in gallery_dirs])
+# sphinx_gallery_conf = {
+#     "examples_dirs": examples_dirs,
+#     "gallery_dirs": gallery_dirs,
+#     "notebook_images": True,
+#     "remove_config_comments": True,
+#     "first_notebook_cell": f"# {project} ({release}),  {copyright}",
+#     "last_notebook_cell": "# The End.",
+#     "capture_repr": ("_repr_html_", "__repr__"),
+#     "default_thumb_file": "source/_static/logo_grid.png",
+# }
+
+# utteranc.es:
+comments_config = {
+    "utterances": {
+        "repo": "zakgrin/reservoirflow_utterances",
+    }
 }
 
 

@@ -45,3 +45,18 @@ A long-term plan with high ambitions is already in place for this library. As of
 |
 
 (*) Innovative solution introduced within this work.
+
+Feel free to make a comment below.
+
+```{raw} html
+<script 
+    type="text/javascript"
+    src="https://utteranc.es/client.js"
+    async="async"
+    repo="zakgrin/reservoirflow_utterances"
+    issue-term="pathname"
+    theme="github-dark"
+    label="💬 comment"
+    crossorigin="anonymous"
+/>
+```
