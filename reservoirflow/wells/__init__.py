@@ -1,6 +1,6 @@
 # from ._well import Well
-from ._single_grid import SingleGrid
+from ._single_grid import SingleCell
 
 __all__ = [
-    "SingleGrid",
+    "SingleCell",
 ]

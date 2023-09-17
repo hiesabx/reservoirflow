@@ -16,7 +16,7 @@ fluid = fluids.SinglePhase(mu=0.5, B=1)
 model = models.BlackOil(grid, fluid)
 # Step 4: Add wells
 #       : method 1 - directly using model method
-model.set_well(id=4, q=-600, s=1.5, r=3.5)  # well 1 (Producer)
+model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)  # well 1 (Producer)
 #       : method 2 - using wells module
 well_2 = wells.Well(id=1, q=600, s=1.5, r=3.5)  # well 2 (Injector)
 model.set_well(well=well_2)

@@ -71,7 +71,7 @@ model = rf.models.BlackOil(
 
 # Step 4: Add a well
 model.set_well(
-    id=4,
+    cell_id=4,
     q=-600,
     s=1.5,
     r=3.5,

@@ -145,13 +145,14 @@ class RegularCartesian(_Grid):
         self.__calc_cells_V()
         self.set_props(kx, ky, kz, phi, z, comp)
         self.cells_id = self.get_cells_id(False, False, "array")
+        # self.Cells_id = self.get_cells_id(True, False, "array")
 
     # -------------------------------------------------------------------------
     # Basic:
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=1)
-    def get_D(self):
+    def get_D(self) -> int:
         """Returns the grid dimension (D) as int.
 
         Returns
@@ -167,14 +168,14 @@ class RegularCartesian(_Grid):
         return self.D
 
     @_lru_cache(maxsize=2)
-    def get_shape(self, boundary=False):
+    def get_shape(self, boundary: bool = False) -> tuple:
         """Returns the number of grids in x, y, z as tuple of
         (nx, ny, nz).
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -212,7 +213,7 @@ class RegularCartesian(_Grid):
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -229,13 +230,13 @@ class RegularCartesian(_Grid):
         return self.n
 
     @_lru_cache(maxsize=2)
-    def get_n_max(self, boundary=True):
+    def get_n_max(self, boundary: bool = True):
         """Returns the maximum number of grid cells (n_max) as int.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -252,7 +253,7 @@ class RegularCartesian(_Grid):
         return self.n_max
 
     @_lru_cache(maxsize=1)
-    def get_fdir(self):
+    def get_fdir(self) -> str:
         """Returns the flow direction (fdir) as str.
 
         Returns
@@ -291,13 +292,17 @@ class RegularCartesian(_Grid):
         return self.fdir
 
     @_lru_cache(maxsize=2)
-    def get_fshape(self, boundary=True, points=False):
+    def get_fshape(
+        self,
+        boundary: bool = True,
+        points=False,
+    ):
         """Returns flow shape (fshape) as tuple.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         points : bool, optional
             True for points (e.g. coords, icoords) and False for scaler
             values (e.g. id).
@@ -358,7 +363,12 @@ class RegularCartesian(_Grid):
         return self.fshape
 
     @_lru_cache(maxsize=4)
-    def get_order(self, type="natural", boundary=True, fshape=False):
+    def get_order(
+        self,
+        type: str = "natural",
+        boundary: bool = True,
+        fshape: bool = False,
+    ) -> np.ndarray:
         """Returns grid order as ndarray.
 
         Parameters
@@ -367,9 +377,9 @@ class RegularCartesian(_Grid):
             grid order type in which grids are numbered. Currently, only
             "natural" order is supported.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -398,15 +408,20 @@ class RegularCartesian(_Grid):
         return self.order
 
     @_lru_cache(maxsize=1)
-    def get_ones(self, boundary=True, fshape=False, sparse=False):
+    def get_ones(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        sparse: bool = False,
+    ):
         """Returns array of ones.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
         sparse : bool, optional
             values as sparse matrix (True) or as ndarray (False).
 
@@ -435,15 +450,20 @@ class RegularCartesian(_Grid):
         return self.ones
 
     @_lru_cache(maxsize=1)
-    def get_zeros(self, boundary=True, fshape=False, sparse=False):
+    def get_zeros(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        sparse: bool = False,
+    ):
         """Returns array of zeros.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
         sparse : bool, optional
             values as sparse matrix (True) or as ndarray (False).
 
@@ -476,13 +496,13 @@ class RegularCartesian(_Grid):
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=2)
-    def get_cells_i(self, boundary=True):
+    def get_cells_i(self, boundary: bool = True):
         """Returns range based on the number of cells.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -499,7 +519,11 @@ class RegularCartesian(_Grid):
         return self.cells_i
 
     @_lru_cache(maxsize=None)
-    def get_cell_id(self, coords=[], boundary=True):
+    def get_cell_id(
+        self,
+        coords=[],
+        boundary: bool = True,
+    ):
         """Returns cell/cells id based on natural as int/list.
 
         Parameters
@@ -510,7 +534,7 @@ class RegularCartesian(_Grid):
             Warning: providing an unhashable type (e.g. list, ndarray)
             is not supported and will cause TypeError.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -526,15 +550,20 @@ class RegularCartesian(_Grid):
             return pyvista_grid.cell_id(coords)
 
     @_lru_cache(maxsize=4)
-    def get_cells_id(self, boundary=True, fshape=False, fmt="tuple"):
+    def get_cells_id(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        fmt="array",
+    ):
         """Returns all cells id based on natural order as ndarray.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False). If set to
+            reshape to flow shape instead of flatten. If set to
             True, fmt argument will be ignored.
         fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
@@ -565,7 +594,11 @@ class RegularCartesian(_Grid):
         return cells_id
 
     @_lru_cache(maxsize=None)
-    def get_cell_coords(self, id, boundary=True):
+    def get_cell_coords(
+        self,
+        id,
+        boundary: bool = True,
+    ):
         """Returns cell/cells coordinates as tuple/list of tuples.
 
         Parameters
@@ -576,7 +609,7 @@ class RegularCartesian(_Grid):
             type (e.g. list, ndarray) is not supported and will cause
             TypeError.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -591,15 +624,20 @@ class RegularCartesian(_Grid):
             return tuple(pyvista_grid.cell_coords(id))
 
     @_lru_cache(maxsize=4)
-    def get_cells_coords(self, boundary=True, fshape=False, fmt="tuple"):
+    def get_cells_coords(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        fmt="tuple",
+    ):
         """Returns all cells coords based on (i,j,k).
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False). If set to
+            reshape to flow shape instead of flatten. If set to
             True, fmt argument will be ignored.
         fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
@@ -676,15 +714,20 @@ class RegularCartesian(_Grid):
 
         return icoords
 
-    def get_cells_icoords(self, boundary=True, fshape=False, fmt=None):
+    def get_cells_icoords(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        fmt=None,
+    ):
         """Returns all cells icoords based on (k,j,i).
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False). If set to
+            reshape to flow shape instead of flatten. If set to
             True, fmt argument will be ignored.
         fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
@@ -727,7 +770,7 @@ class RegularCartesian(_Grid):
         self,
         id=None,
         coords=None,
-        boundary=False,
+        boundary: bool = False,
         fmt="dict",
     ):
         """Returns cell neighbors.
@@ -752,7 +795,7 @@ class RegularCartesian(_Grid):
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..).
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set',
             'dict']. Use 'dict' to output neighbors in x,y,z directions
@@ -784,9 +827,12 @@ class RegularCartesian(_Grid):
             assert (
                 not isin_boundary
             ), "boundary cells are not allowed with boundary=True."
+
+            # Cells_id = self.get_cells_id(True, False, "set")
+            # isin_Cells_id = utils.isin(id, Cells_id)
+            # assert isin_Cells_id, f"id is out of range {Cells_id}."
+
             cells_id = self.get_cells_id(boundary, False, "set")
-            # isin_cells_id = utils.isin(id, cells_id)
-            # assert isin_cells_id, f"id is out of range {cells_id}."
             if self.D >= 1:
                 n_lst = [id - 1, id + 1]
                 neighbors = [i for i in n_lst if i in cells_id]
@@ -810,9 +856,12 @@ class RegularCartesian(_Grid):
             assert (
                 not isin_boundary
             ), "boundary cells are not allowed with boundary=True."
+
+            # Cells_coords = self.get_cells_coords(True, False, "set")
+            # isin_Cells_coords = utils.isin(coords, Cells_coords)
+            # assert isin_Cells_coords, f"coords are out of range {Cells_coords}."
+
             cells_coords = self.get_cells_coords(boundary, False, "set")
-            # isin_cells_coords = utils.isin(coords, cells_coords)
-            # assert isin_cells_coords, f"coords are out of range {cells_coords}."
             i, j, k = coords
             if "x" in self.fdir:
                 n_lst = [(i - 1, j, k), (i + 1, j, k)]
@@ -832,7 +881,12 @@ class RegularCartesian(_Grid):
         return utils.reformat(cell_neighbors, fmt=fmt)
 
     @_lru_cache(maxsize=None)
-    def get_cell_boundaries(self, id=None, coords=None, fmt="dict"):
+    def get_cell_boundaries(
+        self,
+        id=None,
+        coords=None,
+        fmt="dict",
+    ):
         """Returns cell boundaries.
 
         This method returns cell boundaries by id or coords. If
@@ -905,7 +959,12 @@ class RegularCartesian(_Grid):
 
         return utils.reformat(cell_boundaries, fmt)
 
-    def remove_boundaries(self, in_data, points=None, remove="both"):
+    def remove_boundaries(
+        self,
+        in_data,
+        points=None,
+        remove="both",
+    ):
         """Remove boundary cells from ndarray.
 
         Parameters
@@ -1018,7 +1077,12 @@ class RegularCartesian(_Grid):
         else:
             raise ValueError("dtype must be ndarray.")
 
-    def extract_boundaries(self, in_data, points=None, fmt="tuple"):
+    def extract_boundaries(
+        self,
+        in_data,
+        points=None,
+        fmt="tuple",
+    ):
         """Extract boundary cells from ndarrays.
 
         Parameters
@@ -1136,7 +1200,11 @@ class RegularCartesian(_Grid):
             raise ValueError("dtype must be ndarray.")
 
     @_lru_cache(maxsize=2)
-    def get_boundaries(self, by="id", fmt="tuple"):
+    def get_boundaries(
+        self,
+        by="id",
+        fmt="tuple",
+    ):
         """Returns all boundary cells by id or coords.
 
         Parameters
@@ -1162,11 +1230,11 @@ class RegularCartesian(_Grid):
             by argument must be either 'id' or 'coords'.
         """
         if by == "id":
-            cells_id = self.get_cells_id(True, True, "array")
-            return self.extract_boundaries(cells_id, False, fmt)
+            Cells_id = self.get_cells_id(True, True, "array")
+            return self.extract_boundaries(Cells_id, False, fmt)
         elif by == "coords":
-            cells_coords = self.get_cells_coords(True, True, "array")
-            return self.extract_boundaries(cells_coords, True, fmt)
+            Cells_coords = self.get_cells_coords(True, True, "array")
+            return self.extract_boundaries(Cells_coords, True, fmt)
         else:
             raise ValueError("'by' argument must be either 'id' or 'coords'.")
 
@@ -1174,7 +1242,12 @@ class RegularCartesian(_Grid):
     # Dimensions:
     # -------------------------------------------------------------------------
 
-    def __calc_cells_d_(self, dx, dy, dz):
+    def __calc_cells_d_(
+        self,
+        dx,
+        dy,
+        dz,
+    ):
         """Calculates dimensional axes vectors in x, y, z directions.
 
         This method takes dx, dy, and dz as scalers or iterables and use
@@ -1236,7 +1309,13 @@ class RegularCartesian(_Grid):
 
         return self.cells_d_
 
-    def __calc_cells_d(self, dx, dy, dz, fshape=False):
+    def __calc_cells_d(
+        self,
+        dx,
+        dy,
+        dz,
+        fshape: bool = False,
+    ):
         """Calculates dimensional meshgrid in x,y,z directions.
 
         This method takes dx, dy, and dz as scalers or iterables and use
@@ -1263,7 +1342,7 @@ class RegularCartesian(_Grid):
             boundary cells. Vales should be in natural order (i.g. from
             down to up).
         fshape : bool, optional
-            values in flow shape (True) or flatten (False). If set to
+            reshape to flow shape instead of flatten. If set to
             True, fmt argument will be ignored.
 
         Returns
@@ -1297,7 +1376,12 @@ class RegularCartesian(_Grid):
         return (self.dx, self.dy, self.dz)
 
     @_lru_cache(maxsize=None)
-    def get_cells_d(self, dir, boundary=True, fshape=False):
+    def get_cells_d(
+        self,
+        dir,
+        boundary: bool = True,
+        fshape: bool = False,
+    ):
         """Returns cells dimensional meshgrid.
 
         Parameters
@@ -1305,9 +1389,9 @@ class RegularCartesian(_Grid):
         dir : str
             direction str in ['x', 'y', 'z'].
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1331,7 +1415,6 @@ class RegularCartesian(_Grid):
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
         if not boundary:
-            # cells_d = self.remove_boundaries(cells_d, False, "both")
             cells_d = cells_d[self.cells_id]
 
         if fshape:
@@ -1343,15 +1426,19 @@ class RegularCartesian(_Grid):
 
         return cells_d
 
-    def get_cells_dx(self, boundary=True, fshape=False):
+    def get_cells_dx(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+    ):
         """Returns cells dx.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1360,15 +1447,19 @@ class RegularCartesian(_Grid):
         """
         return self.get_cells_d("x", boundary, fshape)
 
-    def get_cells_dy(self, boundary=True, fshape=False):
+    def get_cells_dy(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+    ):
         """Returns cells dy.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1377,15 +1468,19 @@ class RegularCartesian(_Grid):
         """
         return self.get_cells_d("y", boundary, fshape)
 
-    def get_cells_dz(self, boundary=True, fshape=False):
+    def get_cells_dz(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+    ):
         """Returns cells dz.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1395,7 +1490,12 @@ class RegularCartesian(_Grid):
         return self.get_cells_d("z", boundary, fshape)
 
     @_lru_cache(maxsize=None)
-    def get_cell_d(self, dir, id=None, coords=None):
+    def get_cell_d(
+        self,
+        dir,
+        id=None,
+        coords=None,
+    ):
         """Returns cell d.
 
         Parameters
@@ -1435,7 +1535,11 @@ class RegularCartesian(_Grid):
         else:
             raise ValueError("id or coords argument must be defined.")
 
-    def get_cell_dx(self, id=None, coords=None):
+    def get_cell_dx(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell dx.
 
         Parameters
@@ -1461,7 +1565,11 @@ class RegularCartesian(_Grid):
         """
         return self.get_cell_d("x", id, coords)
 
-    def get_cell_dy(self, id=None, coords=None):
+    def get_cell_dy(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell dy.
 
         Parameters
@@ -1487,7 +1595,11 @@ class RegularCartesian(_Grid):
         """
         return self.get_cell_d("y", id, coords)
 
-    def get_cell_dz(self, id=None, coords=None):
+    def get_cell_dz(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell dz.
 
         Parameters
@@ -1523,7 +1635,12 @@ class RegularCartesian(_Grid):
         self.Az = self.A["z"] = self.dx * self.dy
 
     @_lru_cache(maxsize=None)
-    def get_cells_A(self, dir, boundary=True, fshape=True):
+    def get_cells_A(
+        self,
+        dir,
+        boundary: bool = True,
+        fshape: bool = True,
+    ):
         """Returns cells cross-sectional area A.
 
         Parameters
@@ -1531,9 +1648,9 @@ class RegularCartesian(_Grid):
         dir : str
             direction str in ['x', 'y', 'z'].
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1556,7 +1673,6 @@ class RegularCartesian(_Grid):
             raise ValueError("dir argument must be in ['x', 'y', 'z'].")
 
         if not boundary:
-            # cells_A = self.remove_boundaries(cells_A, False, "both")
             cells_A = cells_A[self.cells_id]
 
         if fshape:
@@ -1568,15 +1684,19 @@ class RegularCartesian(_Grid):
 
         return cells_A
 
-    def get_cells_Ax(self, boundary=True, fshape=True):
+    def get_cells_Ax(
+        self,
+        boundary: bool = True,
+        fshape: bool = True,
+    ):
         """Returns cells cross-sectional area Ax.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1585,15 +1705,19 @@ class RegularCartesian(_Grid):
         """
         return self.get_cells_A("x", boundary, fshape)
 
-    def get_cells_Ay(self, boundary=True, fshape=True):
+    def get_cells_Ay(
+        self,
+        boundary: bool = True,
+        fshape: bool = True,
+    ):
         """Returns cells cross-sectional area Ay.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1602,15 +1726,19 @@ class RegularCartesian(_Grid):
         """
         return self.get_cells_A("y", boundary, fshape)
 
-    def get_cells_Az(self, boundary=True, fshape=True):
+    def get_cells_Az(
+        self,
+        boundary: bool = True,
+        fshape: bool = True,
+    ):
         """Returns cells cross-sectional area Az.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
 
         Returns
         -------
@@ -1620,7 +1748,12 @@ class RegularCartesian(_Grid):
         return self.get_cells_A("z", boundary, fshape)
 
     @_lru_cache(maxsize=None)
-    def get_cell_A(self, dir, id=None, coords=None):
+    def get_cell_A(
+        self,
+        dir,
+        id=None,
+        coords=None,
+    ):
         """Returns cell cross-sectional area A.
 
         Parameters
@@ -1656,7 +1789,11 @@ class RegularCartesian(_Grid):
         else:
             raise ValueError("id or coords argument must be defined.")
 
-    def get_cell_Ax(self, id=None, coords=None):
+    def get_cell_Ax(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell cross-sectional area Ax.
 
         Parameters
@@ -1682,7 +1819,11 @@ class RegularCartesian(_Grid):
         """
         return self.get_cell_A("x", id, coords)
 
-    def get_cell_Ay(self, id=None, coords=None):
+    def get_cell_Ay(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell cross-sectional area Ay.
 
         Parameters
@@ -1708,7 +1849,11 @@ class RegularCartesian(_Grid):
         """
         return self.get_cell_A("y", id, coords)
 
-    def get_cell_Az(self, id=None, coords=None):
+    def get_cell_Az(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell cross-sectional area Az.
 
         Parameters
@@ -1743,13 +1888,17 @@ class RegularCartesian(_Grid):
         self.Vt = self.V.sum()
 
     @_lru_cache(maxsize=2)
-    def get_Vt(self, boundary=True, pyvista=False):
+    def get_Vt(
+        self,
+        boundary: bool = True,
+        pyvista=False,
+    ):
         """Returns total grid volume Vt.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         pyvista : bool, optional
             use built-in pyvista calculations.
 
@@ -1767,15 +1916,20 @@ class RegularCartesian(_Grid):
                 return self.remove_boundaries(self.V, False, "both").sum()
 
     @_lru_cache(maxsize=4)
-    def get_cells_V(self, boundary=True, fshape=False, pyvista=False):
+    def get_cells_V(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        pyvista=False,
+    ):
         """Returns cells volume V.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
         pyvista : bool, optional
             use built-in pyvista calculations.
 
@@ -1791,7 +1945,6 @@ class RegularCartesian(_Grid):
             cells_V = self.V
 
         if not boundary:
-            # cells_V = self.remove_boundaries(cells_V, False, "both")
             cells_V = cells_V[self.cells_id]
 
         if fshape:
@@ -1804,7 +1957,11 @@ class RegularCartesian(_Grid):
         return cells_V
 
     @_lru_cache(maxsize=None)
-    def get_cell_V(self, id=None, coords=None):
+    def get_cell_V(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell volume V.
 
         Parameters
@@ -1843,15 +2000,20 @@ class RegularCartesian(_Grid):
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=4)
-    def get_cells_center(self, boundary=True, fshape=False, pyvista=False):
+    def get_cells_center(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        pyvista=False,
+    ):
         """Returns cells center.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False).
+            reshape to flow shape instead of flatten.
         pyvista : bool, optional
             use built-in pyvista calculations.
 
@@ -1879,7 +2041,6 @@ class RegularCartesian(_Grid):
             cells_center = np.concatenate(cells_center, axis=1).reshape(-1, 3)
 
         if not boundary:
-            # cells_center = self.remove_boundaries(cells_center, True, "both")
             cells_center = cells_center[self.cells_id]
 
         if fshape:
@@ -1892,7 +2053,11 @@ class RegularCartesian(_Grid):
         return cells_center
 
     @_lru_cache(maxsize=None)
-    def get_cell_center(self, id=None, coords=None):
+    def get_cell_center(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell center.
 
         Parameters
@@ -1931,13 +2096,13 @@ class RegularCartesian(_Grid):
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=2)
-    def get_pyvista_grid(self, boundary=True):
+    def get_pyvista_grid(self, boundary: bool = True):
         """Returns pyvista ExplicitStructuredGrid object.
 
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -1959,7 +2124,7 @@ class RegularCartesian(_Grid):
         return pyvista_grid
 
     @_lru_cache(maxsize=2)
-    def get_corners(self, boundary=True):
+    def get_corners(self, boundary: bool = True):
         """Returns corners required to create pyvista grid.
 
         Reference
@@ -2118,7 +2283,13 @@ class RegularCartesian(_Grid):
         if not hasattr(self, "comp"):
             self.set_comp(0)
 
-    def set_cell_value(self, array, value, id=None, coords=None):
+    def set_cell_value(
+        self,
+        array,
+        value,
+        id=None,
+        coords=None,
+    ):
         if id is not None:
             coords = self.get_cell_coords(id, True)
             # prop = self.props[name].flatten()
@@ -2130,7 +2301,13 @@ class RegularCartesian(_Grid):
             icoords = self.get_cell_icoords(coords)
             array[icoords] = value
 
-    def set_prop(self, name, value, id=None, coords=None):
+    def set_prop(
+        self,
+        name,
+        value,
+        id=None,
+        coords=None,
+    ):
         """Set a property in all cells or a selected cell.
 
         This method is used to populate properties values based on grid
@@ -2196,7 +2373,13 @@ class RegularCartesian(_Grid):
         if self.verbose:
             print(f"[info] {name} is {value} for {s}.")
 
-    def get_prop(self, name, boundary=True, fshape=True, fmt="array"):
+    def get_prop(
+        self,
+        name,
+        boundary: bool = True,
+        fshape: bool = True,
+        fmt="array",
+    ):
         """Get property values in all cells.
 
         Parameters
@@ -2204,9 +2387,9 @@ class RegularCartesian(_Grid):
         name : str
             property name as a string from props attribute keys.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False). If set to
+            reshape to flow shape instead of flatten. If set to
             True, fmt argument will be ignored.
         fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
@@ -2230,7 +2413,6 @@ class RegularCartesian(_Grid):
             prop = self.__props__[name]
 
             if not boundary:
-                # prop = self.remove_boundaries(prop, False, "both")
                 prop = prop[self.cells_id]
 
             if fshape:
@@ -2246,7 +2428,13 @@ class RegularCartesian(_Grid):
             )
             raise ValueError(msg)
 
-    def get_cells_k(self, dir, boundary=True, fshape=True, fmt="array"):
+    def get_cells_k(
+        self,
+        dir,
+        boundary: bool = True,
+        fshape: bool = True,
+        fmt="array",
+    ):
         """Returns permeability values for all cells.
 
         Parameters
@@ -2254,9 +2442,9 @@ class RegularCartesian(_Grid):
         name : str
             property name as a string from props attribute keys.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         fshape : bool, optional
-            values in flow shape (True) or flatten (False). If set to
+            reshape to flow shape instead of flatten. If set to
             True, fmt argument will be ignored.
         fmt : str, optional
             output format as str from ['array', 'list', 'tuple', 'set'].
@@ -2284,7 +2472,12 @@ class RegularCartesian(_Grid):
         return self.get_prop(name, boundary, fshape, fmt)
 
     @_lru_cache(maxsize=None)
-    def get_cell_k(self, dir, id=None, coords=None):
+    def get_cell_k(
+        self,
+        dir,
+        id=None,
+        coords=None,
+    ):
         """Returns cell permeability.
 
         Parameters
@@ -2320,7 +2513,11 @@ class RegularCartesian(_Grid):
         else:
             raise ValueError("id or coords argument must be defined.")
 
-    def get_cell_kx(self, id=None, coords=None):
+    def get_cell_kx(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell permeability at x direction.
 
         Parameters
@@ -2346,7 +2543,11 @@ class RegularCartesian(_Grid):
         """
         return self.get_cell_k("x", id, coords)
 
-    def get_cell_ky(self, id=None, coords=None):
+    def get_cell_ky(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell permeability at y direction.
 
         Parameters
@@ -2372,7 +2573,11 @@ class RegularCartesian(_Grid):
         """
         return self.get_cell_k("y", id, coords)
 
-    def get_cell_kz(self, id=None, coords=None):
+    def get_cell_kz(
+        self,
+        id=None,
+        coords=None,
+    ):
         """Returns cell permeability at z direction.
 
         Parameters
@@ -2512,7 +2717,7 @@ class RegularCartesian(_Grid):
     # Geometry Factor:
     # -------------------------------------------------------------------------
 
-    def get_cells_G_diag_1(self, boundary):
+    def get_cells_G_diag_1(self, boundary: bool = False):
         if self.D == 1:
             dir = self.fdir
         else:
@@ -2536,7 +2741,11 @@ class RegularCartesian(_Grid):
             )
         return diag_1
 
-    def get_cells_G_diag_2(self, boundary, diag_1=None):
+    def get_cells_G_diag_2(
+        self,
+        boundary: bool = False,
+        diag_1=None,
+    ):
         assert self.D >= 2, "diag_2 is possible only when D>=2"
         n = self.get_n(boundary)
         dir = self.fdir[1]
@@ -2572,7 +2781,11 @@ class RegularCartesian(_Grid):
             )
         return diag_2, n2
 
-    def get_cells_G_diag_3(self, boundary, diag_2=None):
+    def get_cells_G_diag_3(
+        self,
+        boundary: bool = False,
+        diag_2=None,
+    ):
         assert self.D == 3, "diag_3 is possible only when D==3"
         dir = self.fdir[-1]
         if boundary:
@@ -2585,7 +2798,7 @@ class RegularCartesian(_Grid):
             n3_ = n3 - self.nx
             n4 = n3 * self.nz - n3
             diag_2_zero_ids = n3_ + np.arange(0, self.nx, n3)
-        if not diag_2 is None:
+        if diag_2 is not None:
             diag_2[diag_2_zero_ids] = 0
         k = self.get_cells_k(dir, boundary, False, "array")
         A = self.get_cells_A(dir, boundary, False)
@@ -2606,7 +2819,11 @@ class RegularCartesian(_Grid):
             )
         return diag_3, n3
 
-    def get_cells_G(self, boundary=False, sparse=True):
+    def get_cells_G(
+        self,
+        boundary: bool = False,
+        sparse: bool = True,
+    ):
         """Returns cells geometric factor (G) Matrix.
 
         This matrix is essential to build the coefficient matrix (A).
@@ -2668,7 +2885,12 @@ class RegularCartesian(_Grid):
             return diag
 
     @_lru_cache(maxsize=None)
-    def get_cell_G(self, id=None, coords=None, boundary=True):
+    def get_cell_G(
+        self,
+        id=None,
+        coords=None,
+        boundary: bool = True,
+    ):
         """Returns cell geometric factor (G) with all cell neighbors.
 
         Parameters
@@ -2682,7 +2904,7 @@ class RegularCartesian(_Grid):
             multiple cells, tuple of tuples of int as
             ((i,j,k),(i,j,k),..). NotFullyImplemented.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -2696,15 +2918,21 @@ class RegularCartesian(_Grid):
         neighbors = self.get_cell_neighbors(id, coords, boundary, fmt="dict")
         G = {}
 
-        for dir in self.get_fdir():
-            d = self.get_cell_d(dir, id, coords)
-            A = self.get_cell_A(dir, id, coords)
-            k = self.get_cell_k(dir, id, coords)
+        for fdir in self.get_fdir():
+            d = self.get_cell_d(fdir, id, coords)
+            A = self.get_cell_A(fdir, id, coords)
+            k = self.get_cell_k(fdir, id, coords)
 
-            for id_n in neighbors[dir]:
-                d_n = self.get_cell_d(dir, id_n, None)
-                A_n = self.get_cell_A(dir, id_n, None)
-                k_n = self.get_cell_k(dir, id_n, None)
+            for id_n in neighbors[fdir]:
+                if id is not None:
+                    d_n = self.get_cell_d(fdir, id_n, None)
+                    A_n = self.get_cell_A(fdir, id_n, None)
+                    k_n = self.get_cell_k(fdir, id_n, None)
+                else:
+                    d_n = self.get_cell_d(fdir, None, id_n)
+                    A_n = self.get_cell_A(fdir, None, id_n)
+                    k_n = self.get_cell_k(fdir, None, id_n)
+
                 if self.is_isotropic:  # or regular grid (To do)
                     G[id_n] = (
                         self.factors["transmissibility conversion"]
@@ -2724,7 +2952,12 @@ class RegularCartesian(_Grid):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    def show(self, label=None, boundary=True, corners=False):
+    def show(
+        self,
+        label=None,
+        boundary: bool = True,
+        corners=False,
+    ):
         """Shows pyvista grid.
 
         This method shows the grid using pyvista object in 3D. Only if
@@ -2739,7 +2972,7 @@ class RegularCartesian(_Grid):
             'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center']. If None,
             then a sphere shape at the center will appear.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
         corners : bool, optional
 
 
@@ -2766,15 +2999,21 @@ class RegularCartesian(_Grid):
         )
 
         if corners:
-            points_lst = self.get_pyvista_grid(True).points
-            if boundary:
-                mask = points_lst[:, 1] == 0
-            else:
-                id = self.get_order(boundary=False)[0]
-                mask = points_lst[:, 1] == self.get_cell_dy(id=id)
+            points_lst = self.get_pyvista_grid(boundary).points
+            # if boundary:
+            #     mask = points_lst[:, 1] == 0
+            # else:
+            #     id = self.get_order(boundary=False)[0]
+            #     mask = points_lst[:, 1] == self.get_cell_dy(id=id)
+            # pl.add_point_labels(
+            #     points_lst[mask],
+            #     points_lst[mask].tolist(),
+            #     point_size=10,
+            #     font_size=10,
+            # )
             pl.add_point_labels(
-                points_lst[mask],
-                points_lst[mask].tolist(),
+                points_lst,
+                points_lst.tolist(),
                 point_size=10,
                 font_size=10,
             )
@@ -2833,7 +3072,7 @@ class RegularCartesian(_Grid):
         pl.enable_fly_to_right_click()
         pl.show_axes()
         fdir = "xz"
-        if fdir == None:
+        if fdir is None:
             if self.D == 1:
                 if self.fdir == "y":
                     fdir = "yz"

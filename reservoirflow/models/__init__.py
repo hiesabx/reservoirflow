@@ -1,3 +1,5 @@
+"""Models Module"""
+
 __all__ = [
     "BlackOil",
 ]

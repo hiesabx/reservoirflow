@@ -29,11 +29,11 @@ def create_model():
     cells_id = model.grid.get_cells_id(False, True)[-1].flatten()
     wells = np.random.choice(cells_id, 6, False)
     for id in wells:
-        model.set_well(id=id, q=-300, pwf=100, s=1.5, r=3.5)
+        model.set_well(cell_id=id, q=-300, pwf=100, s=1.5, r=3.5)
 
     wells = np.random.choice(cells_id, 6, False)
     for id in wells:
-        model.set_well(id=id, q=100, s=0, r=3.5)
+        model.set_well(cell_id=id, q=100, s=0, r=3.5)
 
     return model
 

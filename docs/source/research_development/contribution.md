@@ -7,7 +7,8 @@ An excellent library needs two things: a clean code with a clean documentation. 
 - [PEP20](https://peps.python.org/pep-0020/): guiding principles for Python’s design.
 - [PEP8](https://peps.python.org/pep-0008/): a clean code that can be easily understood by others.
 - [PEP257](https://peps.python.org/pep-0257/): a clean documentation.
-- [PEP484](https://peps.python.org/pep-0484/): a standard syntax for type annotations.
+- [PEP 585](https://peps.python.org/pep-0585/): Type Hinting Generics In Standard Collections.
+  - Note that [PEP484](https://peps.python.org/pep-0484/) is not needed since `typing` module is deprecated.
 
 Future developers and engineers who intend to contribute to this library should always keep in mind these standards to keep the source code clean and easy to follow. This should allow developing complex reservoir simulation models that are both innovative and efficient.
 

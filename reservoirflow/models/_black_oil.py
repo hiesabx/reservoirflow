@@ -13,6 +13,7 @@ import scipy.sparse.linalg as ssl
 import sympy as sym
 from tqdm import tqdm
 
+import reservoirflow as rf
 from reservoirflow import fluids, grids, scalers, utils, wells
 from reservoirflow.models._model import _Model
 from reservoirflow.utils.helpers import _lru_cache
@@ -85,7 +86,6 @@ class BlackOil(_Model):
 
         self.__initialize__(pi, start_date, well)
         self.__calc_comp()
-        # self.__calc_dir_T()
         self.__calc_RHS()
         self.bdict = {}
         self.bdict_update = []
@@ -154,7 +154,19 @@ class BlackOil(_Model):
     # Properties:
     # -------------------------------------------------------------------------
 
-    def get_shape(self, boundary=True) -> int:
+    def get_shape(self, boundary: bool = True) -> tuple:
+        """Solution shape.
+
+        Parameters
+        ----------
+        boundary : bool, optional
+            with grid boundary (True) or without grid boundary (False).
+
+        Returns
+        -------
+        tuple
+            tuple as (number of time steps, number of girds)
+        """
         return (self.nsteps, self.grid.get_n(boundary))
 
     def __calc_comp(self):
@@ -167,12 +179,13 @@ class BlackOil(_Model):
         if self.verbose:
             print("[info] model compressibility (comp) was calculated.")
 
-    def __calc_dir_T(self):
-        """Calculates transmissibility at every flow direction (fdir)."""
-        self.T = self.get_cells_T_vect(False, True)
-
     @_lru_cache(maxsize=None)
-    def get_cell_T(self, id=None, coords=None, boundary=False):
+    def get_cell_trans(
+        self,
+        cell_id=None,
+        cell_coords=None,
+        boundary: bool = False,
+    ):
         """Returns transmissibility (T) at all cell faces.
 
         Parameters
@@ -182,7 +195,7 @@ class BlackOil(_Model):
         coords : iterable of int
             cell coordinates (i,j,k) as a tuple of int.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -194,13 +207,16 @@ class BlackOil(_Model):
         # ----
         # - for now use only with id
 
-        cell_G = self.grid.get_cell_G(id, coords, boundary)
-        cell_T = {}
-        for id_n in cell_G:
-            cell_T[id_n] = cell_G[id_n] / (self.fluid.mu * self.fluid.B)
-        return cell_T
+        cell_G = self.grid.get_cell_G(cell_id, cell_coords, boundary)
+        muB = self.fluid.mu * self.fluid.B
+        return {k: v / muB for k, v in cell_G.items()}
 
-    def get_cells_T_loop(self, boundary=False, sparse=False):
+    def get_cells_trans(
+        self,
+        boundary: bool = False,
+        sparse: bool = False,
+        vectorize: bool = True,
+    ):
         """_summary_
 
         Parameters
@@ -215,6 +231,11 @@ class BlackOil(_Model):
         _type_
             _description_
         """
+        if vectorize:
+            return self.grid.get_cells_G(boundary, sparse) / (
+                self.fluid.mu * self.fluid.B
+            )
+
         n = self.grid.get_n(boundary)
         if sparse:
             T_array = ss.lil_matrix((n, n), dtype=self.dtype)
@@ -222,23 +243,20 @@ class BlackOil(_Model):
             T_array = np.zeros((n, n), dtype=self.dtype)
 
         if boundary:
-            for id in self.grid.cells_id:
-                T = self.get_cell_T(id, None, False)
-                for id_n in T.keys():
-                    T_array[id, id_n] = T[id_n]
+            for cell_id in self.grid.cells_id:
+                T = self.get_cell_trans(cell_id, None, False)
+                for cell_n_id in T.keys():
+                    T_array[cell_id, cell_n_id] = T[cell_n_id]
         else:
-            for id in self.grid.cells_id:
-                i = self.cells_i_dict[id]
-                T = self.get_cell_T(id, None, False)
-                cells_i_n = [self.cells_i_dict[x] for x in T.keys()]
-                for id_n, i_n in zip(T.keys(), cells_i_n):
-                    T_array[i, i_n] = T[id_n]
+            for cell_id in self.grid.cells_id:
+                cell_i = self.cells_i_dict[cell_id]
+                T = self.get_cell_trans(cell_id, None, False)
+                cells_n_i = [self.cells_i_dict[x] for x in T.keys()]
+                for cell_n_id, cell_n_i in zip(T.keys(), cells_n_i):
+                    T_array[cell_i, cell_n_i] = T[cell_n_id]
         return T_array
 
-    def get_cells_T_vect(self, boundary=False, sparse=False):
-        return self.grid.get_cells_G(boundary, sparse) / (self.fluid.mu * self.fluid.B)
-
-    def get_cells_T_diag(self, boundary=False, diag_n=1):
+    def get_cells_trans_diag(self, boundary: bool = False, diag_n=1):
         if diag_n == 3:
             diag, _ = self.grid.get_cells_G_diag_3(boundary)
         elif diag_n == 2:
@@ -255,7 +273,7 @@ class BlackOil(_Model):
     # Wells:
     # -------------------------------------------------------------------------
 
-    def __calc_well_G(self, id=None):
+    def __calc_well_G(self, cell_id=None):
         """Calculates well Geometry factor (G).
 
         Parameters
@@ -274,12 +292,12 @@ class BlackOil(_Model):
         # - use k and d based on well direction.
         fdir = self.grid.get_fdir()
         if fdir == "x":
-            k_H = self.grid.k["x"][id]
+            k_H = self.grid.k["x"][cell_id]
         elif fdir == "xy":
-            k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
+            k_H = (self.grid.k["x"][cell_id] * self.grid.k["y"][cell_id]) ** 0.5
         elif fdir == "xyz":
             # print(f"[warning] __calc_well_G at {fdir} has to be verified.")
-            k_H = (self.grid.k["x"][id] * self.grid.k["y"][id]) ** 0.5
+            k_H = (self.grid.k["x"][cell_id] * self.grid.k["y"][cell_id]) ** 0.5
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
         G_n = (
@@ -287,17 +305,17 @@ class BlackOil(_Model):
             * np.pi
             * self.factors["transmissibility conversion"]
             * k_H
-            * self.grid.d["z"][id]
+            * self.grid.d["z"][cell_id]
         )
 
-        G_d = np.log(self.wells[id]["r_eq"] / self.wells[id]["r"] * 12)
+        G_d = np.log(self.wells[cell_id]["r_eq"] / self.wells[cell_id]["r"] * 12)
 
-        if "s" in self.wells[id].keys():
-            G_d += self.wells[id]["s"]
+        if "s" in self.wells[cell_id].keys():
+            G_d += self.wells[cell_id]["s"]
 
         return G_n / G_d
 
-    def __calc_well_r_eq(self, id):
+    def __calc_well_r_eq(self, cell_id):
         """Calculates well equivalent radius (r_eq).
 
         Parameters
@@ -316,29 +334,29 @@ class BlackOil(_Model):
         # - use k and d based on well direction.
         fdir = self.grid.get_fdir()
         if fdir in ["x", "y"]:
-            d = self.grid.d["x"][id] ** 2 + self.grid.d["y"][id] ** 2
+            d = self.grid.d["x"][cell_id] ** 2 + self.grid.d["y"][cell_id] ** 2
             return 0.14 * d**0.5
         elif fdir == "xy":
-            kx_ky = self.grid.k["x"][id] / self.grid.k["y"][id]
-            ky_kx = self.grid.k["y"][id] / self.grid.k["x"][id]
+            kx_ky = self.grid.k["x"][cell_id] / self.grid.k["y"][cell_id]
+            ky_kx = self.grid.k["y"][cell_id] / self.grid.k["x"][cell_id]
             return (
                 0.28
                 * (
-                    ky_kx**0.5 * self.grid.d["x"][id] ** 2
-                    + kx_ky**0.5 * self.grid.d["y"][id] ** 2
+                    ky_kx**0.5 * self.grid.d["x"][cell_id] ** 2
+                    + kx_ky**0.5 * self.grid.d["y"][cell_id] ** 2
                 )
                 ** 0.5
                 / (ky_kx**0.25 + kx_ky**0.25)
             )
         elif fdir == "xyz":
             # print(f"[warning] __calc_well_r_eq at {fdir} has to be verified.")
-            kx_ky = self.grid.k["x"][id] / self.grid.k["y"][id]
-            ky_kx = self.grid.k["y"][id] / self.grid.k["x"][id]
+            kx_ky = self.grid.k["x"][cell_id] / self.grid.k["y"][cell_id]
+            ky_kx = self.grid.k["y"][cell_id] / self.grid.k["x"][cell_id]
             return (
                 0.28
                 * (
-                    ky_kx**0.5 * self.grid.d["x"][id] ** 2
-                    + kx_ky**0.5 * self.grid.d["y"][id] ** 2
+                    ky_kx**0.5 * self.grid.d["x"][cell_id] ** 2
+                    + kx_ky**0.5 * self.grid.d["y"][cell_id] ** 2
                 )
                 ** 0.5
                 / (ky_kx**0.25 + kx_ky**0.25)
@@ -346,7 +364,7 @@ class BlackOil(_Model):
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
 
-    def set_well(self, well=None, id=None, q=None, pwf=None, r=None, s=None):
+    def set_well(self, well=None, cell_id=None, q=None, pwf=None, r=None, s=None):
         """Set a well in a specific cell
 
         Parameters
@@ -374,51 +392,51 @@ class BlackOil(_Model):
         # ----
         # - Change production to positive and injection to negative.
         if well is not None:
-            if id is None:
-                id = well.id
+            if cell_id is None:
+                cell_id = well.cell_id
             assert (
-                id in self.grid.cells_id
+                cell_id in self.grid.cells_id
             ), "a well must be placed within the reservoir"
-            self.wells[id] = vars(well)
+            self.wells[cell_id] = vars(well)
         else:
-            assert id is not None, "id must be defined"
+            assert cell_id is not None, "id must be defined"
             assert (
-                id in self.grid.cells_id
+                cell_id in self.grid.cells_id
             ), "a well must be placed within the reservoir"
-            if id not in self.wells:
-                self.wells[id] = {}
+            if cell_id not in self.wells:
+                self.wells[cell_id] = {}
             if q is not None:
-                self.wells[id]["q"] = q
-                self.wells[id]["q_sp"] = q
-                self.wells[id]["constrain"] = "q"
+                self.wells[cell_id]["q"] = q
+                self.wells[cell_id]["q_sp"] = q
+                self.wells[cell_id]["constrain"] = "q"
             if pwf is not None:
-                self.wells[id]["pwf"] = pwf
-                self.wells[id]["pwf_sp"] = pwf
-                if "q" not in self.wells[id].keys():
-                    self.wells[id]["constrain"] = "pwf"
-                self.w_pressures[id].append(self.pressures[self.tstep, id])
-            if "constrain" not in self.wells[id].keys():
-                self.wells[id]["constrain"] = None
+                self.wells[cell_id]["pwf"] = pwf
+                self.wells[cell_id]["pwf_sp"] = pwf
+                if "q" not in self.wells[cell_id].keys():
+                    self.wells[cell_id]["constrain"] = "pwf"
+                self.w_pressures[cell_id].append(self.pressures[self.tstep, cell_id])
+            if "constrain" not in self.wells[cell_id].keys():
+                self.wells[cell_id]["constrain"] = None
             if r is not None:
-                self.wells[id]["r"] = r
+                self.wells[cell_id]["r"] = r
             if s is not None:
-                self.wells[id]["s"] = s
+                self.wells[cell_id]["s"] = s
 
-        self.wells[id]["r_eq"] = self.__calc_well_r_eq(id)
-        self.wells[id]["G"] = self.__calc_well_G(id)
-        if "pwf" not in self.wells[id].keys():
-            self.wells[id]["pwf"] = 0
-            self.wells[id]["pwf_sp"] = 0
-            self.w_pressures[id].append(self.pressures[self.tstep, id])
+        self.wells[cell_id]["r_eq"] = self.__calc_well_r_eq(cell_id)
+        self.wells[cell_id]["G"] = self.__calc_well_G(cell_id)
+        if "pwf" not in self.wells[cell_id].keys():
+            self.wells[cell_id]["pwf"] = 0
+            self.wells[cell_id]["pwf_sp"] = 0
+            self.w_pressures[cell_id].append(self.pressures[self.tstep, cell_id])
 
         if self.verbose:
-            print(f"[info] a well in cell {id} was set.")
+            print(f"[info] a well in cell {cell_id} was set.")
 
     # -------------------------------------------------------------------------
     # Boundaries:
     # -------------------------------------------------------------------------
 
-    def set_boundary(self, id_b: int, cond: str, v: float):
+    def set_boundary(self, cell_b_id: int, cond: str, v: float):
         """Set a boundary condition in a cell.
 
         Parameters
@@ -440,19 +458,19 @@ class BlackOil(_Model):
         # - d is taken at x direction for gradient.
         cond = cond.lower()
         if cond in ["rate", "q"]:
-            self.rates[self.tstep, id_b] = v
+            self.rates[self.tstep, cell_b_id] = v
         elif cond in ["pressure", "press", "p"]:
-            self.pressures[self.tstep, id_b] = v
+            self.pressures[self.tstep, cell_b_id] = v
         elif cond in ["gradient", "grad", "g"]:
-            ((id, T),) = self.get_cell_T(id_b, None, False).items()
-            n_dict = self.grid.get_cell_neighbors(id_b, None, False, "dict")
-            dir = [dir for dir in n_dict if id in n_dict[dir]][0]
-            self.rates[self.tstep, id_b] = T * self.grid.d[dir][id] * v
+            ((cell_id, T),) = self.get_cell_trans(cell_b_id, None, False).items()
+            cell_n = self.grid.get_cell_neighbors(cell_b_id, None, False, "dict")
+            dir = [dir for dir in cell_n if cell_id in cell_n[dir]][0]
+            self.rates[self.tstep, cell_b_id] = T * self.grid.d[dir][cell_id] * v
         else:
             raise ValueError(f"cond argument {cond} is unknown.")
 
         if self.verbose:
-            print(f"[info] boundary in cell {id_b} was set to constant {cond}.")
+            print(f"[info] boundary in cell {cell_b_id} was set to constant {cond}.")
 
     def set_boundaries(self, bdict: dict):
         """Set boundary conditions using a dictionary.
@@ -466,10 +484,10 @@ class BlackOil(_Model):
         """
         self.bdict = bdict
         boundaries = self.grid.get_boundaries("id", "set")
-        for id in bdict:
-            assert id in boundaries, f"cell {id} is not a boundary cell."
-            cond, v = bdict[id]
-            self.set_boundary(id, cond, v)
+        for cell_id in bdict:
+            assert cell_id in boundaries, f"cell {cell_id} is not a boundary cell."
+            cond, v = bdict[cell_id]
+            self.set_boundary(cell_id, cond, v)
 
         self.bdict_update = [
             id_b for id_b in self.bdict.keys() if self.bdict[id_b][0] == "pressure"
@@ -490,8 +508,8 @@ class BlackOil(_Model):
             constant value to specify the condition in cond argument.
         """
         boundaries = self.grid.get_boundaries("id", "tuple")
-        for id in boundaries:
-            self.set_boundary(id, cond, v)
+        for cell_id in boundaries:
+            self.set_boundary(cell_id, cond, v)
 
     # -------------------------------------------------------------------------
     # Flow Equations:
@@ -515,7 +533,7 @@ class BlackOil(_Model):
         return self.RHS
 
     @_lru_cache(maxsize=None)
-    def __calc_n_terms(self, id, id_n, p, T):
+    def __calc_n_terms(self, cell_id, cell_n_id, cell_p, T):
         """Calculates cell flow equation with a neighbor cell.
 
         This function derives flow terms between a specific cell (id)
@@ -557,12 +575,12 @@ class BlackOil(_Model):
             return locals()["n_term"]
 
         """
-        p_n = eval(f"sym.Symbol('p{id_n}')")
-        dz = self.grid.z[id_n] - self.grid.z[id]
-        return T * ((p_n - p) - (self.fluid.g * dz))
+        cell_n_p = eval(f"sym.Symbol('p{cell_n_id}')")
+        dz = self.grid.z[cell_n_id] - self.grid.z[cell_id]
+        return T * ((cell_n_p - cell_p) - (self.fluid.g * dz))
 
     @_lru_cache(maxsize=None)
-    def __calc_b_terms(self, id, id_b, p, T):
+    def __calc_b_terms(self, cell_id, cell_b_id, cell_p, T):
         """Calculates cell flow equation with a boundary cell.
 
         This function derives flow terms between a specific cell (id)
@@ -602,17 +620,17 @@ class BlackOil(_Model):
         - T with matrix:
             self.T[dir][min(b_id,id)]
         """
-        p_b = self.pressures[self.tstep, id_b]
+        cell_b_p = self.pressures[self.tstep, cell_b_id]
 
-        if not np.isnan(p_b):
-            dz = self.grid.z[id_b] - self.grid.z[id]
-            b_term = T * 2 * ((p_b - p) - (self.fluid.g * dz))
+        if not np.isnan(cell_b_p):
+            dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
+            b_term = T * 2 * ((cell_b_p - cell_p) - (self.fluid.g * dz))
         else:
-            b_term = self.rates[self.tstep, id_b]
+            b_term = self.rates[self.tstep, cell_b_id]
 
         return b_term
 
-    def __calc_w_terms(self, id, p):
+    def __calc_w_terms(self, cell_id, cell_p):
         """Calculates cell flow equation for the well.
 
         This function derives flow terms between a specific cell (id)
@@ -641,16 +659,16 @@ class BlackOil(_Model):
             return locals()["w_term"]
 
         """
-        if "q" in self.wells[id] and self.wells[id]["constrain"] == "q":
-            return self.wells[id]["q"]
+        if "q" in self.wells[cell_id] and self.wells[cell_id]["constrain"] == "q":
+            return self.wells[cell_id]["q"]
         else:
             return (
-                -self.wells[id]["G"]
+                -self.wells[cell_id]["G"]
                 / (self.fluid.B * self.fluid.mu)
-                * (p - self.wells[id]["pwf"])
+                * (cell_p - self.wells[cell_id]["pwf"])
             )
 
-    def __calc_a_term(self, id, p):
+    def __calc_a_term(self, cell_id, cell_p):
         """Calculates cell flow equation for the accumulation term.
 
         Parameters
@@ -676,7 +694,9 @@ class BlackOil(_Model):
             return 0
         else:
             try:
-                return self.RHS[id] * (p - self.pressures[self.tstep, id])
+                return self.RHS[cell_id] * (
+                    cell_p - self.pressures[self.tstep, cell_id]
+                )
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
@@ -688,7 +708,7 @@ class BlackOil(_Model):
             cell_eq = cell_eq.simplify()
         return cell_eq
 
-    def get_cell_eq(self, id):
+    def get_cell_eq(self, cell_id):
         """Return cell equation.
 
         Parameters
@@ -722,62 +742,69 @@ class BlackOil(_Model):
         #     f"n_term = self.T[dir][min(neighbor,id)] * ((p{n_id} - p{id})
         #     - (self.fluid.g * (self.grid.z[neighbor] - self.grid.z[id])))"
         # )
-        p = eval(f"sym.Symbol('p{id}')")
+        cell_p = eval(f"sym.Symbol('p{cell_id}')")
 
-        if not id in self.cells_terms:
-            assert id in self.grid.cells_id, f"id is out of range {self.grid.cells_id}."
-            neighbors = self.grid.get_cell_neighbors(id=id, boundary=False, fmt="array")
-            boundaries = self.grid.get_cell_boundaries(id=id, fmt="array")
+        if cell_id not in self.cells_terms:
+            assert (
+                cell_id in self.grid.cells_id
+            ), f"id is out of range {self.grid.cells_id}."
+            neighbors = self.grid.get_cell_neighbors(
+                id=cell_id, boundary=False, fmt="array"
+            )
+            boundaries = self.grid.get_cell_boundaries(id=cell_id, fmt="array")
             # f_terms: flow terms, a_terms: accumulation terms
             terms = {"f_terms": [], "a_term": 0}
-            T = self.get_cell_T(id, None, True)
+            T = self.get_cell_trans(cell_id, None, True)
             if self.verbose:
-                print(f"[info] cell id: {id}")
+                print(f"[info] cell id: {cell_id}")
                 print(f"[info]    - Neighbors: {neighbors}")
                 print(f"[info]    - Boundaries: {boundaries}")
 
             for id_n in neighbors:
-                n_terms = self.__calc_n_terms(id, id_n, p, T[id_n])
+                n_terms = self.__calc_n_terms(cell_id, id_n, cell_p, T[id_n])
                 terms["f_terms"].append(n_terms)
                 if self.verbose:
                     print(f"[info] Neighbor terms: {n_terms}")
 
-            for id_b in boundaries:
-                b_terms = self.__calc_b_terms(id, id_b, p, T[id_b])
+            for cell_b_id in boundaries:
+                b_terms = self.__calc_b_terms(cell_id, cell_b_id, cell_p, T[cell_b_id])
                 terms["f_terms"].append(b_terms)
                 if self.verbose:
                     print(f"[info] Boundary terms: {b_terms}")
 
-            if id in self.wells.keys():
-                w_terms = self.__calc_w_terms(id, p)
+            if cell_id in self.wells.keys():
+                w_terms = self.__calc_w_terms(cell_id, cell_p)
                 terms["f_terms"].append(w_terms)
                 if self.verbose:
                     print(f"[info] Well terms: {w_terms}")
 
-            terms["a_term"] = self.__calc_a_term(id, p)
+            terms["a_term"] = self.__calc_a_term(cell_id, cell_p)
             if self.verbose:
                 print("[info] Accumulation term:", terms["a_term"])
 
-            self.cells_terms[id] = terms
+            self.cells_terms[cell_id] = terms
             if self.verbose:
                 print("[info] terms:", terms)
 
         else:
-            terms = self.cells_terms[id]
-            if id in self.wells.keys() and self.wells[id]["constrain"] == "pwf":
-                w_terms = self.__calc_w_terms(id, p)
+            terms = self.cells_terms[cell_id]
+            if (
+                cell_id in self.wells.keys()
+                and self.wells[cell_id]["constrain"] == "pwf"
+            ):
+                w_terms = self.__calc_w_terms(cell_id, cell_p)
                 if self.verbose:
                     print(f"[info] Well terms (updated): {w_terms}")
                 terms["f_terms"][-1] = w_terms
             if self.comp_type == "compressible":
-                terms["a_term"] = self.__calc_a_term(id, p)
+                terms["a_term"] = self.__calc_a_term(cell_id, cell_p)
 
         cell_eq = sym.Eq(sum(terms["f_terms"]), terms["a_term"])
         cell_eq = self.__simplify_eq(cell_eq)
         cell_eq_lhs = cell_eq.lhs.as_coefficients_dict()
 
         if self.verbose:
-            print(f"[info] Flow equation {id}:", cell_eq)
+            print(f"[info] Flow equation {cell_id}:", cell_eq)
 
         return cell_eq_lhs, cell_eq.rhs
 
@@ -805,7 +832,7 @@ class BlackOil(_Model):
     # Matrices:
     # -------------------------------------------------------------------------
 
-    def __update_matrices(self, id):
+    def __update_matrices(self, cell_id):
         """Update flow equations' matrices (A, d).
 
         Parameters
@@ -821,12 +848,12 @@ class BlackOil(_Model):
         - finding cell i:
             ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
         """
-        cell_lhs, cell_rhs = self.cells_eq[id]
+        cell_lhs, cell_rhs = self.cells_eq[cell_id]
         ids = [self.cells_i_dict[int(str(s)[1:])] for s in cell_lhs.keys()]
-        self.d[self.cells_i_dict[id]] = cell_rhs
-        self.A[self.cells_i_dict[id], ids] = list(cell_lhs.values())
+        self.d[self.cells_i_dict[cell_id]] = cell_rhs
+        self.A[self.cells_i_dict[cell_id], ids] = list(cell_lhs.values())
         if self.verbose:
-            print(f"[info] cell id: {id}")
+            print(f"[info] cell id: {cell_id}")
             print(f"[info]      - ids: {ids}")
             print(f"[info]      - lhs: {cell_lhs}")
             print(f"[info]      - rhs: {cell_rhs}")
@@ -866,8 +893,8 @@ class BlackOil(_Model):
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices, self.cells_id)
         else:
-            for id in self.cells_id:
-                self.__update_matrices(id)
+            for cell_id in self.cells_id:
+                self.__update_matrices(cell_id)
 
         if self.verbose:
             print("[info] - A:\n", self.A)
@@ -909,7 +936,7 @@ class BlackOil(_Model):
 
         # return self.A_
         # self.A_ = self.get_cells_T_array(False, True).toarray()
-        self.A_ = self.get_cells_T_vect(False, sparse)
+        self.A_ = self.get_cells_trans(False, sparse, True)
         v1 = -self.A_[self.cells_i, :].sum(axis=1).flatten()
         v2 = self.RHS[self.cells_id].flatten()
         v3 = v1 - v2
@@ -976,7 +1003,7 @@ class BlackOil(_Model):
             dz_u = self.fluid.g * np.nan_to_num(z_u - z)
             # T = self.T["x"][self.grid.cells_id]
             # T = np.diag(self.get_cells_T(True, False), 1)[self.cells_i]
-            T = self.get_cells_T_diag(True, 1)[self.cells_id]
+            T = self.get_cells_trans_diag(True, 1)[self.cells_id]
             v = T * dz_l + T * dz_u
             self.d_ += v.reshape(-1, 1)
 
@@ -1001,7 +1028,7 @@ class BlackOil(_Model):
             self.init_A(sparse)
             self.bdict_v = {}
             for id_b in self.bdict_update:
-                ((id, T),) = self.get_cell_T(id_b, None, False).items()
+                ((id, T),) = self.get_cell_trans(id_b, None, False).items()
                 p = eval(f"sym.Symbol('p{id}')")
                 b_term = self.__calc_b_terms(id, id_b, p, T)
                 v0, v1 = b_term.as_coefficients_dict().values()
@@ -1143,7 +1170,7 @@ class BlackOil(_Model):
 
     def __update_boundaries(self):
         for id_b in self.bdict_update:
-            ((id_n, T),) = self.get_cell_T(id_b, None, False).items()
+            ((id_n, T),) = self.get_cell_trans(id_b, None, False).items()
             p_n = self.pressures[self.tstep, id_n]
             b_terms = self.__calc_b_terms(id_n, id_b, p_n, T)
             self.rates[self.tstep, id_b] = b_terms
@@ -1529,7 +1556,7 @@ class BlackOil(_Model):
         Parameters
         ----------
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
 
         Notes
         -----
@@ -1569,7 +1596,7 @@ class BlackOil(_Model):
             time = self.time_scaler.transform(time)
         return time
 
-    def get_centers(self, scale=False, boundary=True):
+    def get_centers(self, scale=False, boundary: bool = True):
         def get_fdir_cols(s):
             if s == "x":
                 return 0
@@ -1640,20 +1667,20 @@ class BlackOil(_Model):
         for column in scalers_dict.keys():
             scaler_type = scalers_dict[column][0]
             output_range = scalers_dict[column][1]
-            if column.lower() not in col_vals:
-                raise ValueError(f"column {column} does not exist.")
             if column.lower() in col_dict["time"]:
                 self.time_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "time"
-            if column.lower() in col_dict["space"]:
+            elif column.lower() in col_dict["space"]:
                 self.space_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "space"
-            if column.lower() in col_dict["pressure"]:
+            elif column.lower() in col_dict["pressure"]:
                 self.pressures_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "pressure"
-            if column.lower() in col_dict["rate"]:
+            elif column.lower() in col_dict["rate"]:
                 self.rates_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "rate"
+            else:  # if column.lower() not in col_vals:
+                raise ValueError(f"column {column} does not exist.")
 
             if scaler_type is None or output_range is None:
                 self.scalers_dict[column_str] = [None, None]
@@ -1662,20 +1689,20 @@ class BlackOil(_Model):
 
     def get_df(
         self,
-        columns=["time", "cells", "wells"],
-        boundary=True,
-        units=False,
-        melt=False,
-        scale=False,
-        save=False,
-        drop_nan=True,
-        drop_zero=True,
+        columns: list = ["time", "cells", "wells"],
+        boundary: bool = True,
+        units: bool = False,
+        melt: bool = False,
+        scale: bool = False,
+        save: bool = False,
+        drop_nan: bool = True,
+        drop_zero: bool = True,
     ):
         """Returns simulation data as a dataframe.
 
         Parameters
         ----------
-        columns : list, optional
+        columns : list[str], optional
             selected columns to be added to the dataframe. The following
             options are available:
             "time": for time steps as specified in dt.
@@ -1689,7 +1716,7 @@ class BlackOil(_Model):
             "wells_rate": for all wells rates.
             "wells_pressure": for all wells pressures.
         boundary : bool, optional
-            values with boundary (True) or without boundary (False).
+            include boundary cells.
             It is only relevant when cells columns are selected.
         units : bool, optional
             column names with units (True) or without units (False).
@@ -1847,7 +1874,7 @@ class BlackOil(_Model):
 
     #     return pl
 
-    def show(self, property: str, centers=False, boundary=False, bounds=False):
+    def show(self, property: str, centers=False, boundary: bool = False, bounds=False):
         utils.plots.show(self, property, centers, boundary, bounds)
 
     # def get_gif(self, prop, boundary=False, wells=True):
@@ -1938,7 +1965,7 @@ if __name__ == "__main__":
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
         model = BlackOil(grid, fluid, dtype="double", verbose=False)
-        model.set_well(id=4, q=-600, s=1.5, r=3.5)
+        model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
@@ -1967,15 +1994,27 @@ if __name__ == "__main__":
         cells_id = model.grid.get_cells_id(False, True)[-1].flatten()
         wells = np.random.choice(cells_id, 6, False)
         for id in wells:
-            model.set_well(id=id, q=-300, pwf=100, s=1.5, r=3.5)
+            model.set_well(cell_id=id, q=-300, pwf=100, s=1.5, r=3.5)
 
         wells = np.random.choice(cells_id, 6, False)
         for id in wells:
-            model.set_well(id=id, q=100, s=0, r=3.5)
+            model.set_well(cell_id=id, q=100, s=0, r=3.5)
 
         return model
 
     model = create_model()
-    model.run(10, isolver="cgs")
+    model.run(10, sparse=True, vectorize=True, isolver="cgs")
+    # model.run(10, isolver=None)
+    model.show("pressures")
+    model = create_model()
+    model.run(10, sparse=False, vectorize=True, isolver=None)
+    # model.run(10, isolver=None)
+    model.show("pressures")
+    model = create_model()
+    model.run(10, sparse=True, vectorize=False, isolver="cgs")
+    # model.run(10, isolver=None)
+    model.show("pressures")
+    model = create_model()
+    model.run(10, sparse=True, vectorize=False, isolver=None)
     # model.run(10, isolver=None)
     model.show("pressures")

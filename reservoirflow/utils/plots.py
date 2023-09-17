@@ -1,8 +1,8 @@
 import math
 import os
+
 import numpy as np
 import pyvista as pv
-
 
 # Default settings color bar:
 # cbar_opt = dict(height=0.40,
@@ -21,7 +21,7 @@ import pyvista as pv
 # }
 
 
-def show(model, property: str, centers=False, boundary=False, bounds=False):
+def show(model, property: str, centers=False, boundary: bool = False, bounds=False):
     # Extract property values:
     props = list(vars(model))
     assert (
