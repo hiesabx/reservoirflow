@@ -15,6 +15,7 @@ Contents
 .. toctree::
     :maxdepth: 1
 
+    are_you_a_reservoir_engineer
     ask_a_question
     make_a_suggestion
     discussions/general_discussion

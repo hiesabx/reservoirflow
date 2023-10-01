@@ -14,7 +14,6 @@
 - [Mission](#mission)
 - [Vision](#vision)
 - [Philosophy](#philosophy)
-- [Are You a Reservoir Engineer?](#are-you-a-reservoir-engineer)
 - [License](#license)
 
 ## Introduction
@@ -79,14 +78,6 @@ An open-source reservoir simulation library within the Python ecosystem will be 
 ## Philosophy
 
 Our Philosophy is to try to attack the same problem from multiple angles by combining different solutions including analytical solutions, numerical solutions, and machine learning solutions. Studying different solution techniques to solve Partial Differential Equations (PDEs) gives great insight into developing more efficient solutions. However, this requires a combination of wide range of topics especially Mathematics, Physics, and Engineering, or what we shortly refer to as *Mathephysineering*. With the objective to improve the practical applications, *Mathephysineering* can improve our overall understanding especially with the power of other tools available from computer science and machine learning. *Mathephysineering* inspires us to revisit the basics of mathematics required to better describe and solve physical problems according to best engineering practices. This is the philosophy behind developing this tool as will be demonstrated within this project.
-
-## Are You a Reservoir Engineer?
-
-Accessible and reproducible research is very scarce in the oil & gas industry. This unfortunate reality led many reservoir engineers to be limited and dependent on commercial tools that are closed black-boxes which led to severe limitations when it comes to skills and innovation. For example, most reservoir engineers today can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why the oil & gas industry is still behind in the AI revolution.
-
-The author believes that this sad reality has to be changed as soon as possible. Reservoir engineers face difficult challenges in getting careers in or outside the oil & gas industry mainly due to the lack of soft skills. Otherwise, a reservoir engineer, who has a great mix of science (i.e. mathematics, statistics, scientific computing, programming, chemistry, physics, fluid mechanics and thermodynamics, geology, etc.), should have no reason to stay unemployed.
-
-This sad reality can be changed if reservoir engineers are trained to express their scientific and engineering knowledge with coding. In addition, this will bring more excitement and job satisfaction. Those who learn to do reservoir simulation in Python should be familiar with the scientific computing and machine learning stack in Python. Therefore, it will be easier for them to change careers and work as data scientists, data analysts, or ML engineers in other industries.
 
 ## License
 
