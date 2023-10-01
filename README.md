@@ -1,7 +1,8 @@
 # ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
 
-![](/images/logo.png)
-![](/images/five_spot_single_phase.gif)
+![logo](/images/logo.png)
+
+![five_spot_single_phase](/images/five_spot_single_phase.gif)\\
 *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns*
 
 **Table of Content:**

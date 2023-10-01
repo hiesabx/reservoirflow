@@ -1,13 +1,12 @@
-Welcome to ReservoirFlow's Documentation
-=========================================
-
-.. note:: 
-   This project is under active development.
-
 .. image:: ../../images/five_spot_single_phase.gif
   :width: 600
   :alt: five_spot_single_phase
   :align: center
+
+|
+
+.. note:: 
+   This project is under active development. Only basic functionality is available.
 
 |
 

@@ -117,7 +117,11 @@ class BlackOil(_Model):
             # self.pressures[0, :] = pi
             # setting boundaries with Pi have wrong effect on
             # __calc_b_terms() method where pressure is taken instead of
-            # taking rate specified at the boundary.
+            # taking rate specified at the boundary (implementation 1).
+            # while implementation 2 solves this issue, specifying
+            # initial pressure at boundaries will be carried (copied)
+            # in the following steps as if this is a constant boundary
+            # cond which is misleading.
 
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
@@ -533,131 +537,109 @@ class BlackOil(_Model):
         return self.RHS
 
     @_lru_cache(maxsize=None)
-    def __calc_n_terms(self, cell_id, cell_n_id, cell_p, T):
-        """Calculates cell flow equation with a neighbor cell.
+    def __calc_n_term(
+        self,
+        cell_id,
+        cell_n_id,
+        cell_p,
+        trans,
+    ) -> float:
+        """Calculates neighbor flow term.
 
-        This function derives flow terms between a specific cell (id)
-        and another neighbor cell (n_id).
+        This function calculates the neighbor flow term between
+        a specific cell (cell_id) and its neighbor cell (cell_n_id).
 
         Parameters
         ----------
-        id : int
+        cell_id : int
             cell id based on natural order as int.
-        id_n : int
+        cell_n_id : int
             neighbor cell id based on natural order as int.
-        p : Symbol
-            pressure symbol at cell id.
-        T : float
-            transmissibility with the neighbor cell.
+        cell_p : Symbol
+            cell pressure at cell_id.
+        trans : float
+            transmissibility between cell_id and cell_b_id.
 
         Returns
         -------
-        _type_
-            _description_
-
-        Backup
-        ------
-        - calc without exec:
-            exec(f"dp_ = p{n_id} - p{id}")
-            dp = locals()["dp_"]
-            trans = self.T[dir][min(n_id, id)]
-            h = self.grid.z[n_id] - self.grid.z[id]
-            acc = self.fluid.g * h
-            n_term = trans * (dp - acc)
-        - T with matrix:
-            self.T[dir][min(n_id,id)]
-        - exec implementation:
-            exec(f"p{n_id} = sym.Symbol('p{n_id}')")
-            exec(
-                f"n_term = n_T * ((p{n_id} - p_id) - "
-                + "(self.fluid.g * (self.grid.z[n_id] - self.grid.z[id])))"
-            )
-            return locals()["n_term"]
-
+        float
+            neighbor flow term (n_term).
         """
         cell_n_p = eval(f"sym.Symbol('p{cell_n_id}')")
         dz = self.grid.z[cell_n_id] - self.grid.z[cell_id]
-        return T * ((cell_n_p - cell_p) - (self.fluid.g * dz))
+        return trans * ((cell_n_p - cell_p) - (self.fluid.g * dz))
 
     @_lru_cache(maxsize=None)
-    def __calc_b_terms(self, cell_id, cell_b_id, cell_p, T):
-        """Calculates cell flow equation with a boundary cell.
+    def __calc_b_term(
+        self,
+        cell_id,
+        cell_b_id,
+        cell_p,
+        trans,
+    ) -> float:
+        """Calculates boundary flow term.
 
-        This function derives flow terms between a specific cell (id)
-        and another boundary cell (b_id).
+        This function calculates the boundary flow term between a
+        specific cell (cell_id) and its boundary cell (cell_b_id).
 
         Parameters
         ----------
-        id : int
+        cell_id : int
             cell id based on natural order as int.
-        id_b : int
+        cell_b_id : int
             boundary cell id based on natural order as int.
-        p : Symbol
+        cell_p : Symbol
             pressure symbol at cell id.
-        T : float
-            transmissibility with boundary cell.
+        trans : float
+            transmissibility between cell_id and cell_b_id.
 
         Returns
         -------
-        _type_
-            _description_
-
-        Backup
-        ------
-        - exec with boundary pressure:
-        exec(f"p{b_id}=sym.Symbol('p{b_id}')")
-        if not np.isnan(self.pressures[self.tstep][b_id]):
-            exec(
-                f"b_term = b_T * 2 * ((p{b_id} - p_id)"
-                + " - (self.fluid.g * (self.grid.z[b_id]-self.grid.z[id])))"
-            )
-            exec(f"b_term = b_term.subs(p{b_id}, self.pressures[self.tstep][b_id])")
-        else:
-            exec(f"b_term = self.rates[self.tstep][b_id]")
-
-        return locals()["b_term"]
-
-        - T with matrix:
-            self.T[dir][min(b_id,id)]
+        float
+            boundary flow term (b_term).
         """
-        cell_b_p = self.pressures[self.tstep, cell_b_id]
 
-        if not np.isnan(cell_b_p):
-            dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
-            b_term = T * 2 * ((cell_b_p - cell_p) - (self.fluid.g * dz))
+        # implementation 1:
+        # problamatic in case initial pressure is set at boundaries.
+        # cell_b_p = self.pressures[self.tstep, cell_b_id]
+        # if not np.isnan(cell_b_p):
+        #     dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
+        #     b_term = trans * 2 * ((cell_b_p - cell_p) - (self.fluid.g * dz))
+        # else:
+        #     b_term = self.rates[self.tstep, cell_b_id]
+
+        # implementation 2:
+        if cell_b_id in self.bdict:
+            cond, v = self.bdict[cell_b_id]
+            if cond.lower() in ["pressure", "press", "p"]:
+                dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
+                return trans * 2 * ((v - cell_p) - (self.fluid.g * dz))
+            else:  # elif cond in ["rate", "q", "gradient", "grad", "g"]:
+                return v
         else:
-            b_term = self.rates[self.tstep, cell_b_id]
+            return 0.0
 
-        return b_term
+    def __calc_w_term(
+        self,
+        cell_id,
+        cell_p,
+    ) -> float:
+        """Calculates well flow term.
 
-    def __calc_w_terms(self, cell_id, cell_p):
-        """Calculates cell flow equation for the well.
-
-        This function derives flow terms between a specific cell (id)
-        and its well (if exists).
+        This function calculates the well flow term between a
+        specific cell (cell_id) and its well (if exists).
 
         Parameters
         ----------
-        id : int
+        cell_id : int
             cell id based on natural order as int.
-        p : Symbol or value
+        cell_p : Symbol or value
             cell pressure symbol or value at cell id.
 
         Returns
         -------
-        _type_
-            _description_
-
-        Backup
-        ------
-        - exec:
-            exec(
-                f"w_term = - self.wells[id]['G']"
-                + f"/ (self.fluid.B*self.fluid.mu)"
-                + f"* (p_id - self.wells[id]['pwf'])"
-            )
-            return locals()["w_term"]
-
+        float
+            well flow term (w_term).
         """
         if "q" in self.wells[cell_id] and self.wells[cell_id]["constrain"] == "q":
             return self.wells[cell_id]["q"]
@@ -668,37 +650,40 @@ class BlackOil(_Model):
                 * (cell_p - self.wells[cell_id]["pwf"])
             )
 
-    def __calc_a_term(self, cell_id, cell_p):
-        """Calculates cell flow equation for the accumulation term.
+    def __calc_a_term(
+        self,
+        cell_id,
+        cell_p,
+    ):
+        """Calculates accumulation term.
 
         Parameters
         ----------
-        id : _type_
+        cell_id : int
             cell id based on natural order as int.
 
         Returns
         -------
-        _type_
-            _description_
+        float
+            accumulation term (a_term).
 
         Raises
         ------
-        Exception
-            _description_
-
+        ValueError
+            Initial pressure was not defined.
         """
         # ToDo
         # ----
         # - consider unifying RHS or if cond.
         if self.comp_type == "incompressible":
-            return 0
+            return 0.0
         else:
             try:
                 return self.RHS[cell_id] * (
                     cell_p - self.pressures[self.tstep, cell_id]
                 )
             except:
-                raise Exception("Initial pressure (pi) must be specified")
+                raise ValueError("Initial pressure (pi) must be specified")
 
     def __simplify_eq(self, cell_eq):
         if (
@@ -761,22 +746,22 @@ class BlackOil(_Model):
                 print(f"[info]    - Boundaries: {boundaries}")
 
             for id_n in neighbors:
-                n_terms = self.__calc_n_terms(cell_id, id_n, cell_p, T[id_n])
-                terms["f_terms"].append(n_terms)
+                n_term = self.__calc_n_term(cell_id, id_n, cell_p, T[id_n])
+                terms["f_terms"].append(n_term)
                 if self.verbose:
-                    print(f"[info] Neighbor terms: {n_terms}")
+                    print(f"[info] Neighbor terms: {n_term}")
 
             for cell_b_id in boundaries:
-                b_terms = self.__calc_b_terms(cell_id, cell_b_id, cell_p, T[cell_b_id])
-                terms["f_terms"].append(b_terms)
+                b_term = self.__calc_b_term(cell_id, cell_b_id, cell_p, T[cell_b_id])
+                terms["f_terms"].append(b_term)
                 if self.verbose:
-                    print(f"[info] Boundary terms: {b_terms}")
+                    print(f"[info] Boundary terms: {b_term}")
 
             if cell_id in self.wells.keys():
-                w_terms = self.__calc_w_terms(cell_id, cell_p)
-                terms["f_terms"].append(w_terms)
+                w_term = self.__calc_w_term(cell_id, cell_p)
+                terms["f_terms"].append(w_term)
                 if self.verbose:
-                    print(f"[info] Well terms: {w_terms}")
+                    print(f"[info] Well terms: {w_term}")
 
             terms["a_term"] = self.__calc_a_term(cell_id, cell_p)
             if self.verbose:
@@ -792,10 +777,10 @@ class BlackOil(_Model):
                 cell_id in self.wells.keys()
                 and self.wells[cell_id]["constrain"] == "pwf"
             ):
-                w_terms = self.__calc_w_terms(cell_id, cell_p)
+                w_term = self.__calc_w_term(cell_id, cell_p)
                 if self.verbose:
-                    print(f"[info] Well terms (updated): {w_terms}")
-                terms["f_terms"][-1] = w_terms
+                    print(f"[info] Well terms (updated): {w_term}")
+                terms["f_terms"][-1] = w_term
             if self.comp_type == "compressible":
                 terms["a_term"] = self.__calc_a_term(cell_id, cell_p)
 
@@ -1030,7 +1015,7 @@ class BlackOil(_Model):
             for id_b in self.bdict_update:
                 ((id, T),) = self.get_cell_trans(id_b, None, False).items()
                 p = eval(f"sym.Symbol('p{id}')")
-                b_term = self.__calc_b_terms(id, id_b, p, T)
+                b_term = self.__calc_b_term(id, id_b, p, T)
                 v0, v1 = b_term.as_coefficients_dict().values()
                 self.bdict_v[id_b] = (v0, v1, id)
                 self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] += v1
@@ -1040,12 +1025,12 @@ class BlackOil(_Model):
 
         for id in self.wells.keys():
             if self.wells[id]["constrain"] == "q":
-                w_term = self.__calc_w_terms(id, self.pressures[self.tstep, id])
+                w_term = self.__calc_w_term(id, self.pressures[self.tstep, id])
                 self.d_[self.cells_i_dict[id], 0] -= w_term
                 update_z = True
             elif self.wells[id]["constrain"] == "pwf":
                 p = eval(f"sym.Symbol('p{id}')")
-                w_term = self.__calc_w_terms(id, p)
+                w_term = self.__calc_w_term(id, p)
                 v = w_term.as_coefficients_dict().values()
                 if len(v) == 1:
                     ((v0),) = v
@@ -1155,7 +1140,7 @@ class BlackOil(_Model):
                 pwf_est = self.wells[id]["pwf_sp"]
 
             self.wells[id]["pwf"] = pwf_est
-            q_est = self.__calc_w_terms(id, self.pressures[self.tstep, id])
+            q_est = self.__calc_w_term(id, self.pressures[self.tstep, id])
             self.wells[id]["q"] = self.rates[self.tstep, id] = q_est
 
             if resolve:
@@ -1172,7 +1157,7 @@ class BlackOil(_Model):
         for id_b in self.bdict_update:
             ((id_n, T),) = self.get_cell_trans(id_b, None, False).items()
             p_n = self.pressures[self.tstep, id_n]
-            b_terms = self.__calc_b_terms(id_n, id_b, p_n, T)
+            b_terms = self.__calc_b_term(id_n, id_b, p_n, T)
             self.rates[self.tstep, id_b] = b_terms
 
     def __print_arrays(self, sparse):
@@ -1342,7 +1327,7 @@ class BlackOil(_Model):
                 print_arrays,
                 isolver,
             )
-            pbar.set_description(f"[step]: {step} - ")
+            pbar.set_description(f"[step] {step}")
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime += self.run_ctime
@@ -2015,6 +2000,6 @@ if __name__ == "__main__":
     # model.run(10, isolver=None)
     model.show("pressures")
     model = create_model()
-    model.run(10, sparse=True, vectorize=False, isolver=None)
+    model.run(10, sparse=False, vectorize=False, isolver=None)
     # model.run(10, isolver=None)
     model.show("pressures")

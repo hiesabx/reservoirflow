@@ -20,6 +20,9 @@ extensions = [
     "sphinx_comments",  # allow comments
 ]
 
+# remove warnings:
+suppress_warnings = ["myst.header"]
+
 
 # source_suffix = {
 #     ".rst": "restructuredtext",
@@ -60,6 +63,7 @@ html_favicon = "_static/logo_grid.png"
 html_static_path = ["_static"]
 html_show_sourcelink = False
 html_theme_options = {
+    "header_links_before_dropdown": 7,
     # icons:
     "icon_links": [
         {
