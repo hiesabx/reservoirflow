@@ -6,7 +6,7 @@ An excellent library needs two things: a clean code with a clean documentation. 
 
 - [PEP20](https://peps.python.org/pep-0020/): guiding principles for Python’s design.
 - [PEP8](https://peps.python.org/pep-0008/): a clean code that can be easily understood by others.
-- [PEP257](https://peps.python.org/pep-0257/): a clean documentation.
+- [PEP257](https://peps.python.org/pep-0257/): a clean documentation using [NumPy Style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
 - [PEP 585](https://peps.python.org/pep-0585/): Type Hinting Generics In Standard Collections.
   - Note that [PEP484](https://peps.python.org/pep-0484/) is not needed since `typing` module is deprecated.
 

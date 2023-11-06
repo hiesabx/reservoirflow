@@ -18,6 +18,7 @@ extensions = [
     "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
     # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
     "sphinx_comments",  # allow comments
+    # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 ]
 
 # remove warnings:
@@ -27,11 +28,12 @@ suppress_warnings = [
 ]
 
 
-# source_suffix = {
-#     ".rst": "restructuredtext",
-#     ".ipynb": "myst-nb",
-#     ".myst": "myst-nb",
-# }
+source_suffix = {
+    ".rst": "restructuredtext",
+    # ".ipynb": "myst-nb",
+    # ".myst": "myst-nb",
+    ".py": "myst-nb",
+}
 
 templates_path = ["_templates"]
 exclude_patterns = ["**/example_*"]
