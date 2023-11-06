@@ -54,7 +54,7 @@ model.set_boundaries(
 model.solve(sparse=False, check_MB=False)
 
 # Step 7: Show pressures in 3D grid
-model.show(property="pressures", boundary=False)
+model.show(prop="pressures", boundary=False)
 
 # Step 8: Show report
 df = model.get_df()

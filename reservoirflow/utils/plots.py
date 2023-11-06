@@ -1,178 +1,1150 @@
-import math
-import os
+"""
+Plots module
 
+This module is used to provide 3D plots for grids and model modules 
+using Pyvista. These functions are used as class methods to provide
+direct accessibility to 3D visualizations using `show` attribute.
+"""
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 
-# Default settings color bar:
-# cbar_opt = dict(height=0.40,
-#                 vertical=True,
-#                 position_x=0.85,
-#                 position_y=0.60,
-#                 fmt="%.f",
-#                 interactive=True,
-# )
+from reservoirflow.utils.helpers import _lru_cache
+
+from . import helpers
+
+WINDOW_TITLE = "ReservoirFlow 3D Show"
 
 
-# Default settings annotations:
-# annotations = {
-#     model.pressures[0]: 'Boundary',
-#     model.wells[4]['pwf']: "Pwf",
-# }
+def set_plotter_backend(static: bool) -> None:
+    """Set plotter backend
+
+    Parameters
+    ----------
+    static : bool, optional
+        show as a static image in a jupyter notebook. True
+        value is used to render images for the documentation.
+    """
+    if static:
+        pv.set_jupyter_backend("static")
+    else:
+        pv.set_jupyter_backend("trame")
 
 
-def show(model, property: str, centers=False, boundary: bool = False, bounds=False):
-    # Extract property values:
-    props = list(vars(model))
-    assert (
-        property in props
-    ), f"""Unknown property! Available properties are : {props}"""
-    local_dict = locals()
-    exec(f"values = model.{property}", local_dict)
-    values = local_dict["values"]
+def decide_widget(static: bool, notebook: bool) -> bool:
+    """Decide to add widget or not
 
-    # Show boundary:
-    if not boundary:
-        cells_id = model.grid.get_cells_id(False, False, "list")
-        values = values[:, cells_id]
+    Parameters
+    ----------
+    static : bool
+        show as a static image in a jupyter notebook. This argument
+        is ignored when notebook argument is set to False. True
+        value is used to render images for the documentation.
+    notebook : bool
+        show plot is placed inline a jupyter notebook. If False,
+        then an interactive window will be opened outside of jupyter
+        notebook.
 
-    # Define limits:
+    Returns
+    -------
+    bool
+        add widget bool.
+    """
+    if static and notebook:
+        return False
+    else:
+        return True
+
+
+def set_plotter_config(
+    pl: pv.Plotter,
+    static: bool = False,
+    notebook: bool = False,
+) -> None:
+    """Set plotter configuration
+
+    Parameters
+    ----------
+    pl : pyvista.Plotter
+        plotter object from pyvista.
+    static : bool, optional
+        show as a static image in a jupyter notebook. This argument
+        is ignored when notebook argument is set to False. True
+        value is used to render images for the documentation.
+    notebook : bool, optional
+        show plot is placed inline a jupyter notebook. If False,
+        then an interactive window will be opened outside of jupyter
+        notebook.
+    """
+    pl.set_background("black")
+    pl.enable_fly_to_right_click()
+    pl.show_axes()
+    if decide_widget(static, notebook):
+        pl.add_camera_orientation_widget()
+
+
+def get_text_locs(
+    n: int,
+    hloc: float,
+    vloc: float,
+    space: float,
+) -> list:
+    """Returns text locations for pyvista plotter
+
+    Parameters
+    ----------
+    n : int
+        number of text lines.
+    hloc : float
+        horizontal location of text lines.
+    vloc : float
+        vertical location of text lines.
+    space : float
+        spacing between text lines.
+
+    Returns
+    -------
+    list
+        list of tuples of (hloc, vloc) based on n.
+    """
+    vlocs = vloc - np.arange(0, space * n, space)
+    return [(hloc, vloc) for vloc in vlocs]
+
+
+def get_limits_fmt(values: np.ndarray) -> tuple:
+    """Get values limits and format
+
+    Parameters
+    ----------
+    values : ndarray
+        numpy array where values are used to define min and max.
+
+    Returns
+    -------
+    tuple
+        tuple(list, str) > ([min, max], "%.#f")
+    """
+    min_v = np.nanmin(values)
     max_v = np.nanmax(values)
-    min_v = math.floor(np.nanmin(values) / 1000) * 1000
-    limits = [min_v, max_v]  # [min_v - (min_v*0.2), max_v + (max_v*0.2)]
-
-    # Number Format:
     if min_v < 1:
         fmt = "%.2f"
     else:
         fmt = "%.f"
+    return [min_v, max_v], fmt
 
-    # Color bar options:
-    cbar_opt = dict(
-        height=0.07,
-        width=0.7,
-        # horizontal=True,
-        position_x=0.25,
-        position_y=0.10,
-        fmt=fmt,
-        title=property,
-        # interactive=True,
-        # full_screen = True,
-    )
 
-    grid = model.grid.get_pyvista_grid(boundary)
-    grid.cell_data[property] = values[1]
+def get_cdir(grid) -> str:
+    """Get camera direction
 
-    # Setup plotter:
-    pl = pv.Plotter()
+    Parameters
+    ----------
+    grid : Grid
+        grid object from reservoirflow grids module.
 
-    # Show grid:
-    pl.add_mesh(
-        grid,
-        clim=limits,
-        # style='wireframe',
-        show_edges=True,
-        opacity=0.7,
-        lighting=True,
-        ambient=0.2,
-        n_colors=5,
-        colormap="Blues",
-        label=property,
-        categories=True,
-        # nan_color='gray',
-        nan_opacity=0.7,
-        # use_transparency=True,
-        scalars=values[-1],  # or str 'pressures'
-        scalar_bar_args=cbar_opt,
-        show_scalar_bar=True,
-        # annotations=annotations,
-    )
+    Returns
+    -------
+    str
+        a string to indicate the flow direction based on xyz axis.
+    """
 
-    # Show centers:
-    if centers:
-        pl.add_points(
-            grid.cell_centers(),
-            point_size=10,
-            render_points_as_spheres=True,
-            show_edges=True,
-            color="black",
+    if grid.D == 1:
+        if grid.fdir == "y":
+            cdir = "yz"
+        else:
+            cdir = "xz"
+    elif grid.D == 2:
+        cdir = grid.fdir
+    else:
+        cdir = "xz"
+
+    return cdir
+
+
+def align_camera(
+    pl: pv.Plotter,
+    cdir: str = "xz",
+    azimuth: float = 30,
+    elevation: float = 30,
+    zoom: float = 1.3,
+) -> None:
+    """Align the plotter camera
+
+    Parameters
+    ----------
+    pl : pv.Plotter
+        plotter object from pyvista.
+    cdir : str, optional
+        plotter camera direction.
+    azimuth : float, optional
+        adjust camera azimuth which is a horizontal rotation around the
+        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    elevation : float, optional
+        adjust camera elevation which is a vertical rotation around the
+        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    zoom : float, optional
+        adjust camera azimuth which is a horizontal rotation around the
+        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    """
+    pl.camera_position = cdir
+    pl.camera.azimuth = azimuth
+    pl.camera.elevation = elevation
+    pl.camera.zoom(zoom)
+
+
+def add_wells(
+    pl: pv.Plotter,
+    model,
+) -> None:
+    """Add wells to a pyvista plotter
+
+    Parameters
+    ----------
+    pl : pv.Plotter
+        plotter object from pyvista.
+    model : rf.models.Model
+        a model object from models module.
+
+    Backup
+    ------
+    Getting cells center using pyvista
+        - you may need to convert to list:
+        >>> model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
+    """
+    cells_center = model.grid.get_cells_center(True, False, False).copy()
+    for w in model.wells:
+        height = model.grid.dz[w] * 10
+        center = cells_center[w]
+        center[2] += height // 2
+        well = pv.Cylinder(
+            center=center,
+            direction=(0, 0, 1),
+            radius=model.wells[w]["r"],
+            height=height,
         )
+        pl.add_mesh(well, render=False)
 
-    # Show wells:
-    def show_wells(pl):
-        for w in model.wells:
-            # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
-            # y = model.grid.dy[w]//2
-            # z = 100
-            height = model.grid.dz[w] * 10
-            # well_cell_i = w if boundary else w - 1
-            well_cell_center = list(
-                model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
+
+def get_cbar_dict(
+    property: str = "pressures",
+    n_colors: int = 10,
+    fmt: str = "%.f",
+) -> dict:
+    """Get color bar dictionary
+
+    Parameters
+    ----------
+    property : str, optional
+        name of the property as a string.
+    n_colors : int, optional
+        number of colors of the color bar.
+    fmt : str, optional
+        text format of the color bar.
+
+    Returns
+    -------
+    dict
+        color bar configuration as a dictionary.
+    """
+    n_bins = n_colors + 1
+    cbar_dict = dict(
+        title=property,
+        n_labels=n_bins,
+        vertical=True,
+        title_font_size=24,
+        label_font_size=18,
+        font_family="arial",
+        width=0.07,
+        height=0.7,
+        position_x=0.90,
+        position_y=0.03,
+        fmt=fmt,
+        use_opacity=False,
+        outline=False,
+    )
+
+    return cbar_dict
+
+
+def get_colormap(
+    cmap: str,
+    gamma: float,
+    n_colors: int,
+) -> plt.cm:
+    """Get colormap for a pyvista plotter from plt.cm
+
+    Parameters
+    ----------
+    cmap : str, optional
+        color map name based on Matplotlib, see
+        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+    gamma : float, optional
+        shift color map distribution to left when values less than 1 and
+        to right when values larger than 1. In case of qualitative
+        colormaps, this argument is ignored.
+    n_colors : int, optional
+        number of colors. In case of qualitative colormaps, n_colors
+        should not exceed the total number of available colors (e.g. 10
+        for cmap="tab10" and 20 for cmap="tab20").
+
+    Returns
+    -------
+    plt.cm
+        color map as a cm object from plt (matplotlib.pyplot).
+    """
+    qualitative_cmaps = [
+        "Pastel1",
+        "Pastel2",
+        "Paired",
+        "Accent",
+        "Dark2",
+        "Set1",
+        "Set2",
+        "Set3",
+        "tab10",
+        "tab20",
+        "tab20b",
+        "tab20c",
+    ]
+
+    colormap = plt.cm.get_cmap(cmap, n_colors)
+    if cmap in qualitative_cmaps:
+        cshape = np.unique(colormap.colors, axis=0).shape
+        if cshape[0] < n_colors:
+            print(f"Some colors are repetitive, consider n_colors<={cshape[0]}.")
+    else:
+        colormap.set_gamma(gamma)
+
+    return colormap
+
+
+def get_annotations(values: np.ndarray) -> dict:
+    """Get
+
+    Parameters
+    ----------
+    values : np.ndarray
+        array of values.
+
+    Returns
+    -------
+    dict
+        annotations with values as keys and str as values.
+    """
+    return {
+        np.nanmin(values): "min",
+        np.nanmax(values): "max",
+        np.nanmean(values): "avg",
+    }
+
+
+def get_window_size(resolution: str = "HD") -> tuple:
+    """Get window size in pixels
+
+    Parameters
+    ----------
+    resolution : str, optional
+        resolution str in ["1K", "HD", "FHD", "2K", "4K", "8K", "10K"].
+
+    Returns
+    -------
+    tuple
+        window size in pixels.
+
+    Raises
+    ------
+    ValueError
+        Unknown resolution value.
+    """
+    resolution = resolution.lower()
+    if resolution in ["1k"]:
+        return (1024, 768)
+    elif resolution in ["hd"]:
+        return (1280, 720)
+    elif resolution in ["full hd", "fhd"]:
+        return (1920, 1080)
+    elif resolution in ["2k"]:
+        return (2048, 1080)
+    elif resolution in ["4k"]:
+        return (3840, 2160)
+    elif resolution in ["8k"]:
+        return (7680, 3420)
+    elif resolution in ["10k"]:
+        return (10240, 4320)
+    else:
+        raise ValueError("Unknown resolution value.")
+
+
+def add_ruler(
+    pl: pv.Plotter,
+    mesh,
+) -> None:
+    """Add a ruler to a pyvista plotter
+
+    Parameters
+    ----------
+    pl : pv.Plotter
+        plotter object from pyvista.
+    mesh :
+        mesh object from pyvista.
+    """
+    pl.show_bounds(
+        mesh=mesh,
+        font_family="arial",
+        grid="front",
+        location="outer",
+        ticks="outside",
+        all_edges=False,
+        padding=0.001,
+    )
+
+
+def add_title(pl: pv.Plotter) -> None:
+    """Add a title to a pyvista plotter
+
+    Parameters
+    ----------
+    pl : pv.Plotter
+        plotter object from pyvista.
+    """
+    pl.add_text(
+        text="ReservoirFlow",
+        position=(0.45, 0.95),
+        font_size=14,
+        font="arial",
+        color="white",
+        viewport=True,
+    )
+
+
+def add_desc(
+    pl: pv.Plotter,
+    label: str,
+    D: int,
+    fdir: str,
+    boundary: bool,
+) -> None:
+    """Add a description to a pyvista plotter
+
+    Parameters
+    ----------
+    pl : pv.Plotter
+        plotter object from pyvista.
+    label : str
+        label as str.
+    D : int
+        number of flow dimensions.
+    fdir : str
+        flow direction.
+    boundary : bool
+        add boundary string.
+    """
+    s = helpers.get_boundary_str(boundary)
+    desc = "{}D grid model by {} (flow at {}-direction {})".format(
+        D,
+        label,
+        fdir,
+        s,
+    )
+    pl.add_text(
+        text=desc,
+        position=(0.01, 0.01),
+        font_size=10,
+        font="arial",
+        color="white",
+        viewport=True,
+    )
+
+
+def add_grid_labels(
+    pl: pv.Plotter,
+    grid,
+    label: str,
+    opacity: float,
+    boundary: bool,
+) -> None:
+    """Add labels to a grid
+
+    Parameters
+    ----------
+    pl : pv.Plotter
+        plotter object from pyvista.
+    grid :
+        grid object from reservoirflow grids module.
+    label : str
+        label of grid centers as str in ['id', 'coords', 'icoords',
+        'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center', 'sphere']. If
+        None, this nothing will be added.
+    opacity : float
+        adjust transparency between 0 and 1 where 0 is fully transparent
+        and 1 is fully nontransparent.
+    boundary : bool
+        include boundary cells.
+
+    Raises
+    ------
+    ValueError
+        label is not recognized.
+    """
+    points = grid.get_cells_center(boundary, False, False)
+    if opacity < 1 and not label in [None, False]:
+        if label == "coords":
+            labels = grid.get_cells_coords(boundary, False, "tuple")
+        elif label == "icoords":
+            labels = grid.get_cells_icoords(boundary, False, "tuple")
+        elif label == "id":
+            labels = grid.get_cells_id(boundary, False, "tuple")
+        elif label == "i":
+            labels = grid.get_cells_i(boundary, False, "tuple")
+        elif label == "dx":
+            labels = grid.get_cells_dx(boundary, False)
+        elif label == "dy":
+            labels = grid.get_cells_dy(boundary, False)
+        elif label == "dz":
+            labels = grid.get_cells_dz(boundary, False)
+        elif label in ["area_x", "Ax"]:
+            labels = grid.get_cells_Ax(boundary, False)
+        elif label in ["area_y", "Ay"]:
+            labels = grid.get_cells_Ay(boundary, False)
+        elif label in ["area_z", "Az"]:
+            labels = grid.get_cells_Az(boundary, False)
+        elif label in ["volume", "V"]:
+            labels = grid.get_cells_V(boundary, False, False)
+        elif label in ["center", "centers", "sphere"]:
+            labels = points
+        else:
+            raise ValueError(f"label='{label}' is not recognized.")
+
+        if label == "sphere":
+            pl.add_points(
+                points,
+                point_size=10,
+                render_points_as_spheres=True,
+                show_edges=True,
+                color="black",
             )
-            well_cell_center[2] = height // 2
-            well = pv.Cylinder(
-                center=well_cell_center,
-                height=height,
-                radius=model.wells[w]["r"],
-                direction=(0, 0, 1),
+        else:
+            pl.add_point_labels(
+                points=points,
+                labels=labels,
+                point_size=10,
+                font_size=10,
             )
-            pl.add_mesh(well)
 
-    show_wells(pl)
-    # Plot configuration:
-    pl.camera_position = "xz"
-    # p.show_bounds(grid='front', location='outer', all_edges=True)
-    # _ = p.update_scalar_bar_range(0, model.pressures.max())
-    pl.add_camera_orientation_widget()
-    pl.enable_fly_to_right_click()
-    # pl.enable_zoom_style()
-    pl.show_axes()
-    pl.set_background("black", top="gray")
-    if bounds:
-        pl.show_bounds(
-            grid="front", location="outer", all_edges=True
-        )  # or pl.show_axes() # or pl.show_grid()
 
-    pl.show(full_screen=True)
+def get_grid_plotter(
+    grid,
+    property,
+    label,
+    boundary,
+    corners,
+    desc,
+    # cbar,
+    cmap,
+    gamma,
+    n_colors,
+    opacity,
+    azimuth,
+    elevation,
+    zoom,
+    static,
+    notebook,
+    window_size,
+    # property: str = "pressures",
+    # label: str = None,
+    # boundary: bool = False,
+    # corners: bool = False,
+    # # cbar: bool = True,
+    # cmap: str = "Blues",
+    # gamma: float = 0.7,
+    # n_colors: int = 10,
+    # opacity: float = 0.9,
+    # azimuth: float = 45,
+    # elevation: float = 40,
+    # zoom: float = 1,
+    # static: bool = False,
+    # notebook: bool = False,
+    # window_size: tuple = None,
+    **kwargs,
+):
+    # values = get_values(model, property, boundary)
+    # limits, fmt = get_limits_fmt(values)
+    colormap = get_colormap(cmap, gamma, n_colors)
+    # annotations = get_annotations(values)
 
-    pl = pv.Plotter(notebook=False, off_screen=True)
-    show_wells(pl)
+    if static and window_size is None:
+        window_size = get_window_size("fhd")
 
-    pl.add_mesh(
-        grid,
-        clim=limits,
-        # style='wireframe',
+    pl = pv.Plotter(
+        notebook=notebook,
+        window_size=window_size,
+        **kwargs,
+    )
+
+    grid_pv = grid.get_pyvista_grid(boundary)
+
+    grid_mesh = dict(
+        mesh=grid_pv,
+        # clim=limits,
         show_edges=True,
-        opacity=0.7,
+        opacity=opacity,
+        nan_opacity=0.05,
         lighting=True,
-        ambient=0.2,
-        n_colors=5,
-        colormap="Blues",
-        label=property,
-        categories=True,
-        # nan_color='gray',
-        nan_opacity=0.7,
-        # use_transparency=True,
-        scalars=values[-1],  # or str 'pressures'
-        scalar_bar_args=cbar_opt,
-        show_scalar_bar=True,
+        colormap=colormap,
+        # color="white",
+        # scalars=values[0].copy(),
+        show_scalar_bar=False,
         # annotations=annotations,
     )
 
-    if not os.path.exists("images/"):
-        os.makedirs("images/")
+    if corners:
+        points = grid_pv.points
+        pl.add_point_labels(
+            points=points,
+            labels=points.tolist(),
+            point_size=10,
+            font_size=10,
+        )
+    pl.add_mesh(**grid_mesh)
 
-    pl.open_gif("images/grid.gif")
+    # if cbar:
+    #     cbar_dict = get_cbar_dict(property.capitalize(), n_colors, fmt)
+    #     pl.add_scalar_bar(**cbar_dict)
 
-    pts = grid.points.copy()
-    for step in range(model.nsteps):
-        pl.update_coordinates(pts, render=False)
-        pl.update_scalars(values[step], render=False)
-        pl.render()
+    cdir = get_cdir(grid)
+    align_camera(pl, cdir, azimuth=azimuth, elevation=elevation, zoom=zoom)
+    set_plotter_config(pl, static=static, notebook=notebook)
+    add_grid_labels(pl, grid, label, opacity, boundary)
+    add_title(pl)
+    if desc:
+        add_desc(pl, label, grid.D, grid.fdir, boundary)
+
+    return pl, grid_pv
+
+
+def show_grid(
+    grid,
+    property: str = "pressures",
+    label: str = None,
+    boundary: bool = False,
+    # wells: bool = True,
+    corners: bool = False,
+    ruler: bool = False,
+    desc: bool = False,
+    # info: bool = True,
+    # cbar: bool = True,
+    cmap: str = "Blues",
+    gamma: float = 0.7,
+    n_colors: int = 10,
+    opacity: float = 0.9,
+    azimuth: float = 45,
+    elevation: float = 40,
+    zoom: float = 1,
+    static: bool = False,
+    notebook: bool = False,
+    window_size: tuple = None,
+    **kwargs,
+):
+    """Shows pyvista grid.
+
+    This function shows the grid using pyvista object in 3D. Only if
+    the total number of cells is lower than 20, then the grid will
+    be transparent. Therefore, to be able debug your model, try to
+    first test a small model.
+
+    Parameters
+    ----------
+    label : str, optional
+        label of grid centers as str in ['id', 'coords', 'icoords',
+        'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center', 'sphere']. If
+        None, this nothing will be added.
+    boundary : bool, optional
+        include boundary cells.
+    corners : bool, optional
+        show corners ijk values.
+    static : bool, optional
+        show as a static image in a jupyter notebook. This argument
+        is ignored when notebook argument is set to False. True
+        value is used to render images for the documentation.
+    notebook : bool, optional
+        show plot is placed inline a jupyter notebook. If False,
+        then an interactive window will be opened outside of jupyter
+        notebook.
+    azimuth : float, optional
+        adjust camera azimuth which is a horizontal rotation around the
+        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    elevation : float, optional
+        adjust camera elevation which is a vertical rotation around the
+        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    zoom : float, optional
+        adjust camera zoom which is direct zooming into the central
+        focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    **kwargs :
+        you can pass any argument for pyvista Plotter. For more
+        information check [pyvista.Plotter](https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html).
+
+    Raises
+    ------
+    ValueError
+        label is not recognized.
+    """
+    set_plotter_backend(static)
+    pl, grid_pv = get_grid_plotter(
+        grid,
+        property=property,
+        label=label,
+        boundary=boundary,
+        # wells=wells,
+        corners=corners,
+        desc=desc,
+        # cbar=cbar,
+        cmap=cmap,
+        gamma=gamma,
+        n_colors=n_colors,
+        opacity=opacity,
+        azimuth=azimuth,
+        elevation=elevation,
+        zoom=zoom,
+        static=static,
+        notebook=notebook,
+        window_size=window_size,
+        **kwargs,
+    )
+
+    if ruler:
+        add_ruler(pl, grid_pv)
+
+    pl.show(title=WINDOW_TITLE)
+
+
+def get_model_values(model, property, boundary):
+    property = property.lower()
+    if property in ["p", "pressure", "pressures"]:
+        values = model.pressures
+    elif property in ["q", "rate", "rates"]:
+        values = model.rates
+    else:
+        raise ValueError("Unknown property.")
+
+    if not boundary:
+        cells_id = model.grid.get_cells_id(False, False, "list")
+        return values[:, cells_id]
+    return values
+
+
+def get_model_plotter(
+    model,
+    prop,
+    label,
+    boundary,
+    wells,
+    desc,
+    cbar,
+    cmap,
+    gamma,
+    n_colors,
+    opacity,
+    azimuth,
+    elevation,
+    zoom,
+    static,
+    notebook,
+    window_size,
+    # property: str = "pressures",
+    # label: str = None,
+    # boundary: bool = False,
+    # wells: bool = True,
+    # cbar: bool = True,
+    # cmap: str = "Blues",
+    # gamma: float = 0.7,
+    # n_colors: int = 10,
+    # opacity: float = 0.9,
+    # azimuth: float = 45,
+    # elevation: float = 40,
+    # zoom: float = 1,
+    # static: bool = False,
+    # notebook: bool = False,
+    # window_size: tuple = None,
+    **kwargs,
+):
+    values = get_model_values(model, prop, boundary)
+    limits, fmt = get_limits_fmt(values)
+    colormap = get_colormap(cmap, gamma, n_colors)
+    annotations = get_annotations(values)
+
+    if static and window_size is None:
+        window_size = get_window_size("fhd")
+
+    pl = pv.Plotter(
+        notebook=notebook,
+        window_size=window_size,
+        **kwargs,
+    )
+
+    grid_pv = model.grid.get_pyvista_grid(boundary)
+
+    grid_mesh = dict(
+        mesh=grid_pv,
+        clim=limits,
+        show_edges=True,
+        opacity=opacity,
+        nan_opacity=0.05,
+        lighting=True,
+        colormap=colormap,
+        scalars=values[0].copy(),
+        show_scalar_bar=False,
+        annotations=annotations,
+    )
+
+    if wells:
+        add_wells(pl, model)
+    pl.add_mesh(**grid_mesh)
+
+    if cbar:
+        cbar_dict = get_cbar_dict(prop.capitalize(), n_colors, fmt)
+        pl.add_scalar_bar(**cbar_dict)
+
+    cdir = get_cdir(model.grid)
+    align_camera(pl, cdir, azimuth=azimuth, elevation=elevation, zoom=zoom)
+    set_plotter_config(pl, static=static, notebook=notebook)
+    add_grid_labels(pl, model.grid, label, opacity, boundary)
+    add_title(pl)
+    if desc:
+        add_desc(pl, label, model.grid.D, model.grid.fdir, boundary)
+
+    return pl, grid_pv
+
+
+def save_gif(
+    model,
+    prop: str = "pressures",
+    label: str = None,
+    boundary: bool = False,
+    wells: bool = True,
+    ruler: bool = False,
+    desc: bool = False,
+    info: bool = True,
+    cbar: bool = True,
+    cmap: str = "Blues",
+    gamma: float = 0.7,
+    n_colors: int = 10,
+    opacity: float = 0.9,
+    azimuth: float = 45,
+    elevation: float = 40,
+    zoom: float = 1,
+    fps: int = 10,
+    file_name: str = "grid_animated.gif",
+    window_size: tuple = None,  # (2048, 1080),
+    **kwargs,
+):
+    """Saves pyvista show as gif
+
+    Parameters
+    ----------
+    prop : str, optional
+        property to be visualized in ["pressures", "rates"].
+    boundary : bool, optional
+        include boundary cells.
+    wells : bool, optional
+        show wells.
+    ruler : bool, optional
+        show ruler grid lines.
+    info : bool, optional
+        show simulation information.
+    cbar : bool, optional
+        show color bar.
+    cmap : str, optional
+        color map name based on Matplotlib, see
+        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+    gamma : float, optional
+        shift color map distribution to left when values less than 1 and
+        to right when values larger than 1. In case of qualitative
+        colormaps, this argument is ignored.
+    n_colors : int, optional
+        number of colors. In case of qualitative colormaps, n_colors
+        should not exceed the total number of available colors (e.g. 10
+        for cmap="tab10" and 20 for cmap="tab20").
+    opacity : float, optional
+        adjust transparency between 0 and 1 where 0 is fully transparent
+        and 1 is fully nontransparent.
+    azimuth : float, optional
+        adjust camera azimuth which is a horizontal rotation around the
+        central focal point, see
+        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    elevation : float, optional
+        adjust camera elevation which is a vertical rotation around the
+        central focal point, see
+        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    zoom : float, optional
+        adjust camera zoom which is direct zooming into the central
+        focal point. see
+        [pyvista.Camera.zoom](https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html).
+    fps : int, optional
+        the number of frames per second starting at 1 and higher. Use
+        this to control the speed of the gif image. Note that at some
+        point, higher fps will not have affect on speed.
+    fine_name : str, optional
+        file name of the gif file (including the extension .gif).
+    window_size : tuple, optional
+        pyvista plotter window size in pixels.
+    **kwargs :
+        you can pass any argument for pyvista Plotter except if it is
+        defined as argument in this function (e.g. window_size), see
+        [pyvista.Plotter](https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html).
+
+    Raises
+    ------
+    ValueError
+        label is not recognized.
+
+    ToDo
+    -----
+    Jittering : there is still jittering affect in on side 0 of cell 0.
+        This is a common issue in pyvista also causing issus with color
+        bar. So far there is no solution to this issue. The affect might
+        be mitigated by making the first cell or layer nontransparent.
+
+        # for cell 0:
+        base_cells = 0
+        # for layer 0:
+        base_cells = model.grid.get_cells_i(boundary, True)[0, :, :]
+        # add mesh:
+        pl.add_mesh(
+            grid_pv.extract_cells(base_cells),
+            clim=limits,
+            show_edges=True,
+            opacity=1,
+            lighting=True,
+            colormap=colormap,
+            show_scalar_bar=False,
+        )
+    """
+
+    values = get_model_values(model, prop, boundary)
+
+    pl, grid_pv = get_model_plotter(
+        model,
+        prop=prop,
+        label=label,
+        boundary=boundary,
+        wells=wells,
+        desc=desc,
+        cbar=cbar,
+        cmap=cmap,
+        gamma=gamma,
+        n_colors=n_colors,
+        opacity=opacity,
+        azimuth=azimuth,
+        elevation=elevation,
+        zoom=zoom,
+        static=True,
+        notebook=True,
+        window_size=window_size,
+        **kwargs,
+    )
+
+    if info:
+        font = dict(font="courier", color="white")
+        conf = dict(font_size=11, viewport=True, render=False)
+        locs = get_text_locs(6, 0.01, 0.95, 0.03)
+        dates = model.get_df(columns=["Date"])["Date"]
+        date = pl.add_text("", position=locs[0], **font, **conf)
+        time_step = pl.add_text("", position=locs[1], **font, **conf)
+        value_init = f"initial pressure: {model.pi}"
+        pl.add_text(value_init, position=locs[2], **font, **conf)
+        value_avg = pl.add_text("", position=locs[3], **font, **conf)
+        value_min = pl.add_text("", position=locs[4], **font, **conf)
+        value_max = pl.add_text("", position=locs[5], **font, **conf)
+    if ruler:
+        add_ruler(pl, grid_pv)
+
+    pl.open_gif(
+        filename=file_name,
+        loop=0,
+        fps=fps,
+        palettesize=256,
+        subrectangles=False,
+    )
+
+    for tstep in range(model.nsteps):
+        if info:
+            date.SetInput(f"    current date: {dates[tstep]}")
+            time_step.SetInput(f"current timestep: {tstep:02d}")
+            value_avg.SetInput(f"    avg pressure: {np.nanmean(values[tstep]):.0f}")
+            value_min.SetInput(f"    min pressure: {np.nanmin(values[tstep]):.0f}")
+            value_max.SetInput(f"    max pressure: {np.nanmax(values[tstep]):.0f}")
+        pl.update_scalars(values[tstep], grid_pv, render=False)
         pl.write_frame()
-        # time.sleep(2)
 
     pl.close()
 
-    # To show time with 3D
-    # https://docs.pyvista.org/api/plotting/plotting.html
+
+def show_model(
+    model,
+    prop: str = "pressures",
+    label: str = None,
+    boundary: bool = False,
+    wells: bool = True,
+    ruler: bool = False,
+    desc: bool = False,
+    info: bool = True,
+    cbar: bool = True,
+    cmap: str = "Blues",
+    gamma: float = 0.7,
+    n_colors: int = 10,
+    opacity: float = 0.9,
+    azimuth: float = 45,
+    elevation: float = 40,
+    zoom: float = 1,
+    static: bool = False,
+    notebook: bool = False,
+    window_size: tuple = None,
+    **kwargs,
+):
+    """Show pyvista plotter
+
+    Parameters
+    ----------
+    prop : str, optional
+        property to be visualized in ["pressures", "rates"].
+    label : str, optional
+        label of grid centers as str in ['id', 'coords', 'icoords',
+        'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center', 'sphere']. If
+        None or False, nothing will be added as a label.
+    boundary : bool, optional
+        include boundary cells.
+    wells : bool, optional
+        show wells.
+    ruler : bool, optional
+        show ruler grid lines.
+    info : bool, optional
+        show simulation information.
+    cbar : bool, optional
+        show color bar.
+    cmap : str, optional
+        color map name based on Matplotlib, see
+        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+    gamma : float, optional
+        shift color map distribution to left when values less than 1 and
+        to right when values larger than 1. In case of qualitative
+        colormaps, this argument is ignored.
+    n_colors : int, optional
+        number of colors. In case of qualitative colormaps, n_colors
+        should not exceed the total number of available colors (e.g. 10
+        for cmap="tab10" and 20 for cmap="tab20").
+    opacity : float, optional
+        adjust transparency between 0 and 1 where 0 is fully transparent
+        and 1 is fully nontransparent.
+    azimuth : float, optional
+        adjust camera azimuth which is a horizontal rotation around the
+        central focal point, see
+        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    elevation : float, optional
+        adjust camera elevation which is a vertical rotation around the
+        central focal point, see
+        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+    zoom : float, optional
+        adjust camera zoom which is direct zooming into the central
+        focal point. see
+        [pyvista.Camera.zoom](https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html).
+    static : bool, optional
+        show as a static image in a jupyter notebook. This argument
+        is ignored when notebook argument is set to False. True
+        value is used to render images for the documentation.
+    notebook : bool, optional
+        show plot is placed inline a jupyter notebook. If False,
+        then an interactive window will be opened outside of jupyter
+        notebook.
+    window_size : tuple, optional
+        pyvista plotter window size in pixels.
+    **kwargs :
+        you can pass any argument for pyvista Plotter except if it is
+        defined as argument in this function (e.g. window_size), see
+        [pyvista.Plotter](https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html).
+
+    Raises
+    ------
+    ValueError
+        label is not recognized.
+
+    Backup
+    ------
+    Key callbacks:
+        def my_cpos_callback():
+            pl.add_text(text=str(pl.camera.position), name="cpos")
+            # return
+        pl.add_key_event("p", my_cpos_callback)
+    """
+    set_plotter_backend(static)
+    pl, grid_pv = get_model_plotter(
+        model,
+        prop=prop,
+        label=label,
+        boundary=boundary,
+        wells=wells,
+        desc=desc,
+        cbar=cbar,
+        cmap=cmap,
+        gamma=gamma,
+        n_colors=n_colors,
+        opacity=opacity,
+        azimuth=azimuth,
+        elevation=elevation,
+        zoom=zoom,
+        static=static,
+        notebook=notebook,
+        window_size=window_size,
+        **kwargs,
+    )
+
+    if info:
+        font = dict(font="courier", color="white")
+        conf = dict(font_size=11, viewport=True, render=False)
+        locs = get_text_locs(6, 0.01, 0.95, 0.03)
+        dates = model.get_df(columns=["Date"])["Date"]
+        date = pl.add_text("", position=locs[0], **font, **conf)
+        time_step = pl.add_text("", position=locs[1], **font, **conf)
+        value_init = f"initial pressure: {model.pi}"
+        pl.add_text(value_init, position=locs[2], **font, **conf)
+        value_avg = pl.add_text("", position=locs[3], **font, **conf)
+        value_min = pl.add_text("", position=locs[4], **font, **conf)
+        value_max = pl.add_text("", position=locs[5], **font, **conf)
+
+    if ruler:
+        add_ruler(pl, grid_pv)
+
+    def update_pl(tstep):
+        tstep = int(tstep)
+        if info:
+            date.SetInput(f"    current date: {dates[tstep]}")
+            time_step.SetInput(f"current timestep: {tstep:02d}")
+            value_avg.SetInput(f"    avg pressure: {np.nanmean(values[tstep]):.0f}")
+            value_min.SetInput(f"    min pressure: {np.nanmin(values[tstep]):.0f}")
+            value_max.SetInput(f"    max pressure: {np.nanmax(values[tstep]):.0f}")
+        pl.update_scalars(values[tstep], grid_pv, render=False)
+        return pl
+
+    values = get_model_values(model, prop, boundary)
+    last_tstep = model.nsteps - 1
+    pl = update_pl(last_tstep)
+
+    if not static or not notebook:
+        pl.add_slider_widget(
+            callback=update_pl,
+            rng=(0, last_tstep),
+            value=last_tstep,
+            title="Timestep",
+            pointa=(0.40, 0.90),
+            pointb=(0.60, 0.90),
+            color="white",
+            interaction_event="always",
+            style="modern",
+            title_height=0.025,
+            title_opacity=0.7,
+            title_color="white",
+            fmt="%.0f",
+            slider_width=0.02,
+            tube_width=0.01,
+        )
+
+    pl.show(title=WINDOW_TITLE)

@@ -27,6 +27,7 @@ class RegularCartesian(_Grid):
     #   than reshape > flatten.
 
     name = "Regular Cartesian Grid"
+    show = utils.plots.show_grid
 
     def __init__(
         self,
@@ -115,7 +116,7 @@ class RegularCartesian(_Grid):
         dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
-        unit : str ('field', 'metric'), optional
+        unit : str ('field', 'metric', 'lab'), optional
             units used in input and output. Parameters can be defined as
             `unit='field'` (default) or `unit='metric'`. `units`
             attribute can be accessed from this class using
@@ -496,13 +497,28 @@ class RegularCartesian(_Grid):
     # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=2)
-    def get_cells_i(self, boundary: bool = True):
+    def get_cells_i(
+        self,
+        boundary: bool = True,
+        fshape: bool = False,
+        fmt="array",
+    ):
         """Returns range based on the number of cells.
 
         Parameters
         ----------
         boundary : bool, optional
             include boundary cells.
+        fshape : bool, optional
+            reshape to flow shape instead of flatten. If set to
+            True, fmt argument will be ignored.
+        fmt : str, optional
+            output format as str from ['array', 'list', 'tuple', 'set'].
+            This argument is ignored if fshape argument is set to True.
+            For a better performance, use 'set' to check if an item is
+            in a list or not. Use tuples to iterate through items. When
+            option 'array' is used, utils.isin() must be used to check
+            if a tuple of 3 is in the array.
 
         Returns
         -------
@@ -511,6 +527,12 @@ class RegularCartesian(_Grid):
         """
         n = self.get_n(boundary)
         self.cells_i = np.arange(n)
+
+        if fshape:
+            shape = self.get_fshape(boundary, False)
+            self.cells_i = self.cells_i.reshape(shape)
+        else:
+            self.cells_i = utils.reformat(self.cells_i, fmt)
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
@@ -2095,7 +2117,7 @@ class RegularCartesian(_Grid):
     # Pyvista:
     # -------------------------------------------------------------------------
 
-    @_lru_cache(maxsize=2)
+    # @_lru_cache(maxsize=2)
     def get_pyvista_grid(self, boundary: bool = True):
         """Returns pyvista ExplicitStructuredGrid object.
 
@@ -2115,13 +2137,13 @@ class RegularCartesian(_Grid):
         """
         shape = np.array(self.get_shape(boundary)) + 1
         corners = self.get_corners(boundary)
-        pyvista_grid = pv.ExplicitStructuredGrid(shape, corners)
+        grid_pv = pv.ExplicitStructuredGrid(shape, corners)
 
         if self.verbose:
             s = utils.get_boundary_str(boundary)
-            print(f"[info] pyvista_grid {s} was created.")
+            print(f"[info] grid_pv {s} was created.")
 
-        return pyvista_grid
+        return grid_pv
 
     @_lru_cache(maxsize=2)
     def get_corners(self, boundary: bool = True):
@@ -2952,139 +2974,6 @@ class RegularCartesian(_Grid):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    def show(
-        self,
-        label=None,
-        boundary: bool = True,
-        corners=False,
-    ):
-        """Shows pyvista grid.
-
-        This method shows the grid using pyvista object in 3D. Only if
-        the total number of cells is lower than 20, then the grid will
-        be transparent. Therefore, to be able debug your model, try to
-        first test a small model.
-
-        Parameters
-        ----------
-        label : str, optional
-            label of grid centers as str in ['id', 'coords', 'icoords',
-            'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center']. If None,
-            then a sphere shape at the center will appear.
-        boundary : bool, optional
-            include boundary cells.
-        corners : bool, optional
-
-
-        Raises
-        ------
-        ValueError
-            label is not recognized.
-        """
-        # self.get_n_max(True)
-        pyvista_grid = self.get_pyvista_grid(boundary)
-
-        transparent = True  # self.get_n(boundary) < 200
-        if transparent:
-            opacity = 0.8
-        else:
-            opacity = 1
-
-        pl = pv.Plotter()
-        pl.add_mesh(
-            pyvista_grid,
-            show_edges=True,
-            color="white",
-            opacity=opacity,
-        )
-
-        if corners:
-            points_lst = self.get_pyvista_grid(boundary).points
-            # if boundary:
-            #     mask = points_lst[:, 1] == 0
-            # else:
-            #     id = self.get_order(boundary=False)[0]
-            #     mask = points_lst[:, 1] == self.get_cell_dy(id=id)
-            # pl.add_point_labels(
-            #     points_lst[mask],
-            #     points_lst[mask].tolist(),
-            #     point_size=10,
-            #     font_size=10,
-            # )
-            pl.add_point_labels(
-                points_lst,
-                points_lst.tolist(),
-                point_size=10,
-                font_size=10,
-            )
-
-        if transparent and label is not None:
-            if label == "coords":
-                labels = self.get_cells_coords(boundary, False, "tuple")
-            elif label == "icoords":
-                labels = self.get_cells_icoords(boundary, False, "tuple")
-            elif label == "id":
-                labels = self.get_cells_id(boundary, False, "tuple")
-            elif label == "i":
-                labels = self.get_cells_i(boundary)
-            elif label == "dx":
-                labels = self.get_cells_dx(boundary, False)
-            elif label == "dy":
-                labels = self.get_cells_dy(boundary, False)
-            elif label == "dz":
-                labels = self.get_cells_dz(boundary, False)
-            elif label in ["area_x", "Ax"]:
-                labels = self.get_cells_Ax(boundary, False)
-            elif label in ["area_y", "Ay"]:
-                labels = self.get_cells_Ay(boundary, False)
-            elif label in ["area_z", "Az"]:
-                labels = self.get_cells_Az(boundary, False)
-            elif label in ["volume", "V"]:
-                labels = self.get_cells_V(boundary, False, False)
-            elif label in ["center", "centers"]:
-                labels = self.get_cells_center(boundary, False, False)
-            else:
-                raise ValueError(f"label='{label}' is not recognized.")
-            points = self.get_cells_center(boundary, False, False)
-            pl.add_point_labels(
-                points=points,
-                labels=labels,
-                point_size=10,
-                font_size=10,
-            )
-        else:
-            points = self.get_cells_center(boundary, False, False)
-            pl.add_points(
-                points,
-                point_size=10,
-                render_points_as_spheres=True,
-                show_edges=True,
-                color="black",
-            )
-
-        s = utils.get_boundary_str(boundary)
-        title = "{}D model by {} (flow at {}-direction {})".format(
-            self.D, label, self.fdir, s
-        )
-
-        pl.add_title(title, font="courier", color="white", font_size=8)
-        pl.add_camera_orientation_widget()
-        pl.enable_fly_to_right_click()
-        pl.show_axes()
-        fdir = "xz"
-        if fdir is None:
-            if self.D == 1:
-                if self.fdir == "y":
-                    fdir = "yz"
-                else:
-                    fdir = "xz"
-            elif self.D == 2:
-                fdir = self.fdir
-            else:
-                fdir = "xz"
-        pl.camera_position = fdir
-        pl.set_background("black", top="gray")
-        pl.show(title="ReservoirFlow 3D show", full_screen=True)
 
     # -------------------------------------------------------------------------
     # Synonyms:

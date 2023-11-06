@@ -1,14 +1,15 @@
-.. image:: ../../images/five_spot_single_phase.gif
-  :width: 600
-  :alt: five_spot_single_phase
-  :align: center
-
-|
-
 .. note:: 
-   This project is under active development. Only basic functionality is available.
-
-|
+   This project is under active development and only basic functionality is currently available 
+   (see `Capabilities </capabilities.html>`_).
+   
+.. figure: user_guide/tutorials/tutorial_five_spot_single_phase/grid_animated.gif
+.. figure:: https://drive.google.com/uc?id=11NhTbAU_lA768yiEAsoA18SshMjDtRqZ
+   :width: 700
+   :alt: five_spot_single_phase
+   :align: center
+   
+   *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns.* (see `Tutorials`_)
+.. _tutorials: /user_guide/tutorials/tutorial_five_spot_single_phase/tutorial_five_spot_single_phase.html
 
 .. include:: ../../README.md
    :start-after: ## Introduction

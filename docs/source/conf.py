@@ -21,7 +21,10 @@ extensions = [
 ]
 
 # remove warnings:
-suppress_warnings = ["myst.header"]
+suppress_warnings = [
+    "myst.header",
+    "toc.excluded",
+]
 
 
 # source_suffix = {
@@ -31,7 +34,7 @@ suppress_warnings = ["myst.header"]
 # }
 
 templates_path = ["_templates"]
-exclude_patterns = []
+exclude_patterns = ["**/example_*"]
 
 # myst and myst-nb: https://myst-nb.readthedocs.io/en/latest/render/format_code_cells.html
 myst_all_links_external = True
@@ -46,6 +49,10 @@ myst_enable_extensions = [
     "dollarmath",
     "html_image",
 ]
+
+# myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
+nb_output_stderr = "remove"  # remove progress bar
+nb_merge_streams = True  # combine print output in one cell
 
 # switcher: (rc: release candidate)
 switcher_version = version

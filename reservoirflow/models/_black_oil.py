@@ -34,6 +34,8 @@ class BlackOil(_Model):
     """
 
     name = "BlackOil Model"
+    show = utils.plots.show_model
+    save_gif = utils.plots.save_gif
 
     def __init__(
         self,
@@ -1047,11 +1049,13 @@ class BlackOil(_Model):
                 pass  # no constrain
 
         for id_b in self.bdict.keys():
-            id = self.grid.get_cell_neighbors(id_b, None, False, "list")[0]
-            if self.bdict[id_b][0] == "pressure":
-                self.d_[self.cells_i_dict[id], 0] -= self.bdict_v[id_b][0]
-            else:  # elif self.bdict[id_b][0] in ["gradient", "rate"]:
-                self.d_[self.cells_i_dict[id], 0] -= self.rates[self.tstep, id_b]
+            id = self.grid.get_cell_neighbors(id_b, None, False, "list")
+            if len(id) > 0:
+                id = id[0]
+                if self.bdict[id_b][0] == "pressure":
+                    self.d_[self.cells_i_dict[id], 0] -= self.bdict_v[id_b][0]
+                else:  # elif self.bdict[id_b][0] in ["gradient", "rate"]:
+                    self.d_[self.cells_i_dict[id], 0] -= self.rates[self.tstep, id_b]
 
         if update_z:
             self.__update_z()
@@ -1272,7 +1276,7 @@ class BlackOil(_Model):
         vectorize=True,
         check_MB=True,
         print_arrays=False,
-        isolver="cgs",
+        isolver=None,
     ):
         """Perform a simulation run for nsteps.
 
@@ -1291,8 +1295,9 @@ class BlackOil(_Model):
             ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
             "minres", "qmr", "gcrotmk", "tfqmr"].
             If None, direct solver is used. Only relevant when argument
-            sparse=True. Option "cgs" is recommended to increase
-            performance while option "minres" is not recommended due to
+            sparse=True. Direct solver is recommended for more accurate
+            calculations. To improve performance, "cgs" is recommended 
+            to increase performance while option "minres" is not recommended due to
             high MB error. For more information check [1][2].
 
         References
@@ -1859,8 +1864,20 @@ class BlackOil(_Model):
 
     #     return pl
 
-    def show(self, property: str, centers=False, boundary: bool = False, bounds=False):
-        utils.plots.show(self, property, centers, boundary, bounds)
+    # def show(
+    #     self,
+    #     property: str,
+    #     centers=False,
+    #     boundary: bool = False,
+    #     bounds=False,
+    # ):
+    #     utils.plots.show(
+    #         self,
+    #         property,
+    #         centers,
+    #         boundary,
+    #         bounds,
+    #     )
 
     # def get_gif(self, prop, boundary=False, wells=True):
     #     if prop in ['p', 'press', 'pressure', 'pressures']:
