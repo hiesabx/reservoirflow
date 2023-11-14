@@ -12,7 +12,7 @@
 
 - Install Python:
 
-    For this project, `python>=3.7` is recommended. To download the executable installer files directly for `python==3.7.9`:
+    For this project, `python>=3.8` is recommended. To download the executable installer files directly for `python==3.7.9`:
 
   - Windows: [Windows x86-64 executable installer](https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe)
   - macOS: [macOS 64-bit installer](https://www.python.org/ftp/python/3.7.9/python-3.7.9-macosx10.9.pkg)

@@ -1,16 +1,15 @@
 """
 Plots module
+============
 
 This module is used to provide 3D plots for grids and model modules 
 using Pyvista. These functions are used as class methods to provide
-direct accessibility to 3D visualizations using `show` attribute.
+direct accessibility to 3D visualizations using ``show`` attribute.
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
-
-from reservoirflow.utils.helpers import _lru_cache
 
 from . import helpers
 
@@ -18,7 +17,7 @@ WINDOW_TITLE = "ReservoirFlow 3D Show"
 
 
 def set_plotter_backend(static: bool) -> None:
-    """Set plotter backend
+    """Set backend for a pyvista plotter.
 
     Parameters
     ----------
@@ -33,7 +32,7 @@ def set_plotter_backend(static: bool) -> None:
 
 
 def decide_widget(static: bool, notebook: bool) -> bool:
-    """Decide to add widget or not
+    """Decide to add widget or not.
 
     Parameters
     ----------
@@ -62,7 +61,7 @@ def set_plotter_config(
     static: bool = False,
     notebook: bool = False,
 ) -> None:
-    """Set plotter configuration
+    """Set the configuration for a pyvista plotter.
 
     Parameters
     ----------
@@ -79,7 +78,7 @@ def set_plotter_config(
     """
     pl.set_background("black")
     pl.enable_fly_to_right_click()
-    pl.show_axes()
+    pl.add_axes(color="white")
     if decide_widget(static, notebook):
         pl.add_camera_orientation_widget()
 
@@ -90,7 +89,7 @@ def get_text_locs(
     vloc: float,
     space: float,
 ) -> list:
-    """Returns text locations for pyvista plotter
+    """Returns text locations for a pyvista plotter.
 
     Parameters
     ----------
@@ -106,14 +105,14 @@ def get_text_locs(
     Returns
     -------
     list
-        list of tuples of (hloc, vloc) based on n.
+        list of tuples as [(hloc, vloc), ..] based on n.
     """
     vlocs = vloc - np.arange(0, space * n, space)
     return [(hloc, vloc) for vloc in vlocs]
 
 
 def get_limits_fmt(values: np.ndarray) -> tuple:
-    """Get values limits and format
+    """Get values limits and format.
 
     Parameters
     ----------
@@ -135,7 +134,7 @@ def get_limits_fmt(values: np.ndarray) -> tuple:
 
 
 def get_cdir(grid) -> str:
-    """Get camera direction
+    """Get camera direction.
 
     Parameters
     ----------
@@ -168,7 +167,7 @@ def align_camera(
     elevation: float = 30,
     zoom: float = 1.3,
 ) -> None:
-    """Align the plotter camera
+    """Align the camera for a pyvista plotter.
 
     Parameters
     ----------
@@ -196,7 +195,7 @@ def add_wells(
     pl: pv.Plotter,
     model,
 ) -> None:
-    """Add wells to a pyvista plotter
+    """Add wells to a pyvista plotter.
 
     Parameters
     ----------
@@ -205,10 +204,11 @@ def add_wells(
     model : rf.models.Model
         a model object from models module.
 
-    Backup
-    ------
-    Getting cells center using pyvista
+    Notes
+    -----
+    Getting cells center using pyvista:
         - you may need to convert to list:
+
         >>> model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
     """
     cells_center = model.grid.get_cells_center(True, False, False).copy()
@@ -226,15 +226,15 @@ def add_wells(
 
 
 def get_cbar_dict(
-    property: str = "pressures",
+    prop: str = "pressures",
     n_colors: int = 10,
     fmt: str = "%.f",
 ) -> dict:
-    """Get color bar dictionary
+    """Get color bar dictionary for a pyvista plotter.
 
     Parameters
     ----------
-    property : str, optional
+    prop : str, optional
         name of the property as a string.
     n_colors : int, optional
         number of colors of the color bar.
@@ -248,16 +248,17 @@ def get_cbar_dict(
     """
     n_bins = n_colors + 1
     cbar_dict = dict(
-        title=property,
+        title=prop,
         n_labels=n_bins,
-        vertical=True,
         title_font_size=24,
         label_font_size=18,
+        color="white",
         font_family="arial",
         width=0.07,
         height=0.7,
         position_x=0.90,
         position_y=0.03,
+        vertical=True,
         fmt=fmt,
         use_opacity=False,
         outline=False,
@@ -527,14 +528,15 @@ def add_grid_labels(
             pl.add_point_labels(
                 points=points,
                 labels=labels,
-                point_size=10,
                 font_size=10,
+                text_color="white",
+                point_size=10,
             )
 
 
 def get_grid_plotter(
     grid,
-    property,
+    prop,
     label,
     boundary,
     corners,
@@ -550,7 +552,7 @@ def get_grid_plotter(
     static,
     notebook,
     window_size,
-    # property: str = "pressures",
+    # prop: str = "pressures",
     # label: str = None,
     # boundary: bool = False,
     # corners: bool = False,
@@ -567,7 +569,7 @@ def get_grid_plotter(
     # window_size: tuple = None,
     **kwargs,
 ):
-    # values = get_values(model, property, boundary)
+    # values = get_values(model, prop, boundary)
     # limits, fmt = get_limits_fmt(values)
     colormap = get_colormap(cmap, gamma, n_colors)
     # annotations = get_annotations(values)
@@ -588,10 +590,11 @@ def get_grid_plotter(
         # clim=limits,
         show_edges=True,
         opacity=opacity,
+        nan_color="gray",
         nan_opacity=0.05,
         lighting=True,
         colormap=colormap,
-        # color="white",
+        color="white",
         # scalars=values[0].copy(),
         show_scalar_bar=False,
         # annotations=annotations,
@@ -602,8 +605,9 @@ def get_grid_plotter(
         pl.add_point_labels(
             points=points,
             labels=points.tolist(),
-            point_size=10,
             font_size=10,
+            text_color="white",
+            point_size=10,
         )
     pl.add_mesh(**grid_mesh)
 
@@ -624,7 +628,7 @@ def get_grid_plotter(
 
 def show_grid(
     grid,
-    property: str = "pressures",
+    prop: str = "pressures",
     label: str = None,
     boundary: bool = False,
     # wells: bool = True,
@@ -691,7 +695,7 @@ def show_grid(
     set_plotter_backend(static)
     pl, grid_pv = get_grid_plotter(
         grid,
-        property=property,
+        prop=prop,
         label=label,
         boundary=boundary,
         # wells=wells,
@@ -717,11 +721,11 @@ def show_grid(
     pl.show(title=WINDOW_TITLE)
 
 
-def get_model_values(model, property, boundary):
-    property = property.lower()
-    if property in ["p", "pressure", "pressures"]:
+def get_model_values(model, prop, boundary):
+    prop = prop.lower()
+    if prop in ["p", "pressure", "pressures"]:
         values = model.pressures
-    elif property in ["q", "rate", "rates"]:
+    elif prop in ["q", "rate", "rates"]:
         values = model.rates
     else:
         raise ValueError("Unknown property.")
@@ -750,7 +754,7 @@ def get_model_plotter(
     static,
     notebook,
     window_size,
-    # property: str = "pressures",
+    # prop: str = "pressures",
     # label: str = None,
     # boundary: bool = False,
     # wells: bool = True,
@@ -788,9 +792,11 @@ def get_model_plotter(
         clim=limits,
         show_edges=True,
         opacity=opacity,
+        nan_color="gray",
         nan_opacity=0.05,
         lighting=True,
         colormap=colormap,
+        color="white",
         scalars=values[0].copy(),
         show_scalar_bar=False,
         annotations=annotations,
@@ -897,27 +903,33 @@ def save_gif(
     ValueError
         label is not recognized.
 
-    ToDo
-    -----
-    Jittering : there is still jittering affect in on side 0 of cell 0.
+    Warnings
+    --------
+    Jittering :
+
+        There is still jittering affect especially when a
+        continues colors are used. In addition, the same affect appears
+        on side 0 of cell 0 even with discretized colors.
         This is a common issue in pyvista also causing issus with color
         bar. So far there is no solution to this issue. The affect might
-        be mitigated by making the first cell or layer nontransparent.
+        be mitigated by using discretized colors or by making the first
+        cell or layer nontransparent.
 
-        # for cell 0:
-        base_cells = 0
-        # for layer 0:
-        base_cells = model.grid.get_cells_i(boundary, True)[0, :, :]
-        # add mesh:
-        pl.add_mesh(
-            grid_pv.extract_cells(base_cells),
-            clim=limits,
-            show_edges=True,
-            opacity=1,
-            lighting=True,
-            colormap=colormap,
-            show_scalar_bar=False,
-        )
+        >>> # Making cell 0 nontransparent.
+        >>> # for cell 0:
+        >>> base_cells = 0
+        >>> # for layer 0:
+        >>> base_cells = model.grid.get_cells_i(boundary, True)[0, :, :]
+        >>> # add mesh:
+        >>> pl.add_mesh(
+        >>>     grid_pv.extract_cells(base_cells),
+        >>>     clim=limits,
+        >>>     show_edges=True,
+        >>>     opacity=1,
+        >>>     lighting=True,
+        >>>     colormap=colormap,
+        >>>     show_scalar_bar=False,
+        >>> )
     """
 
     values = get_model_values(model, prop, boundary)

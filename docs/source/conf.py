@@ -27,13 +27,12 @@ suppress_warnings = [
     "toc.excluded",
 ]
 
-
-source_suffix = {
-    ".rst": "restructuredtext",
-    # ".ipynb": "myst-nb",
-    # ".myst": "myst-nb",
-    ".py": "myst-nb",
-}
+# source_suffix = {
+#     ".rst": "restructuredtext",
+#     # ".ipynb": "myst-nb",
+#     # ".myst": "myst-nb",
+#     ".py": "myst-nb",
+# }
 
 templates_path = ["_templates"]
 exclude_patterns = ["**/example_*"]
@@ -53,26 +52,31 @@ myst_enable_extensions = [
 ]
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
-nb_output_stderr = "remove"  # remove progress bar
+# nb_output_stderr = "remove"  # remove progress bar
 nb_merge_streams = True  # combine print output in one cell
 
 # switcher: (rc: release candidate)
 switcher_version = version
+json_url = "_static/versions.json"
 if ".dev" in version:
     switcher_version = "dev"
 elif "rc" in version:
     switcher_version = version.split("rc", maxsplit=1)[0] + " (rc)"
-html_static_path = ["_static", "_static/versions.json"]
 
 # html:
 html_theme = "pydata_sphinx_theme"
 html_title = project  # + release
 html_logo = "_static/logo.png"
 html_favicon = "_static/logo_grid.png"
-html_static_path = ["_static"]
 html_show_sourcelink = False
+html_static_path = [
+    "_static",
+]
+html_css_files = [
+    "css/custom.css",
+]
 html_theme_options = {
-    "header_links_before_dropdown": 7,
+    # "header_links_before_dropdown": 7,
     # icons:
     "icon_links": [
         {
@@ -88,16 +92,27 @@ html_theme_options = {
         },
     ],
     "footer_start": ["copyright"],  # remove PyData and Sphinx notes.
-    "navbar_start": ["navbar-logo"],
-    # switcher:
-    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+    "footer_center": "",
+    "footer_end": "",
+    "navbar_start": [
+        "navbar-logo",
+        "version-switcher",
+    ],
+    "navbar_center": [
+        "navbar-nav",
+    ],
+    "navbar_end": [
+        "theme-switcher",
+        "navbar-icon-links",
+    ],
     "switcher": {
-        "json_url": "_static/versions.json",
+        "json_url": json_url,
         "version_match": switcher_version,
     },
-    "check_switcher": False,
+    "check_switcher": True,
+    "show_version_warning_banner": True,
+    "navigation_with_keys": False,
 }
-
 
 # autodoc:
 autoclass_content = "init"
@@ -167,8 +182,6 @@ def store_dict(in_dict, name="FACTORS"):
     table = tabulate(report, headers=headers, showindex=False, tablefmt="rst")
     path = f"user_guide/units_factors/{name}.rst"
     with open(path, "w") as f:
-        # name = name.capitalize()
-        # f.write(f"{name}\n{'#'*len(name)}\n")
         f.writelines(table)
 
 

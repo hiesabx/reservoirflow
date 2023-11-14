@@ -1,4 +1,3 @@
-==========
 User Guide
 ==========
 
@@ -6,6 +5,7 @@ This section helps you to learn about ReservoirFlow as quickly as possible.
 
 Contents
 --------
+
 .. toctree::
     :maxdepth: 1
 

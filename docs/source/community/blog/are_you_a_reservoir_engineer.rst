@@ -1,6 +1,7 @@
-=============================
 Are You a Reservoir Engineer?
 =============================
+*Author: Zakariya Abugrin | Date: November 2023*
+
 
 Accessible and reproducible research is very scarce in the oil & gas industry. This unfortunate reality led many reservoir engineers to be limited and dependent on commercial tools that are closed black-boxes which led to severe limitations when it comes to skills and innovation. For example, most reservoir engineers today can not easily express their scientific knowledge by coding and normally are not trained to do so. This perhaps is the main reason why the oil & gas industry is still behind in the AI revolution.
 

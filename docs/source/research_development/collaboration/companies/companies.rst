@@ -1,6 +1,5 @@
-==========
 Companies
-==========
+=========
 
 We are looking to collaborate with companies.
 

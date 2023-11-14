@@ -1,4 +1,3 @@
-=======
 Backlog
 =======
 
@@ -6,24 +5,25 @@ Here we list the most important tasks that we need to work on. You may support u
 
 New Modules
 -----------
-- reservoirflow.pvt: a module for PVT functionality. 
-- reservoirflow.relperm: a module for relative permeability functionality.
+
+- ``reservoirflow.pvt``: a module for PVT functionality. 
+- ``reservoirflow.kr``: a module for relative permeability functionality.
 
 Improving Current Modules
 -------------------------
 
-reservoirflow.grids
-^^^^^^^^^^^^^^^^^^^
+Module: ``reservoirflow.grids``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Radial Grid
 - Irregular Cartesian Grid
 
-reservoirflow.fluids
-^^^^^^^^^^^^^^^^^^^^
+Module: ``reservoirflow.fluids``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Two Phase Flow
 - Three Phase Flow
 
-reservoirflow.utils
-^^^^^^^^^^^^^^^^^^^
+Module: ``reservoirflow.utils``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Import Eclipse Files
 - Unit converter
 

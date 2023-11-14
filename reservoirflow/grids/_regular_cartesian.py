@@ -51,64 +51,58 @@ class RegularCartesian(_Grid):
         """Regular Cartesian grid class with explicit structure.
 
         Parameters
-        ----------
+        ----------        
         nx : int
-            number of grids in x-direction (excluding boundary cells)
-            and must be >= 1. Boundary cells are added automatically.
+            number of cells in x-direction (excluding boundary cells)
+            and must be >= 1. Boundary cells are added automatically. 
+            Consequently, nx values are increased by 2 to account for 
+            the boundary cells in x-direction.
         ny : int
-            number of grids in y-direction (excluding boundary cells)
+            number of cells in y-direction (excluding boundary cells)
             and must be >= 1. Boundary cells are added automatically.
+            Consequently, ny values are increased by 2 to account for 
+            the boundary cells in y-direction.
         nz : int
             number of grids in z-direction (excluding boundary cells)
             and must be >= 1. Boundary cells are added automatically.
+            Consequently, nz values are increased by 2 to account for 
+            the boundary cells in z-direction.
         dx : int, float, array-like
-            grid dimension in x-direction. In case of a list or array,
-            the length should be equal to nx+2 for all cells including
-            boundary cells. Vales should be in natural order (i.e. from
-            left to right).
+            grid dimension in x-direction. In case of a list or an array,
+            the length should be equal to nx+2 (including boundary cells). 
+            Values should be in natural order (i.e. from left to right).           
         dy : int, float, array-like
-            grid dimension in y-direction. In case of a list or array,
-            the length should be equal to ny+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g. from
-            front to back).
+            grid dimension in y-direction. In case of a list or an array,
+            the length should be equal to ny+2 (including boundary cells). 
+            Values should be in natural order (i.e. from front to back).
         dz : int, float, array-like
-            grid dimension in z-direction. In case of a list or array,
-            the length should be equal to nz+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g. from
-            down to up).
+            grid dimension in z-direction. In case of a list or an array,
+            the length should be equal to nz+2 (including boundary cells). 
+            Values should be in natural order (i.e. from bottom to top).
         kx : int, float, array-like, optional
-            permeability (i.e. the capacity of the grid block to
-            transmit fluid through its interconnected pores).
-            Permeability is a directional property, check is_isotropic
-            property. Permeability in x-direction (relevant only if 'x'
-            was in fluid flow direction). In case of a list or array,
-            the length should be equal to nx+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g.from
-            left to right).
+            Permeability in x-direction. In case of a list or an array, 
+            the length should be equal to nx+2 (including boundary cells).
+            Values should be in natural order (i.g.from left to right).
+            These values are only relevant based on the flow direction 
+            (e.g. kx is ignored if there is no flow at x-direction).
         ky : int, float, array-like, optional
-            permeability (i.e. the capacity of the grid block to
-            transmit fluid through its interconnected pores).
-            Permeability is a directional property, check is_isotropic
-            property. Permeability in y-direction (relevant only if 'y'
-            was in fluid flow direction). In case of a list or array,
-            the length should be equal to ny+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g.from
-            front to back).
+            Permeability in y-direction. In case of a list or an array, 
+            the length should be equal to ny+2 (including boundary cells).
+            Values should be in natural order (i.e. from front to back).
+            These values are only relevant based on the flow direction 
+            (e.g. ky is ignored if there is no flow at y-direction).
         kz : int, float, array-like, optional
-            permeability (i.e. the capacity of the grid block to
-            transmit fluid through its interconnected pores).
-            Permeability is a directional property, check is_isotropic
-            property. Permeability in z-direction (relevant only if 'z'
-            was in fluid flow direction). In case of a list or array,
-            the length should be equal to nz+2 for all cells including
-            boundary cells. Vales should be in natural order (i.g. from
-            down to up).
+            Permeability in z-direction. In case of a list or an array, 
+            the length should be equal to nz+2 (including boundary cells).
+            Values should be in natural order (i.e. from bottom to top).
+            These values are only relevant based on the flow direction 
+            (e.g. kz is ignored if there is no flow at z-direction).
         phi : float, array-like, optional
-            porosity (i.e. effective porosity defined as the ratio of
-            interconnected pores to the grid bulk volume). Porosity is a
-            spacial property, check is_homogenous property.
-            In case of an array, the shape should be equal to grid.shape
-            with boundaries. Vales should be in natural order.
+            effective porosity (in all directions). In case of an array, 
+            the shape should be equal to grid.shape (including boundary
+            cells). Values should be in natural order 
+            (i.e. from left to right at x-direction, from front to back 
+            at y-direction, and from bottom to top at z-direction).
         z : int, float, array-like, optional.
             depth of grid tops (NOT FULLY IMPLEMENTED).
         comp : float, optional
@@ -130,6 +124,17 @@ class RegularCartesian(_Grid):
             each other or with 3D shape.
         verbose : bool, optional
             print information for debugging.
+            
+        Notes
+        -----
+        Permeability (kx, ky, kz) : darcy, millidarcy
+            permeability is a directional property and defined as the 
+            capacity of the grid block to transmit fluid through its 
+            interconnected pores, check `is_isotropic` property. 
+        Porosity (phi) : ratio
+            porosity or effective porosity is a ratio of the volume of 
+            interconnected pores to the grid bulk volume. Porosity is a
+            volumetric ratio, check `is_homogenous` property.
         """
 
         # ToDo
@@ -146,7 +151,6 @@ class RegularCartesian(_Grid):
         self.__calc_cells_V()
         self.set_props(kx, ky, kz, phi, z, comp)
         self.cells_id = self.get_cells_id(False, False, "array")
-        # self.Cells_id = self.get_cells_id(True, False, "array")
 
     # -------------------------------------------------------------------------
     # Basic:

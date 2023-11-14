@@ -1,6 +1,6 @@
-*********
 Equations
-*********
+=========
+
 Version: |release|
 
 .. math:: 

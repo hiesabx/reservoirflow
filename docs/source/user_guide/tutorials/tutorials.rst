@@ -17,7 +17,6 @@ This section includes tutorials to help the user learn how to use ``reservoirflo
     tutorial_learn_scientific_computing/tutorial_learn_scientific_computing
     tutorial_understand_grids_module/tutorial_understand_grids_module
     tutorial_five_spot_single_phase/tutorial_five_spot_single_phase
-    .. example_notebook/example_notebook
-    .. example_markdown/example_markdown
-    .. example_sphinx_gallery/build/index
-    
+.. example_notebook/example_notebook
+.. example_markdown/example_markdown
+.. example_sphinx_gallery/build/index

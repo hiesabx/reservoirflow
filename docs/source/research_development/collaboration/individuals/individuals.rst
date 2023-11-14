@@ -1,6 +1,5 @@
-============
 Individuals
-============
+===========
 
 We are looking to collaborate with individuals.
 

@@ -1,4 +1,3 @@
-===
 R&D
 ===
 
@@ -12,5 +11,13 @@ Contents
     :maxdepth: 1
 
     contribution
-    backlog/backlog
+    backlog
     collaboration/collaboration
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Extras
+
+   citing_reservoirflow
+   references
