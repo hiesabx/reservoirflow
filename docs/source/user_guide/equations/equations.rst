@@ -1,6 +1,5 @@
 Equations
 =========
-
 Version: |release|
 
 .. math:: 

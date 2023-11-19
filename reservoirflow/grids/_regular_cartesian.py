@@ -27,13 +27,12 @@ class RegularCartesian(_Grid):
     #   than reshape > flatten.
 
     name = "Regular Cartesian Grid"
-    show = utils.plots.show_grid
 
     def __init__(
         self,
-        nx,
-        ny,
-        nz,
+        nx: int,
+        ny: int,
+        nz: int,
         dx,
         dy,
         dz,
@@ -42,7 +41,7 @@ class RegularCartesian(_Grid):
         kz=None,
         phi=None,
         z=0,
-        comp=None,
+        comp: float = None,
         dtype="double",
         unit="field",
         unify=True,
@@ -51,60 +50,65 @@ class RegularCartesian(_Grid):
         """Regular Cartesian grid class with explicit structure.
 
         Parameters
-        ----------        
+        ----------
         nx : int
             number of cells in x-direction (excluding boundary cells)
-            and must be >= 1. Boundary cells are added automatically. 
-            Consequently, nx values are increased by 2 to account for 
+            and must be >= 1. Boundary cells are added automatically.
+            Consequently, nx values are increased by 2 to account for
             the boundary cells in x-direction.
         ny : int
             number of cells in y-direction (excluding boundary cells)
             and must be >= 1. Boundary cells are added automatically.
-            Consequently, ny values are increased by 2 to account for 
+            Consequently, ny values are increased by 2 to account for
             the boundary cells in y-direction.
         nz : int
             number of grids in z-direction (excluding boundary cells)
             and must be >= 1. Boundary cells are added automatically.
-            Consequently, nz values are increased by 2 to account for 
+            Consequently, nz values are increased by 2 to account for
             the boundary cells in z-direction.
         dx : int, float, array-like
             grid dimension in x-direction. In case of a list or an array,
-            the length should be equal to nx+2 (including boundary cells). 
-            Values should be in natural order (i.e. from left to right).           
+            the length should be equal to nx+2 (including boundary cells).
+            Values should be in natural order (i.e. from left to right).
         dy : int, float, array-like
             grid dimension in y-direction. In case of a list or an array,
-            the length should be equal to ny+2 (including boundary cells). 
+            the length should be equal to ny+2 (including boundary cells).
             Values should be in natural order (i.e. from front to back).
         dz : int, float, array-like
             grid dimension in z-direction. In case of a list or an array,
-            the length should be equal to nz+2 (including boundary cells). 
-            Values should be in natural order (i.e. from bottom to top).
-        kx : int, float, array-like, optional
-            Permeability in x-direction. In case of a list or an array, 
-            the length should be equal to nx+2 (including boundary cells).
-            Values should be in natural order (i.g.from left to right).
-            These values are only relevant based on the flow direction 
-            (e.g. kx is ignored if there is no flow at x-direction).
-        ky : int, float, array-like, optional
-            Permeability in y-direction. In case of a list or an array, 
-            the length should be equal to ny+2 (including boundary cells).
-            Values should be in natural order (i.e. from front to back).
-            These values are only relevant based on the flow direction 
-            (e.g. ky is ignored if there is no flow at y-direction).
-        kz : int, float, array-like, optional
-            Permeability in z-direction. In case of a list or an array, 
             the length should be equal to nz+2 (including boundary cells).
             Values should be in natural order (i.e. from bottom to top).
-            These values are only relevant based on the flow direction 
+        kx : int, float, array-like, optional
+            Permeability in x-direction. In case of a list or an array,
+            the length should be equal to nx+2 (including boundary cells).
+            Values should be in natural order (i.g.from left to right).
+            These values are only relevant based on the flow direction
+            (e.g. kx is ignored if there is no flow at x-direction).
+        ky : int, float, array-like, optional
+            Permeability in y-direction. In case of a list or an array,
+            the length should be equal to ny+2 (including boundary cells).
+            Values should be in natural order (i.e. from front to back).
+            These values are only relevant based on the flow direction
+            (e.g. ky is ignored if there is no flow at y-direction).
+        kz : int, float, array-like, optional
+            Permeability in z-direction. In case of a list or an array,
+            the length should be equal to nz+2 (including boundary cells).
+            Values should be in natural order (i.e. from bottom to top).
+            These values are only relevant based on the flow direction
             (e.g. kz is ignored if there is no flow at z-direction).
         phi : float, array-like, optional
-            effective porosity (in all directions). In case of an array, 
-            the shape should be equal to grid.shape (including boundary
-            cells). Values should be in natural order 
-            (i.e. from left to right at x-direction, from front to back 
+            effective porosity (in all directions). In case of an array,
+            the shape should be equal to `grid.shape` (including
+            boundary cells). Values should be in natural order
+            (i.e. from left to right at x-direction, from front to back
             at y-direction, and from bottom to top at z-direction).
         z : int, float, array-like, optional.
-            depth of grid tops (NOT FULLY IMPLEMENTED).
+            depth of grid tops.
+
+            warning
+            -------
+            grid tops (z) is not fully implemented in visualization.
+
         comp : float, optional
             compressibility.
         dtype : str or `np.dtype`, optional
@@ -124,23 +128,31 @@ class RegularCartesian(_Grid):
             each other or with 3D shape.
         verbose : bool, optional
             print information for debugging.
-            
+
         Notes
         -----
-        Permeability (kx, ky, kz) : darcy, millidarcy
-            permeability is a directional property and defined as the 
-            capacity of the grid block to transmit fluid through its 
-            interconnected pores, check `is_isotropic` property. 
-        Porosity (phi) : ratio
-            porosity or effective porosity is a ratio of the volume of 
-            interconnected pores to the grid bulk volume. Porosity is a
-            volumetric ratio, check `is_homogenous` property.
-        """
 
-        # ToDo
-        # ----
-        # Complete unify feature to be compatible with all class
-        # components.
+        Definitions:
+        `Permeability </user_guide/glossary/glossary.html#term-Permeability-kx-ky-kz-darcy-millidarcy>`_
+        ,
+        `Porosity </user_guide/glossary/glossary.html#term-Porosity-phi-ratio-fraction>`_
+        .
+
+        .. note::
+            Units are defined based on `unit` argument, for more
+            details, check
+            `Units & Factors </user_guide/units_factors/units_factors.html>`_.
+            For definitions, check
+            `Glossary </user_guide/glossary/glossary.html>`_.
+
+
+        .. todo::
+            * Arrays default shape:
+                - flatten arrays should be the default options.
+                - reshaping flatten arrays is faster than flattening reshaped arrays.
+            * Complete unify feature:
+                - complete unify feature to all class components.
+        """
         super().__init__(unit, dtype, verbose, unify)
         assert nx >= 1, "nx must be 1 or larger."
         assert ny >= 1, "ny must be 1 or larger."
@@ -2135,9 +2147,9 @@ class RegularCartesian(_Grid):
         ExplicitStructuredGrid
             pyvista gird object.
 
-        Reference
-        ---------
-        https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html
+        References
+        ----------
+        - pyvista: `ExplicitStructuredGrid <https://docs.pyvista.org/api/core/_autosummary/pyvista.ExplicitStructuredGrid.html>`_.
         """
         shape = np.array(self.get_shape(boundary)) + 1
         corners = self.get_corners(boundary)
@@ -2153,9 +2165,19 @@ class RegularCartesian(_Grid):
     def get_corners(self, boundary: bool = True):
         """Returns corners required to create pyvista grid.
 
-        Reference
-        ---------
-        https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html
+        Parameters
+        ----------
+        boundary : bool, optional
+            include boundary cells.
+
+        Returns
+        -------
+        ndarray
+            corners as an array.
+
+        References
+        ----------
+        - pyvista: `Creating an Explicit Structured Grid <https://docs.pyvista.org/examples/00-load/create-explicit-structured-grid.html>`_.
         """
 
         if "x" in self.fdir:
@@ -2978,6 +3000,7 @@ class RegularCartesian(_Grid):
     # Visualization:
     # -------------------------------------------------------------------------
 
+    show = utils.plots.show_grid
 
     # -------------------------------------------------------------------------
     # Synonyms:

@@ -13,3 +13,4 @@ pydata-sphinx-theme
 myst-nb
 sphinx-gallery
 sphinx-comments
+numpydoc

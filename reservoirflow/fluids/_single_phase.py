@@ -1,4 +1,10 @@
-import reservoirflow as rf
+"""
+Single Phase Fluid
+------------------
+
+This module is used to create a single phase fluid objects.
+"""
+
 from reservoirflow.fluids._fluid import _Fluid
 
 
@@ -15,17 +21,48 @@ class SinglePhase(_Fluid):
 
     def __init__(
         self,
-        mu=None,
-        B=None,
-        rho=None,
-        comp=None,
-        comp_type=None,
+        mu: float = None,
+        B: float = None,
+        rho: float = None,
+        comp: float = None,
         dtype="double",
-        unit="field",
-        verbose=False,
+        unit: str = "field",
+        verbose: bool = False,
     ):
+        """_summary_
+
+        Parameters
+        ----------
+        mu : float, optional
+            fluid viscosity.
+        B : _type_, optional
+            fluid formation volume factor.
+        rho : _type_, optional
+            fluid density.
+        comp : _type_, optional
+            fluid compressibility.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
+        unit : str ('field', 'metric', 'lab'), optional
+            units used in input and output. Parameters can be defined as
+            `unit='field'` (default), `unit='metric'`, or `unit='lab'`.
+            `units`attribute can be accessed from this class using
+            (`Model.units`).
+        verbose : bool, optional
+            print information for debugging.
+
+        Notes
+        -----
+        .. note::
+            Units are defined based on `unit` argument, for more
+            details, check
+            `Units & Factors </user_guide/units_factors/units_factors.html>`_.
+            For definitions, check
+            `Glossary </user_guide/glossary/glossary.html>`_.
+        """
         super().__init__(unit, dtype, verbose)
-        self.set_props(mu, B, rho, comp, comp_type)
+        self.set_props(mu, B, rho, comp)
 
     def set_mu(self, mu):
         self.mu = mu
@@ -41,7 +78,7 @@ class SinglePhase(_Fluid):
             * self.factors["gravitational acceleration"]
         )
 
-    def set_props(self, mu=None, B=None, rho=None, comp=None, comp_type=None):
+    def set_props(self, mu=None, B=None, rho=None, comp=None):
         if mu != None:
             self.set_mu(mu)
         if B != None:

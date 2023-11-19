@@ -1,4 +1,4 @@
-# Python 3.7
+# Python 3.7:
 # line_profiler==4.1.1
 # matplotlib==3.5.3
 # numpy==1.21.6
@@ -12,7 +12,7 @@
 # aiohttp==3.9.0b0
 # trame==2.5.2
 
-# Python 3.10
+# Python 3.10:
 line_profiler
 matplotlib
 numpy

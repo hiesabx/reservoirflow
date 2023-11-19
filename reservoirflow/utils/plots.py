@@ -206,10 +206,9 @@ def add_wells(
 
     Notes
     -----
-    Getting cells center using pyvista:
-        - you may need to convert to list:
+    Getting cells center using pyvista (you may need to convert to list):
 
-        >>> model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
+    >>> model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
     """
     cells_center = model.grid.get_cells_center(True, False, False).copy()
     for w in model.wells:
@@ -271,14 +270,16 @@ def get_colormap(
     cmap: str,
     gamma: float,
     n_colors: int,
-) -> plt.cm:
+):  # -> plt.cm:
     """Get colormap for a pyvista plotter from plt.cm
 
     Parameters
     ----------
     cmap : str, optional
         color map name based on Matplotlib, see
-        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html)
+        `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable
+        /users/explain/colors/colormaps.html>`_.
     gamma : float, optional
         shift color map distribution to left when values less than 1 and
         to right when values larger than 1. In case of qualitative
@@ -676,16 +677,20 @@ def show_grid(
         notebook.
     azimuth : float, optional
         adjust camera azimuth which is a horizontal rotation around the
-        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        central focal point, see
+        `pyvista.Camera <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     elevation : float, optional
         adjust camera elevation which is a vertical rotation around the
-        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        central focal point, see
+        `pyvista.Camera <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     zoom : float, optional
         adjust camera zoom which is direct zooming into the central
-        focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        focal point. see
+        `pyvista.Camera.zoom <https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html>`_.
     **kwargs :
-        you can pass any argument for pyvista Plotter. For more
-        information check [pyvista.Plotter](https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html).
+        you can pass any argument for pyvista Plotter except if it is
+        defined as argument in this function (e.g. window_size), see
+        `pyvista.Plotter <https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html>`_.
 
     Raises
     ------
@@ -861,7 +866,7 @@ def save_gif(
         show color bar.
     cmap : str, optional
         color map name based on Matplotlib, see
-        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+        `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable/users/explain/colors/colormaps.html>`_.
     gamma : float, optional
         shift color map distribution to left when values less than 1 and
         to right when values larger than 1. In case of qualitative
@@ -876,15 +881,15 @@ def save_gif(
     azimuth : float, optional
         adjust camera azimuth which is a horizontal rotation around the
         central focal point, see
-        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        `pyvista.Camera <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     elevation : float, optional
         adjust camera elevation which is a vertical rotation around the
         central focal point, see
-        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        `pyvista.Camera <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     zoom : float, optional
         adjust camera zoom which is direct zooming into the central
         focal point. see
-        [pyvista.Camera.zoom](https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html).
+        `pyvista.Camera.zoom <https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html>`_.
     fps : int, optional
         the number of frames per second starting at 1 and higher. Use
         this to control the speed of the gif image. Note that at some
@@ -896,7 +901,7 @@ def save_gif(
     **kwargs :
         you can pass any argument for pyvista Plotter except if it is
         defined as argument in this function (e.g. window_size), see
-        [pyvista.Plotter](https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html).
+        `pyvista.Plotter <https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html>`_.
 
     Raises
     ------
@@ -907,29 +912,31 @@ def save_gif(
     --------
     Jittering :
 
-        There is still jittering affect especially when a
-        continues colors are used. In addition, the same affect appears
-        on side 0 of cell 0 even with discretized colors.
-        This is a common issue in pyvista also causing issus with color
-        bar. So far there is no solution to this issue. The affect might
-        be mitigated by using discretized colors or by making the first
-        cell or layer nontransparent.
+    There is still jittering affect especially when a
+    continues colors are used. In addition, the same affect appears
+    on side 0 of cell 0 even with discretized colors.
+    This is a common issue in pyvista also causing issus with color
+    bar. So far there is no solution to this issue. The affect might
+    be mitigated by using discretized colors or by making the first
+    cell or layer nontransparent.
 
-        >>> # Making cell 0 nontransparent.
-        >>> # for cell 0:
-        >>> base_cells = 0
-        >>> # for layer 0:
-        >>> base_cells = model.grid.get_cells_i(boundary, True)[0, :, :]
-        >>> # add mesh:
-        >>> pl.add_mesh(
-        >>>     grid_pv.extract_cells(base_cells),
-        >>>     clim=limits,
-        >>>     show_edges=True,
-        >>>     opacity=1,
-        >>>     lighting=True,
-        >>>     colormap=colormap,
-        >>>     show_scalar_bar=False,
-        >>> )
+    .. highlight:: python
+    .. code-block:: python
+
+        # making cell 0 nontransparent:
+        base_cells = 0
+        # or layer 0:
+        base_cells = model.grid.get_cells_i(boundary, True)[0, :, :]
+        # add mesh:
+        pl.add_mesh(
+            grid_pv.extract_cells(base_cells),
+            clim=limits,
+            show_edges=True,
+            opacity=1,
+            lighting=True,
+            colormap=colormap,
+            show_scalar_bar=False,
+        )
     """
 
     values = get_model_values(model, prop, boundary)
@@ -1035,7 +1042,7 @@ def show_model(
         show color bar.
     cmap : str, optional
         color map name based on Matplotlib, see
-        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html).
+        `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable/users/explain/colors/colormaps.html>`_.
     gamma : float, optional
         shift color map distribution to left when values less than 1 and
         to right when values larger than 1. In case of qualitative
@@ -1050,15 +1057,15 @@ def show_model(
     azimuth : float, optional
         adjust camera azimuth which is a horizontal rotation around the
         central focal point, see
-        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        `pyvista.Camera <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     elevation : float, optional
         adjust camera elevation which is a vertical rotation around the
         central focal point, see
-        [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        `pyvista.Camera <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     zoom : float, optional
         adjust camera zoom which is direct zooming into the central
         focal point. see
-        [pyvista.Camera.zoom](https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html).
+        `pyvista.Camera.zoom <https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html>`_.
     static : bool, optional
         show as a static image in a jupyter notebook. This argument
         is ignored when notebook argument is set to False. True
@@ -1072,19 +1079,22 @@ def show_model(
     **kwargs :
         you can pass any argument for pyvista Plotter except if it is
         defined as argument in this function (e.g. window_size), see
-        [pyvista.Plotter](https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html).
+        `pyvista.Plotter <https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html>`_
 
     Raises
     ------
     ValueError
         label is not recognized.
 
-    Backup
-    ------
+    Notes
+    -----
     Key callbacks:
+
+    .. highlight:: python
+    .. code-block:: python
+
         def my_cpos_callback():
             pl.add_text(text=str(pl.camera.position), name="cpos")
-            # return
         pl.add_key_event("p", my_cpos_callback)
     """
     set_plotter_backend(static)

@@ -54,7 +54,7 @@ class _Grid(_Base):
         self.__props__ = dict.fromkeys(props_keys)
 
     def set_comp(self, comp: float):
-        """Grid compressibility
+        """Set grid compressibility
 
         Parameters
         ----------

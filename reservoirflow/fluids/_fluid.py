@@ -8,7 +8,7 @@ class _Fluid(_Base):
         super().__init__(unit, dtype, verbose)
 
     def set_comp(self, comp: float):
-        """Fluid compressibility
+        """Set fluid compressibility
 
         Parameters
         ----------

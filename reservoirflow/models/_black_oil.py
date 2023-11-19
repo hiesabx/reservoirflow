@@ -34,8 +34,6 @@ class BlackOil(_Model):
     """
 
     name = "BlackOil Model"
-    show = utils.plots.show_model
-    save_gif = utils.plots.save_gif
 
     def __init__(
         self,
@@ -62,17 +60,29 @@ class BlackOil(_Model):
         pi : int, optional
             Initial reservoir pressure.
         dt : int, optional
-            Time step duration in days.
+            Time step duration.
+        start_date : date, optional
+            Start date of the simulation run. If None, today's date is
+            used.
         dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
-        unit : str ('field', 'metric'), optional
+        unit : str ('field', 'metric', 'lab'), optional
             units used in input and output. Parameters can be defined as
-            `unit='field'` (default) or `unit='metric'`. `units`
-            attribute can be accessed from this class using
+            `unit='field'` (default), `unit='metric'`, or `unit='lab'`.
+            `units`attribute can be accessed from this class using
             (`Model.units`).
         verbose : bool, optional
             print information for debugging.
+
+        Notes
+        -----
+        .. note::
+            Units are defined based on `unit` argument, for more
+            details, check
+            `Units & Factors </user_guide/units_factors/units_factors.html>`_.
+            For definitions, check
+            `Glossary </user_guide/glossary/glossary.html>`_.
         """
         super().__init__(unit, dtype, verbose)
         self.grid = grid
@@ -105,6 +115,18 @@ class BlackOil(_Model):
             initial reservoir pressure.
         well : Well
             well class.
+
+        Notes
+        -----
+        Initialization with initial pressure (Pi) :
+            - setting boundaries with Pi have wrong effect on
+            __calc_b_terms() method where pressure is taken instead of
+            taking rate specified at the boundary (implementation 1).
+            >>> self.pressures[0, :] = pi
+            - while implementation 2 solves this issue, specifying
+            initial pressure at boundaries will be carried (copied)
+            in the following steps as if this is a constant boundary
+            cond which is misleading.
         """
         ones = self.grid.get_ones(True, False, False)[np.newaxis]
         self.pressures = ones * np.nan
@@ -116,15 +138,6 @@ class BlackOil(_Model):
         self.pi = pi
         if pi is not None:
             self.pressures[0, self.grid.cells_id] = pi
-            # self.pressures[0, :] = pi
-            # setting boundaries with Pi have wrong effect on
-            # __calc_b_terms() method where pressure is taken instead of
-            # taking rate specified at the boundary (implementation 1).
-            # while implementation 2 solves this issue, specifying
-            # initial pressure at boundaries will be carried (copied)
-            # in the following steps as if this is a constant boundary
-            # cond which is misleading.
-
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
             print(f"[warning] Pi is by default set to {self.pi}.")
@@ -827,8 +840,8 @@ class BlackOil(_Model):
         id : int
             cell id based on natural order as int.
 
-        Backup
-        ------
+        Notes
+        -----
         - arrays for lhs and rhs:
             self.d[i] = np.array(cell_rhs).astype(self.dtype)
             self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
@@ -951,9 +964,10 @@ class BlackOil(_Model):
 
         Returns
         -------
-        None
+        ndarray
             vector d is initialized in place and can be accessed by
-            self.d_.
+            `self.d_`.
+
         Raises
         ------
         Exception
@@ -973,7 +987,7 @@ class BlackOil(_Model):
             except:
                 raise Exception("Initial pressure (pi) must be specified")
 
-        # return self.d_
+        return self.d_
 
     def __update_z(self):
         """_summary_"""
@@ -1089,8 +1103,8 @@ class BlackOil(_Model):
         """_summary_
 
 
-        Backup
-        ------
+        Notes
+        -----
         - well q calc:
             self.__calc_w_terms(
                     id, self.pressures[self.tstep][id]
@@ -1204,18 +1218,19 @@ class BlackOil(_Model):
             _description_
         isolver : str, optional
             iterative solver for sparse matrices. Available solvers are
-            ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
-            "minres", "qmr", "gcrotmk", "tfqmr"].
+            `["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
+            "minres", "qmr", "gcrotmk", "tfqmr"]`.
             If None, direct solver is used. Only relevant when argument
             sparse=True. Option "cgs" is recommended to increase
             performance while option "minres" is not recommended due to
             high MB error.
 
-        Backup
-        ------
-        - Direct solutions can also be obtained using matrix dot product
+        Notes
+        -----
+        Direct solutions can also be obtained using matrix dot product
         (usually slower) as following:
-            pressures = np.dot(np.linalg.inv(A), d).flatten()
+
+        >>> pressures = np.dot(np.linalg.inv(A), d).flatten()
         """
         if print_arrays:
             A, d = self.init_matrices(sparse, threading)  #  has to be first
@@ -1296,14 +1311,14 @@ class BlackOil(_Model):
             "minres", "qmr", "gcrotmk", "tfqmr"].
             If None, direct solver is used. Only relevant when argument
             sparse=True. Direct solver is recommended for more accurate
-            calculations. To improve performance, "cgs" is recommended 
+            calculations. To improve performance, "cgs" is recommended
             to increase performance while option "minres" is not recommended due to
             high MB error. For more information check [1][2].
 
         References
         ----------
-        [1] https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems
-        [2] https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers
+        - scipy: `Solving Linear Problems <https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems>`_.
+        - scipy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
         """
         start_time = time.time()
         self.nsteps += nsteps
@@ -1617,12 +1632,15 @@ class BlackOil(_Model):
         To change the scaling settings. Current settings can be shown
         under scalers_dict. By default the following settings are used:
 
-        `scalers_dict = {
-            'time':['MinMaxScaler', (0,1)],
-            'space':['MinMaxScaler', (-1,1)],
-            'pressure':['MinMaxScaler', (-1,1)],
-            'rate':[None,None]
-        }`
+        .. highlight:: python
+        .. code-block:: python
+
+            scalers_dict = {
+                'time':['MinMaxScaler', (0,1)],
+                'space':['MinMaxScaler', (-1,1)],
+                'pressure':['MinMaxScaler', (-1,1)],
+                'rate':[None,None],
+            }
 
         Note that be default rates are not scaled, time is scaled
         between 0 and 1, while space and pressure are scaled between
@@ -1636,6 +1654,7 @@ class BlackOil(_Model):
             scaler_type can be e.g. 'MinMaxScaler' and scaler_range is a
             tuple of output_range of the scaler e.g. (-1,1). The keys
             must be in ['time', 'space', 'pressure', 'rate'].
+
         """
 
         def create_scaler(scaler_type, output_range):
@@ -1717,14 +1736,20 @@ class BlackOil(_Model):
             wells_pressure) are ignored.
         scale : bool, optional
             scale time, space (x, y, z), rates, and pressures. To change
-            the scaling settings use set_scalers(). Current settings
-            can be shown under scalers_dict. By default:
-                `scalers_dict = {
-                'time':['MinMaxScaler', (0,1)],
-                'space':['MinMaxScaler', (-1,1)],
-                'pressure':['MinMaxScaler', (-1,1)],
-                'rate':[None,None]
-                }`
+            the scaling settings use `set_scalers() </api/reservoirflow.models.html#reservoirflow.models.BlackOil.set_scalers>`_.
+            Current settings can be shown under scalers_dict.
+            By default:
+
+            .. highlight:: python
+            .. code-block:: python
+
+                scalers_dict = {
+                    'time':['MinMaxScaler', (0,1)],
+                    'space':['MinMaxScaler', (-1,1)],
+                    'pressure':['MinMaxScaler', (-1,1)],
+                    'rate':[None,None]
+                }
+
         save : bool, optional
             save output as a csv file.
         drop_nan : bool, optional
@@ -1736,9 +1761,8 @@ class BlackOil(_Model):
 
         Returns
         -------
-        DataFrame
+        DataFrame :
             simulation data as a dataframe.
-
         """
 
         col_dict = {
@@ -1801,6 +1825,13 @@ class BlackOil(_Model):
     # Visualization:
     # -------------------------------------------------------------------------
 
+    show = utils.plots.show_model
+    save_gif = utils.plots.save_gif
+
+    # -------------------------------------------------------------------------
+    # Plotting:
+    # -------------------------------------------------------------------------
+
     def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
         """Show values in a cartesian plot.
 
@@ -1842,88 +1873,6 @@ class BlackOil(_Model):
         plt.xlabel("Grid (i)")
         plt.xticks(ticks=range(0, 4), labels=range(1, 5))
         plt.show()
-
-    # def __show_wells(self, pl):
-    #     for w in model.wells:
-    #         # x = model.grid.dx[1:w+1].sum() + model.grid.dx[w]//2
-    #         # y = model.grid.dy[w]//2
-    #         # z = 100
-    #         height = model.grid.dz[w] * 10
-    #         # well_cell_i = w if boundary else w - 1
-    #         well_cell_center = list(
-    #             model.grid.get_pyvista_grid(True).extract_cells(w).GetCenter()
-    #         )
-    #         well_cell_center[2] = height // 2
-    #         well = pv.Cylinder(
-    #             center=well_cell_center,
-    #             height=height,
-    #             radius=model.wells[w]["r"],
-    #             direction=(0, 0, 1),
-    #         )
-    #         pl.add_mesh(well)
-
-    #     return pl
-
-    # def show(
-    #     self,
-    #     property: str,
-    #     centers=False,
-    #     boundary: bool = False,
-    #     bounds=False,
-    # ):
-    #     utils.plots.show(
-    #         self,
-    #         property,
-    #         centers,
-    #         boundary,
-    #         bounds,
-    #     )
-
-    # def get_gif(self, prop, boundary=False, wells=True):
-    #     if prop in ['p', 'press', 'pressure', 'pressures']:
-    #         values = self.pressures
-    #     elif prop in ['q', 'Q', 'rete', 'rates']:
-    #         values = self.rates
-
-    #     grid = model.grid.get_pyvista_grid(boundary)
-    #     grid.cell_data[prop] = values[1]
-
-    #     pl = pv.Plotter(notebook=False, off_screen=True)
-
-    #     if wells:
-    #         pl = self.__show_wells(pl)
-
-    #     pl.add_mesh(
-    #         grid,
-    #         clim=limits,
-    #         # style='wireframe',
-    #         show_edges=True,
-    #         opacity=0.7,
-    #         lighting=True,
-    #         ambient=0.2,
-    #         n_colors=5,
-    #         colormap="Blues",
-    #         label=property,
-    #         categories=True,
-    #         # nan_color='gray',
-    #         nan_opacity=0.7,
-    #         # use_transparency=True,
-    #         scalars=values[-1],  # or str 'pressures'
-    #         scalar_bar_args=cbar_opt,
-    #         show_scalar_bar=True,
-    #         # annotations=annotations,
-    #     )
-    #     pl.open_gif("images/grid.gif")
-
-    #     pts = grid.points.copy()
-    #     for step in range(model.nsteps):
-    #         pl.update_coordinates(pts, render=False)
-    #         pl.update_scalars(values[step], render=False)
-    #         pl.render()
-    #         pl.write_frame()
-    #         # time.sleep(2)
-
-    #     pl.close()
 
     def copy(self):
         """Copy model (under development)

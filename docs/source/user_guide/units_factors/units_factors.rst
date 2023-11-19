@@ -1,6 +1,5 @@
-***************
 Units & Factors
-***************
+===============
 Release: |release|
 
 ReservoirFlow has a fixed ``unit`` system used when a class is initiated (e.g., Grid: `RegularCartesian </api/reservoirflow.grids.html#reservoirflow.grids.RegularCartesian>`_, Fluid: `SinglePhase </api/reservoirflow.fluids.html#reservoirflow.fluids.SinglePhase>`_, Model: `BlackOil </api/reservoirflow.models.html#reservoirflow.models.BlackOil>`_). The value of ``unit`` property can be set to ``"field"``, ``"metric"``, or ``"lab"``. By default, ``unit="field"`` is used. 
@@ -10,12 +9,12 @@ ReservoirFlow has a fixed ``unit`` system used when a class is initiated (e.g., 
 
 
 Units
-#####
+-----
 
 .. include:: units.rst
 
 Factors
-#######
+-------
 
 .. include:: factors.rst
 

@@ -12,15 +12,6 @@ version = rf.__version__
 release = f"v{version}"
 master_doc = "index"
 
-extensions = [
-    "sphinx.ext.autodoc",  # extract docs
-    "sphinx.ext.napoleon",  # enhance parameters section
-    "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
-    # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
-    "sphinx_comments",  # allow comments
-    # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
-]
-
 # remove warnings:
 suppress_warnings = [
     "myst.header",
@@ -36,6 +27,42 @@ suppress_warnings = [
 
 templates_path = ["_templates"]
 exclude_patterns = ["**/example_*"]
+add_module_names = False  # False to show class name only
+
+# switcher: (rc: release candidate)
+switcher_version = version
+json_url = "_static/versions.json"
+if ".dev" in version:
+    switcher_version = "dev"
+elif "rc" in version:
+    switcher_version = version.split("rc", maxsplit=1)[0] + " (rc)"
+
+extensions = [
+    "sphinx.ext.autodoc",  # extract docstrings
+    # "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",  # enhance parameters section for autodoc
+    "sphinx.ext.todo",  # allow .. todo:: directive.
+    "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
+    # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
+    "sphinx_comments",  # allow comments
+    "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
+    # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
+]
+
+# todo:
+todo_include_todos = True
+
+# autodoc:
+autoclass_content = "init"
+autodoc_class_signature = "mixed"
+autodoc_member_order = "bysource"
+autodoc_docstring_signature = True
+autodoc_typehints = "both"
+autodoc_typehints_description_target = "all"
+autodoc_typehints_format = "short"
+autodoc_preserve_defaults = False
+autodoc_inherit_docstrings = False
+
 
 # myst and myst-nb: https://myst-nb.readthedocs.io/en/latest/render/format_code_cells.html
 myst_all_links_external = True
@@ -49,19 +76,44 @@ myst_enable_extensions = [
     "deflist",
     "dollarmath",
     "html_image",
+    "fieldlist",
 ]
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
 # nb_output_stderr = "remove"  # remove progress bar
 nb_merge_streams = True  # combine print output in one cell
 
-# switcher: (rc: release candidate)
-switcher_version = version
-json_url = "_static/versions.json"
-if ".dev" in version:
-    switcher_version = "dev"
-elif "rc" in version:
-    switcher_version = version.split("rc", maxsplit=1)[0] + " (rc)"
+# autosummary:
+# autosummary_generate = True
+
+# numpydoc: https://numpydoc.readthedocs.io/en/latest/install.html
+numpydoc_use_plots = True
+numpydoc_show_class_members = True  # table for attributes and methods.
+numpydoc_class_members_toctree = False
+
+# autodoc2
+# autodoc2_packages = [
+#     r"..\..\\reservoirflow",
+# ]
+# autodoc2_docstring_parser_regexes = [
+#     # this will render all docstrings as Markdown
+#     (r".*", "myst"),
+# ]
+
+# sphinx gallery:
+# examples_dirs = ["user_guide/tutorials/example_sphinx_gallery"]
+# gallery_dirs = [d + "/build" for d in examples_dirs]
+# exclude_patterns.extend([d + "/*.ipynb" for d in gallery_dirs])
+# sphinx_gallery_conf = {
+#     "examples_dirs": examples_dirs,
+#     "gallery_dirs": gallery_dirs,
+#     "notebook_images": True,
+#     "remove_config_comments": True,
+#     "first_notebook_cell": f"# {project} ({release}),  {copyright}",
+#     "last_notebook_cell": "# The End.",
+#     "capture_repr": ("_repr_html_", "__repr__"),
+#     "default_thumb_file": "source/_static/logo_grid.png",
+# }
 
 # html:
 html_theme = "pydata_sphinx_theme"
@@ -77,7 +129,6 @@ html_css_files = [
 ]
 html_theme_options = {
     # "header_links_before_dropdown": 7,
-    # icons:
     "icon_links": [
         {
             "name": "GitHub",
@@ -91,7 +142,7 @@ html_theme_options = {
             "icon": "fab fa-linkedin-in",
         },
     ],
-    "footer_start": ["copyright"],  # remove PyData and Sphinx notes.
+    "footer_start": ["copyright"],
     "footer_center": "",
     "footer_end": "",
     "navbar_start": [
@@ -113,32 +164,6 @@ html_theme_options = {
     "show_version_warning_banner": True,
     "navigation_with_keys": False,
 }
-
-# autodoc:
-autoclass_content = "init"
-autodoc_class_signature = "mixed"
-autodoc_member_order = "bysource"
-autodoc_docstring_signature = True
-autodoc_typehints = "signature"
-autodoc_typehints_description_target = "all"
-autodoc_typehints_format = "short"
-autodoc_inherit_docstrings = False
-autodoc_preserve_defaults = False
-
-# sphinx gallery:
-# examples_dirs = ["user_guide/tutorials/example_sphinx_gallery"]
-# gallery_dirs = [d + "/build" for d in examples_dirs]
-# exclude_patterns.extend([d + "/*.ipynb" for d in gallery_dirs])
-# sphinx_gallery_conf = {
-#     "examples_dirs": examples_dirs,
-#     "gallery_dirs": gallery_dirs,
-#     "notebook_images": True,
-#     "remove_config_comments": True,
-#     "first_notebook_cell": f"# {project} ({release}),  {copyright}",
-#     "last_notebook_cell": "# The End.",
-#     "capture_repr": ("_repr_html_", "__repr__"),
-#     "default_thumb_file": "source/_static/logo_grid.png",
-# }
 
 # utteranc.es:
 comments_config = {

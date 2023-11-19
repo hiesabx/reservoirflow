@@ -126,8 +126,8 @@ def profile(func):
     _type_
         _description_
 
-    Reference
-    ---------
+    Notes
+    -----
     https://gist.github.com/pavelpatrin/5a28311061bf7ac55cdd
     """
 

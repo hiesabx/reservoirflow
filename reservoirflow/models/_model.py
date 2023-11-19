@@ -17,7 +17,7 @@ class _Model(_Base):
         super().__init__(unit, dtype, verbose)
 
     def set_comp(self, comp: float):
-        """Model compressibility
+        """Set model compressibility
 
         Parameters
         ----------
