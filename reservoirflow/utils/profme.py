@@ -1,3 +1,17 @@
+"""
+profme
+======
+
+This module is used to provide profiling functions.
+"""
+
+__all__ = [
+    "cProfiler",
+    "lProfiler",
+    "profile",
+    "timeit",
+]
+
 import cProfile
 import io
 import pstats

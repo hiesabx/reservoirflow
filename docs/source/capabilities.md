@@ -6,15 +6,17 @@ A long-term plan with high ambitions is already in place for this library. As of
 |-----------|--------|-----------|-----------------|-----------|
 |**Model Type**|Black Oil|YES|`v0.1.0`|Only single phase on regular cartesian grid.|
 ||Compositional|No|`-`||
+||Thermal|No|`-`||
 |**Flow Dimensions**|1D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
 ||2D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
 ||3D|Yes|`v0.1.0`|Flow dimension is defined based on grid shape.|
 |**Grid Types**|Regular Cartesian|Yes|`v0.1.0`||
-||Single Well Radial|No|`-`||
-||Cartesian|No|`-`||
+||Radial|No|`-`||
+||Irregular Cartesian|No|`-`||
 |**Fluid Phases**| Single Phase|Yes|`v0.1.0`||
 ||Two Phases|No|`-`||
 ||Three Phases|No|`-`||
+||Compositional|No|`-`||
 |**Fluid Compressibility**| Incompressible |Yes|`v0.1.0`||
 || Slightly Compressible|Yes|`v0.1.0`||
 || Compressible|No|`-`||
@@ -24,8 +26,7 @@ A long-term plan with high ambitions is already in place for this library. As of
 || Slim-Tube|No|`-`||
 |**Well Types**|Single Cell|Yes|`v0.1.0`||
 ||Multiple Cells|No|`-`||
-||Horizontal|No|`-`||
-||Slanted|No|`-`||
+||Directional|No|`-`||
 |**History Matching**|Conventional|No| `-`||
 ||Machine Learning|No|`-`||
 |**Production Optimization**|Reinforcement Learning|No|`-`||

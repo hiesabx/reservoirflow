@@ -1,4 +1,8 @@
-from .helpers import *
-from .profme import *
-from .solvers import *
-from .plots import *
+"""
+utils
+=====
+
+This module contains several utilities used to improve this library.
+"""
+
+from . import helpers, profme, pyvista, solvers

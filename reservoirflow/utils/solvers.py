@@ -1,3 +1,11 @@
+"""
+solvers
+=======
+
+This module contains direct and iterative solvers to solve a system
+of linear equations.
+"""
+
 import warnings
 
 import scipy.sparse.linalg as ssl

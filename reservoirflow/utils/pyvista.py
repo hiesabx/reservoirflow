@@ -1,8 +1,8 @@
 """
-Plots module
-============
+pyvista
+=======
 
-This module is used to provide 3D plots for grids and model modules 
+This module is used to provide 3D shows for grids and model modules
 using Pyvista. These functions are used as class methods to provide
 direct accessibility to 3D visualizations using ``show`` attribute.
 """
@@ -14,6 +14,44 @@ import pyvista as pv
 from . import helpers
 
 WINDOW_TITLE = "ReservoirFlow 3D Show"
+BACKGROUND_COLOR = "black"
+TEXT_COLOR = "white"
+
+# -----------------------------------------------------------------------------
+# BACKGROUND:
+# -----------------------------------------------------------------------------
+
+
+def set_background_color(color):
+    global BACKGROUND_COLOR, TEXT_COLOR
+
+
+def set_text_color(color):
+    global BACKGROUND_COLOR, TEXT_COLOR
+
+
+def set_mode(mode="dark"):
+    """Set dark/light mode.
+
+    Parameters
+    ----------
+    mode : str, optional
+        mode as str in ["dark", "light"].
+
+    Raises
+    ------
+    ValueError
+        Unknown mode is used.
+    """
+    global BACKGROUND_COLOR, TEXT_COLOR
+    if mode in ["dark", "black"]:
+        BACKGROUND_COLOR = "black"
+        TEXT_COLOR = "white"
+    elif mode in ["light", "white"]:
+        BACKGROUND_COLOR = "white"
+        TEXT_COLOR = "black"
+    else:
+        raise ValueError("Unknown mode is used.")
 
 
 def set_plotter_backend(static: bool) -> None:
@@ -76,9 +114,9 @@ def set_plotter_config(
         then an interactive window will be opened outside of jupyter
         notebook.
     """
-    pl.set_background("black")
+    pl.set_background(BACKGROUND_COLOR)
     pl.enable_fly_to_right_click()
-    pl.add_axes(color="white")
+    pl.add_axes(color=TEXT_COLOR)
     if decide_widget(static, notebook):
         pl.add_camera_orientation_widget()
 
@@ -177,13 +215,16 @@ def align_camera(
         plotter camera direction.
     azimuth : float, optional
         adjust camera azimuth which is a horizontal rotation around the
-        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        central focal point, see `pyvista.Camera
+        <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     elevation : float, optional
         adjust camera elevation which is a vertical rotation around the
-        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        central focal point, see `pyvista.Camera
+        <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     zoom : float, optional
         adjust camera azimuth which is a horizontal rotation around the
-        central focal point, see [pyvista.Camera](https://docs.pyvista.org/version/stable/api/core/camera.html).
+        central focal point, see `pyvista.Camera
+        <https://docs.pyvista.org/version/stable/api/core/camera.html>`_.
     """
     pl.camera_position = cdir
     pl.camera.azimuth = azimuth
@@ -251,7 +292,7 @@ def get_cbar_dict(
         n_labels=n_bins,
         title_font_size=24,
         label_font_size=18,
-        color="white",
+        color=TEXT_COLOR,
         font_family="arial",
         width=0.07,
         height=0.7,
@@ -277,7 +318,6 @@ def get_colormap(
     ----------
     cmap : str, optional
         color map name based on Matplotlib, see
-        [Choosing Colormaps in Matplotlib](https://matplotlib.org/stable/users/explain/colors/colormaps.html)
         `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable
         /users/explain/colors/colormaps.html>`_.
     gamma : float, optional
@@ -414,7 +454,7 @@ def add_title(pl: pv.Plotter) -> None:
         position=(0.45, 0.95),
         font_size=14,
         font="arial",
-        color="white",
+        color=TEXT_COLOR,
         viewport=True,
     )
 
@@ -453,7 +493,7 @@ def add_desc(
         position=(0.01, 0.01),
         font_size=10,
         font="arial",
-        color="white",
+        color=TEXT_COLOR,
         viewport=True,
     )
 
@@ -523,14 +563,14 @@ def add_grid_labels(
                 point_size=10,
                 render_points_as_spheres=True,
                 show_edges=True,
-                color="black",
+                color=TEXT_COLOR,
             )
         else:
             pl.add_point_labels(
                 points=points,
                 labels=labels,
                 font_size=10,
-                text_color="white",
+                text_color=TEXT_COLOR,
                 point_size=10,
             )
 
@@ -607,7 +647,7 @@ def get_grid_plotter(
             points=points,
             labels=points.tolist(),
             font_size=10,
-            text_color="white",
+            text_color=TEXT_COLOR,
             point_size=10,
         )
     pl.add_mesh(**grid_mesh)
@@ -963,7 +1003,7 @@ def save_gif(
     )
 
     if info:
-        font = dict(font="courier", color="white")
+        font = dict(font="courier", color=TEXT_COLOR)
         conf = dict(font_size=11, viewport=True, render=False)
         locs = get_text_locs(6, 0.01, 0.95, 0.03)
         dates = model.get_df(columns=["Date"])["Date"]
@@ -1120,7 +1160,7 @@ def show_model(
     )
 
     if info:
-        font = dict(font="courier", color="white")
+        font = dict(font="courier", color=TEXT_COLOR)
         conf = dict(font_size=11, viewport=True, render=False)
         locs = get_text_locs(6, 0.01, 0.95, 0.03)
         dates = model.get_df(columns=["Date"])["Date"]
@@ -1158,12 +1198,12 @@ def show_model(
             title="Timestep",
             pointa=(0.40, 0.90),
             pointb=(0.60, 0.90),
-            color="white",
+            color=TEXT_COLOR,
             interaction_event="always",
             style="modern",
             title_height=0.025,
             title_opacity=0.7,
-            title_color="white",
+            title_color=TEXT_COLOR,
             fmt="%.0f",
             slider_width=0.02,
             tube_width=0.01,

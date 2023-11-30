@@ -28,10 +28,11 @@ Documentation Contents
 
    user_guide/user_guide
    research_development/research_development
-   api/api
    capabilities
    community/community
+   _autosummary/API
    support_us
+   about_us
    release_notes/release_notes
 
 Indices and tables

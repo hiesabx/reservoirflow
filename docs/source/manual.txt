@@ -1,5 +1,5 @@
 # Navigate to doc folder:
-cd doc
+cd docs
 
 # Create: 
     ## Create Environment: 
@@ -12,14 +12,16 @@ cd doc
     sphinx-quickstart 
 
     # Generate rst files: (Not needed)
-    sphinx-apidoc -o source/modules/ ../reservoirflow/ -f -M -T
+    sphinx-apidoc -o source/api/ ../reservoirflow/ -fT
+    sphinx-apidoc -o source/api/ ../reservoirflow/ --tocfile api -d 1 -feEP --implicit-namespaces
+    sphinx-apidoc -o source/api/ ../reservoirflow/ --tocfile api -d 1 -feE
 
 # Install reservoirflow library:
 pip install -e ..
 
 # Build html:
     ## sphinx-build:
-    sphinx-build -b html source/ build/html/
+    sphinx-build -b html source/ build/html/ -a
     ## cmd:
     make.bat clean html | make.bat html
 

@@ -1,3 +1,8 @@
+"""
+MinMax
+------
+"""
+
 import numpy as np
 
 from reservoirflow.scalers._scaler import _Scaler

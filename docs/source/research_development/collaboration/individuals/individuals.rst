@@ -1,7 +1,7 @@
 Individuals
 ===========
 
-We are looking to collaborate with individuals.
+We are looking to collaborate with professional individuals.
 
 .. toctree::
     :maxdepth: 2

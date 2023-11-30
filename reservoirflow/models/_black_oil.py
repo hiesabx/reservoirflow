@@ -56,7 +56,8 @@ class BlackOil(_Model):
         fluid : rf.fluids.Fluid
             Fluid object.
         well : rf.wells.Well, optional
-            Well object.
+            Well object. Wells can be added latter using `set_well()`
+            method.
         pi : int, optional
             Initial reservoir pressure.
         dt : int, optional
@@ -179,7 +180,7 @@ class BlackOil(_Model):
         Parameters
         ----------
         boundary : bool, optional
-            with grid boundary (True) or without grid boundary (False).
+            include boundary cells.
 
         Returns
         -------
@@ -241,7 +242,7 @@ class BlackOil(_Model):
         Parameters
         ----------
         boundary : bool, optional
-            _description_
+            include boundary cells.
         sparse : bool, optional
             _description_
 
@@ -1825,8 +1826,8 @@ class BlackOil(_Model):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    show = utils.plots.show_model
-    save_gif = utils.plots.save_gif
+    show = utils.pyvista.show_model
+    save_gif = utils.pyvista.save_gif
 
     # -------------------------------------------------------------------------
     # Plotting:
@@ -1915,7 +1916,7 @@ if __name__ == "__main__":
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
         fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-        model = BlackOil(grid, fluid, dtype="double", verbose=False)
+        model = BlackOil(grid, fluid, dtype="double", pi=4000, verbose=False)
         model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model

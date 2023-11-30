@@ -1,9 +1,24 @@
-"""Grids Module"""
+"""
+grids
+=====
+"""
+# .. autosummary::
+#    :toctree:
+#    :template: class_custom.rst
+
+#    RegularCartesian
+
 
 __all__ = [
     "RegularCartesian",
-    # "_Grid",
 ]
 
 # from ._grid import _Grid
 from ._regular_cartesian import RegularCartesian
+
+# __all_exports = [RegularCartesian]
+
+# for e in __all_exports:
+#     e.__module__ = __name__
+
+# __all__ = [e.__name__ for e in __all_exports]

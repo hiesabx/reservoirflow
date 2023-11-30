@@ -1,3 +1,10 @@
+"""
+RegularCartesian
+================
+
+RegularCartesian.
+"""
+
 import numpy as np
 import pyvista as pv
 import scipy.sparse as ss
@@ -218,7 +225,7 @@ class RegularCartesian(_Grid):
             self.shape = (self.nx, self.ny, self.nz)
 
         if self.verbose:
-            s = utils.get_boundary_str(boundary)
+            s = utils.helpers.get_boundary_str(boundary)
             print(f"[info] shape {s} is {self.shape}.")
 
         return self.shape
@@ -241,7 +248,7 @@ class RegularCartesian(_Grid):
         self.n = np.prod(shape)
 
         if self.verbose:
-            s = utils.get_boundary_str(boundary)
+            s = utils.helpers.get_boundary_str(boundary)
             print(f"[info] n {s} is {self.n}.")
 
         return self.n
@@ -264,7 +271,7 @@ class RegularCartesian(_Grid):
         self.n_max = max(shape)
 
         if self.verbose:
-            s = utils.get_boundary_str(boundary)
+            s = utils.helpers.get_boundary_str(boundary)
             print(f"[info] n_max {s} is {self.n_max}.")
 
         return self.n_max
@@ -373,8 +380,8 @@ class RegularCartesian(_Grid):
             self.fshape = self.fshape + (3,)
 
         if self.verbose:
-            s1 = utils.get_boundary_str(boundary)
-            s2 = utils.get_points_str(points)
+            s1 = utils.helpers.get_boundary_str(boundary)
+            s2 = utils.helpers.get_points_str(points)
             print(f"[info] fshape {s1}{s2} is {self.fshape}.")
 
         return self.fshape
@@ -419,7 +426,7 @@ class RegularCartesian(_Grid):
             self.order = self.order.reshape(shape)
 
         if self.verbose:
-            s1, s2 = utils.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.helpers.get_verbose_str(boundary, fshape)
             print(f"[info] order was computed ({s1} - {s2}).")
 
         return self.order
@@ -533,7 +540,7 @@ class RegularCartesian(_Grid):
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
             in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
+            option 'array' is used, utils.helpers.isin() must be used to check
             if a tuple of 3 is in the array.
 
         Returns
@@ -548,10 +555,10 @@ class RegularCartesian(_Grid):
             shape = self.get_fshape(boundary, False)
             self.cells_i = self.cells_i.reshape(shape)
         else:
-            self.cells_i = utils.reformat(self.cells_i, fmt)
+            self.cells_i = utils.helpers.reformat(self.cells_i, fmt)
 
         if self.verbose:
-            s = utils.get_boundary_str(boundary)
+            s = utils.helpers.get_boundary_str(boundary)
             print(f"[info] cells_i {s} for {self.n} was computed.")
 
         return self.cells_i
@@ -608,7 +615,7 @@ class RegularCartesian(_Grid):
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
             in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
+            option 'array' is used, utils.helpers.isin() must be used to check
             if a tuple of 3 is in the array.
 
         Returns
@@ -623,10 +630,10 @@ class RegularCartesian(_Grid):
         cells_id = self.get_order("natural", boundary, fshape)
 
         if not fshape:
-            cells_id = utils.reformat(cells_id, fmt)
+            cells_id = utils.helpers.reformat(cells_id, fmt)
 
         if self.verbose:
-            s1, s2 = utils.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.helpers.get_verbose_str(boundary, fshape)
             print(f"[info] cells_id was computed ({s1} - {s2}).")
 
         return cells_id
@@ -682,7 +689,7 @@ class RegularCartesian(_Grid):
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
             in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
+            option 'array' is used, utils.helpers.isin() must be used to check
             if a tuple of 3 is in the array.
 
         Returns
@@ -703,10 +710,10 @@ class RegularCartesian(_Grid):
             shape = self.get_fshape(boundary, True)
             cells_coords = cells_coords.reshape(shape)
         else:
-            cells_coords = utils.reformat(cells_coords, fmt)
+            cells_coords = utils.helpers.reformat(cells_coords, fmt)
 
         if self.verbose:
-            s1, s2 = utils.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.helpers.get_verbose_str(boundary, fshape)
             print(f"[info] cells_coords was computed ({s1} - {s2}).")
 
         return cells_coords
@@ -741,7 +748,7 @@ class RegularCartesian(_Grid):
         if not isinstance(coords[0], tuple):
             cells_coords = self.get_cells_coords(True, False, "array")
             msg = "coords are out of range."
-            assert utils.isin(coords, cells_coords), msg
+            assert utils.helpers.isin(coords, cells_coords), msg
             if not self.unify and self.D <= 2:
                 icoords = tuple(c for c in coords[::-1] if c > 0)
                 assert len(icoords) == self.get_D(), "icoords is not compatible"
@@ -772,7 +779,7 @@ class RegularCartesian(_Grid):
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
             in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
+            option 'array' is used, utils.helpers.isin() must be used to check
             if a tuple of 3 is in the array.
 
         Returns
@@ -791,10 +798,10 @@ class RegularCartesian(_Grid):
             shape = self.get_fshape(boundary, True)
             cells_icoords = np.array(cells_icoords).reshape(shape)
         else:
-            cells_icoords = utils.reformat(cells_icoords, fmt)
+            cells_icoords = utils.helpers.reformat(cells_icoords, fmt)
 
         if self.verbose:
-            s1, s2 = utils.get_verbose_str(boundary, fshape)
+            s1, s2 = utils.helpers.get_verbose_str(boundary, fshape)
             print(f"[info] cells_icoords was computed ({s1} - {s2}).")
 
         return cells_icoords
@@ -861,13 +868,13 @@ class RegularCartesian(_Grid):
         if id is not None:
             assert not isinstance(id, np.ndarray), "block"
             boundaries = self.get_boundaries("id", "set")
-            isin_boundary = utils.isin(id, boundaries) and boundary is True
+            isin_boundary = utils.helpers.isin(id, boundaries) and boundary is True
             assert (
                 not isin_boundary
             ), "boundary cells are not allowed with boundary=True."
 
             # Cells_id = self.get_cells_id(True, False, "set")
-            # isin_Cells_id = utils.isin(id, Cells_id)
+            # isin_Cells_id = utils.helpers.isin(id, Cells_id)
             # assert isin_Cells_id, f"id is out of range {Cells_id}."
 
             cells_id = self.get_cells_id(boundary, False, "set")
@@ -890,33 +897,33 @@ class RegularCartesian(_Grid):
                 cell_neighbors[self.fdir[2]] = neighbors
         elif coords is not None:
             boundaries = self.get_boundaries("coords", "set")
-            isin_boundary = utils.isin(coords, boundaries) and boundary is True
+            isin_boundary = utils.helpers.isin(coords, boundaries) and boundary is True
             assert (
                 not isin_boundary
             ), "boundary cells are not allowed with boundary=True."
 
             # Cells_coords = self.get_cells_coords(True, False, "set")
-            # isin_Cells_coords = utils.isin(coords, Cells_coords)
+            # isin_Cells_coords = utils.helpers.isin(coords, Cells_coords)
             # assert isin_Cells_coords, f"coords are out of range {Cells_coords}."
 
             cells_coords = self.get_cells_coords(boundary, False, "set")
             i, j, k = coords
             if "x" in self.fdir:
                 n_lst = [(i - 1, j, k), (i + 1, j, k)]
-                neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
+                neighbors = [c for c in n_lst if utils.helpers.isin(c, cells_coords)]
                 cell_neighbors["x"] = neighbors
             if "y" in self.fdir:
                 n_lst = [(i, j - 1, k), (i, j + 1, k)]
-                neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
+                neighbors = [c for c in n_lst if utils.helpers.isin(c, cells_coords)]
                 cell_neighbors["y"] = neighbors
             if "z" in self.fdir:
                 n_lst = [(i, j, k - 1), (i, j, k + 1)]
-                neighbors = [c for c in n_lst if utils.isin(c, cells_coords)]
+                neighbors = [c for c in n_lst if utils.helpers.isin(c, cells_coords)]
                 cell_neighbors["z"] = neighbors
         else:
             raise ValueError("at least id or coords argument must be defined.")
 
-        return utils.reformat(cell_neighbors, fmt=fmt)
+        return utils.helpers.reformat(cell_neighbors, fmt=fmt)
 
     @_lru_cache(maxsize=None)
     def get_cell_boundaries(
@@ -972,7 +979,7 @@ class RegularCartesian(_Grid):
 
         if id is not None:
             boundaries = self.get_boundaries("id", "set")
-            isin_boundary = utils.isin(id, boundaries)
+            isin_boundary = utils.helpers.isin(id, boundaries)
             assert not isin_boundary, "boundary cells are not allowed."
             cell_neighbors = self.get_cell_neighbors(
                 id=id,
@@ -981,7 +988,7 @@ class RegularCartesian(_Grid):
             )
         elif coords is not None:
             boundaries = self.get_boundaries("coords", "set")
-            isin_boundary = utils.isin(coords, boundaries)
+            isin_boundary = utils.helpers.isin(coords, boundaries)
             assert not isin_boundary, "boundary cells are not allowed."
             cell_neighbors = self.get_cell_neighbors(
                 coords=coords,
@@ -995,7 +1002,7 @@ class RegularCartesian(_Grid):
         cell_boundaries["y"] = list(set(cell_neighbors["y"]).intersection(boundaries))
         cell_boundaries["z"] = list(set(cell_neighbors["z"]).intersection(boundaries))
 
-        return utils.reformat(cell_boundaries, fmt)
+        return utils.helpers.reformat(cell_boundaries, fmt)
 
     def remove_boundaries(
         self,
@@ -1018,7 +1025,7 @@ class RegularCartesian(_Grid):
             this argument must be specified in case that in_data was for
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
-            check the utility function `utils.ispoints()`.
+            check the utility function `utils.helpers.ispoints()`.
         remove : str, optional
             boundaries to remove as str in ['both', 'left', 'right'].
 
@@ -1045,7 +1052,7 @@ class RegularCartesian(_Grid):
         # add fmt argument.
         if isinstance(in_data, np.ndarray):
             if points is None:
-                points = utils.ispoints(in_data)
+                points = utils.helpers.ispoints(in_data)
             fshape = self.get_fshape(True, points)
 
             if in_data.shape != fshape:
@@ -1053,7 +1060,7 @@ class RegularCartesian(_Grid):
                     in_data = in_data.reshape(fshape)
                     flatten = True
                 except:
-                    utils.shape_error(in_data.shape, fshape)
+                    utils.helpers.shape_error(in_data.shape, fshape)
             else:
                 flatten = False
 
@@ -1134,7 +1141,7 @@ class RegularCartesian(_Grid):
             this argument must be specified in case that in_data was for
             scaler values in fshape that is (#,..,3) (i.e. not flatten).
             For more information about points automatic calculation,
-            check the utility function `utils.ispoints()`.
+            check the utility function `utils.helpers.ispoints()`.
         fmt : str, optional
             format of output data as str in ['tuple', 'list', 'set',
             'array'].
@@ -1162,14 +1169,14 @@ class RegularCartesian(_Grid):
         # Confirm the behavior of when self.unify set to True.
         if isinstance(in_data, np.ndarray):
             if points is None:
-                points = utils.ispoints(in_data)
+                points = utils.helpers.ispoints(in_data)
             fshape = self.get_fshape(True, points)
 
             if in_data.shape != fshape:
                 try:
                     in_data = in_data.reshape(fshape)
                 except:
-                    utils.shape_error(in_data.shape, fshape)
+                    utils.helpers.shape_error(in_data.shape, fshape)
 
             if self.D == 3:
                 out_data = np.concatenate(
@@ -1233,7 +1240,7 @@ class RegularCartesian(_Grid):
             else:
                 out_data = out_data.reshape((-1, 3))
 
-            return utils.reformat(out_data, fmt)
+            return utils.helpers.reformat(out_data, fmt)
         else:
             raise ValueError("dtype must be ndarray.")
 
@@ -1252,7 +1259,7 @@ class RegularCartesian(_Grid):
             values will raise ValueError.
         fmt : str, optional
             format of output data as str in ['tuple', 'list', 'set',
-            'array']. When option 'array' is used, utils.isin() must be
+            'array']. When option 'array' is used, utils.helpers.isin() must be
             used to check if a tuple of 3 is in the array. For a better
             performance, use 'set' to check if an item is in or not and
             use tuples to iterate through items.
@@ -2156,7 +2163,7 @@ class RegularCartesian(_Grid):
         grid_pv = pv.ExplicitStructuredGrid(shape, corners)
 
         if self.verbose:
-            s = utils.get_boundary_str(boundary)
+            s = utils.helpers.get_boundary_str(boundary)
             print(f"[info] grid_pv {s} was created.")
 
         return grid_pv
@@ -2229,7 +2236,7 @@ class RegularCartesian(_Grid):
         zcorn = np.repeat(zcorn, 4 * (self.nx + ix) * (self.ny + iy))
 
         if self.verbose:
-            s = utils.get_boundary_str(boundary)
+            s = utils.helpers.get_boundary_str(boundary)
             print(f"[info] corners {s} were calculated.")
             print(
                 "    - xcorn shape:",
@@ -2444,7 +2451,7 @@ class RegularCartesian(_Grid):
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
             in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
+            option 'array' is used, utils.helpers.isin() must be used to check
             if a tuple of 3 is in the array.
 
 
@@ -2467,7 +2474,7 @@ class RegularCartesian(_Grid):
                 shape = self.get_fshape(boundary, False)
                 prop = prop.reshape(shape)
 
-            return utils.reformat(prop, fmt)
+            return utils.helpers.reformat(prop, fmt)
 
         else:
             msg = (
@@ -2499,7 +2506,7 @@ class RegularCartesian(_Grid):
             This argument is ignored if fshape argument is set to True.
             For a better performance, use 'set' to check if an item is
             in a list or not. Use tuples to iterate through items. When
-            option 'array' is used, utils.isin() must be used to check
+            option 'array' is used, utils.helpers.isin() must be used to check
             if a tuple of 3 is in the array.
 
 
@@ -3000,7 +3007,7 @@ class RegularCartesian(_Grid):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    show = utils.plots.show_grid
+    show = utils.pyvista.show_grid
 
     # -------------------------------------------------------------------------
     # Synonyms:

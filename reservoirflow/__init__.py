@@ -31,19 +31,19 @@ First import:
 The docstring examples assume that `reservoirflow` has been imported as `rf`::
 
   >>> import reservoirflow as rf
-    
+
 Print the current version::
 
   >>> print(rf.__version__)
-    
+
 Create a `Cartesian` grid from `grids` module::
 
   >>> grid = rf.grids.Cartesian()
-    
+
 Create a `SinglePhase` fluid from `fluids` module::
 
   >>> fluid = rf.fluids.SinglePhase()
-    
+
 Construct a `BlackOil` model from `models` module::
 
   >>> model = rf.models.BlackOil(
@@ -59,6 +59,9 @@ __all__ = [
     "models",
     "scalers",
     "utils",
+    "wells",
+    "FACTORS",
+    "UNITS",
 ]
-from . import fluids, grids, models, scalers, utils
+from . import fluids, grids, models, scalers, utils, wells
 from ._base import FACTORS, UNITS

@@ -1,8 +1,8 @@
-from reservoirflow.plots.plot import Plot
+from reservoirflow.shows._show import _Show
 
 
-class p2D(Plot):
-    name = "2D Plot"
+class _3D(_Show):
+    name = "3D Visual"
 
     def __init__(
         self,
@@ -18,5 +18,5 @@ class p2D(Plot):
 
 
 if __name__ == "__main__":
-    plot = p2D()
-    print(plot)
+    visual = v3D()
+    print(visual)

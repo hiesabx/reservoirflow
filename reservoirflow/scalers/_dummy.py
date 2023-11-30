@@ -1,3 +1,8 @@
+"""
+Dummy
+=====
+"""
+
 from reservoirflow.scalers._scaler import _Scaler
 
 

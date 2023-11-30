@@ -132,3 +132,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Sphinx (Python Documentation)
+docs/source/_autosummary
+docs/source/_api_backup/
+docs/source/_api_backup1/

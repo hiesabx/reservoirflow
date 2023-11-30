@@ -1,3 +1,8 @@
+"""
+scalers
+=======
+"""
+
 __all__ = [
     "Dummy",
     "MinMax",

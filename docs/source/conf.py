@@ -1,12 +1,16 @@
 """conf file"""
+# import os
+# import sys
 from datetime import datetime
 
 from tabulate import tabulate
 
 import reservoirflow as rf
 
+# sys.path.insert(0, os.path.abspath("../"))
+
 project = "ReservoirFlow"
-author = "Zakariya Abugrin"
+author = "Bayanatics"
 copyright = f"{datetime.now().year}, {author}"
 version = rf.__version__
 release = f"v{version}"
@@ -26,8 +30,13 @@ suppress_warnings = [
 # }
 
 templates_path = ["_templates"]
-exclude_patterns = ["**/example_*"]
-add_module_names = False  # False to show class name only
+exclude_patterns = [
+    "build",
+    "**/example_*",
+    "_api_backup/*",
+    "_api_backup1/*",
+    "api/api.rst",
+]
 
 # switcher: (rc: release candidate)
 switcher_version = version
@@ -38,30 +47,54 @@ elif "rc" in version:
     switcher_version = version.split("rc", maxsplit=1)[0] + " (rc)"
 
 extensions = [
-    "sphinx.ext.autodoc",  # extract docstrings
-    # "sphinx.ext.autosummary",
-    "sphinx.ext.napoleon",  # enhance parameters section for autodoc
+    "sphinx.ext.autodoc",  # build docstring contents.
+    "sphinx.ext.autosummary",  # build docstring pages.
+    "sphinx.ext.napoleon",  # using sections in docstring.
+    "sphinx.ext.doctest",
+    # "sphinx.ext.autosectionlabel",
     "sphinx.ext.todo",  # allow .. todo:: directive.
     "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
     # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
     "sphinx_comments",  # allow comments
-    "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
+    # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
     # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
 ]
+
+# config: https://www.sphinx-doc.org/en/master/usage/configuration.html
+add_module_names = True
+toc_object_entries_show_parents = "hide"  # domain, hide, all
 
 # todo:
 todo_include_todos = True
 
-# autodoc:
-autoclass_content = "init"
-autodoc_class_signature = "mixed"
-autodoc_member_order = "bysource"
-autodoc_docstring_signature = True
-autodoc_typehints = "both"
-autodoc_typehints_description_target = "all"
-autodoc_typehints_format = "short"
-autodoc_preserve_defaults = False
-autodoc_inherit_docstrings = False
+# autosummary:
+autosummary_generate = True
+autosummary_generate_overwrite = True
+autosummary_imported_members = True
+autosummary_ignore_module_all = False
+autosummary_filename_map = {"reservoirflow": "API"}
+
+
+# autodoc: managed by autosummary templates.
+# autoclass_content = "init"
+# autodoc_class_signature = "mixed"
+# autodoc_member_order = "bysource"
+# autodoc_docstring_signature = False  # change to true
+# autodoc_typehints = "both"
+# autodoc_typehints_description_target = "all"
+# autodoc_typehints_format = "short"  # short, fully-qualified
+# autodoc_preserve_defaults = True
+# autodoc_inherit_docstrings = True
+# autodoc_default_options = {
+#     "members": True,
+#     "member-order": "bysource",
+#     "undoc-members": True,
+#     "inherited-members": True,
+#     "show-inheritance": False,
+#     "imported-members": False,
+#     # "special-members": "__init__",
+#     # "exclude-members": "__weakref__",
+# }
 
 
 # myst and myst-nb: https://myst-nb.readthedocs.io/en/latest/render/format_code_cells.html
@@ -83,13 +116,11 @@ myst_enable_extensions = [
 # nb_output_stderr = "remove"  # remove progress bar
 nb_merge_streams = True  # combine print output in one cell
 
-# autosummary:
-# autosummary_generate = True
-
 # numpydoc: https://numpydoc.readthedocs.io/en/latest/install.html
-numpydoc_use_plots = True
-numpydoc_show_class_members = True  # table for attributes and methods.
-numpydoc_class_members_toctree = False
+# numpydoc_use_plots = True
+# numpydoc_show_class_members = True  # table for attributes and methods.
+# numpydoc_class_members_toctree = False
+# numpydoc_xref_param_type = False
 
 # autodoc2
 # autodoc2_packages = [

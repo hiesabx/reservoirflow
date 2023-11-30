@@ -1,7 +1,7 @@
-from reservoirflow.wells._well import Well
+from reservoirflow.wells._well import _Well
 
 
-class SingleCell(Well):
+class SingleCell(_Well):
     """
     Single Grid class.
     """

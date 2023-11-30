@@ -1,26 +1,14 @@
 """
-SinglePhase
-===========
+MultiPhase
+-----------
+
+This module is used to create a single phase fluid objects.
 """
-# .. autoclass:: reservoirflow.fluids.SinglePhase
-#    :members:
-#    :undoc-members:
-#    :show-inheritance:
-#    :private-members:
-
-# .. currentmodule:: reservoirflow.fluids
-
-# .. autoclass:: SinglePhase
-
-# .. autosummary::
-#     :toctree:
-
-#     SinglePhase
 
 from reservoirflow.fluids._fluid import _Fluid
 
 
-class SinglePhase(_Fluid):
+class MultiPhase(_Fluid):
     """Single phase fluid class.
 
     Returns
@@ -41,17 +29,17 @@ class SinglePhase(_Fluid):
         unit: str = "field",
         verbose: bool = False,
     ):
-        """Single Phase Fluid.
+        """_summary_
 
         Parameters
         ----------
         mu : float, optional
             fluid viscosity.
-        B : float, optional
+        B : _type_, optional
             fluid formation volume factor.
-        rho : float, optional
+        rho : _type_, optional
             fluid density.
-        comp : float, optional
+        comp : _type_, optional
             fluid compressibility.
         dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
@@ -72,53 +60,17 @@ class SinglePhase(_Fluid):
             `Units & Factors </user_guide/units_factors/units_factors.html>`_.
             For definitions, check
             `Glossary </user_guide/glossary/glossary.html>`_.
-
-        Examples
-        --------
-
-        .. testcode::
-
-            >>> import reservoirflow as rf
-            >>> fluid = rf.fluids.SinglePhase(
-            ...         mu=0.5,
-            ...         B=1,
-            ...         rho=50,
-            ...         comp=1e-5,
-            ...         unit="field",
-            ...         )
-            >>> print(fluid)
         """
         super().__init__(unit, dtype, verbose)
         self.set_props(mu, B, rho, comp)
 
     def set_mu(self, mu):
-        """_summary_
-
-        Parameters
-        ----------
-        mu : _type_
-            _description_
-        """
         self.mu = mu
 
     def set_B(self, B):
-        """_summary_
-
-        Parameters
-        ----------
-        B : _type_
-            _description_
-        """
         self.B = B
 
     def set_rho(self, rho):
-        """_summary_
-
-        Parameters
-        ----------
-        rho : _type_
-            _description_
-        """
         self.rho = rho
         self.g = (
             self.factors["gravity conversion"]

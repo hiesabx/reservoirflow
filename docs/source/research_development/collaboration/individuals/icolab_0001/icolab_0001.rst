@@ -1,4 +1,4 @@
-ucolab_0001
+icolab_0001
 ===========
 
 This is the first university collaboration.

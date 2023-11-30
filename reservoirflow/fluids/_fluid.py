@@ -34,6 +34,7 @@ class _Fluid(_Base):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
+        """_summary_"""
         self.set_compressibility = self.set_comp
         self.compressibility = self.comp
         self.compressibility_type = self.comp_type
