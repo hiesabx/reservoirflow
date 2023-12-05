@@ -9,7 +9,11 @@ This section is dedicated to interesting and important topics.
     We will be always happy to add your blog to the list below. 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     are_you_a_reservoir_engineer
+
+.. toctree::
+    :maxdepth: 2
+    
     external

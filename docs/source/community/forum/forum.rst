@@ -10,7 +10,7 @@ Please keep in mind the following points:
     * comments can be deleted if they are outdated or do not meet the conditions. 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     ask_a_question
     make_a_suggestion

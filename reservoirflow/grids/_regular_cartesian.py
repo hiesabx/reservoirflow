@@ -140,9 +140,9 @@ class RegularCartesian(_Grid):
         -----
 
         Definitions:
-        `Permeability </user_guide/glossary/glossary.html#term-Permeability-kx-ky-kz-darcy-millidarcy>`_
+        `Permeability </user_guide/glossary/glossary.html#term-permeability>`_
         ,
-        `Porosity </user_guide/glossary/glossary.html#term-Porosity-phi-ratio-fraction>`_
+        `Porosity </user_guide/glossary/glossary.html#term-porosity>`_
         .
 
         .. note::
@@ -2697,7 +2697,7 @@ class RegularCartesian(_Grid):
     @property
     @_lru_cache(maxsize=1)
     def is_isotropic(self):
-        """Returns isotropic as bool
+        """Returns isotropic as bool.
 
         This property checks if kx, ky, and kz are the same across all
         grids. In other words, `all(kx == kx[0])`, `all(ky == ky[0])`,
@@ -2721,7 +2721,7 @@ class RegularCartesian(_Grid):
     @property
     @_lru_cache(maxsize=1)
     def is_anisotropic(self):
-        """Returns anisotropic as bool
+        """Returns anisotropic as bool.
 
         This property checks if kx, ky, and kz are not the same across
         all grids.
@@ -2736,7 +2736,7 @@ class RegularCartesian(_Grid):
     @property
     @_lru_cache(maxsize=1)
     def is_regular(self):
-        """Returns regularity as bool
+        """Returns regularity as bool.
 
         This property checks if dx, dy, and dz are the same across all
         grids.
@@ -2756,7 +2756,7 @@ class RegularCartesian(_Grid):
     @property
     @_lru_cache(maxsize=1)
     def is_irregular(self):
-        """Returns irregularity as bool
+        """Returns irregularity as bool.
 
         This property checks if dx, dy, and dz are the same across all
         grids.

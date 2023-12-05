@@ -1318,8 +1318,8 @@ class BlackOil(_Model):
 
         References
         ----------
-        - scipy: `Solving Linear Problems <https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems>`_.
-        - scipy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
+        - SciPy: `Solving Linear Problems <https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems>`_.
+        - SciPy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
         """
         start_time = time.time()
         self.nsteps += nsteps

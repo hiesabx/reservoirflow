@@ -7,5 +7,8 @@ This is the first university collaboration.
     :maxdepth: 2
 
     
+|
+
+.. include:: /_static/comments_section.rst
 
     

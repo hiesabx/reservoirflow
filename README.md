@@ -14,7 +14,7 @@
 
 ## Introduction
 
-*ReservoirFlow* <`reservoirflow`> is a modern open-source Python library developed by [Bayanatics](https://github.com/zakgrin) to study and model the phenomenon of fluid flow in porous media (i.e. Reservoir Simulation) using different approaches including analytical solutions, numerical solutions, and machine learning solutions. *ReservoirFlow* is designed based on the modern Python stack for data science, scientific computing, and machine learning with the objective to support high-performance computing including multithreading, parallelism, GPU, and TPU.
+*ReservoirFlow* <`reservoirflow`> is a modern open-source Python library developed by [Zakariya Abugrin](https://github.com/zakgrin) (Founder and CEO of [Bayanatics](https://github.com/zakgrin)). ReservoirFlow is designed to study and model the phenomenon of fluid flow in porous media (i.e. Reservoir Simulation) using different approaches including analytical solutions, numerical solutions, and machine learning solutions. *ReservoirFlow* is designed based on the modern Python stack for data science, scientific computing, and machine learning with the objective to support high-performance computing including multithreading, parallelism, GPU, and TPU.
 
 *ReservoirFlow* brings reservoir simulation to the Python ecosystem including data analytics and machine learning tools to empower intelligent fields where AI specialists can deploy their models in containers that will be ready to make real-time optimization for any well in the field. Having this option allows for better integration and support with intelligent fields. In contrast to commercial black-box software where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
 
@@ -26,7 +26,7 @@
 - Advanced computing such as GPU, TPU and Quantum Computing.
 - Scientific Machine learning using Physics-informed neural networks (PINNs) or DeepONets.
 
-An open-source reservoir simulation library within the Python ecosystem is also very important to students, universities, researchers, engineers, and practitioners. Therefore, the growth of this tool can only be taken as a positive growth for a new and healthy oil & gas community that we try to create. However, this requires a huge support to meet the upcoming challenges that we are looking for, see [Support Us](/support_us.html).
+An open-source reservoir simulation library within the Python ecosystem is also very important to students, universities, researchers, engineers, and practitioners. Therefore, the growth of this tool can only be taken as a positive growth for a new community that we try to create. However, this requires a huge support to meet the upcoming challenges that we are looking for, see [Support Us](/support_us.html).
 
 ## Installation
 
@@ -54,10 +54,10 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 **Version History:**
 
-||**Version**|**Status**|**Release Date (dd.mm.yyyy)**|
-|-|-|-|-|
-|1|`v0.1.0`|current version|01.01.2024|
-|2|`v0.1.1`|*under development*|*ongoing*|
+| |**Version**  |**Status**         |**Release Date (dd.mm.yyyy)**  |
+|-|-            |-                  |-                              |
+|1|`v0.1.0`     |current version    |01.01.2024                     |
+|2|`v0.1.1`     |*under development*|*ongoing*                      |
 
 ## License
 

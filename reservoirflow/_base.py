@@ -16,7 +16,7 @@ UNITS = {
         "gas formation volume factor": "bbl/scf",
         "liquid formation volume factor": "bbl/stb",
         "solution gas oil ratio": "scf/stb",
-        "gravity": "psi/ft",
+        "phase gravity": "psi/ft",
         "gas flow rate": "scf/day",
         "liquid flow rate": "stb/day",
         "volumetric velocity": "bbl/(day.ft^2)",
@@ -48,7 +48,7 @@ UNITS = {
         "gas formation volume factor": "m^3/(std\,m^3)",
         "liquid formation volume factor": "m^3/(std\,m^3)",
         "solution gas oil ratio": "(std\,m^3)/(std\,m^3)",
-        "gravity": "kpa/m",
+        "phase gravity": "kpa/m",
         "gas flow rate": "(std\,m^3)/day",
         "liquid flow rate": "(std\,m^3)/day",
         "volumetric velocity": "m/day",
@@ -80,7 +80,7 @@ UNITS = {
         "gas formation volume factor": "cm^3/(std\,cm^3)",
         "liquid formation volume factor": "cm^3/(std\,cm^3)",
         "solution gas oil ratio": "(std\,cm^3)/(std\,cm^3)",
-        "gravity": "atm/cm",
+        "phase gravity": "atm/cm",
         "gas flow rate": "(std\,cm^3)/day",
         "liquid flow rate": "(std\,cm^3)/day",
         "volumetric velocity": "cm/day",
@@ -121,8 +121,103 @@ FACTORS = {
 }
 
 
+TERMS = {
+    "abbreviation": {
+        "transmissibility": "trans",
+        "error": "err",
+        "pressure": "press",
+        "potential": "poten",
+        "time": "t",
+        "rate": "q",
+        "length": "L",
+        "area": "A",
+        "volume": "V",
+        "permeability": "perm",
+        "viscosity": "mu",
+        "gas formation volume factor": "FVFg",
+        "liquid formation volume factor": "FVFl",
+        "water formation volume factor": "FVFw",
+        "oil formation volume factor": "FVFo",
+        "solution gas oil ratio": "GORs",
+        "phase gravity": "gamma phase",
+        "gas flow rate": "Qg",
+        "liquid flow rate": "Ql",
+        "water flow rate": "Qw",
+        "oil flow rate": "Qo",
+        "volumetric velocity": "u",
+        "density": "rho",
+        "compressibility": "comp",
+        "compressibility factor": "z",
+        "temperature": "temp",
+        "porosity": "phi",
+        "saturation": "sat",
+        "relative permeability": "relperm",
+        "angle": "theta",
+        "gravitational acceleration": "g",
+        "transmissibility conversion": "beta constant",
+        "gravity conversion": "gamma constant",
+        "volume conversion": "alpha constant",
+    },
+    "symbol": {
+        "transmissibility": "T",
+        "error": "e",
+        "pressure": "p",
+        "potential": "\Phi",
+        "time": "t",
+        "rate": "q",
+        "length": "L",
+        "area": "A",
+        "volume": "V",
+        "permeability": "k",
+        "viscosity": "\mu",
+        "gas formation volume factor": "B_g",
+        "liquid formation volume factor": "B_l",
+        "water formation volume factor": "B_w",
+        "oil formation volume factor": "B_o",
+        "solution gas oil ratio": "R_s",
+        "phase gravity": r"\gamma_p",
+        "gas flow rate": "q_g",
+        "liquid flow rate": "q_l",
+        "water flow rate": "q_w",
+        "oil flow rate": "q_o",
+        "volumetric velocity": "u",
+        "density": r"\rho",
+        "compressibility": "c",
+        "compressibility factor": "z",
+        "temperature": "-",
+        "porosity": "\phi",
+        "saturation": "S",
+        "relative permeability": "k_r",
+        "angle": r"\theta",
+        "gravitational acceleration": "g",
+        "transmissibility conversion": r"\beta_c",
+        "gravity conversion": "\gamma_c",
+        "volume conversion": r"\alpha_c",
+    },
+}
+
+PHASES = {}
+
+
 class _Base:
+    """Base Class.
+
+    Attributes
+    ----------
+    name : str
+        Returns the class name.
+    unit : str
+        Returns the class unit.
+    units : dict
+        Returns the class units.
+    factors : dict
+        Returns the class factors.
+    """
+
     name = "Base"
+    unit = "field"
+    units = UNITS[unit]
+    factors = FACTORS[unit]
 
     def __init__(
         self,
@@ -140,7 +235,7 @@ class _Base:
             self.units = UNITS[unit]
             self.factors = FACTORS[unit]
         else:
-            raise ValueError(f"The selected unit system ({unit}) is unknown!")
+            raise ValueError(f"The selected unit system ({unit}) is unknown.")
 
     def report(
         self,

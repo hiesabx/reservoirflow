@@ -17,6 +17,7 @@ Contents
    :caption: Extras
 
    units_factors/units_factors
+   terms/terms
    equations/equations
    glossary/glossary
    

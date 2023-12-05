@@ -65,3 +65,8 @@
 {%- endfor %}
 {% endif %}
 {% endblock %}
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

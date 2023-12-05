@@ -2,7 +2,7 @@
 
 .. currentmodule:: {{ module }}
 
-.. autoclass:: {{ objname }}
+.. autoclass:: {{ name }}
    
    {% block attributes %}
    {% if attributes %}
@@ -31,4 +31,8 @@
    {%- endfor %}
    {% endif %}
    {% endblock %}
-   
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

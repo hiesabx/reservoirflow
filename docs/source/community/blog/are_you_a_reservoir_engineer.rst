@@ -9,17 +9,6 @@ We believe that this sad reality has to be changed as soon as possible. Reservoi
 
 This sad reality can be changed if reservoir engineers are trained to express their scientific and engineering knowledge with coding. In addition, this will bring more excitement and job satisfaction. Those who learn to do reservoir simulation in Python should be familiar with the modern scientific computing and machine learning stack in Python. Therefore, it will be easier for them to change careers and work as data scientists, data analysts, or ML engineers in other industries.
 
-.. raw:: html
-    
-    <div id="only-dark">
-    <script 
-        type="text/javascript"
-        src="https://utteranc.es/client.js"
-        async="async"
-        repo="zakgrin/reservoirflow_utterances"
-        issue-term="pathname"
-        theme="github-dark"
-        label="💬 comment"
-        crossorigin="anonymous"
-    />
-    </div>
+|
+
+.. include:: /_static/comments_section.rst

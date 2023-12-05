@@ -15,7 +15,7 @@ viscosity                       :math:`cp`              :math:`mpa.sec`         
 gas formation volume factor     :math:`bbl/scf`         :math:`m^3/(std\,m^3)`         :math:`cm^3/(std\,cm^3)`
 liquid formation volume factor  :math:`bbl/stb`         :math:`m^3/(std\,m^3)`         :math:`cm^3/(std\,cm^3)`
 solution gas oil ratio          :math:`scf/stb`         :math:`(std\,m^3)/(std\,m^3)`  :math:`(std\,cm^3)/(std\,cm^3)`
-gravity                         :math:`psi/ft`          :math:`kpa/m`                  :math:`atm/cm`
+phase gravity                   :math:`psi/ft`          :math:`kpa/m`                  :math:`atm/cm`
 gas flow rate                   :math:`scf/day`         :math:`(std\,m^3)/day`         :math:`(std\,cm^3)/day`
 liquid flow rate                :math:`stb/day`         :math:`(std\,m^3)/day`         :math:`(std\,cm^3)/day`
 volumetric velocity             :math:`bbl/(day.ft^2)`  :math:`m/day`                  :math:`cm/day`

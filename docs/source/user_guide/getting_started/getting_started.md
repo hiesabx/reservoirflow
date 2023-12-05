@@ -65,3 +65,8 @@
     ```
 
     This library will also install `numpy`, `pandas`, and `pyvista`.
+
+
+
+```{include} /_static/comments_section.md
+```

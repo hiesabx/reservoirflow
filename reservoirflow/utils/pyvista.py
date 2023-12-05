@@ -13,13 +13,13 @@ import pyvista as pv
 
 from . import helpers
 
-WINDOW_TITLE = "ReservoirFlow 3D Show"
-BACKGROUND_COLOR = "black"
-TEXT_COLOR = "white"
-
 # -----------------------------------------------------------------------------
 # BACKGROUND:
 # -----------------------------------------------------------------------------
+
+WINDOW_TITLE = "ReservoirFlow 3D Show"
+BACKGROUND_COLOR = "black"
+TEXT_COLOR = "white"
 
 
 def set_background_color(color):

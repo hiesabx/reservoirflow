@@ -95,3 +95,7 @@ If you are a developer or want to be one, who wants to work on additional featur
     ```
 
 - [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/reservoirflow/pulls) to add features or solve bugs under [Issues](https://github.com/zakgrin/reservoirflow/issues). Please keep in mind that you need to stick with the project [Code of Conduct](#code-of-conduct).
+
+
+```{include} /_static/comments_section.md
+```

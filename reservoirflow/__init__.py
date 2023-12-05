@@ -62,6 +62,8 @@ __all__ = [
     "wells",
     "FACTORS",
     "UNITS",
+    "TERMS",
 ]
+
 from . import fluids, grids, models, scalers, utils, wells
-from ._base import FACTORS, UNITS
+from ._base import FACTORS, TERMS, UNITS

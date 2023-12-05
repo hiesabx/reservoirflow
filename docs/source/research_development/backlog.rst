@@ -27,3 +27,6 @@ Module: ``reservoirflow.utils``
 - Import Eclipse Files
 - Unit converter
 
+|
+
+.. include:: /_static/comments_section.rst

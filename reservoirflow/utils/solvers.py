@@ -21,22 +21,37 @@ def get_dsolver(name):
 def get_isolver(name):
     """Returns an iterative solver (isolver).
 
-    Iterative solvers for linear systems in sparse matrices.
+    Iterative solvers for linear systems in sparse matrices using SciPy.
+    Available iterative solvers are:
+
+    .. highlight:: python
+    .. code-block:: python
+
+        isolvers = [
+                "bicg",
+                "bicgstab",
+                "cg",
+                "cgs",
+                "gmres",
+                "lgmres",
+                "minres",
+                "qmr",
+                "gcrotmk",
+                "tfqmr",
+            ]
 
     Parameters
     ----------
     name : str, optional
-        name of th eiterative solver. Available solvers are
-        ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
-        "minres", "qmr", "gcrotmk", "tfqmr"].
-        If None, direct solver is used. Only relevant when argument
-        sparse=True. Option "cgs" is recommended to increase
-        performance while option "minres" is not recommended due to
-        high MB error. For more information check [1][2].
+        name of the iterative solver. If None, direct solver is used.
+        Only relevant when argument sparse=True.
+        Option "cgs" is recommended to increase performance while option
+        "minres" is not recommended due to high MB error.
+        For more information, check References section below.
 
     Returns
     -------
-    solver
+    isolver
         iterative solver for sparse matrices
 
     Raises
@@ -46,8 +61,8 @@ def get_isolver(name):
 
     References
     ----------
-    [1] https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems
-    [2] https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers
+    - SciPy: `Solving linear problems <https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems>`_.
+    - SciPy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
     """
 
     if name == "bicg":

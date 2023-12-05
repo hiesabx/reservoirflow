@@ -58,6 +58,7 @@ extensions = [
     "sphinx_comments",  # allow comments
     # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
     # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
+    "sphinx_design",  # https://sphinx-design.readthedocs.io/en/latest/get_started.html
 ]
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -73,10 +74,9 @@ autosummary_generate_overwrite = True
 autosummary_imported_members = True
 autosummary_ignore_module_all = False
 autosummary_filename_map = {"reservoirflow": "API"}
-
+autoclass_content = "both"
 
 # autodoc: managed by autosummary templates.
-# autoclass_content = "init"
 # autodoc_class_signature = "mixed"
 # autodoc_member_order = "bysource"
 # autodoc_docstring_signature = False  # change to true
@@ -194,6 +194,8 @@ html_theme_options = {
     "check_switcher": True,
     "show_version_warning_banner": True,
     "navigation_with_keys": False,
+    "show_toc_level": 2,
+    "secondary_sidebar_items": ["page-toc"],
 }
 
 # utteranc.es:
@@ -205,41 +207,61 @@ comments_config = {
 
 
 # Units and Factors:
-def store_dict(in_dict, name="FACTORS"):
+def store_dict(in_dict, name="FACTORS", folder=""):
     name = name.upper()
     if name == "UNITS":
         label = "property"
     elif name == "FACTORS":
         label = "factor"
+    elif name == "TERMS":
+        label = "term"
     else:
         raise ValueError("name is unknown")
-    units = list(in_dict.keys())
-    headers = [label] + units
+    columns = list(in_dict.keys())
+    headers = [label] + columns
     # headers = [h.capitalize() for h in headers]
-    props = in_dict[units[0]]
+    props = in_dict[columns[0]]
     report = []
+
     for prop in props:
+        row = []
         if label == "property":
-            prop_field = ":math:`" + in_dict[units[0]][prop] + "`"
-            prop_metric = ":math:`" + in_dict[units[1]][prop] + "`"
-            prop_lab = ":math:`" + in_dict[units[2]][prop] + "`"
+            for i in range(len(columns)):
+                row.append(":math:`" + in_dict[columns[i]][prop] + "`")
+            # row.append(":math:`" + in_dict[columns[0]][prop] + "`")
+            # row.append(":math:`" + in_dict[columns[1]][prop] + "`")
+            # row.append(":math:`" + in_dict[columns[2]][prop] + "`")
+            # prop_field = ":math:`" + in_dict[columns[0]][prop] + "`"
+            # prop_metric = ":math:`" + in_dict[columns[1]][prop] + "`"
+            # prop_lab = ":math:`" + in_dict[columns[2]][prop] + "`"
         elif label == "factor":
-            prop_field = in_dict[units[0]][prop]
-            prop_metric = in_dict[units[1]][prop]
-            prop_lab = in_dict[units[2]][prop]
+            for i in range(len(columns)):
+                row.append(in_dict[columns[i]][prop])
+            # prop_field = in_dict[columns[0]][prop]
+            # prop_metric = in_dict[columns[1]][prop]
+            # prop_lab = in_dict[columns[2]][prop]
+        elif label == "term":
+            row.append(in_dict[columns[0]][prop])
+            row.append(":math:`" + in_dict[columns[1]][prop] + "`")
+
+            # prop_field = ":math:`" + in_dict[columns[0]][prop] + "`"
+            # prop_metric = ":math:`" + in_dict[columns[1]][prop] + "`"
+
         report.append(
             [
                 prop,
-                prop_field,
-                prop_metric,
-                prop_lab,
+                *row,
+                # prop_field,
+                # prop_metric,
+                # prop_lab,
             ]
         )
     table = tabulate(report, headers=headers, showindex=False, tablefmt="rst")
-    path = f"user_guide/units_factors/{name}.rst"
+    path = f"{folder+name.lower()}_table.rst"
     with open(path, "w") as f:
         f.writelines(table)
 
 
-store_dict(rf.UNITS, "UNITS")
-store_dict(rf.FACTORS, "FACTORS")
+store_dict(rf.UNITS, "UNITS", "user_guide/units_factors/")
+store_dict(rf.FACTORS, "FACTORS", "user_guide/units_factors/")
+store_dict(rf.TERMS, "TERMS", "user_guide/terms/")
