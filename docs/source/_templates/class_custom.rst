@@ -3,7 +3,8 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ name }}
-   
+   :show-inheritance:
+
    {% block attributes %}
    {% if attributes %}
    .. rubric:: {{ _('Attributes') }}
@@ -34,5 +35,4 @@
 
 |
 
-.. include:: /_static/comments_section.md
-   :parser: myst_parser.sphinx_
+.. include:: /_static/comments_section.rst

@@ -196,28 +196,63 @@ TERMS = {
     },
 }
 
-PHASES = {}
-
 
 class _Base:
-    """Base Class.
+    """Base Class."""
 
-    Attributes
-    ----------
-    name : str
-        Returns the class name.
-    unit : str
-        Returns the class unit.
-    units : dict
-        Returns the class units.
-    factors : dict
-        Returns the class factors.
+    name: str = "Base"
+    """Returns class name.
+
+    Returns
+    -------
+    str
+        class name.
     """
+    unit: str = "field"
+    """Returns class unit.
 
-    name = "Base"
-    unit = "field"
-    units = UNITS[unit]
-    factors = FACTORS[unit]
+    .. note::
+        Both attributes units and factors are defined based on `unit` 
+        argument, for more details, check
+        `Units & Factors </user_guide/units_factors/units_factors.html>`_.
+        For definitions, check
+        `Glossary </user_guide/glossary/glossary.html>`_.
+
+    Returns
+    -------
+    str
+        class unit, default 'field'.
+    """
+    units: dict = UNITS[unit]
+    """Returns class units.
+
+    .. note::
+        Both attributes units and factors are defined based on `unit` 
+        argument, for more details, check
+        `Units & Factors </user_guide/units_factors/units_factors.html>`_.
+        For definitions, check
+        `Glossary </user_guide/glossary/glossary.html>`_.
+
+    Returns
+    -------
+    dict
+        class units, default 'field' units.
+    """
+    factors: dict = FACTORS[unit]
+    """Returns class factors.
+
+    .. note::
+        Both attributes units and factors are defined based on `unit` 
+        argument, for more details, check
+        `Units & Factors </user_guide/units_factors/units_factors.html>`_.
+        For definitions, check
+        `Glossary </user_guide/glossary/glossary.html>`_.
+
+    Returns
+    -------
+    dict
+        class factors, default 'field' factors.
+    """
 
     def __init__(
         self,
@@ -225,17 +260,45 @@ class _Base:
         dtype="double",
         verbose: bool = True,
     ):
+        """Create Base.
+
+        Parameters
+        ----------
+        unit : str ('field', 'metric', 'lab'), optional
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
+        verbose : bool, optional
+            print information for debugging.
+        """
         self.set_units(unit)
         self.dtype = dtype
         self.verbose = verbose
 
     def set_units(self, unit: str = "field"):
+        """Set object units.
+
+        Parameters
+        ----------
+        unit : str ('field', 'metric', 'lab'), optional
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
+
+        Raises
+        ------
+        ValueError
+            Unknown units.
+        """
         if unit in UNITS.keys():
             self.unit = unit
             self.units = UNITS[unit]
             self.factors = FACTORS[unit]
         else:
-            raise ValueError(f"The selected unit system ({unit}) is unknown.")
+            raise ValueError(f"Unknown units ({unit}).")
 
     def report(
         self,
@@ -243,8 +306,39 @@ class _Base:
         showindex: bool = True,
         ifmt: int = 0,
     ):
+        """Print class report.
+
+        Parameters
+        ----------
+        prop : str, by default None
+            class property name. If None, all class properties will be
+            printed.
+        showindex : bool, by default True
+            show table index.
+        ifmt : int, by default 0
+            integer format based on the following list:
+
+            .. highlight:: python
+            .. code-block:: python
+
+                tablefmt = [
+                            "pipe",
+                            "plain",
+                            "simple",
+                            "fancy_grid",
+                            "presto",
+                            "orgtbl",
+                ]
+        """
         props = vars(self)
-        tablefmt = ["pipe", "plain", "simple", "fancy_grid", "presto", "orgtbl"]
+        tablefmt = [
+            "pipe",
+            "plain",
+            "simple",
+            "fancy_grid",
+            "presto",
+            "orgtbl",
+        ]
         ignore_lst = ["units", "factors", "pv_grid", "corners", "centers"]
         if prop == None:
             print(f"{self.name} Information: \n")
@@ -281,10 +375,10 @@ class _Base:
 
 
 if __name__ == "__main__":
-    b = _Base("metric", "single", True)
+    b = _Base("field", "single", False)
     b.name = "b"
-    print(repr(b))
     k = _Base("metric", "single", True)
     k.name = "k"
+    # print(repr(b))
     b.report()
     k.report()

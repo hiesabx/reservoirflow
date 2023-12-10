@@ -1,14 +1,36 @@
 from reservoirflow._base import _Base
 
 
-class _Fluid(_Base):
+class Fluid(_Base):
+    """Abstract fluid class.
+
+    Returns
+    -------
+    Fluid
+        Fluid object.
+    """
+
     name = "Fluid"
 
     def __init__(self, unit, dtype, verbose):
+        """Construct fluid object.
+
+        Parameters
+        ----------
+        unit : str ('field', 'metric', 'lab'), optional
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
+        verbose : bool, optional
+            print information for debugging.
+        """
         super().__init__(unit, dtype, verbose)
 
     def set_comp(self, comp: float):
-        """Set fluid compressibility
+        """Set fluid compressibility.
 
         Parameters
         ----------
@@ -34,7 +56,18 @@ class _Fluid(_Base):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
-        """_summary_"""
+        """Allow full descriptions.
+
+        This function maps functions as following:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            self.set_compressibility = self.set_comp
+            self.compressibility = self.comp
+            self.compressibility_type = self.comp_type
+
+        """
         self.set_compressibility = self.set_comp
         self.compressibility = self.comp
         self.compressibility_type = self.comp_type
@@ -48,5 +81,5 @@ if __name__ == "__main__":
     dtype = "double"
     unit = "field"
     verbose = False
-    fluid = _Fluid(unit, dtype, verbose)
+    fluid = Fluid(unit, dtype, verbose)
     print(fluid)

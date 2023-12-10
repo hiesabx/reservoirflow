@@ -2,19 +2,13 @@
 grids
 =====
 """
-# .. autosummary::
-#    :toctree:
-#    :template: class_custom.rst
-
-#    RegularCartesian
-
 
 __all__ = [
     "RegularCartesian",
 ]
 
-# from ._grid import _Grid
-from ._regular_cartesian import RegularCartesian
+# from .grid import Grid
+from .regular_cartesian import RegularCartesian
 
 # __all_exports = [RegularCartesian]
 

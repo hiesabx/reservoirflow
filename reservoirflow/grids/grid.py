@@ -10,8 +10,8 @@ calculations.
 from reservoirflow._base import _Base
 
 
-class _Grid(_Base):
-    """Base Grid class.
+class Grid(_Base):
+    """Abstract grid class.
 
     Grid class represents both the rock geometry and the rock properties
     using numpy arrays including pyvista object for visualization.
@@ -25,16 +25,19 @@ class _Grid(_Base):
     name = "Grid"
 
     def __init__(self, unit, dtype, verbose, unify):
-        """Returns parent Grid class.
+        """Construct grid object.
+
+        Returns parent Grid class.
 
         Parameters
         ----------
         dtype : str or `np.dtype`, optional
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
-        unit : str ('field', 'metric'), optional
-            units used in input and output. Parameters can be defined as
-            `unit='field'` (default) or `unit='metric'`.
+        unit : str ('field', 'metric', 'lab'), optional
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
         unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
@@ -80,6 +83,18 @@ class _Grid(_Base):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
+        """Allow full descriptions.
+
+        This function maps functions as following:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            self.set_compressibility = self.set_comp
+            self.compressibility = self.comp
+            self.compressibility_type = self.comp_type
+
+        """
         self.set_compressibility = self.set_comp
         self.compressibility = self.comp
         self.compressibility_type = self.comp_type
@@ -94,5 +109,5 @@ if __name__ == "__main__":
     unit = "field"
     verbose = False
     unify = True
-    grid = _Grid(unit, dtype, verbose, unify)
+    grid = Grid(unit, dtype, verbose, unify)
     print(grid)

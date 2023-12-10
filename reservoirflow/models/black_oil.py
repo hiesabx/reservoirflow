@@ -1,3 +1,8 @@
+"""
+BlackOil
+========
+"""
+
 import time
 import warnings
 from collections import defaultdict
@@ -14,18 +19,14 @@ import sympy as sym
 from tqdm import tqdm
 
 import reservoirflow as rf
-from reservoirflow import fluids, grids, scalers, utils, wells
-from reservoirflow.models._model import _Model
+
+# from reservoirflow import fluids, grids, scalers, utils, wells
+from reservoirflow.models.model import Model
 from reservoirflow.utils.helpers import _lru_cache
 
-# if __name__ == "__main__":
-#     from _model import _Model
-# else:
-#     from ._model import _Model
 
-
-class BlackOil(_Model):
-    """Black oil model class.
+class BlackOil(Model):
+    """BlackOil model class.
 
     Returns
     -------
@@ -37,8 +38,8 @@ class BlackOil(_Model):
 
     def __init__(
         self,
-        grid: grids.RegularCartesian,
-        fluid: fluids.SinglePhase,
+        grid: rf.grids.RegularCartesian,
+        fluid: rf.fluids.SinglePhase,
         well=None,  # wells.Well = None,
         pi: int = None,
         dt: int = 1,
@@ -47,7 +48,7 @@ class BlackOil(_Model):
         unit="field",
         verbose=False,
     ):
-        """Create a BlackOil reservoir simulation model.
+        """Create BlackOil Model.
 
         Parameters
         ----------
@@ -69,18 +70,17 @@ class BlackOil(_Model):
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
-            units used in input and output. Parameters can be defined as
-            `unit='field'` (default), `unit='metric'`, or `unit='lab'`.
-            `units`attribute can be accessed from this class using
-            (`Model.units`).
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
         verbose : bool, optional
             print information for debugging.
 
         Notes
         -----
         .. note::
-            Units are defined based on `unit` argument, for more
-            details, check
+            Both attributes units and factors are defined based on `unit`
+            argument, for more details, check
             `Units & Factors </user_guide/units_factors/units_factors.html>`_.
             For definitions, check
             `Glossary </user_guide/glossary/glossary.html>`_.
@@ -868,7 +868,7 @@ class BlackOil(_Model):
             use sparse matrices instead of dense matrices.
         threading : bool, optional
             use multiple threads for concurrence workers. The maximum
-            number of threads are set to the half number of grids.
+            number of threads are set to the half number of cells.
 
         Returns
         -------
@@ -1246,7 +1246,7 @@ class BlackOil(_Model):
         if sparse:
             A, d = A.tocsc(), d.todense()
             if isolver:
-                solver = utils.solvers.get_isolver(isolver)
+                solver = rf.utils.solvers.get_isolver(isolver)
                 pressures, exit_code = solver(
                     A,
                     d,
@@ -1660,9 +1660,9 @@ class BlackOil(_Model):
 
         def create_scaler(scaler_type, output_range):
             if scaler_type is None or output_range is None:
-                return scalers.Dummy(None), None
+                return rf.scalers.Dummy(None), None
             elif scaler_type.lower() in ["minmax", "minmaxscaler"]:
-                return scalers.MinMax(output_range=output_range), "MinMax"
+                return rf.scalers.MinMax(output_range=output_range), "MinMax"
             else:
                 raise ValueError("scaler type is not defined.")
 
@@ -1826,8 +1826,8 @@ class BlackOil(_Model):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    show = utils.pyvista.show_model
-    save_gif = utils.pyvista.save_gif
+    show = rf.utils.pyvista.show_model
+    save_gif = rf.utils.pyvista.save_gif
 
     # -------------------------------------------------------------------------
     # Plotting:
@@ -1882,7 +1882,7 @@ class BlackOil(_Model):
             _type_: _description_
         """
         # https://stackoverflow.com/questions/48338847/how-to-copy-a-python-class-instance-if-deepcopy-does-not-work
-        copy_model = _Model(
+        copy_model = Model(
             grid=self.grid,
             fluid=self.fluid,
             pi=self.pi,
@@ -1901,6 +1901,17 @@ class BlackOil(_Model):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
+        """Allow full descriptions.
+
+        This function maps functions as following:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            self.set_transmissibility = self.set_trans
+            self.transmissibility = self.T
+
+        """
         self.set_transmissibility = self.set_trans
         self.transmissibility = self.T
 
@@ -1912,17 +1923,17 @@ class BlackOil(_Model):
 if __name__ == "__main__":
 
     def create_model_example_7_1():
-        grid = grids.RegularCartesian(
+        grid = rf.grids.RegularCartesian(
             nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, phi=0.27, kx=270, dtype="double"
         )
-        fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
+        fluid = rf.fluids.SinglePhase(mu=0.5, B=1, dtype="double")
         model = BlackOil(grid, fluid, dtype="double", pi=4000, verbose=False)
         model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
     def create_model():
-        grid = grids.RegularCartesian(
+        grid = rf.grids.RegularCartesian(
             nx=10,
             ny=10,
             nz=3,
@@ -1936,7 +1947,7 @@ if __name__ == "__main__":
             comp=1 * 10**-6,
             dtype="double",
         )
-        fluid = fluids.SinglePhase(
+        fluid = rf.fluids.SinglePhase(
             mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
         )
         model = BlackOil(

@@ -63,7 +63,7 @@ extensions = [
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
 add_module_names = True
-toc_object_entries_show_parents = "hide"  # domain, hide, all
+toc_object_entries_show_parents = "hide"  # domain, hide, all "On this page"
 
 # todo:
 todo_include_todos = True

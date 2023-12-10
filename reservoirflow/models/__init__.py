@@ -2,20 +2,14 @@
 models
 ======
 """
-# .. autosummary::
-#    :toctree:
-#    :template: class_custom.rst
-
-#    BlackOil
 
 __all__ = [
     "BlackOil",
 ]
 
-# from . import black_oil
 
-# from ._model import _Model
-from ._black_oil import BlackOil
+# from .model import Model
+from .black_oil import BlackOil
 
 # __all_exports = [BlackOil]
 

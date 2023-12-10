@@ -34,9 +34,9 @@ Documentation Contents
 
    user_guide/user_guide
    research_development/research_development
-   _capabilities
+   capabilities
    community/community
-   _autosummary/API
+   api/API
    support_us
    about_us
    release_notes/release_notes

@@ -6,16 +6,16 @@ A long-term plan with high ambitions is already in place for this library. As of
 ============================ ======================= ============ ================== =================================================
 **Feature**                  **Type**                **Support**  **Starting From**  **Comment**
 ============================ ======================= ============ ================== =================================================
-**Model Type**               BlackOil                yes          ``v0.1.0``         only single phase on regular cartesian grid
+**Model Type**               `BlackOil`_             yes          ``v0.1.0``         only single phase on regular cartesian grids.
 \                            Compositional           no           ``-``              \
 \                            Thermal                 no           ``-``              \
 **Flow Dimensions**          1D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.
 \                            2D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.
 \                            3D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.
-**Grid Types**               Regular Cartesian       yes          ``v0.1.0``         \
+**Grid Types**               `RegularCartesian`_     yes          ``v0.1.0``         \
 \                            Radial                  no           ``-``              \
 \                            Irregular Cartesian     no           ``-``              \
-**Fluid Phases**             Single Phase            yes          ``v0.1.0``         \
+**Fluid Phases**             `SinglePhase`_          yes          ``v0.1.0``         \
 \                            Two Phases              no           ``-``              \
 \                            Three Phases            no           ``-``              \
 \                            Compositional           no           ``-``              \
@@ -49,6 +49,10 @@ A long-term plan with high ambitions is already in place for this library. As of
 
 (*) *Innovative solution introduced within this work.*
 
+.. Links:
+.. _RegularCartesian: /api/reservoirflow.grids.RegularCartesian.html
+.. _BlackOil: /api/reservoirflow.models.BlackOil.html
+.. _SinglePhase: /api/reservoirflow.fluids.SinglePhase.html
 
 |
 

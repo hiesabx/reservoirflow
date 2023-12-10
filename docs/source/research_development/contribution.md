@@ -12,7 +12,7 @@ Updates are expected with *PEP* documents occasionally.
 - [PEP20](https://peps.python.org/pep-0020/): guiding principles for Python’s design.
 - [PEP257](https://peps.python.org/pep-0257/): a clean documentation using [NumPy Style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
 - [PEP 585](https://peps.python.org/pep-0585/): Type Hinting Generics In Standard Collections.
-  - Note that [PEP484](https://peps.python.org/pep-0484/) is not needed since `typing` module is deprecated.
+  - Note that [PEP484](https://peps.python.org/pep-0484/) is not needed since most annotations from `typing` module are deprecated. For more information, check the [typing](https://docs.python.org/3/library/typing.html) module documentation.
 
 Future developers and engineers who intend to contribute to this library should always keep in mind these standards to keep the source code clean and easy to follow. This should allow developing complex reservoir simulation models that are both innovative and efficient.
 

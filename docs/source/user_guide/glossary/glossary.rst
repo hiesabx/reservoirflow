@@ -14,6 +14,17 @@ General
 
 |
 
+Python
+------
+.. glossary::
+    :sorted:
+
+    ABC
+        abstract base classes in python standard library, see `abc 
+        <https://docs.python.org/3/library/abc.html>`_.
+
+|
+
 ReservoirFlow
 -------------
 .. glossary::

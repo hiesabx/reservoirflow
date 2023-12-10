@@ -1,9 +1,13 @@
-External
-========
+External 🌐
+===========
 
-Here we maintain a list of external important and related topics.
+Here we maintain a list of external important and related topics and blogs.
 
-Performance
------------
+Performance 🚀
+--------------
 * `Why You Should (or Shouldn't) be Using Google's JAX in 2023 <https://www.assemblyai.com/blog/why-you-should-or-shouldnt-be-using-jax-in-2023/>`_
 * `Need for Speed: JAX <https://blog.ml6.eu/need-for-speed-jax-1d203d434718>`_
+
+|
+
+.. include:: /_static/comments_section.rst

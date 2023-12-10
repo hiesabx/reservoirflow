@@ -1,7 +1,7 @@
 from reservoirflow._base import _Base
 
 
-class _Model(_Base):
+class Model(_Base):
     """Model class.
 
     Model class used to create a reservoir simulation model.
@@ -44,6 +44,18 @@ class _Model(_Base):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
+        """Allow full descriptions.
+
+        This function maps functions as following:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            self.set_compressibility = self.set_comp
+            self.compressibility = self.comp
+            self.compressibility_type = self.comp_type
+
+        """
         self.set_compressibility = self.set_comp
         self.compressibility = self.comp
         self.compressibility_type = self.comp_type
@@ -57,5 +69,5 @@ if __name__ == "__main__":
     dtype = "double"
     unit = "field"
     verbose = False
-    model = _Model(unit, dtype, verbose)
+    model = Model(unit, dtype, verbose)
     print(model)

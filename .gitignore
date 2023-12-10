@@ -134,6 +134,4 @@ dmypy.json
 .pyre/
 
 # Sphinx (Python Documentation)
-docs/source/_autosummary
-docs/source/_api_backup/
-docs/source/_api_backup1/
+docs/source/api

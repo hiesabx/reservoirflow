@@ -1,8 +1,6 @@
 """
 RegularCartesian
 ================
-
-RegularCartesian.
 """
 
 import numpy as np
@@ -10,22 +8,17 @@ import pyvista as pv
 import scipy.sparse as ss
 
 from reservoirflow import utils
-from reservoirflow.grids._grid import _Grid
+from reservoirflow.grids.grid import Grid
 from reservoirflow.utils.helpers import _lru_cache
 
-# if __name__ == "__main__":
-#     from _grid import _Grid
-# else:
-#     from ._grid import _Grid
 
-
-class RegularCartesian(_Grid):
-    """Regular Cartesian grid class.
+class RegularCartesian(Grid):
+    """RegularCartesian grid class.
 
     Returns
     -------
     Grid
-        Regular Cartesian grid object.
+        RegularCartesian grid object.
     """
 
     # ToDo
@@ -33,7 +26,7 @@ class RegularCartesian(_Grid):
     # - make default calc all flatten because flatten > reshape is faster
     #   than reshape > flatten.
 
-    name = "Regular Cartesian Grid"
+    name = "RegularCartesian Grid"
 
     def __init__(
         self,
@@ -54,7 +47,7 @@ class RegularCartesian(_Grid):
         unify=True,
         verbose=False,
     ):
-        """Regular Cartesian grid class with explicit structure.
+        """Create RegularCartesian Grid.
 
         Parameters
         ----------
@@ -122,10 +115,9 @@ class RegularCartesian(_Grid):
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
-            units used in input and output. Parameters can be defined as
-            `unit='field'` (default) or `unit='metric'`. `units`
-            attribute can be accessed from this class using
-            (`RegularCartesian.units`) or from the base class (`Grid.units`).
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
         unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
@@ -146,12 +138,11 @@ class RegularCartesian(_Grid):
         .
 
         .. note::
-            Units are defined based on `unit` argument, for more
-            details, check
+            Both attributes units and factors are defined based on `unit`
+            argument, for more details, check
             `Units & Factors </user_guide/units_factors/units_factors.html>`_.
             For definitions, check
             `Glossary </user_guide/glossary/glossary.html>`_.
-
 
         .. todo::
             * Arrays default shape:
@@ -3014,6 +3005,26 @@ class RegularCartesian(_Grid):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
+        """Allow full descriptions.
+
+        This function maps functions as following:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            self.get_flow_shape = self.get_fshape
+            self.flow_shape = self.fshape
+            self.porosity = self.phi
+            self.get_dimension = self.get_D
+            self.dimension = self.D
+            self.set_properties = self.set_props
+            self.permeability = self.k
+            self.permeability_x = self.kx
+            self.permeability_y = self.ky
+            self.permeability_z = self.kz
+            self.tops = self.z
+
+        """
         self.get_flow_shape = self.get_fshape
         self.flow_shape = self.fshape
         self.porosity = self.phi
@@ -3061,7 +3072,7 @@ if __name__ == "__main__":
     )
 
     print(grid)
-    grid.show("i", True)
+    grid.show(label="i")
     # cells_id = grid.get_cells_id(False, False, "array")
     # Ay = grid.get_cells_Ay(False, False)
     # Ay_b = grid.get_cells_Ay(True, False)

@@ -15,12 +15,12 @@ Improving Current Modules
 Module: ``reservoirflow.grids``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Radial Grid
-- Irregular Cartesian Grid
+- IrregularCartesian Grid
 
 Module: ``reservoirflow.fluids``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- Two Phase Flow
-- Three Phase Flow
+- TwoPhase Flow
+- ThreePhase Flow
 
 Module: ``reservoirflow.utils``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

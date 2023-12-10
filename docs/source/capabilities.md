@@ -3,17 +3,17 @@
 A long-term plan with high ambitions is already in place for this library. As of now, this tool is still very small relative to the entire scope of work (i.e. only about 5%). Supported capabilities so far are shown below:
 
 |**Feature**                |**Type**               |**Support**|**Starting From**  |**Comment**|
-| -------------------------:| --------------------- | --------- | ----------------- | --------- |
-|**Model Type**             |Black Oil              |yes        |`v0.1.0`           |Only single phase on regular cartesian grid.|
+|:-------------------------:|-----------------------|-----------|-------------------|-----------|
+|**Model Type**             |[BlackOil]             |yes        |`v0.1.0`           |Only single phase on regular cartesian grid.|
 |                           |Compositional          |no         |`-`                ||
 |                           |Thermal                |no         |`-`                ||
 |**Flow Dimensions**        |1D                     |yes        |`v0.1.0`           |Flow dimension is defined based on grid shape.|
 |                           |2D                     |yes        |`v0.1.0`           |Flow dimension is defined based on grid shape.|
 |                           |3D                     |yes        |`v0.1.0`           |Flow dimension is defined based on grid shape.|
-|**Grid Types**             |Regular Cartesian      |yes        |`v0.1.0`           ||
+|**Grid Types**             |[RegularCartesian]     |yes        |`v0.1.0`           ||
 |                           |Radial                 |no         |`-`                ||
 |                           |Irregular Cartesian    |no         |`-`                ||
-|**Fluid Phases**           |Single Phase           |yes        |`v0.1.0`           ||
+|**Fluid Phases**           |[SinglePhase]          |yes        |`v0.1.0`           ||
 |                           |Two Phases             |no         |`-`                ||
 |                           |Three Phases           |no         |`-`                ||
 |                           |Compositional          |no         |`-`                ||
@@ -43,11 +43,13 @@ A long-term plan with high ambitions is already in place for this library. As of
 |                           |GPU Computing          |no         |`-`                ||
 |                           |TPU Computing          |no         |`-`                ||
 |                           |Quantum Computing      |no         |`-`                ||
-|
 
 (*) Innovative solution introduced within this work.
 
-Feel free to make a comment below.
+[RegularCartesian]: /api/reservoirflow.grids.RegularCartesian.html
+[BlackOil]: /api/reservoirflow.models.BlackOil.html
+[SinglePhase]: /api/reservoirflow.fluids.SinglePhase.html
+
 
 ```{include} /_static/comments_section.md
 ```

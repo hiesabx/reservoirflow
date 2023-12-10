@@ -2,24 +2,17 @@
 fluids
 ======
 """
-# .. autosummary::
-#    :toctree:
-#    :template: class_custom.rst
-#    :recursive:
-
-#    SinglePhase
-#    MultiPhase
 
 __all__ = [
+    "Fluid",
     "SinglePhase",
     "MultiPhase",
 ]
 
 
-from ._multiphase import MultiPhase
-
-# from ._fluid import _Fluid
-from ._single_phase import SinglePhase
+from .fluid import Fluid
+from .multi_phase import MultiPhase
+from .single_phase import SinglePhase
 
 # __all_exports = [SinglePhase]
 

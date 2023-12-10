@@ -12,13 +12,7 @@
 
 - Install Python:
 
-    For this project, `python>=3.8` is recommended. To download the executable installer files directly for `python==3.7.9`:
-
-  - Windows: [Windows x86-64 executable installer](https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe)
-  - macOS: [macOS 64-bit installer](https://www.python.org/ftp/python/3.7.9/python-3.7.9-macosx10.9.pkg)
-  - Linux/UNIX: [Gzipped source tarball](https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz).
-
-  More download options can be found at the official website [python.org](https://www.python.org/downloads/release/python-379/). Make sure that you add Python to the `Path` variable of your operating system.
+    For this project, `python>=3.8` is recommended. More download options can be found at the official website [python.org](https://www.python.org/downloads/release/python-379/). Make sure that you add Python to the `Path` variable of your operating system.
 
 - Create a new folder:
 

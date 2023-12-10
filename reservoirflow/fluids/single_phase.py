@@ -2,26 +2,12 @@
 SinglePhase
 ===========
 """
-# .. autoclass:: reservoirflow.fluids.SinglePhase
-#    :members:
-#    :undoc-members:
-#    :show-inheritance:
-#    :private-members:
 
-# .. currentmodule:: reservoirflow.fluids
-
-# .. autoclass:: SinglePhase
-
-# .. autosummary::
-#     :toctree:
-
-#     SinglePhase
-
-from reservoirflow.fluids._fluid import _Fluid
+from reservoirflow.fluids.fluid import Fluid
 
 
-class SinglePhase(_Fluid):
-    """Single phase fluid class.
+class SinglePhase(Fluid):
+    """SinglePhase fluid class.
 
     Returns
     -------
@@ -29,7 +15,7 @@ class SinglePhase(_Fluid):
         SinglePhase fluid object.
     """
 
-    name = "Single Phase Fluid"
+    name = "SinglePhase Fluid"
 
     def __init__(
         self,
@@ -41,7 +27,7 @@ class SinglePhase(_Fluid):
         unit: str = "field",
         verbose: bool = False,
     ):
-        """Single Phase Fluid.
+        """Create SinglePhase Fluid.
 
         Parameters
         ----------
@@ -57,18 +43,17 @@ class SinglePhase(_Fluid):
             data type used in all arrays. Numpy dtype such as
             `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
-            units used in input and output. Parameters can be defined as
-            `unit='field'` (default), `unit='metric'`, or `unit='lab'`.
-            `units`attribute can be accessed from this class using
-            (`Model.units`).
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
         verbose : bool, optional
             print information for debugging.
 
         Notes
         -----
         .. note::
-            Units are defined based on `unit` argument, for more
-            details, check
+            Both attributes units and factors are defined based on `unit`
+            argument, for more details, check
             `Units & Factors </user_guide/units_factors/units_factors.html>`_.
             For definitions, check
             `Glossary </user_guide/glossary/glossary.html>`_.
@@ -92,48 +77,69 @@ class SinglePhase(_Fluid):
         self.set_props(mu, B, rho, comp)
 
     def set_mu(self, mu):
-        """_summary_
+        """Set fluid viscosity.
 
         Parameters
         ----------
-        mu : _type_
-            _description_
+        mu : float
+            fluid viscosity.
         """
-        self.mu = mu
+        self.mu = mu  #: Fluid viscosity.
 
-    def set_B(self, B):
-        """_summary_
+    def set_B(self, B: float):
+        """Set fluid formation volume factor (FVF).
 
         Parameters
         ----------
-        B : _type_
-            _description_
+        B : float
+            fluid formation volume factor.
         """
-        self.B = B
+        self.B = B  # Fluid formation volume factor (FVF).
 
-    def set_rho(self, rho):
-        """_summary_
+    def set_rho(self, rho: float):
+        """Set fluid density.
 
         Parameters
         ----------
-        rho : _type_
-            _description_
+        rho : float
+            fluid density.
         """
-        self.rho = rho
+        self.rho = rho  #: Fluid density.
         self.g = (
             self.factors["gravity conversion"]
             * self.rho
             * self.factors["gravitational acceleration"]
         )
 
-    def set_props(self, mu=None, B=None, rho=None, comp=None):
-        if mu != None:
+    def set_props(
+        self,
+        mu: float = None,
+        B: float = None,
+        rho: float = None,
+        comp: float = None,
+    ):
+        """Set fluid properties.
+
+        This function allows to set/update fluid properties at once.
+
+        Parameters
+        ----------
+        mu : float, optional
+            fluid viscosity.
+        B : float, optional
+            fluid formation volume factor.
+        rho : float, optional
+            fluid density.
+        comp : float, optional
+            fluid compressibility.
+        """
+        if mu is not None:
             self.set_mu(mu)
-        if B != None:
+        if B is not None:
             self.set_B(B)
-        if rho != None:
+        if rho is not None:
             self.set_rho(rho)
-        if comp != None:
+        if comp is not None:
             self.set_comp(comp)
         if not hasattr(self, "rho"):
             self.set_rho(0)
@@ -145,15 +151,31 @@ class SinglePhase(_Fluid):
     # -------------------------------------------------------------------------
 
     def allow_synonyms(self):
+        """Allow full descriptions.
+
+        This function maps functions as following:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            self.set_viscosity = self.set_mu
+            self.viscosity = self.mu
+            self.set_density = self.set_rho
+            self.density = self.rho
+            self.gravity = self.g
+            self.set_formation_volume_factor = self.set_FVF = self.set_B
+            self.formation_volume_factor = self.FVF = self.B
+            self.set_properties = self.set_props
+
+        """
         self.set_viscosity = self.set_mu
         self.viscosity = self.mu
-        self.set_rho = self.set_rho
+        self.set_density = self.set_rho
         self.density = self.rho
         self.gravity = self.g
         self.set_formation_volume_factor = self.set_FVF = self.set_B
         self.formation_volume_factor = self.FVF = self.B
-
-        self.set_props = self.set_props
+        self.set_properties = self.set_props
 
     # -------------------------------------------------------------------------
     # End
