@@ -1,9 +1,0 @@
-References
-==========
-
-Books
------
-
-
-Papers
-------

@@ -1,4 +1,4 @@
-# Contribution
+# Contribution 🦺
 
 ## Code of Conduct
 

@@ -1,4 +1,4 @@
-Blog 📝
+Blog 🗒
 ========
 
 This section is dedicated to share technical blogs such as use cases, tutorials, or deep investigations.

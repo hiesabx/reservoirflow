@@ -1,6 +1,5 @@
-=========
-Tutorials
-=========
+Tutorials 👨‍🏫
+===============
 
 This section includes tutorials to help the user learn how to use ``reservoirflow``.
 

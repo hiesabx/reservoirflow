@@ -11,7 +11,8 @@ pydata-sphinx-theme
 # nbsphinx
 # pandoc
 myst-nb
-sphinx-gallery
+# sphinx-gallery
 sphinx-comments
-numpydoc
+# numpydoc
 sphinx_design
+sphinxcontrib-bibtex

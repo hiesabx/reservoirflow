@@ -1,5 +1,5 @@
-blog01
-=============================
+blog01 📝
+==========
 *Author: Zakariya Abugrin | Date: November 2023*
 
 About something.

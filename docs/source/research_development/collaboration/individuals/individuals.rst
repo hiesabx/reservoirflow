@@ -1,5 +1,5 @@
-Individuals
-===========
+Individuals 💪
+==============
 
 We are looking to collaborate with professional individuals.
 

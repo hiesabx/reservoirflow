@@ -11,7 +11,7 @@ Contents
     :maxdepth: 1
 
     contribution
-    backlog
+    development/development
     collaboration/collaboration
 
 
@@ -20,4 +20,4 @@ Contents
    :caption: Extras
 
    citing_reservoirflow
-   references
+   references/references

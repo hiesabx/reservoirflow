@@ -59,6 +59,7 @@ extensions = [
     # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
     # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
     "sphinx_design",  # https://sphinx-design.readthedocs.io/en/latest/get_started.html
+    "sphinxcontrib.bibtex",  # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html
 ]
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -67,6 +68,15 @@ toc_object_entries_show_parents = "hide"  # domain, hide, all "On this page"
 
 # todo:
 todo_include_todos = True
+
+# bibtex:
+bibtex_bibfiles = [
+    "research_development/references/books.bib",
+    "research_development/references/papers.bib",
+]
+# bibtex_default_style = "unsrt"
+# bibtex_reference_style = "author_year"
+# bibtex_foot_reference_style = "foot"
 
 # autosummary:
 autosummary_generate = True

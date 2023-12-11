@@ -1,5 +1,5 @@
-Commenting Guidelines
-=====================
+Commenting Guidelines ⚖
+========================
 
 Note that comments' section is activated throughout the entire Documentation. The main reason to do so, is to allow sharing and discussing ideas where the community can be engaged in the details of this library. However, this adds some responsibility to keep the comments' section as professional as possible. 
 
