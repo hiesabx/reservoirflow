@@ -1,3 +1,17 @@
+"""
+profme
+======
+
+This module is used to provide profiling functions.
+"""
+
+__all__ = [
+    "cProfiler",
+    "lProfiler",
+    "profile",
+    "timeit",
+]
+
 import cProfile
 import io
 import pstats
@@ -47,7 +61,7 @@ def cProfiler(sort_stats="tottime", print_output=True, save_output=True):
             stats.print_stats()
             result = s.getvalue()
             result = [l.strip() for l in re.split("\n+", result)][2:-1]
-            result = [re.sub("\s+", ",", r, count=5) for r in result]
+            result = [re.sub(r"\s+", ",", r, count=5) for r in result]
             if print_output:
                 data = io.StringIO("\n".join(result))
                 df = pd.read_csv(data, sep=",")
@@ -92,9 +106,9 @@ def lProfiler(print_output=True, save_output=True):
                 print(result)
             if save_output:
                 result = [l.strip() for l in re.split("\n+", result)]
-                head = re.findall("\S+ ?\S+", result[4])
+                head = re.findall(r"\S+ ?\S+", result[4])
                 iter = [
-                    [m.start(), m.end()] for m in re.finditer("\S+ ?\S+", result[4])
+                    [m.start(), m.end()] for m in re.finditer(r"\S+ ?\S+", result[4])
                 ]
                 iter[-1][1] = None
                 lines = [
@@ -126,8 +140,8 @@ def profile(func):
     _type_
         _description_
 
-    Reference
-    ---------
+    Notes
+    -----
     https://gist.github.com/pavelpatrin/5a28311061bf7ac55cdd
     """
 

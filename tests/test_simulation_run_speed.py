@@ -29,7 +29,7 @@ if generate_data:
         )
         model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
         id = grid.cells_id[0]
-        model.set_well(id=id, q=-400, pwf=1500, s=0, r=3)
+        model.set_well(cell_id=id, q=-400, pwf=1500, s=0, r=3)
         # model.set_boundaries({0: ("rate", 0)})
         return model
 

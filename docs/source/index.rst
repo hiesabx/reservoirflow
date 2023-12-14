@@ -1,21 +1,32 @@
-Welcome to ReservoirFlow's Documentation
-=========================================
+Home
+====
+
+ReservoirFlow: a Petroleum Reservoir Simulation and Engineering Library in Python
 
 .. note:: 
-   This project is under active development.
+   This project is under active development and only basic functionality is currently available 
+   (see `Capabilities </capabilities.html>`_).
+   
+.. figure: user_guide/tutorials/tutorial_five_spot_single_phase/grid_animated.gif
+.. figure:: https://drive.google.com/uc?id=11NhTbAU_lA768yiEAsoA18SshMjDtRqZ
+   :width: 700
+   :alt: five_spot_single_phase
+   :align: center
+   
+   *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns.* (see `Tutorials`_)
+.. _tutorials: /user_guide/tutorials/tutorial_five_spot_single_phase/tutorial_five_spot_single_phase.html
 
-.. image:: ../../images/five_spot_single_phase.gif
-  :width: 600
-  :alt: five_spot_single_phase
-  :align: center
-
-|
 
 .. include:: ../../README.md
    :start-after: ## Introduction
    :parser: myst_parser.sphinx_
 
-Documentation Contents
+
+.. include:: sponsors.rst
+
+|
+
+Contents
 ======================
 
 .. toctree::
@@ -23,9 +34,11 @@ Documentation Contents
 
    user_guide/user_guide
    research_development/research_development
-   api/api
    capabilities
+   api/API
+   community/community
    support_us
+   about_us
    release_notes/release_notes
 
 Indices and tables

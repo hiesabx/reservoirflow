@@ -16,7 +16,7 @@ def create_model():
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
     model = models.BlackOil(grid, fluid, dtype="double", dt=1, verbose=False)
-    model.set_well(id=4, q=-600, s=1.5, r=3.5)
+    model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model
 

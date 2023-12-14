@@ -37,8 +37,8 @@ class TestApp(unittest.TestCase):
         T_x_desired = np.array([1.035, 0, 1.035])
         T_y_desired = np.array([1.3524, 1.3524])
         model = create_model()
-        T_x = model.get_cells_T_diag(False, 1)
-        T_y = model.get_cells_T_diag(False, 2)
+        T_x = model.get_cells_trans_diag(False, 1)
+        T_y = model.get_cells_trans_diag(False, 2)
         # T_x = model.get_cells_T_vect("x", False, False)
         # T_y = model.get_cells_T_vect("y", False, False)
         np.testing.assert_almost_equal(T_x, T_x_desired, decimal=5)
@@ -131,8 +131,8 @@ def create_model():
         dtype="double",
     )
     model = models.BlackOil(grid, fluid, dtype="double", verbose=False)
-    model.set_well(id=6, pwf=2000, s=0, r=3)
-    model.set_well(id=9, q=-600, s=0, r=3)
+    model.set_well(cell_id=6, pwf=2000, s=0, r=3)
+    model.set_well(cell_id=9, q=-600, s=0, r=3)
     model.set_boundaries(
         {
             1: ("pressure", 4000),

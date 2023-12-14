@@ -6,3 +6,13 @@ myst-parser
 mypy
 # sphinx-automodapi
 pydata-sphinx-theme
+# IPython
+# ipykernel
+# nbsphinx
+# pandoc
+myst-nb
+# sphinx-gallery
+sphinx-comments
+# numpydoc
+sphinx_design
+sphinxcontrib-bibtex

@@ -1,6 +1,5 @@
-===============
 Release Notes
-===============
+=============
 
 This section is dedicated to the new versions announcements.
 

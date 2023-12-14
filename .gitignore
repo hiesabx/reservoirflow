@@ -132,3 +132,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Sphinx (Python Documentation)
+docs/source/api

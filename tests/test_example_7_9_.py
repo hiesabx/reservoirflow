@@ -25,14 +25,14 @@ class TestApp(unittest.TestCase):
             drop_nan=False,
             drop_zero=False,
         )
-        df.to_csv("tests/test_example_7_9_.csv")
+        # df.to_csv("tests/test_example_7_9_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
 
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        Tx = model.get_cells_T_diag(True, 1)
+        Tx = model.get_cells_trans_diag(True, 1)
         np.testing.assert_array_equal(Tx, trans_desired)
 
     def test_RHS(self):
@@ -112,7 +112,7 @@ def create_model():
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
     model = models.BlackOil(grid, fluid, pi=4000, dt=1, dtype="double", verbose=False)
-    model.set_well(id=4, q=-600, s=1.5, r=3.5)
+    model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model
 

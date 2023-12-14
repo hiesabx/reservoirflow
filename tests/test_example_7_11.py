@@ -14,9 +14,9 @@ class TestApp(unittest.TestCase):
             dtype={"Step": "int32", "Time [days]": "int32"},
         )
         df_desired.index = df_desired.index.astype(int)
-        # dense:
+        # vectorize, dense:
         model = create_model()
-        model.run(nsteps=27, sparse=False, threading=True)
+        model.run(nsteps=27, sparse=False, vectorize=True, threading=True)
         df = model.get_df(
             columns=["time", "cells_pressure", "wells"],
             boundary=False,
@@ -30,9 +30,9 @@ class TestApp(unittest.TestCase):
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
-        # sparse:
+        # vectorize, sparse:
         model = create_model()
-        model.run(nsteps=27, sparse=True, threading=True)
+        model.run(nsteps=27, sparse=True, vectorize=True, threading=True)
         df = model.get_df(
             columns=["time", "cells_pressure", "wells"],
             boundary=False,
@@ -44,7 +44,38 @@ class TestApp(unittest.TestCase):
             drop_zero=True,
         )
         df.index = df.index.astype(int)
-
+        pd.testing.assert_frame_equal(df, df_desired)
+        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        # symbolic, dense:
+        model = create_model()
+        model.run(nsteps=27, sparse=False, vectorize=False, threading=True)
+        df = model.get_df(
+            columns=["time", "cells_pressure", "wells"],
+            boundary=False,
+            units=True,
+            melt=False,
+            scale=False,
+            save=False,
+            drop_nan=True,
+            drop_zero=True,
+        )
+        # df.to_csv("tests/test_example_7_11_.csv")
+        pd.testing.assert_frame_equal(df, df_desired)
+        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        # symbolic, sparse:
+        model = create_model()
+        model.run(nsteps=27, sparse=True, vectorize=False, threading=True)
+        df = model.get_df(
+            columns=["time", "cells_pressure", "wells"],
+            boundary=False,
+            units=True,
+            melt=False,
+            scale=False,
+            save=False,
+            drop_nan=True,
+            drop_zero=True,
+        )
+        df.index = df.index.astype(int)
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
 
@@ -53,7 +84,7 @@ class TestApp(unittest.TestCase):
             [12.81962, 14.04424, 15.71314, 21.08469, 20.16215, 14.8764]
         )
         model = create_model()
-        Tx = model.get_cells_T_diag(True, 1)
+        Tx = model.get_cells_trans_diag(True, 1)
         np.testing.assert_almost_equal(Tx, trans_desired, 5)
 
     def test_RHS(self):
@@ -81,9 +112,13 @@ class TestApp(unittest.TestCase):
     def test_simulation_run(self):
         # with self.assertWarns(Warning):
         model = create_model()
-        model.run(30, sparse=True)
+        model.run(30, sparse=True, vectorize=True)
         model = create_model()
-        model.run(30, sparse=False)
+        model.run(30, sparse=False, vectorize=True)
+        model = create_model()
+        model.run(30, sparse=True, vectorize=False)
+        model = create_model()
+        model.run(30, sparse=False, vectorize=False)
 
 
 def create_model():
@@ -105,7 +140,7 @@ def create_model():
     )
     fluid = fluids.SinglePhase(mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double")
     model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
-    model.set_well(id=4, q=-400, pwf=1500, s=0, r=3)
+    model.set_well(cell_id=4, q=-400, pwf=1500, s=0, r=3)
     model.set_boundaries({0: ("rate", 0), 6: ("rate", 0)})
     return model
 

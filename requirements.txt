@@ -1,9 +1,29 @@
-line_profiler==4.1.1
-matplotlib==3.5.3
-numpy==1.21.6
-pandas==1.3.5
-pyvista==0.38.6
-scipy==1.7.3
-sympy==1.10.1
-tabulate==0.9.0
-tqdm==4.66.1
+# Python 3.7:
+# line_profiler==4.1.1
+# matplotlib==3.5.3
+# numpy==1.21.6
+# pandas==1.3.5
+# scipy==1.7.3
+# sympy==1.10.1
+# tabulate==0.9.0
+# tqdm==4.66.1
+# pyvista==0.38.6
+# ipywidgets==8.1.0
+# aiohttp==3.9.0b0
+# trame==2.5.2
+
+# Python 3.10:
+line_profiler
+matplotlib
+numpy
+pandas
+scipy
+sympy
+tabulate
+tqdm
+pyvista
+ipywidgets
+trame-vtk
+imageio
+trame-vuetify
+trame

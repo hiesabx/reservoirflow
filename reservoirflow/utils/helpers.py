@@ -1,9 +1,14 @@
-# %%
+"""
+helpers
+=======
+
+This module is used to provide helper functions.
+"""
+
 import warnings
 from functools import lru_cache
 
 import numpy as np
-from numpy import ndarray
 
 
 def _lru_cache(maxsize=None):
@@ -18,7 +23,6 @@ def _lru_cache(maxsize=None):
     return wrapper_cache
 
 
-# %%
 def get_boundary_str(boundary):
     return "with boundary" if boundary else "without boundary"
 
@@ -44,9 +48,9 @@ def isin(x: tuple, in_data):
 
     Parameters
     ----------
-    x : int, tuple, list, tuple, ndarray
+    x : int, tuple, list, tuple, np.ndarray
         int (e.g. id) or list-like (e.g. coords) of len 3.
-    data : list, set, tuple, ndarray
+    data : list, set, tuple, np.ndarray
         list-like of int or tuples of len 3.
 
     Returns
@@ -70,23 +74,23 @@ def isin(x: tuple, in_data):
     return x in in_data
 
 
-def intersection(array_x: ndarray, array_y: ndarray, fmt="array"):
+def intersection(array_x: np.ndarray, array_y: np.ndarray, fmt="array"):
     """Find common tuples between two arrays.
 
     arrays must be flatten
 
     Parameters
     ----------
-    array_x : ndarray
+    array_x : np.ndarray
         array of tuples or arrays of len 3.
-    array_y : ndarray
+    array_y : np.ndarray
         array of tuples or arrays of len 3.
     fmt : str, optional
         output format as str in ['array', 'list', 'tuple'].
 
     Returns
     -------
-    ndarray, list
+    np.ndarray, list
         common tuples between two arrays.
     """
     argmin = np.argmin([np.max(array_x.shape), np.max(array_y.shape)])
@@ -150,7 +154,7 @@ def reformat(in_data, fmt="tuple"):
     Parameters
     ----------
     in_data : _type_
-        input data to be reformated. If data is ndarray, it must be
+        input data to be reformated. If data is np.ndarray, it must be
         flatten before reformated.
     points : bool, optional
         _description_

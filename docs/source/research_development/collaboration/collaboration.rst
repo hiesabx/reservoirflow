@@ -1,16 +1,15 @@
-=============
-Collaboration
-=============
+Collaboration 🤝
+================
 
-Here we list all of our active collaborations with universities and companies.
+Here we list all of our active collaborations with universities, companies, and individuals.
 
 How to collaborate?
-###################
+-------------------
 
-You need to register for a collaboration, so we can assess our resources before we can give you our commitment. To request a collaboration, please contact us. 
+You need to register for a collaboration, so we can assess our resources before we can give you our commitment. To request a collaboration, please contact us or write a comment in the proper section. 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     universities/universities
     companies/companies

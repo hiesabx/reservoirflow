@@ -2,8 +2,8 @@
 ReservoirFlow `<reservoirflow>`
 ===============================
 
-a Petroleum Reservoir Simulation Library in Python developed by 
-`Zakariya Abugrin`.
+a Petroleum Reservoir Simulation and Engineering Library in Python 
+developed by `Zakariya Abugrin`.
 
 Available subpackages
 ---------------------
@@ -23,7 +23,7 @@ visuals
     Visual classes to visualize a Model in 3D.
 wells
     Wells classes to add a well to a Model.
-    
+ 
 How to Use
 ----------
 
@@ -31,19 +31,19 @@ First import:
 The docstring examples assume that `reservoirflow` has been imported as `rf`::
 
   >>> import reservoirflow as rf
-    
+
 Print the current version::
 
   >>> print(rf.__version__)
-    
+
 Create a `Cartesian` grid from `grids` module::
 
   >>> grid = rf.grids.Cartesian()
-    
+
 Create a `SinglePhase` fluid from `fluids` module::
 
   >>> fluid = rf.fluids.SinglePhase()
-    
+
 Construct a `BlackOil` model from `models` module::
 
   >>> model = rf.models.BlackOil(
@@ -53,6 +53,17 @@ Construct a `BlackOil` model from `models` module::
 """
 
 __version__ = "0.1.0"
+__all__ = [
+    "fluids",
+    "grids",
+    "models",
+    "scalers",
+    "utils",
+    "wells",
+    "FACTORS",
+    "UNITS",
+    "NOMENCLATURE",
+]
 
-from . import fluids, grids, models, scalers, utils
-from ._base import FACTORS, UNITS
+from . import fluids, grids, models, scalers, utils, wells
+from ._base import FACTORS, NOMENCLATURE, UNITS

@@ -1,12 +1,13 @@
-============
-Individuals
-============
+Individuals 💪
+==============
 
-We are looking to collaborate with individuals.
+We are looking to collaborate with professional individuals.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     icolab_0001/icolab_0001
 
-    
+|
+
+.. include:: /_static/comments_section.rst

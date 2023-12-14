@@ -1,13 +1,18 @@
-# Contributing to ReservoirFlow
+# Contribution 🦺
 
 ## Code of Conduct
 
-An excellent library needs two things: a clean code with a clean documentation. The author tried to follow most of the Python enhancement proposals mentioned in [PEP0](https://peps.python.org/pep-0000/). Mainly:
+An excellent library needs two things: a clean code with a clean documentation. We are committed to follow most of the Python enhancement proposals mentioned in [PEP0](https://peps.python.org/pep-0000/). Mainly:
 
-- [PEP20](https://peps.python.org/pep-0020/): guiding principles for Python’s design.
+```{note}
+Updates are expected with *PEP* documents occasionally.
+```
+
 - [PEP8](https://peps.python.org/pep-0008/): a clean code that can be easily understood by others.
-- [PEP257](https://peps.python.org/pep-0257/): a clean documentation.
-- [PEP484](https://peps.python.org/pep-0484/): a standard syntax for type annotations.
+- [PEP20](https://peps.python.org/pep-0020/): guiding principles for Python’s design.
+- [PEP257](https://peps.python.org/pep-0257/): a clean documentation using [NumPy Style guide](https://numpydoc.readthedocs.io/en/latest/format.html).
+- [PEP 585](https://peps.python.org/pep-0585/): Type Hinting Generics In Standard Collections.
+  - Note that [PEP484](https://peps.python.org/pep-0484/) is not needed since most annotations from `typing` module are deprecated. For more information, check the [typing](https://docs.python.org/3/library/typing.html) module documentation.
 
 Future developers and engineers who intend to contribute to this library should always keep in mind these standards to keep the source code clean and easy to follow. This should allow developing complex reservoir simulation models that are both innovative and efficient.
 
@@ -90,3 +95,7 @@ If you are a developer or want to be one, who wants to work on additional featur
     ```
 
 - [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/reservoirflow/pulls) to add features or solve bugs under [Issues](https://github.com/zakgrin/reservoirflow/issues). Please keep in mind that you need to stick with the project [Code of Conduct](#code-of-conduct).
+
+
+```{include} /_static/comments_section.md
+```

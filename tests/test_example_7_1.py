@@ -9,20 +9,28 @@ class TestApp(unittest.TestCase):
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
         model = create_model()
-        trans = model.get_cells_T_diag(True, 1)
+        trans = model.get_cells_trans_diag(True, 1)
         np.testing.assert_array_equal(trans, trans_desired)
 
     def test_pressures(self):
         p_desired = np.array(
             [4000.0, 3989.43676, 3968.310305, 3947.18384, 3926.05737, np.nan]
         )
-        # sparse:
+        # vectorize, sparse:
         model = create_model()
-        model.solve(sparse=True, update=True, check_MB=True)
+        model.solve(sparse=True, vectorize=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
-        # dense:
+        # vectorize, dense:
         model = create_model()
-        model.solve(sparse=False, update=True, check_MB=True)
+        model.solve(sparse=False, vectorize=True, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
+        # symbolic, sparse:
+        model = create_model()
+        model.solve(sparse=True, vectorize=False, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
+        # symbolic, dense:
+        model = create_model()
+        model.solve(sparse=False, vectorize=False, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
 
     def test_well(self):
@@ -37,13 +45,21 @@ class TestApp(unittest.TestCase):
         rates_desired = np.array(
             [600.0000000000169, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
         )
-        # sparse:
+        # vectorize, sparse:
         model = create_model()
-        model.solve(sparse=True, update=True, check_MB=True)
+        model.solve(sparse=True, vectorize=True, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
-        # dense:
+        # vectorize, dense:
         model = create_model()
-        model.solve(sparse=False, update=True, check_MB=True)
+        model.solve(sparse=False, vectorize=True, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        # symbolic, sparse:
+        model = create_model()
+        model.solve(sparse=True, vectorize=False, update=True, check_MB=True)
+        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        # symbolic, dense:
+        model = create_model()
+        model.solve(sparse=False, vectorize=False, update=True, check_MB=True)
         np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
 
     def test_simulation_run(self):
@@ -77,7 +93,7 @@ def create_model():
         verbose=False,
     )
     model.set_well(
-        id=4,
+        cell_id=4,
         q=-600,
         s=1.5,
         r=3.5,

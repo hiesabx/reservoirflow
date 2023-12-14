@@ -1,6 +1,5 @@
-===========
-ucolab_0001
-===========
+ucolab_0001 ✏
+==============
 
 This is the first university collaboration.
 
@@ -8,5 +7,8 @@ This is the first university collaboration.
     :maxdepth: 2
 
     
+|
+
+.. include:: /_static/comments_section.rst
 
     

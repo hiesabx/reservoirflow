@@ -14,7 +14,7 @@ fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5)
 # Step 3: Create a model
 model = models.BlackOil(grid, fluid, pi=4000)
 # Step 4: Add a well
-model.set_well(id=4, q=-600, s=1.5, r=3.5)  # well 1 (Producer)
+model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)  # well 1 (Producer)
 # Step 5: Define boundary conditions
 model.set_boundaries(
     {0: {"pressure": 4000}, -1: {"rate": 0}}  # left boundary (constant pressure)
@@ -23,6 +23,6 @@ model.set_boundaries(
 model.solve(sparse=False, check_MB=False, verbose=True)
 # print(model)
 # # Step 7: Show pressures in 3D grid
-model.show(property="pressures", boundary=False)
+model.show(prop="pressures", boundary=False)
 # Step 8: Show report
 # model.report()

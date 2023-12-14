@@ -1,8 +1,21 @@
-=========
-Tutorials
-=========
+Tutorials 👨‍🏫
+===============
+
+This section includes tutorials to help the user learn how to use ``reservoirflow``.
+
+.. note::
+
+    We encourage our users to develop high quality tutorials in Jupyter 
+    notebooks similar to those listed below (which combines the code with
+    clear explanations). We will be always happy to add your tutorial 
+    to the list below.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    five_spot_single_phase/five_spot_single_phase
+    tutorial_learn_scientific_computing/tutorial_learn_scientific_computing
+    tutorial_understand_grids_module/tutorial_understand_grids_module
+    tutorial_five_spot_single_phase/tutorial_five_spot_single_phase
+.. example_notebook/example_notebook
+.. example_markdown/example_markdown
+.. example_sphinx_gallery/build/index
