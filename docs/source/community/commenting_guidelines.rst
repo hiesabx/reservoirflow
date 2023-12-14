@@ -7,7 +7,7 @@ Therefore, we suggest the following points as a guideline:
     * always make sure that your comment is to the point.
     * avoid unnecessary comments (e.g., hello, thanks, first comment etc.).
     * do not repeat your comments.
-    * harmful/unrelated links are not allowed.
+    * harmful/unrelated comments or links are not allowed.
 
 .. warning::
 

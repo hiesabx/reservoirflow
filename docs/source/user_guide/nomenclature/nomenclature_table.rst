@@ -1,5 +1,5 @@
 ==============================  ==============  ================
-term                            abbreviation    symbol
+nomenclature                    abbreviation    symbol
 ==============================  ==============  ================
 transmissibility                trans           :math:`T`
 error                           err             :math:`e`

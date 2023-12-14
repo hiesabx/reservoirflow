@@ -1,5 +1,5 @@
-Glossary
-========
+Glossary 📇
+===========
 
 General
 -------

@@ -10,7 +10,7 @@
 -->
 
 Feel free to make a comment, ask a question, or share your opinion about this specific content.
-Please keep in mind the [Commenting Guidelines](/community/commenting_guidelines.html).
+Please keep in mind the [Commenting Guidelines ⚖](/community/commenting_guidelines.html).
 
 ```{raw} html
 ---

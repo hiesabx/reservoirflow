@@ -19,6 +19,7 @@ master_doc = "index"
 # remove warnings:
 suppress_warnings = [
     "myst.header",
+    "myst.footnote",
     "toc.excluded",
 ]
 
@@ -74,9 +75,9 @@ bibtex_bibfiles = [
     "research_development/references/books.bib",
     "research_development/references/papers.bib",
 ]
-# bibtex_default_style = "unsrt"
-# bibtex_reference_style = "author_year"
-# bibtex_foot_reference_style = "foot"
+bibtex_default_style = "unsrt"
+bibtex_reference_style = "super"
+bibtex_foot_reference_style = "foot"
 
 # autosummary:
 autosummary_generate = True
@@ -121,6 +122,7 @@ myst_enable_extensions = [
     "html_image",
     "fieldlist",
 ]
+myst_footnote_transition = False
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
 # nb_output_stderr = "remove"  # remove progress bar
@@ -159,8 +161,8 @@ nb_merge_streams = True  # combine print output in one cell
 # html:
 html_theme = "pydata_sphinx_theme"
 html_title = project  # + release
-html_logo = "_static/logo.png"
-html_favicon = "_static/logo_grid.png"
+html_logo = "_static/RF_logo.png"
+html_favicon = "_static/RF_logo.png"
 html_show_sourcelink = False
 html_static_path = [
     "_static",
@@ -223,8 +225,8 @@ def store_dict(in_dict, name="FACTORS", folder=""):
         label = "property"
     elif name == "FACTORS":
         label = "factor"
-    elif name == "TERMS":
-        label = "term"
+    elif name == "NOMENCLATURE":
+        label = "nomenclature"
     else:
         raise ValueError("name is unknown")
     columns = list(in_dict.keys())
@@ -250,7 +252,7 @@ def store_dict(in_dict, name="FACTORS", folder=""):
             # prop_field = in_dict[columns[0]][prop]
             # prop_metric = in_dict[columns[1]][prop]
             # prop_lab = in_dict[columns[2]][prop]
-        elif label == "term":
+        elif label == "nomenclature":
             row.append(in_dict[columns[0]][prop])
             row.append(":math:`" + in_dict[columns[1]][prop] + "`")
 
@@ -274,4 +276,4 @@ def store_dict(in_dict, name="FACTORS", folder=""):
 
 store_dict(rf.UNITS, "UNITS", "user_guide/units_factors/")
 store_dict(rf.FACTORS, "FACTORS", "user_guide/units_factors/")
-store_dict(rf.TERMS, "TERMS", "user_guide/terms/")
+store_dict(rf.NOMENCLATURE, "NOMENCLATURE", "user_guide/nomenclature/")

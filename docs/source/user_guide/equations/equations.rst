@@ -1,6 +1,8 @@
-Equations
-=========
+Equations 🧾
+============
 Version: |release|
+
+This section contains the equations (i.e. mathematical models) used to build this tool. 
 
 .. math:: 
     a^2 = \frac{1}{2}

@@ -1,7 +1,7 @@
 Sponsors
 --------
 
-We are looking for sponsors.
+We are looking for sponsors who are willing to support open science and research.
 
 .. grid:: 1 1 1 4
     :gutter: 5

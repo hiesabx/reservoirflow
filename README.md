@@ -1,6 +1,7 @@
-# ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
+# ReservoirFlow: a Petroleum Reservoir Simulation and Engineering Library in Python
 
-![five_spot_single_phase](/docs\source\user_guide\tutorials\tutorial_five_spot_single_phase\grid_animated.gif)\
+<!-- ![five_spot_single_phase](/docs\source\user_guide\tutorials\tutorial_five_spot_single_phase\grid_animated.gif)\ -->
+![five_spot_single_phase](https://drive.google.com/uc?id=11NhTbAU_lA768yiEAsoA18SshMjDtRqZ)\
 *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns.*
 
 **Table of Content:**
@@ -14,11 +15,11 @@
 
 ## Introduction
 
-*ReservoirFlow* <`reservoirflow`> is a modern open-source Python library developed by [Zakariya Abugrin](https://github.com/zakgrin) (Founder and CEO of [Bayanatics](https://github.com/zakgrin)). ReservoirFlow is designed to study and model the phenomenon of fluid flow in porous media (i.e. Reservoir Simulation) using different approaches including analytical solutions, numerical solutions, and machine learning solutions. *ReservoirFlow* is designed based on the modern Python stack for data science, scientific computing, and machine learning with the objective to support high-performance computing including multithreading, parallelism, GPU, and TPU.
+*ReservoirFlow* <`reservoirflow`> is a modern open-source Python library developed by [Zakariya Abugrin](https://github.com/zakgrin) (Founder and CEO of [Bayanatics](https://github.com/zakgrin)). ReservoirFlow is designed to study and model the phenomenon of fluid flow in porous media (i.e. including Reservoir Simulation, pressure transient analysis, rate transient analysis) using different approaches including analytical solutions, numerical solutions, and machine learning solutions. *ReservoirFlow* is designed based on the modern Python stack for data science, scientific computing, and machine learning with the objective to support high-performance computing including multithreading, parallelism, GPU, and TPU.
 
-*ReservoirFlow* brings reservoir simulation to the Python ecosystem including data analytics and machine learning tools to empower intelligent fields where AI specialists can deploy their models in containers that will be ready to make real-time optimization for any well in the field. Having this option allows for better integration and support with intelligent fields. In contrast to commercial black-box software where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
+*ReservoirFlow* brings reservoir simulation and engineering to the Python ecosystem including data analytics and machine learning tools to empower intelligent fields where AI specialists can deploy their models in containers that will be ready to make real-time optimization for any well in the field. Having this option allows for better integration and support with intelligent fields. In contrast to commercial black-box software where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute.
 
-*ReservoirFlow* aims to achieving a high quality open research and science for reservoir engineering and simulation. Solutions that can combine the strength of scientific computing with the power of machine learning (e.g. deep learning) for different objectives (e.g. reverse computing, interpolation or extrapolation, etc.). Below are few examples of the problems that will be tackled in the future:
+*ReservoirFlow* aims to achieving a high quality open research and science for reservoir simulation and engineering. Solutions that can combine the strength of scientific computing with the power of machine learning (e.g. deep learning) for different objectives (e.g. reverse computing, interpolation or extrapolation, etc.). Below are few examples of the problems that will be tackled in the future:
 
 - Real-time reservoir management and production optimization using Cloud Computing and IoT.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).

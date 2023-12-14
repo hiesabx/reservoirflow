@@ -1,7 +1,7 @@
-ReservoirFlow Documentation
-===========================
+Home
+====
 
-ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
+ReservoirFlow: a Petroleum Reservoir Simulation and Engineering Library in Python
 
 .. note:: 
    This project is under active development and only basic functionality is currently available 
@@ -26,7 +26,7 @@ ReservoirFlow: a Petroleum Reservoir Simulation Library in Python
 
 |
 
-Documentation Contents
+Contents
 ======================
 
 .. toctree::

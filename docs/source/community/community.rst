@@ -8,6 +8,7 @@ Contents
 .. toctree::
     :maxdepth: 1
 
+    news/news
     blog/blog
     events/events
     forum/forum

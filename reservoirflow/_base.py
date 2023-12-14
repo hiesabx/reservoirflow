@@ -121,7 +121,7 @@ FACTORS = {
 }
 
 
-TERMS = {
+NOMENCLATURE = {
     "abbreviation": {
         "transmissibility": "trans",
         "error": "err",

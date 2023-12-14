@@ -2,8 +2,8 @@
 ReservoirFlow `<reservoirflow>`
 ===============================
 
-a Petroleum Reservoir Simulation Library in Python developed by 
-`Zakariya Abugrin`.
+a Petroleum Reservoir Simulation and Engineering Library in Python 
+developed by `Zakariya Abugrin`.
 
 Available subpackages
 ---------------------
@@ -23,7 +23,7 @@ visuals
     Visual classes to visualize a Model in 3D.
 wells
     Wells classes to add a well to a Model.
-    
+ 
 How to Use
 ----------
 
@@ -62,8 +62,8 @@ __all__ = [
     "wells",
     "FACTORS",
     "UNITS",
-    "TERMS",
+    "NOMENCLATURE",
 ]
 
 from . import fluids, grids, models, scalers, utils, wells
-from ._base import FACTORS, TERMS, UNITS
+from ._base import FACTORS, NOMENCLATURE, UNITS

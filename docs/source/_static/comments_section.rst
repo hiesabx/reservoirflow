@@ -16,7 +16,7 @@ Comments 💬
 
 
 Feel free to make a comment, ask a question, or share your opinion about this specific content. 
-Please keep in mind the `Commenting Guidelines </community/commenting_guidelines.html>`_.
+Please keep in mind the `Commenting Guidelines ⚖ </community/commenting_guidelines.html>`_.
 
 .. raw:: html
     :class: only-dark

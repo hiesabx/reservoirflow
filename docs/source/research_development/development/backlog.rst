@@ -8,6 +8,8 @@ New Modules
 
 - ``reservoirflow.pvt``: a module for PVT functionality. 
 - ``reservoirflow.kr``: a module for relative permeability functionality.
+- ``reservoirflow.pta``: a module for pressure transient analysis functionality. 
+- ``reservoirflow.rta``: a module for rate transient analysis functionality.
 
 Improving Current Modules
 -------------------------
