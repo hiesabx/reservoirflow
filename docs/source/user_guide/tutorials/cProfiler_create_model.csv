@@ -1,0 +1,113 @@
+ncalls,tottime,percall,cumtime,percall,filename:lineno(function)
+13,0.000,0.000,0.000,0.000,{built-in method numpy.array}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:119(__initialize__)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1116(extract_boundaries)
+3,0.000,0.000,0.000,0.000,{method 'reduce' of 'numpy.ufunc' objects}
+3,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:340(_broadcast_to)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1281(__calc_cells_d_)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:397(set_well)
+3,0.000,0.000,0.000,0.000,{built-in method numpy.arange}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:348(__calc_well_r_eq)
+1,0.000,0.000,0.001,0.001,C:\Users\abugrzka\AppData\Local\Temp\ipykernel_27400\3887016961.py:1(create_model)
+4,0.000,0.000,0.000,0.000,{built-in method numpy.zeros}
+4,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\numeric.py:136(ones)
+3,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:2359(set_prop)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:1633(set_scalers)
+4,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\utils\helpers.py:151(reformat)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1357(__calc_cells_d)
+4,0.000,0.000,0.000,0.000,{built-in method numpy.empty}
+3,0.000,0.000,0.000,0.000,{method 'flatten' of 'numpy.ndarray' objects}
+2,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:71(_wrapreduction)
+1,0.000,0.000,0.000,0.000,{method 'argmax' of 'numpy.ndarray' objects}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:548(__calc_RHS)
+2,0.000,0.000,0.000,0.000,{method 'copy' of 'numpy.ndarray' objects}
+3,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\_base.py:281(set_units)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:416(_broadcast_shape)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\function_base.py:5010(meshgrid)
+1,0.000,0.000,0.001,0.001,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:31(__init__)
+1,0.000,0.000,0.000,0.000,{built-in method numpy.asarray}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:270(get_fdir)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1238(get_boundaries)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:998(remove_boundaries)
+4,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\utils\helpers.py:131(ispoints)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:505(set_boundaries)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:39(__init__)
+2,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:865(sort)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:306(__calc_well_G)
+4,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:1666(create_scaler)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:588(get_cells_id)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:224(get_n)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:380(get_order)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:467(get_zeros)
+8,0.000,0.000,0.000,0.000,{method 'reshape' of 'numpy.ndarray' objects}
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:40(_wrapit)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:480(broadcast_arrays)
+2,0.000,0.000,0.000,0.000,{method 'sort' of 'numpy.ndarray' objects}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:2260(set_props)
+2,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:2979(prod)
+4,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:53(_wrapfunc)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\function_base.py:5150(<listcomp>)
+7,0.000,0.000,0.000,0.000,{built-in method builtins.getattr}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\single_phase.py:20(__init__)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\single_phase.py:114(set_props)
+2,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:469(set_boundary)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1931(__calc_cells_V)
+3,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\scalers\minmax.py:37(__init__)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1677(__calc_cells_A)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\grid.py:32(__init__)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:247(get_n_max)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:513(get_cells_i)
+3,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\_base.py:257(__init__)
+2/1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:185(get_shape)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:169(get_D)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:1322(check_d)
+12,0.000,0.000,0.000,0.000,{built-in method builtins.isinstance}
+3,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\function_base.py:348(iterable)
+11,0.000,0.000,0.000,0.000,{method 'keys' of 'dict' objects}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:425(get_ones)
+15,0.000,0.000,0.000,0.000,{method 'lower' of 'str' objects}
+12,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:345(<genexpr>)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\single_phase.py:99(set_rho)
+2,0.000,0.000,0.000,0.000,{built-in method builtins.sum}
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:538(<listcomp>)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:309(get_fshape)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:1140(argmax)
+3,0.000,0.000,0.000,0.000,{built-in method builtins.any}
+2,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:72(<dictcomp>)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:546(<listcomp>)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\fluid.py:15(__init__)
+5,0.000,0.000,0.000,0.000,{built-in method numpy.asanyarray}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:202(__calc_comp)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\model.py:17(__init__)
+3,0.000,0.000,0.000,0.000,{method 'transpose' of 'numpy.ndarray' objects}
+3,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:588(transpose)
+1,0.000,0.000,0.000,0.000,{method 'sum' of 'numpy.ndarray' objects}
+2,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:861(_sort_dispatcher)
+3,0.000,0.000,0.000,0.000,{built-in method builtins.hasattr}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\black_oil.py:522(<listcomp>)
+3,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:25(_maybe_view_as_subclass)
+3,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:542(<genexpr>)
+1,0.000,0.000,0.000,0.000,{built-in method fromkeys}
+1,0.000,0.000,0.000,0.000,{built-in method builtins.max}
+6,0.000,0.000,0.000,0.000,{built-in method builtins.len}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\fluid.py:32(set_comp)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\regular_cartesian.py:178(<listcomp>)
+4,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\multiarray.py:1080(copyto)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\_methods.py:47(_sum)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\models\model.py:21(set_comp)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\single_phase.py:89(set_B)
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\grids\grid.py:62(set_comp)
+3,0.000,0.000,0.000,0.000,{method '__exit__' of 'numpy.nditer' objects}
+4,0.000,0.000,0.000,0.000,{method 'append' of 'list' objects}
+3,0.000,0.000,0.000,0.000,{built-in method builtins.iter}
+3,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:584(_transpose_dispatcher)
+2,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:2974(_prod_dispatcher)
+1,0.000,0.000,0.000,0.000,{built-in method builtins.all}
+1,0.000,0.000,0.000,0.000,{method 'disable' of '_lsprof.Profiler' objects}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\fluids\single_phase.py:79(set_mu)
+1,0.000,0.000,0.000,0.000,{method 'values' of 'dict' objects}
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\core\fromnumeric.py:1136(_argmax_dispatcher)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\stride_tricks.py:476(_broadcast_arrays_dispatcher)
+1,0.000,0.000,0.000,0.000,c:\Users\abugrzka\Projects\reservoirflow\.venv\lib\site-packages\numpy\lib\function_base.py:5005(_meshgrid_dispatcher)
+2,0.000,0.000,0.000,0.000,{method 'items' of 'dict' objects}
+1,0.000,0.000,0.000,0.000,C:\Users\abugrzka\Projects\reservoirflow\reservoirflow\scalers\scaler.py:23(__init__)

@@ -4,7 +4,7 @@
 
 .. autoclass:: {{ name }}
    :show-inheritance:
-
+   
    {% block attributes %}
    {% if attributes %}
    .. rubric:: {{ _('Attributes') }}

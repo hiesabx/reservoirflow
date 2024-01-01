@@ -9,8 +9,8 @@ and -1) based on the selected activation functions used in neural-
 networks to achieve successful and efficient training process.
 
 Information:
-    - design pattern: inheritance
-    - base class: Scaler
+    - design pattern: inheritance, abstraction
+    - base class: `Scaler </api/reservoirflow.scalers.Scaler.html>`_
     - base class type: ABS (abstract)
 """
 

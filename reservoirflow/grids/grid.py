@@ -6,28 +6,33 @@ Model class. Grid class represents both the rock geometry and the rock
 properties which are required for the fluid-flow in porous-media 
 calculations.
 """
+from abc import ABC, abstractmethod
+
 # from ..base import Base
-from reservoirflow._base import _Base
+from reservoirflow.base import Base
 
 
-class Grid(_Base):
+class Grid(ABC, Base):
     """Abstract grid class.
 
     Grid class represents both the rock geometry and the rock properties
     using numpy arrays including pyvista object for visualization.
 
-    Parameters
-    ----------
-    Base : class
-        Base class with universal settings.
+    .. attention::
+
+        This is an abstract class and can't be instantiated. This class
+        is only used as a parent for other classes of ``grids`` module.
+
+    Returns
+    -------
+    Grid
+        Grid object.
     """
 
     name = "Grid"
 
     def __init__(self, unit, dtype, verbose, unify):
         """Construct grid object.
-
-        Returns parent Grid class.
 
         Parameters
         ----------
@@ -57,17 +62,17 @@ class Grid(_Base):
         self.__props__ = dict.fromkeys(props_keys)
 
     def set_comp(self, comp: float):
-        """Set grid compressibility
+        """Set grid compressibility.
 
         Parameters
         ----------
         comp : float
-            grid compressibility
+            grid compressibility.
 
         Raises
         ------
         ValueError
-            Unknown compressibility type.
+            Compressibility smaller than zero is not allowed.
         """
         self.comp = comp
         if comp == 0:

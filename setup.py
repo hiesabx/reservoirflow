@@ -3,8 +3,9 @@
 # usage (listen): pip install --editable .
 # usage (listen): python setup.py develop
 import re
-from setuptools import setup, find_packages
 from pathlib import Path
+
+from setuptools import find_packages, setup
 
 this_directory = Path(__file__).parent
 readme = (this_directory / "README.md").read_text()
@@ -25,7 +26,7 @@ setup(
     author_email="zakariya.abugrin@gmail.com",
     maintainer="Zakariya Abugrin",
     maintainer_email="zakariya.abugrin@gmail.com",
-    description="a Petroleum Reservoir Simulation Library in Python",
+    description="a Reservoir Simulation and Engineering Library in Python",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/zakgrin/reservoirflow",

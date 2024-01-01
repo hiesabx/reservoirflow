@@ -23,7 +23,7 @@ import pandas as pd
 from line_profiler import LineProfiler
 
 
-def cProfiler(sort_stats="tottime", print_output=True, save_output=True):
+def cProfiler(sort_stats="tottime", print_output=True, save_output=False):
     """cProfile decorator.
 
     Parameters
@@ -77,7 +77,7 @@ def cProfiler(sort_stats="tottime", print_output=True, save_output=True):
     return decorator
 
 
-def lProfiler(print_output=True, save_output=True):
+def lProfiler(print_output=True, save_output=False):
     """lProfiler (line profiler) decorator.
 
     Parameters
@@ -156,15 +156,15 @@ def profile(func):
     return wrapper
 
 
-def timeit(f):
+def timeit(func):
     # reference: https://stackoverflow.com/a/27737385/11549398
-    @wraps(f)
+    @wraps(func)
     def wrap(*args, **kw):
         ts = time.time()
-        result = f(*args, **kw)
+        result = func(*args, **kw)
         te = time.time()
-        # print("func:%r args:[%r, %r] took: %2.4f sec" % (f.__name__, args, kw, te - ts))
-        print("\n\nfunc:%r took: %2.4f sec" % (f.__name__, te - ts))
+        # print("func:%r args:[%r, %r] took: %2.4f sec" % (func.__name__, args, kw, te - ts))
+        print("\n\nfunc:%r took: %2.4f sec" % (func.__name__, te - ts))
         return result
 
     return wrap

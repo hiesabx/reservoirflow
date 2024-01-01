@@ -14,6 +14,25 @@ General
 
 |
 
+Mathematics
+-----------
+.. glossary::
+    :sorted:
+
+    PDE
+        partial-differential-equations used in mathematics to represent a physical phenomenon.
+
+    FDM
+        finite-difference-method.
+
+    FVM
+        finite-volume-method.
+
+    FEM
+        finite-element-method.
+
+|
+
 Python
 ------
 .. glossary::

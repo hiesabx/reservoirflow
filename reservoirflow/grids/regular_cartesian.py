@@ -18,7 +18,7 @@ class RegularCartesian(Grid):
     Returns
     -------
     Grid
-        RegularCartesian grid object.
+        Grid object.
     """
 
     # ToDo
@@ -1319,7 +1319,14 @@ class RegularCartesian(Grid):
         n_max = self.get_n_max(True)
         self.cells_d_ = []
 
+        def check_d(d, n, s):
+            if isinstance(d, (list, tuple, np.ndarray)):
+                assert len(d) == n, f"Please add boundary cells in d{s}."
+                if isinstance(d, np.ndarray):
+                    assert len(d.shape) == 1, f"Use flatten array in d{s}."
+
         if "x" in self.fdir:
+            check_d(dx, nx, "x")
             self.dx_ = np.ones(nx, dtype="int") * dx
             self.cells_d_.append(self.dx_)
         else:
@@ -1327,6 +1334,7 @@ class RegularCartesian(Grid):
             self.cells_d_.append(dx)
 
         if "y" in self.fdir:
+            check_d(dy, ny, "y")
             self.dy_ = np.ones(ny, dtype="int") * dy
             self.cells_d_.append(self.dy_)
         else:
@@ -1334,6 +1342,7 @@ class RegularCartesian(Grid):
             self.cells_d_.append(dy)
 
         if "z" in self.fdir:
+            check_d(dz, nz, "z")
             self.dz_ = np.ones(nz, dtype="int") * dz
             self.cells_d_.append(self.dz_)
         else:

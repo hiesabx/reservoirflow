@@ -1,7 +1,7 @@
 Tutorials 👨‍🏫
 ===============
 
-This section includes tutorials to help the user learn how to use ``reservoirflow``.
+This section includes tutorials to help users learn how to use ``reservoirflow``.
 
 .. note::
 
@@ -13,9 +13,13 @@ This section includes tutorials to help the user learn how to use ``reservoirflo
 .. toctree::
     :maxdepth: 1
 
-    tutorial_learn_scientific_computing/tutorial_learn_scientific_computing
-    tutorial_understand_grids_module/tutorial_understand_grids_module
-    tutorial_five_spot_single_phase/tutorial_five_spot_single_phase
+    tutorial_five_spot_single_phase
+    tutorial_learn_scientific_computing
+    tutorial_understand_grids_module
+    tutorial_understand_scalers_module
+    tutorial_understand_compiling
 .. example_notebook/example_notebook
 .. example_markdown/example_markdown
 .. example_sphinx_gallery/build/index
+
+.. nb-exec-table::

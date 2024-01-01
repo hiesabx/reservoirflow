@@ -1,6 +1,6 @@
 # Support Us
 
-```{warning}
+```{attention}
 This project has not been funded or sponsored yet. We are seeking support especially from energy operation companies (both IOCs and NOCs). If you are a company, a university, or an individual who could benefit from this work, please consider supporting this project.
 ```
 

@@ -8,8 +8,8 @@ class Scaler(ABC):
 
     .. attention::
 
-        This is an abstract class and can't be instantiated. This class is
-        only used as a parent for other classes of `scalers` module.
+        This is an abstract class and can't be instantiated. This class
+        is only used as a parent for other classes of ``scalers`` module.
 
     Returns
     -------
@@ -58,7 +58,8 @@ class Scaler(ABC):
             and use ``axis=1`` for horizontal (i.e., across columns)
             operations. For a table with multiple features as columns,
             using ``axis=0`` is desired and the length of the output is
-            equal to the number of features.
+            equal to the number of features. For a vector of values,
+            either vertical or horizontal, ``axis=0`` is required.
         """
 
     @abstractmethod

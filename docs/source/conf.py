@@ -34,9 +34,6 @@ templates_path = ["_templates"]
 exclude_patterns = [
     "build",
     "**/example_*",
-    "_api_backup/*",
-    "_api_backup1/*",
-    "api/api.rst",
 ]
 
 # switcher: (rc: release candidate)
@@ -122,11 +119,12 @@ myst_enable_extensions = [
     "html_image",
     "fieldlist",
 ]
-myst_footnote_transition = False
+myst_footnote_transition = False  # solves the issue with references in nb.
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
 # nb_output_stderr = "remove"  # remove progress bar
 nb_merge_streams = True  # combine print output in one cell
+nb_execution_mode = "auto"
 
 # numpydoc: https://numpydoc.readthedocs.io/en/latest/install.html
 # numpydoc_use_plots = True
@@ -170,6 +168,13 @@ html_static_path = [
 html_css_files = [
     "css/custom.css",
 ]
+# announcement = """
+# Are you new to ReservoirFlow? Please find some time to read the first release note
+# (see <a href='/release_notes/release_note_v0.1.0.html'>Release Note v0.1.0</a>).
+# <br>
+# In addition, please consider introducing yourself to our community
+# (see <a href='/community/forum/introduce_yourself.html'>Introduce Yourself 👋</a>).
+# """
 html_theme_options = {
     # "header_links_before_dropdown": 7,
     "icon_links": [
@@ -208,6 +213,7 @@ html_theme_options = {
     "navigation_with_keys": False,
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc"],
+    # "announcement": announcement,
 }
 
 # utteranc.es:
@@ -226,7 +232,7 @@ def store_dict(in_dict, name="FACTORS", folder=""):
     elif name == "FACTORS":
         label = "factor"
     elif name == "NOMENCLATURE":
-        label = "nomenclature"
+        label = "property"
     else:
         raise ValueError("name is unknown")
     columns = list(in_dict.keys())
@@ -237,35 +243,20 @@ def store_dict(in_dict, name="FACTORS", folder=""):
 
     for prop in props:
         row = []
-        if label == "property":
-            for i in range(len(columns)):
-                row.append(":math:`" + in_dict[columns[i]][prop] + "`")
-            # row.append(":math:`" + in_dict[columns[0]][prop] + "`")
-            # row.append(":math:`" + in_dict[columns[1]][prop] + "`")
-            # row.append(":math:`" + in_dict[columns[2]][prop] + "`")
-            # prop_field = ":math:`" + in_dict[columns[0]][prop] + "`"
-            # prop_metric = ":math:`" + in_dict[columns[1]][prop] + "`"
-            # prop_lab = ":math:`" + in_dict[columns[2]][prop] + "`"
-        elif label == "factor":
-            for i in range(len(columns)):
-                row.append(in_dict[columns[i]][prop])
-            # prop_field = in_dict[columns[0]][prop]
-            # prop_metric = in_dict[columns[1]][prop]
-            # prop_lab = in_dict[columns[2]][prop]
-        elif label == "nomenclature":
+        if name == "UNITS":
+            for column in columns:
+                row.append(":math:`" + in_dict[column][prop] + "`")
+        elif name == "FACTORS":
+            for column in columns:
+                row.append(in_dict[column][prop])
+        elif name == "NOMENCLATURE":
             row.append(in_dict[columns[0]][prop])
             row.append(":math:`" + in_dict[columns[1]][prop] + "`")
-
-            # prop_field = ":math:`" + in_dict[columns[0]][prop] + "`"
-            # prop_metric = ":math:`" + in_dict[columns[1]][prop] + "`"
 
         report.append(
             [
                 prop,
                 *row,
-                # prop_field,
-                # prop_metric,
-                # prop_lab,
             ]
         )
     table = tabulate(report, headers=headers, showindex=False, tablefmt="rst")
