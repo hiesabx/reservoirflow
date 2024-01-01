@@ -1,19 +1,45 @@
-from reservoirflow._base import _Base
+from abc import ABC, abstractmethod
+
+from reservoirflow.base import Base
+from reservoirflow.solutions.compiler import Compiler
 
 
-class Model(_Base):
-    """Model class.
+class Model(ABC, Base):
+    """Abstract model class.
 
-    Model class used to create a reservoir simulation model.
+    Model class used to create a reservoir simulation model. Model class
+    represents the fluid flow process in a reservoir due to pressure
+    change cause by boundary conditions and/or by (production or
+    injection) wells.
 
-    Model class represents the fluid flow process in a reservoir
-    due to pressure change cause by boundary conditions or by
-    (production or injection) wells.
+    .. attention::
+
+        This is an abstract class and can't be instantiated. This class
+        is only used as a parent for other classes of ``models`` module.
+
+    Returns
+    -------
+    Model
+        Model object.
     """
 
     name = "Model"
 
     def __init__(self, unit, dtype, verbose):
+        """Construct model object.
+
+        Parameters
+        ----------
+        unit : str ('field', 'metric', 'lab'), optional
+            unit used in input and output. Both `units` and `factors`
+            attributes will be updated based on the selected `unit` and
+            can be accessed directly from this class.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
+        verbose : bool, optional
+            print information for debugging.
+        """
         super().__init__(unit, dtype, verbose)
 
     def set_comp(self, comp: float):
@@ -38,6 +64,74 @@ class Model(_Base):
         else:
             self.comp_type = None
             raise ValueError("Compressibility smaller than zero is not allowed.")
+
+    def compile(
+        self,
+        stype: str,
+        method: str,
+        mode: str,
+        solver: str,
+    ):
+        """Build a solution (equation system) for the model.
+
+        This function will add ``model.solution`` and ``model.compiler``
+        which are defined based on the parameters used in this function.
+        In addition, methods ``model.solve()`` and ``model.run()`` are
+        actually mapped from ``model.solution``.
+
+        Note that methods ``solve()`` and ``run()`` in addition
+        to many other methods can be accessed using the solution object
+        (e.g. ``model.solution.run()``). For more information about the
+        assigned solution object, check the
+        `documentation </api/reservoirflow.solutions.html#>`_.
+
+        Parameters
+        ----------
+        stype : str
+            solution type in ``['numerical', 'analytical', 'neurical']``.
+        method : str
+            solution method as following:
+            - 'numerical' methods: ``['FDM', 'FVM', 'FEM']``.
+            - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
+            - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
+        mode : str
+            solution mode in ``['vectorized', 'symbolized']``.
+        solver : str
+            solution solver in ``['direct', 'iterative', 'neurical']``.
+        """
+        self.compiler = Compiler(self, stype, method, mode, solver)
+        self.solve = self.solution.solve
+        self.run = self.solution.run
+
+    def solve(self, **kwargs):
+        """Solve a single timestep.
+
+        This method is not available until the model is compiled
+        using ``model.compile()``. Once the model is compiled, the
+        documentation of the assigned solution can be accessed using
+        one of the following methods:
+
+        >>> help(model.solve) # or help(model.solution.solve)
+        >>> print(model.solve.__doc__) # or print(model.solution.solve.__doc__)
+        """
+        print(
+            "The model is not compiled.",
+            "Use model.compile() to add solve() and run() methods.",
+        )
+        return None
+
+    def run(self, **kwargs):
+        """Solve multiple timesteps.
+
+        This method is not available until the model is compiled
+        using ``model.compile()``. Once the model is compiled, the
+        documentation of the assigned solution can be accessed using
+        one of the following methods:
+
+        >>> help(model.run) # or help(model.solution.run)
+        >>> print(model.run.__doc__) # or print(model.solution.run.__doc__)
+        """
+        self.solve()
 
     # -------------------------------------------------------------------------
     # Synonyms:

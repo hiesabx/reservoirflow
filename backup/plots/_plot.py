@@ -1,7 +1,7 @@
-from reservoirflow._base import _Base
+from reservoirflow.base import Base
 
 
-class _Plot(_Base):
+class _Plot(Base):
     name = "Plot"
 
     def __init__(self):

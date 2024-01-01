@@ -1,15 +1,25 @@
 """
 models
 ======
+
+Information:
+    - design pattern: inheritance, abstraction
+    - base class: `Model </api/reservoirflow.models.Model.html>`_
+    - base class type: ABS (abstract)
 """
 
 __all__ = [
+    "Model",
     "BlackOil",
+    "Compositional",
+    "Thermal",
 ]
 
 
-# from .model import Model
 from .black_oil import BlackOil
+from .compositional import Compositional
+from .model import Model
+from .thermal import Thermal
 
 # __all_exports = [BlackOil]
 

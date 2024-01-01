@@ -10,20 +10,18 @@ class MultiPhase(Fluid):
     """MultiPhase fluid class.
 
     .. caution::
-
-        This class is under development and should not used.
+        This class is not available.
 
     Returns
     -------
     Fluid
-        MultiPhase fluid object.
+        Fluid object.
     """
 
     name = "MultiPhase Fluid"
 
-    def __init__():
-        """Create MultiPhase Fluid."""
-        pass
+    def __init__(self, **kwargs):
+        raise NotImplementedError("This class is not implemented.")
 
 
 if __name__ == "__main__":

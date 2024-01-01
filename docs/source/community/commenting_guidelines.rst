@@ -1,7 +1,10 @@
 Commenting Guidelines ⚖
 ========================
 
-Note that comments' section is activated throughout the entire Documentation. The main reason to do so, is to allow sharing and discussing ideas where the community can be engaged in the details of this library. However, this adds some responsibility to keep the comments' section as professional as possible. 
+Note that comments' section is activated throughout the Documentation. The main reason to do so, is to allow sharing and discussing ideas where the community can be engaged in the details of this library. However, this adds some responsibility to keep the comments' section as professional as possible. 
+
+.. note:: 
+    You need a `GitHub <https://github.com/>`_ account to be able to comment and collaborate in ReservoirFlow.
 
 Therefore, we suggest the following points as a guideline: 
     * always make sure that your comment is to the point.

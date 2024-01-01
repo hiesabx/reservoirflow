@@ -1,6 +1,5 @@
 Units & Factors 📐
 ==================
-Release: |release|
 
 ReservoirFlow has a fixed ``unit`` system used when an object is initiated (i.e., object for the modules such as: `grids </api/reservoirflow.grids.html>`_, `fluids </api/reservoirflow.fluids.html>`_, `models </api/reservoirflow.models.html>`_). The value of ``unit`` property can be set to ``"field"``, ``"metric"``, or ``"lab"``. By default, ``unit="field"`` is used. This system was inspired by :footcite:t:`abou2013petroleum`. This system was inspired by :cite:t:`aziz2002petroleum` and :cite:t:`abou2013petroleum`.
 

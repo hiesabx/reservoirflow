@@ -1,7 +1,7 @@
-==============================  ==============  ================
-nomenclature                    abbreviation    symbol
-==============================  ==============  ================
-transmissibility                trans           :math:`T`
+==============================  ==============  ==================
+property                        abbreviation    symbol
+==============================  ==============  ==================
+transmissibility                trans           :math:`\mathbb{T}`
 error                           err             :math:`e`
 pressure                        press           :math:`p`
 potential                       poten           :math:`\Phi`
@@ -26,7 +26,7 @@ volumetric velocity             u               :math:`u`
 density                         rho             :math:`\rho`
 compressibility                 comp            :math:`c`
 compressibility factor          z               :math:`z`
-temperature                     temp            :math:`-`
+temperature                     temp            :math:`T`
 porosity                        phi             :math:`\phi`
 saturation                      sat             :math:`S`
 relative permeability           relperm         :math:`k_r`
@@ -35,4 +35,4 @@ gravitational acceleration      g               :math:`g`
 transmissibility conversion     beta constant   :math:`\beta_c`
 gravity conversion              gamma constant  :math:`\gamma_c`
 volume conversion               alpha constant  :math:`\alpha_c`
-==============================  ==============  ================
+==============================  ==============  ==================

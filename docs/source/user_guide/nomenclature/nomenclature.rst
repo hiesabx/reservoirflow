@@ -1,6 +1,5 @@
 Nomenclature 🏷
 ================
-Version: |release|
 
 This page contains the nomenclature used in this project for the abbreviations and symbols used to build the mathematical models developed in `Equations </user_guide/equations/equations.html>`_ section.
 

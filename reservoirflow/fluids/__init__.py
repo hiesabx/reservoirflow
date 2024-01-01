@@ -1,11 +1,19 @@
 """
 fluids
 ======
+
+
+Information:
+    - design pattern: inheritance, abstraction
+    - base class: `Fluid </api/reservoirflow.fluids.Fluid.html>`_
+    - base class type: ABS (abstract)
 """
 
 __all__ = [
     "Fluid",
     "SinglePhase",
+    "TwoPhase",
+    "ThreePhase",
     "MultiPhase",
 ]
 
@@ -13,6 +21,8 @@ __all__ = [
 from .fluid import Fluid
 from .multi_phase import MultiPhase
 from .single_phase import SinglePhase
+from .three_phase import ThreePhase
+from .two_phase import TwoPhase
 
 # __all_exports = [SinglePhase]
 

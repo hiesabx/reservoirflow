@@ -9,8 +9,8 @@ class ScalerDC(ABC):
 
     .. attention::
 
-        This is an abstract class and can't be instantiated. This class is
-        only used as a parent for other classes of `scalers` module.
+        This is an abstract class and can't be instantiated. This class
+        is only used as a parent for other classes of ``scalers`` module.
 
     Parameters
     ----------

@@ -1,8 +1,15 @@
-from reservoirflow._base import _Base
+from abc import ABC, abstractmethod
+
+from reservoirflow.base import Base
 
 
-class Fluid(_Base):
+class Fluid(ABC, Base):
     """Abstract fluid class.
+
+    .. attention::
+
+        This is an abstract class and can't be instantiated. This class
+        is only used as a parent for other classes of ``fluids`` module.
 
     Returns
     -------
