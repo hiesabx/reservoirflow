@@ -69,8 +69,8 @@ class Model(ABC, Base):
         self,
         stype: str,
         method: str,
-        mode: str,
-        solver: str,
+        # mode: str,
+        # solver: str,
     ):
         """Build a solution (equation system) for the model.
 
@@ -94,12 +94,14 @@ class Model(ABC, Base):
             - 'numerical' methods: ``['FDM', 'FVM', 'FEM']``.
             - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
             - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
-        mode : str
-            solution mode in ``['vectorized', 'symbolized']``.
-        solver : str
-            solution solver in ``['direct', 'iterative', 'neurical']``.
         """
-        self.compiler = Compiler(self, stype, method, mode, solver)
+        # mode : str
+        #     solution mode in ``['vectorized', 'symbolized']``.
+        # solver : str
+        #     solution solver in ``['direct', 'iterative', 'neurical']``.
+
+        # self.compiler = Compiler(self, stype, method, mode, solver)
+        self.compiler = Compiler(self, stype, method)
         self.solve = self.solution.solve
         self.run = self.solution.run
 

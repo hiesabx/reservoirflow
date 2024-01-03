@@ -86,8 +86,8 @@ class Compiler:
         model,
         stype: str,
         method: str,
-        mode: str,
-        solver: str,
+        # mode: str,
+        # solver: str,
     ):
         """Construct compiler object.
 
@@ -102,16 +102,17 @@ class Compiler:
             - 'numerical' methods: ['FDM', 'FVM', 'FEM'].
             - 'analytical' methods: ['1D1P', '1D2P', etc.].
             - 'neurical' methods: ['PINN', 'DeepONet'].
-        mode : str
-            solution mode in ['vectorized', 'symbolized'].
-        solver : str
-            solution solver in ['direct', 'iterative', 'neurical'].
         """
+        # mode : str
+        #     solution mode in ['vectorized', 'symbolized'].
+        # solver : str
+        #     solution solver in ['direct', 'iterative', 'neurical'].
+
         self.model = model
         self.__set_stype(stype)
         self.__set_method(method)
-        self.__set_mode(mode)
-        self.__set_solver(solver)
+        # self.__set_mode(mode)
+        # self.__set_solver(solver)
         self.__add_solution()
 
     def __add_solution(self):
@@ -231,15 +232,20 @@ class Compiler:
     def __repr__(self):
         return (
             f"Compiler(model='{self.model.name}', stype='{self.stype}', "
-            + f"method='{self.method}', mode='{self.mode}', "
-            + f"solver='{self.solver}', solution='{self.model.solution.name}')"
+            + f"method='{self.method}', solution='{self.model.solution.name}')"
         )
+        # return (
+        #     f"Compiler(model='{self.model.name}', stype='{self.stype}', "
+        #     + f"method='{self.method}', mode='{self.mode}', "
+        #     + f"solver='{self.solver}', solution='{self.model.solution.name}')"
+        # )
 
 
 if __name__ == "__main__":
-    compiler = Compiler(stype="numerical", method="fdm", mode="s", solver="n")
+    # compiler = Compiler(stype="numerical", method="fdm", mode="s", solver="n")
+    compiler = Compiler(stype="numerical", method="fdm")
     print(compiler)
     compiler.fit()
-    compiler = Compiler(stype="neurical", method="pinn", mode="v", solver="d")
+    compiler = Compiler(stype="neurical", method="pinn")
     print(compiler)
     compiler.fit()

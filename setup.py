@@ -1,7 +1,5 @@
-# usage  (fixed): pip install .
-# usage  (fixed ): python setup.py install
-# usage (listen): pip install --editable .
-# usage (listen): python setup.py develop
+# usage (standard): pip install . or python setup.py install
+# usage (develop): pip install --editable . or python setup.py develop
 import re
 from pathlib import Path
 

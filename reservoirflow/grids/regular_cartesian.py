@@ -2478,8 +2478,8 @@ class RegularCartesian(Grid):
 
         else:
             msg = (
-                f"Property {name} is unknown or not defined. "
-                f"Known properties are: {list(self.__props__.keys())}."
+                f"Property {name} is not defined. "
+                # f"Known properties are: {list(self.__props__.keys())}."
             )
             raise ValueError(msg)
 
