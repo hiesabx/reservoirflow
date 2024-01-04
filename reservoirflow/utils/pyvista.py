@@ -1033,7 +1033,8 @@ def save_gif(
             value_avg.SetInput(f"    avg pressure: {np.nanmean(values[tstep]):.0f}")
             value_min.SetInput(f"    min pressure: {np.nanmin(values[tstep]):.0f}")
             value_max.SetInput(f"    max pressure: {np.nanmax(values[tstep]):.0f}")
-        pl.update_scalars(values[tstep], grid_pv, render=False)
+        # pl.update_scalars(values[tstep], grid_pv, render=False)  # Deprecated
+        grid_pv["Data"] = values[tstep]
         pl.write_frame()
 
     pl.close()
@@ -1184,7 +1185,8 @@ def show_model(
             value_avg.SetInput(f"    avg pressure: {np.nanmean(values[tstep]):.0f}")
             value_min.SetInput(f"    min pressure: {np.nanmin(values[tstep]):.0f}")
             value_max.SetInput(f"    max pressure: {np.nanmax(values[tstep]):.0f}")
-        pl.update_scalars(values[tstep], grid_pv, render=False)
+        # pl.update_scalars(values[tstep], grid_pv, render=False) # Deprecated
+        grid_pv["Data"] = values[tstep]
         return pl
 
     values = get_model_values(model, prop, boundary)

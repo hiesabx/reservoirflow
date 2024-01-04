@@ -1982,11 +1982,13 @@ if __name__ == "__main__":
     sparse = True
 
     model = create_model(sparse)
-    model.run(10, vectorize=True, isolver="cgs")
+    model.compile(stype="numerical", method="FDM")
+    model.run(nsteps=10, vectorize=True, isolver="cgs")
     model.show("pressures")
 
     model = create_model(sparse)
-    model.run(10, vectorize=True, isolver=None)
+    model.compile(stype="numerical", method="FDM")
+    model.run(nsteps=10, vectorize=True, isolver=None)
     model.show("pressures")
 
     # model = create_model(sparse)

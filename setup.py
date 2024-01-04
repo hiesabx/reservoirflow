@@ -1,5 +1,3 @@
-# usage (standard): pip install . or python setup.py install
-# usage (develop): pip install --editable . or python setup.py develop
 import re
 from pathlib import Path
 
