@@ -21,7 +21,7 @@ ReservoirFlow: a Reservoir Simulation and Engineering Library in Python
    :align: center
    
    *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns.* (see `Tutorials`_)
-.. _tutorials: /user_guide/tutorials/tutorial_five_spot_single_phase/tutorial_five_spot_single_phase.html
+.. _tutorials: /user_guide/tutorials/tutorial_five_spot_single_phase.html
 
 
 .. include:: ../../README.md

@@ -22,4 +22,4 @@ This section includes tutorials to help users learn how to use ``reservoirflow``
 .. example_markdown/example_markdown
 .. example_sphinx_gallery/build/index
 
-.. nb-exec-table::
+.. .. nb-exec-table::

@@ -722,7 +722,7 @@ class FDM(Solution):
                 A, d = self.get_matrices_symb(threading)
 
         if self.model.sparse:
-            A, d = A.tocsc(), d.todense()
+            A, d = A.tocsc(), d.toarray()
             if isolver:
                 solver = rf.solutions.numerical.solvers.get_isolver(isolver)
                 pressures, exit_code = solver(
@@ -734,7 +734,7 @@ class FDM(Solution):
                 assert exit_code == 0, "unsuccessful convergence"
             else:
                 pressures = ssl.spsolve(A, d, use_umfpack=True)
-            A = A.todense()
+            A = A.toarray()
         else:
             pressures = sl.solve(A, d).flatten()
 
