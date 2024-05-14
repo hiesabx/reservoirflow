@@ -710,10 +710,6 @@ class FDM(Solution):
         if print_arrays:
             A, d = self.get_matrices_symb(threading)  #  has to be first
             self.get_matrices_vect(threading)
-            print(f"self.A : {type(self.A)}")
-            print(f"self.d : {type(self.d)}")
-            print(f"self.A_: {type(self.A_)}")
-            print(f"self.d_: {type(self.d_)}")
             self.__print_arrays(self.model.sparse)
         else:
             if vectorize:
@@ -816,8 +812,8 @@ class FDM(Solution):
         )
 
         for step in pbar:
+            pbar.set_description(f"[step] {step}")
             self.solve(
-                # sparse,
                 threading,
                 vectorize,
                 check_MB,
@@ -825,7 +821,6 @@ class FDM(Solution):
                 print_arrays,
                 isolver,
             )
-            pbar.set_description(f"[step] {step}")
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.model.ctime += self.run_ctime

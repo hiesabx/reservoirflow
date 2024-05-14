@@ -143,7 +143,7 @@ def create_model(sparse):
             14: ("rate", -200),
         }
     )
-    model.compile(stype="numerical", method="fdm", mode="v", solver="d")
+    model.compile(stype="numerical", method="fdm")
     return model
 
 

@@ -103,7 +103,7 @@ def create_model(sparse):
         {0: ("pressure", 4000), 5: ("rate", 0)},
     )
 
-    model.compile(stype="numerical", method="fdm", mode="v", solver="d")
+    model.compile(stype="numerical", method="fdm")
 
     return model
 

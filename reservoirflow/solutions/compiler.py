@@ -11,15 +11,15 @@ METHODS = {
         "fem": ["fem", "finite element method", "finite-element-method"],
     },
     "analytical": {
-        "1d1p": ["1d1p", "1-dimension-1-phase", "1dimension1phase"],
-        "1d2p": ["1d2p", "1-dimension-2-phase", "1dimension2phase"],
-        "1d3p": ["1d3p", "1-dimension-3-phase", "1dimension3phase"],
-        "2d1p": ["2d1p", "2-dimension-1-phase", "2dimension1phase"],
-        "2d2p": ["2d1p", "2-dimension-2-phase", "2dimension2phase"],
-        "2d3p": ["2d1p", "2-dimension-3-phase", "2dimension3phase"],
-        "3d1p": ["3d1p", "3-dimension-1-phase", "3dimension1phase"],
-        "3d2p": ["3d1p", "3-dimension-2-phase", "3dimension2phase"],
-        "3d3p": ["3d1p", "3-dimension-3-phase", "3dimension3phase"],
+        "d1p1": ["d1p1", "1d1p", "1-dimension-1-phase", "1dimension1phase"],
+        "d1p2": ["d1p2", "1d2p", "1-dimension-2-phase", "1dimension2phase"],
+        "d1p3": ["d1p3", "1d3p", "1-dimension-3-phase", "1dimension3phase"],
+        "d2p1": ["d2p1", "2d1p", "2-dimension-1-phase", "2dimension1phase"],
+        "d2p2": ["d2p2", "2d1p", "2-dimension-2-phase", "2dimension2phase"],
+        "d2p3": ["d2p3", "2d1p", "2-dimension-3-phase", "2dimension3phase"],
+        "d3p1": ["d3p1", "3d1p", "3-dimension-1-phase", "3dimension1phase"],
+        "d3p2": ["d3p2", "3d1p", "3-dimension-2-phase", "3dimension2phase"],
+        "d3p3": ["d3p3", "3d1p", "3-dimension-3-phase", "3dimension3phase"],
     },
     "neurical": {
         "pinn": [
@@ -31,40 +31,6 @@ METHODS = {
             "deeponet",
             "deep operator network",
             "deep-operator-network",
-        ],
-    },
-}
-
-MODES = {
-    "vectorized": ["v", "vect", "vectorize", "vectorized"],
-    "symbolized": ["s", "symb", "symbolize", "symbolized"],
-    "availability": {
-        "vectorized": [
-            "numerical",
-            "analytical",
-            "neurical",
-        ],
-        "symbolized": [
-            "numerical",
-        ],
-    },
-}
-
-SOLVERS = {
-    "direct": ["d", "direct"],
-    "iterative": ["i", "iterative"],
-    "neurical": ["n", "neurical"],
-    "availability": {
-        "direct": [
-            "numerical",
-            "analytical",
-            "neurical",
-        ],
-        "iterative": [
-            "numerical",
-        ],
-        "neurical": [
-            "numerical",
         ],
     },
 }
@@ -86,8 +52,6 @@ class Compiler:
         model,
         stype: str,
         method: str,
-        # mode: str,
-        # solver: str,
     ):
         """Construct compiler object.
 
@@ -103,16 +67,9 @@ class Compiler:
             - 'analytical' methods: ['1D1P', '1D2P', etc.].
             - 'neurical' methods: ['PINN', 'DeepONet'].
         """
-        # mode : str
-        #     solution mode in ['vectorized', 'symbolized'].
-        # solver : str
-        #     solution solver in ['direct', 'iterative', 'neurical'].
-
         self.model = model
         self.__set_stype(stype)
         self.__set_method(method)
-        # self.__set_mode(mode)
-        # self.__set_solver(solver)
         self.__add_solution()
 
     def __add_solution(self):
@@ -121,33 +78,74 @@ class Compiler:
                 from reservoirflow.solutions.numerical.fdm import FDM
 
                 self.model.solution = FDM(self.model)
-                print("[info] FDM was assigned as model.solution.")
             elif self.method == "FVM":
                 from reservoirflow.solutions.numerical.fvm import FVM
 
                 self.model.solution = FVM(self.model)
-                print("[info] FVM was assigned as model.solution.")
             elif self.method == "FEM":
                 from reservoirflow.solutions.numerical.fem import FEM
 
                 self.model.solution = FEM(self.model)
-                print("[info] FEM was assigned as model.solution.")
             else:
-                print("[INFO] Numerical EquationSystem was not constructed.")
+                print("[INFO] Numerical solution could not be assigned.")
                 raise ValueError("Not ready.")
         elif self.stype == "analytical":
-            raise ValueError("Not ready.")
+            if self.method == "D1P1":
+                from reservoirflow.solutions.analytical.d1p1 import D1P1
+
+                self.model.solution = D1P1(self.model)
+            elif self.method == "D1P2":
+                from reservoirflow.solutions.analytical.d1p2 import D1P2
+
+                self.model.solution = D1P2(self.model)
+            elif self.method == "D1P3":
+                from reservoirflow.solutions.analytical.d1p3 import D1P3
+
+                self.model.solution = D1P3(self.model)
+            elif self.method == "D2P1":
+                from reservoirflow.solutions.analytical.d2p1 import D2P1
+
+                self.model.solution = D2P1(self.model)
+            elif self.method == "D2P2":
+                from reservoirflow.solutions.analytical.d2p2 import D2P2
+
+                self.model.solution = D2P2(self.model)
+            elif self.method == "D2P3":
+                from reservoirflow.solutions.analytical.d2p3 import D2P3
+
+                self.model.solution = D2P3(self.model)
+            elif self.method == "D3P1":
+                from reservoirflow.solutions.analytical.d3p1 import D3P1
+
+                self.model.solution = D3P1(self.model)
+            elif self.method == "D3P2":
+                from reservoirflow.solutions.analytical.d3p2 import D3P2
+
+                self.model.solution = D3P2(self.model)
+            elif self.method == "D3P3":
+                from reservoirflow.solutions.analytical.d3p3 import D3P3
+
+                self.model.solution = D3P3(self.model)
+            else:
+                print("[INFO] Analytical solution could not be assigned.")
+                raise ValueError("Not ready.")
         elif self.stype == "neurical":
             if self.method == "PINN":
-                raise ValueError("Not ready.")
+                from reservoirflow.solutions.neurical.pinn import PINN
+
+                self.model.solution = PINN(self.model)
             elif self.method == "DeepONet":
-                raise ValueError("Not ready.")
+                from reservoirflow.solutions.neurical.deeponet import DeepONet
+
+                self.model.solution = DeepONet(self.model)
             else:
-                print("[INFO] Numerical EquationSystem was not constructed.")
+                print("[INFO] Neurical solution could not be assigned.")
                 raise ValueError("Not ready.")
         else:
-            print("[INFO] EquationSystem was not constructed.")
+            print("[INFO] Solution could not be assigned.")
             raise ValueError("Not ready.")
+        self.model.solutions[self.method] = self.model.solution
+        print(f"[info] {self.method} was assigned as model.solution.")
 
     def __set_stype(self, stype):
         if stype.lower() in STYPES["numerical"]:
@@ -176,7 +174,29 @@ class Compiler:
                     + f"Value must be in {list(METHODS['numerical'].keys())}."
                 )
         elif self.stype == "analytical":
-            self.method = "nan"
+            if method.lower() in METHODS["analytical"]["d1p1"]:
+                self.method = "D1P1"
+            elif method.lower() in METHODS["analytical"]["d1p2"]:
+                self.method = "D1P2"
+            elif method.lower() in METHODS["analytical"]["d1p3"]:
+                self.method = "D1P3"
+            elif method.lower() in METHODS["analytical"]["d2p1"]:
+                self.method = "D2P1"
+            elif method.lower() in METHODS["analytical"]["d2p2"]:
+                self.method = "D2P2"
+            elif method.lower() in METHODS["analytical"]["d2p3"]:
+                self.method = "D2P3"
+            elif method.lower() in METHODS["analytical"]["d3p1"]:
+                self.method = "D3P1"
+            elif method.lower() in METHODS["analytical"]["d3p2"]:
+                self.method = "D3P2"
+            elif method.lower() in METHODS["analytical"]["d3p3"]:
+                self.method = "D3P3"
+            else:
+                raise ValueError(
+                    f"Unknown value in method argument for stype={self.stype}. "
+                    + f"Value must be in {list(METHODS['analytical'].keys())}."
+                )
         elif self.stype == "neurical":
             if method.lower() in METHODS["neurical"]["pinn"]:
                 self.method = "PINN"
@@ -193,56 +213,14 @@ class Compiler:
                 + f"Value must be in {list(STYPES.keys())}."
             )
 
-    def __set_mode(self, mode):
-        if mode.lower() in MODES["vectorized"]:
-            self.mode = "vectorized"
-        elif mode.lower() in MODES["symbolized"]:
-            self.mode = "symbolized"
-        else:
-            raise ValueError(
-                "Unknown value in mode argument. "
-                + f"Value must be in {list(MODES.keys())[:-1]}."
-            )
-        if self.stype not in MODES["availability"][self.mode]:
-            raise ValueError(
-                f"Selected mode={self.mode} is not available "
-                + f"when stype={self.stype} and method={self.method}. "
-                + f"Available option are {MODES['availability']}"
-            )
-
-    def __set_solver(self, solver):
-        if solver.lower() in SOLVERS["direct"]:
-            self.solver = "direct"
-        elif solver.lower() in SOLVERS["iterative"]:
-            self.solver = "iterative"
-        elif solver.lower() in SOLVERS["neurical"]:
-            self.solver = "neurical"
-        else:
-            raise ValueError(
-                "Unknown value in solver argument. "
-                + f"Value must be in {list(SOLVERS.keys())[:-1]}."
-            )
-        if self.stype not in SOLVERS["availability"][self.solver]:
-            raise ValueError(
-                f"Selected solver={self.solver} is not available "
-                + f"when stype={self.stype} and method={self.method}. "
-                + f"Available option are {SOLVERS['availability']}"
-            )
-
     def __repr__(self):
         return (
             f"Compiler(model='{self.model.name}', stype='{self.stype}', "
             + f"method='{self.method}', solution='{self.model.solution.name}')"
         )
-        # return (
-        #     f"Compiler(model='{self.model.name}', stype='{self.stype}', "
-        #     + f"method='{self.method}', mode='{self.mode}', "
-        #     + f"solver='{self.solver}', solution='{self.model.solution.name}')"
-        # )
 
 
 if __name__ == "__main__":
-    # compiler = Compiler(stype="numerical", method="fdm", mode="s", solver="n")
     compiler = Compiler(stype="numerical", method="fdm")
     print(compiler)
     compiler.fit()

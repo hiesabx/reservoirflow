@@ -116,7 +116,7 @@ def create_model(sparse):
     )
     model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-    model.compile(stype="numerical", method="fdm", mode="v", solver="d")
+    model.compile(stype="numerical", method="fdm")
     return model
 
 

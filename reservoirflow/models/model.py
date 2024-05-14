@@ -41,6 +41,7 @@ class Model(ABC, Base):
             print information for debugging.
         """
         super().__init__(unit, dtype, verbose)
+        self.solutions = {}
 
     def set_comp(self, comp: float):
         """Set model compressibility
@@ -69,8 +70,6 @@ class Model(ABC, Base):
         self,
         stype: str,
         method: str,
-        # mode: str,
-        # solver: str,
     ):
         """Build a solution (equation system) for the model.
 
@@ -95,12 +94,6 @@ class Model(ABC, Base):
             - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
             - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
         """
-        # mode : str
-        #     solution mode in ``['vectorized', 'symbolized']``.
-        # solver : str
-        #     solution solver in ``['direct', 'iterative', 'neurical']``.
-
-        # self.compiler = Compiler(self, stype, method, mode, solver)
         self.compiler = Compiler(self, stype, method)
         self.solve = self.solution.solve
         self.run = self.solution.run
@@ -108,10 +101,12 @@ class Model(ABC, Base):
     def solve(self, **kwargs):
         """Solve a single timestep.
 
-        This method is not available until the model is compiled
-        using ``model.compile()``. Once the model is compiled, the
-        documentation of the assigned solution can be accessed using
-        one of the following methods:
+        .. attention::
+            This method is not available until the model is compiled
+            using ``model.compile()``.
+
+        Once the model is compiled, the documentation of the assigned
+        solution can be accessed using one of the following methods:
 
         >>> help(model.solve) # or help(model.solution.solve)
         >>> print(model.solve.__doc__) # or print(model.solution.solve.__doc__)
@@ -125,10 +120,12 @@ class Model(ABC, Base):
     def run(self, **kwargs):
         """Solve multiple timesteps.
 
-        This method is not available until the model is compiled
-        using ``model.compile()``. Once the model is compiled, the
-        documentation of the assigned solution can be accessed using
-        one of the following methods:
+        .. attention::
+            This method is not available until the model is compiled
+            using ``model.compile()``.
+
+        Once the model is compiled, the documentation of the assigned
+        solution can be accessed using one of the following methods:
 
         >>> help(model.run) # or help(model.solution.run)
         >>> print(model.run.__doc__) # or print(model.solution.run.__doc__)
