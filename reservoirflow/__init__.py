@@ -3,7 +3,7 @@ ReservoirFlow
 =============
 
 ReservoirFlow: a Reservoir Simulation and Engineering Library
-in Python developed by `Zakariya Abugrin` (CEO and Founder of Bayanatics).
+in Python developed by `Zakariya Abugrin` (CEO and Founder of Hiesab).
 """
 
 __all__ = [

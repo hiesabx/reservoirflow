@@ -4,7 +4,7 @@
 This project has not been funded or sponsored yet. We are seeking support especially from energy operation companies (both IOCs and NOCs). If you are a company, a university, or an individual who could benefit from this work, please consider supporting this project.
 ```
 
-Any open-source tool requires resources that cost both time and money. Although much of the open-source work is driven by the good intention of having an accessible and reproducible research, open-source has also proved to be a very successful business model especially when the tool grows to a production level. With enough support, *Bayanatics* as a start-up company specialized in advanced data analytics and scientific computing will be able to offer open and accessible cutting edge research and solutions based on AI and best engineering practices. *ReservoirFlow* is mainly aimed for the energy industry.
+Any open-source tool requires resources that cost both time and money. Although much of the open-source work is driven by the good intention of having an accessible and reproducible research, open-source has also proved to be a very successful business model especially when the tool grows to a production level. With enough support, *Hiesab* as a start-up company specialized in advanced data analytics and scientific computing will be able to offer open and accessible cutting edge research and solutions based on AI and best engineering practices. *ReservoirFlow* is mainly aimed for the energy industry.
 
 ## Funding
 

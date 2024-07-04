@@ -10,7 +10,7 @@ import reservoirflow as rf
 # sys.path.insert(0, os.path.abspath("../"))
 
 project = "ReservoirFlow"
-author = "ReservoirFlow by Zakariya Abugrin"
+author = "ReservoirFlow by Hiesab"
 copyright = f"{datetime.now().year}, {author}"
 version = rf.__version__
 release = f"v{version}"
