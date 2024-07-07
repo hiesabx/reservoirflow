@@ -10,8 +10,9 @@ import reservoirflow as rf
 # sys.path.insert(0, os.path.abspath("../"))
 
 project = "ReservoirFlow"
-author = "ReservoirFlow by Hiesab"
-copyright = f"{datetime.now().year}, {author}"
+author = "Developed by Hiesab"
+disclaimer = "Third-party components are copyrighted by their respective authors"
+copyright = f"{datetime.now().year}, {author}. {disclaimer}"
 version = rf.__version__
 release = f"v{version}"
 master_doc = "index"
@@ -166,7 +167,7 @@ html_static_path = [
     "_static",
 ]
 html_css_files = [
-    "css/custom.css",
+    "custom.css",
 ]
 # announcement = """
 # Are you new to ReservoirFlow? Please find some time to read the first release note
@@ -214,6 +215,9 @@ html_theme_options = {
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc"],
     # "announcement": announcement,
+    "pygments_light_style": "default",
+    "pygments_dark_style": "native",
+    "back_to_top_button": True,
 }
 
 # utteranc.es:

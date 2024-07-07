@@ -71,7 +71,8 @@ Improving Current Modules
 
 ``reservoirflow.utils``
 ^^^^^^^^^^^^^^^^^^^^^^^
-- Import Eclipse Files.
+- Import/Export Eclipse.
+- Import/Export tNavigator.
 - Unit converter.
 
 |

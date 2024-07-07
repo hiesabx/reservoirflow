@@ -72,6 +72,19 @@ class SinglePhase(Fluid):
             ...         unit="field",
             ...         )
             >>> print(fluid)
+            
+        .. code-block:: python
+            :linenos:
+            
+            import reservoirflow as rf
+            fluid = rf.fluids.SinglePhase(
+                    mu=0.5,
+                    B=1,
+                    rho=50,
+                    comp=1e-5,
+                    unit="field",
+                    )
+            print(fluid)
         """
         super().__init__(unit, dtype, verbose)
         self.set_props(mu, B, rho, comp)
