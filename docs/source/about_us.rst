@@ -1,20 +1,29 @@
 About Us
 ========
 
-We are a startup company specializing in advanced data analytics and scientific computing to be founded in 2024 with a mission to provide open, accessible, specialized, modern, and cutting-edge solutions and tools to be a central-unified platform for both industry and education where technological progress is shared, standardized, cleansed, and redistributed with an objective to accelerate research and development and to offer a high-quality educational material with hands-on experience on a wide range of topics in Science, Engineering, and Technology.
+We are *Hiesab*; an international startup company founded in 2024 based in Germany and Libya specialized in advanced data analytics and scientific computing with a mission to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Furthermore, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance. We acknowledge that our work is deeply inspired by the Holy Quran where achieving justice is an indispensable requirement for all humanity.
 
-A large enough pool of collaboration with universities and companies throughout our platform will be utilized to provide not only a better education but also a unified, accelerated, and shared technological progress. Companies who choose to collaborate with us, will get additional benefits including commercial use, shaping our tools (e.g. custom features), trainings, and more. Collaboration with universities is essential ideally with some funding but not necessary as long as we have enough resources to collaborate. Research outcomes are used to update our tools which are then made available to universities to continue the development cycle. These tools then can be used in lectures to give students hands-on training and also to use them in their research or theses.
+We seek to make knowledge freely available and accessible to everyone by providing open, accessible, specialized, and cutting-edge tools to be a central-unified platform for both industry and education where technological progress is standardized, cleansed, and redistributed with an objective to accelerate research and development and to offer a high-quality educational material with hands-on tutorials on a wide range of topics.
 
-.. note::
-    This website is a demonstration of our concept. We are planning to release more websites to cover a wider range of topics. Throughout our websites and platforms authors will have the chance to access bigger audiences, chat with them, and also provide tutorials with references for their work.
+A large enough pool of collaboration with universities, companies, and developers throughout our platform will be utilized to provide not only a better education but also accelerated technological progress. Research outcomes will be used to update our tools which are then made available to universities to continue the development cycle. These tools then can be used in lectures to give students hands-on training and also to use them in their research or theses. Companies who sponsorship us will have the advantage of commercial-use, so they can directly make use of these new breakthroughs.
+
+.. hint::
+    This website is a demonstration of our concept. We are planning to release similar tools in the future.
 
 If this mission means a lot to you, then please `Support Us </support_us.html>`_.
 
-Philosophy
-----------
-Our Philosophy is to try to attack the same problem from multiple angles by combining different solutions including analytical solutions, numerical solutions, and machine learning solutions (which we call neurical solutions). Studying different solution techniques to solve Partial Differential Equations (PDEs) gives great insight into developing more efficient solutions. However, this requires a combination of wide range of topics especially Mathematics, Physics, and Engineering, or what we shortly refer to as Mathephysineering. With the objective to improve the practical applications, Mathephysineering can improve our overall understanding especially with the power of other tools and technologies available from computer science and machine learning. Mathephysineering inspires us to revisit the basics of mathematics required to better describe and solve physical problems using multiple solutions and according to best engineering practices. This is the philosophy behind developing this tool as will be demonstrated within this project.
+Priority
+--------
+
+We prioritize strategic topics such as: energy and the environment. ``ReservoirFlow`` is our first tool that is designed to help the energy industry including oil and gas companies to become more efficient and data driven. Our goal is to reduce the carbon footprint of energy operations while enhancing productivity and sustainability. By leveraging advanced analytics and machine learning, we aim to empower automation in intelligent fields to transform the industry, making it more environmentally friendly, resilient and adaptive to future challenges.
+
+
+Philosophy of ``ReservoirFlow``
+-------------------------------
+
+Our Philosophy is to try to attack the same problem from multiple angles by combining different solutions including analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). Studying different techniques to solve Partial Differential Equations (PDEs) of fluid flow problems gives great insight into developing more efficient solutions. However, this requires a combination of wide range of topics especially Mathematics, Physics, and Engineering, or what we shortly refer to as Mathephysineering. With the objective to improve the practical applications, Mathephysineering can improve our overall understanding especially with the power of other tools and technologies available from computer science and machine learning. Mathephysineering inspires us to revisit the basics of mathematics required to better describe and solve physical problems using multiple solutions and according to best engineering practices. This is the philosophy behind developing this tool as will be demonstrated within this project.
 
 Team
 ----
-- `Zakariya Abugrin <https://github.com/zakgrin>`_, Founder and CEO
-    roles: scientist, mathematician, physicist, developer, and engineer.
+- `Zakariya Abugrin <https://github.com/zakgrin>`_, Developer of *ReservoirFlow*, Founder and CEO of *Hiesab*
+    roles: Mathephysineer: researcher, scientist, mathematician, physicist, developer, and engineer.

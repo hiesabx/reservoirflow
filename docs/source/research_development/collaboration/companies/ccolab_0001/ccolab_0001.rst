@@ -3,10 +3,9 @@ ccolab_0001 🖋
 
 This is the first company collaboration.
 
+.. note::
+    This company collaboration is still empty.
+
 .. toctree::
     :maxdepth: 1
-
-
-|
-
-.. include:: /_static/comments_section.rst
+    :caption: Current Topics

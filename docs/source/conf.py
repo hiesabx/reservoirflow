@@ -59,6 +59,7 @@ extensions = [
     # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
     "sphinx_design",  # https://sphinx-design.readthedocs.io/en/latest/get_started.html
     "sphinxcontrib.bibtex",  # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html
+    'sphinx_copybutton', # https://sphinx-copybutton.readthedocs.io/en/latest/
 ]
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -121,11 +122,17 @@ myst_enable_extensions = [
     "fieldlist",
 ]
 myst_footnote_transition = False  # solves the issue with references in nb.
+myst_highlight_code_blocks = False
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
-# nb_output_stderr = "remove"  # remove progress bar
+nb_output_stderr = "remove"  # 'remove' progress bar
 nb_merge_streams = True  # combine print output in one cell
 nb_execution_mode = "auto"
+nb_number_source_lines = True
+
+# copybutton
+copybutton_selector = ":not(.prompt) > div.highlight pre"
+copybutton_exclude = '.linenos, .gp, .go'
 
 # numpydoc: https://numpydoc.readthedocs.io/en/latest/install.html
 # numpydoc_use_plots = True
@@ -167,8 +174,17 @@ html_static_path = [
     "_static",
 ]
 html_css_files = [
-    "custom.css",
+    "css/custom.css",
 ]
+# bug in pydata theme: remove in future version starting at 0.15.4
+html_sidebars = {
+    'support_us': [],
+    'capabilities': [],
+    'about_us': [],
+    'release_notes/*': [],
+}
+pygments_style = 'none'
+
 # announcement = """
 # Are you new to ReservoirFlow? Please find some time to read the first release note
 # (see <a href='/release_notes/release_note_v0.1.0.html'>Release Note v0.1.0</a>).
@@ -216,7 +232,7 @@ html_theme_options = {
     "secondary_sidebar_items": ["page-toc"],
     # "announcement": announcement,
     "pygments_light_style": "default",
-    "pygments_dark_style": "native",
+    "pygments_dark_style": "monokai", # 'native'
     "back_to_top_button": True,
 }
 

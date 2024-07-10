@@ -3,12 +3,9 @@ ucolab_0001 ✏
 
 This is the first university collaboration.
 
+.. note::
+    This university collaboration is still empty.
+
 .. toctree::
-    :maxdepth: 2
-
-    
-|
-
-.. include:: /_static/comments_section.rst
-
-    
+    :maxdepth: 1
+    :caption: Current Topics
