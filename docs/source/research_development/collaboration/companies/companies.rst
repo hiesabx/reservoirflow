@@ -11,4 +11,4 @@ We are looking to collaborate with companies.
     
 |
 
-.. include:: /_static/comments_section.rst
+.. include: /_static/comments_section.rst

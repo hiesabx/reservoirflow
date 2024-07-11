@@ -5,7 +5,7 @@ ReservoirFlow: a Reservoir Simulation and Engineering Library in Python
 
 .. attention:: 
    Are you new to ReservoirFlow? Please find some time to read the first release note,
-   see `Release Note v0.1.0 </release_notes/release_note_v0.1.0.html>`_). 
+   see `Release Note v0.1.0 </release_notes/release_note_v0.1.0.html>`_. 
    In addition, please consider introducing yourself to our community,
    see `Introduce Yourself 👋 </community/forum/introduce_yourself.html>`_.
 

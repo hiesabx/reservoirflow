@@ -174,8 +174,9 @@ html_static_path = [
     "_static",
 ]
 html_css_files = [
-    "css/custom.css",
+    "custom.css",
 ]
+
 # bug in pydata theme: remove in future version starting at 0.15.4
 html_sidebars = {
     'support_us': [],
@@ -236,13 +237,14 @@ html_theme_options = {
     "back_to_top_button": True,
 }
 
-# utteranc.es:
-comments_config = {
-    "utterances": {
-        "repo": "zakgrin/reservoirflow_utterances",
-    }
-}
-
+# comments_config = {
+#     # "utterances": {
+#     #     "repo": "zakgrin/reservoirflow_utterances",
+#     # },
+#     "giscus": {
+#         "repo": "zakgrin/reservoirflow_utterances",
+#     }
+# }
 
 # Units and Factors:
 def store_dict(in_dict, name="FACTORS", folder=""):

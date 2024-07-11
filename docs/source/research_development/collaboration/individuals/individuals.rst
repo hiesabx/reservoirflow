@@ -11,4 +11,4 @@ We are looking to collaborate with professional individuals.
 
 |
 
-.. include:: /_static/comments_section.rst
+.. include: /_static/comments_section.rst

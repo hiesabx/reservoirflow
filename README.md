@@ -21,7 +21,7 @@
 
 ## Introduction
 
-*ReservoirFlow* is a modern open-source Python library developed by Hiesab; an international startup company specialized in advanced analytics and computing founded in 2024 with a mission is to accelerate R&D for AI applications and data solutions in Science and Engineering, see [About Us](/about_us.html).
+*ReservoirFlow* is a modern open-source Python library developed by Hiesab; a startup company specialized in advanced analytics and computing founded in 2024 with a mission is to accelerate R&D for AI applications and data solutions in Science, Engineering, and Education, see [About Us](/about_us.html).
 
 <p align="center">
 <iframe src="https://drive.google.com/file/d/1JCD7W_5vJsUqNWf99NBTYjsLSMeVPEEa/preview"
