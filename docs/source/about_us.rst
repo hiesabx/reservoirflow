@@ -1,7 +1,7 @@
 About Us
 ========
 
-We are *Hiesab*; a startup company founded in 2024 based in Germany and Libya specialized in advanced data analytics and scientific computing with a mission to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Furthermore, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance.
+We are *Hiesab*; a startup company founded in 2024 based in Germany and Libya specialized in advanced data analytics, scientific computing, and automation with a mission to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Ultimately, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance.
 
 .. comment: 
     We acknowledge that our work is deeply inspired by the Holy Quran where achieving justice is an indispensable requirement for all humanity.
@@ -18,7 +18,7 @@ If this mission means a lot to you, then please `Support Us </support_us.html>`_
 Priority
 --------
 
-We prioritize strategic topics such as: energy and the environment. ``ReservoirFlow`` is our first tool that is designed to help the energy industry including oil and gas companies to become more efficient and data driven. Our goal is to reduce the carbon footprint of energy operations while enhancing productivity and sustainability. By leveraging advanced analytics and machine learning, we aim to empower automation in intelligent fields to transform the industry, making it more environmentally friendly, resilient and adaptive to future challenges.
+We prioritize strategic topics such as: energy and the environment. ``ReservoirFlow`` is our first tool that is designed to help the energy industry (mainly oil, gas, and underground energy storage companies) to become more efficient and data driven. Our goal is to reduce the carbon footprint of energy operations while enhancing productivity and sustainability. By leveraging advanced analytics and machine learning, we aim to empower automation in intelligent fields to transform the industry, making it more environmentally friendly, resilient and adaptive to future challenges.
 
 
 Philosophy of ``ReservoirFlow``
