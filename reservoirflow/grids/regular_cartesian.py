@@ -26,7 +26,7 @@ class RegularCartesian(Grid):
     # - make default calc all flatten because flatten > reshape is faster
     #   than reshape > flatten.
 
-    name = "RegularCartesian Grid"
+    name = "RegularCartesian"
 
     def __init__(
         self,
@@ -42,8 +42,8 @@ class RegularCartesian(Grid):
         phi=None,
         z=0,
         comp: float = None,
-        dtype="double",
         unit="field",
+        dtype="double",
         unify=True,
         verbose=False,
     ):
@@ -111,13 +111,13 @@ class RegularCartesian(Grid):
 
         comp : float, optional
             compressibility.
-        dtype : str or `np.dtype`, optional
-            data type used in all arrays. Numpy dtype such as
-            `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
             unit used in input and output. Both `units` and `factors`
             attributes will be updated based on the selected `unit` and
             can be accessed directly from this class.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
         unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
@@ -151,7 +151,7 @@ class RegularCartesian(Grid):
             * Complete unify feature:
                 - complete unify feature to all class components.
         """
-        super().__init__(unit, dtype, verbose, unify)
+        super().__init__(unit, dtype, unify, verbose)
         assert nx >= 1, "nx must be 1 or larger."
         assert ny >= 1, "ny must be 1 or larger."
         assert nz >= 1, "nz must be 1 or larger."
@@ -3018,7 +3018,6 @@ class RegularCartesian(Grid):
 
         This function maps functions as following:
 
-        .. highlight:: python
         .. code-block:: python
 
             self.get_flow_shape = self.get_fshape

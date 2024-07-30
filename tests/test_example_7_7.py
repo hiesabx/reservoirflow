@@ -31,7 +31,7 @@ class TestApp(unittest.TestCase):
         # df.to_csv("tests/test_example_7_7_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
-        self.assertLess(model.ctime, 5)
+        self.assertLess(model.solution.ctime, 5)
 
     def test_trans(self):
         T_x_desired = np.array([1.035, 0, 1.035])
@@ -49,12 +49,12 @@ class TestApp(unittest.TestCase):
         # sparse:
         model = create_model(sparse=True)
         model.solve(update=True, check_MB=True)
-        p_sparse = model.pressures[-1, model.cells_id]
+        p_sparse = model.solution.pressures[-1, model.cells_id]
         np.testing.assert_almost_equal(p_sparse, p_desired, decimal=5)
         # dense:
         model = create_model(sparse=False)
         model.solve(update=True, check_MB=True)
-        p_not_sparse = model.pressures[-1, model.cells_id]
+        p_not_sparse = model.solution.pressures[-1, model.cells_id]
         np.testing.assert_almost_equal(p_not_sparse, p_desired, decimal=5)
 
     def test_well(self):
@@ -89,12 +89,12 @@ class TestApp(unittest.TestCase):
         boundaries = model.grid.get_boundaries("id", "list")
 
         model.solve(update=True, check_MB=True)
-        q_sparse = model.rates[1][boundaries]
+        q_sparse = model.solution.rates[1][boundaries]
         np.testing.assert_almost_equal(q_sparse, rates_desired, decimal=5)
 
         model = create_model(sparse=False)
         model.solve(update=True, check_MB=True)
-        q_not_sparse = model.rates[1][boundaries]
+        q_not_sparse = model.solution.rates[1][boundaries]
         np.testing.assert_almost_equal(q_not_sparse, rates_desired, decimal=5)
 
     def test_error(self):
@@ -130,7 +130,7 @@ def create_model(sparse):
         rho=50,
         dtype="double",
     )
-    model = models.BlackOil(grid, fluid, dtype="double", sparse=sparse, verbose=False)
+    model = models.BlackOil(grid, fluid, dtype="double", verbose=False)
     model.set_well(cell_id=6, pwf=2000, s=0, r=3)
     model.set_well(cell_id=9, q=-600, s=0, r=3)
     model.set_boundaries(
@@ -143,7 +143,7 @@ def create_model(sparse):
             14: ("rate", -200),
         }
     )
-    model.compile(stype="numerical", method="fdm")
+    model.compile(stype="numerical", method="fdm", sparse=sparse)
     return model
 
 

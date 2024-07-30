@@ -25,7 +25,12 @@ class Model(ABC, Base):
 
     name = "Model"
 
-    def __init__(self, unit, dtype, verbose):
+    def __init__(
+        self, 
+        unit,
+        dtype,
+        verbose,
+    ):
         """Construct model object.
 
         Parameters
@@ -41,6 +46,7 @@ class Model(ABC, Base):
             print information for debugging.
         """
         super().__init__(unit, dtype, verbose)
+        self.solution = None
         self.solutions = {}
 
     def set_comp(self, comp: float):
@@ -70,6 +76,7 @@ class Model(ABC, Base):
         self,
         stype: str,
         method: str,
+        sparse: bool=True,
     ):
         """Build a solution (equation system) for the model.
 
@@ -90,13 +97,32 @@ class Model(ABC, Base):
             solution type in ``['numerical', 'analytical', 'neurical']``.
         method : str
             solution method as following:
+            
             - 'numerical' methods: ``['FDM', 'FVM', 'FEM']``.
             - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
             - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
+            
+        sparse : bool, optional, default: True
+            using sparse computing for a better performance.
         """
-        self.compiler = Compiler(self, stype, method)
+        self.compiler = Compiler(self, stype, method, sparse)
+        self.solutions[self.compiler.method] = self.solution
         self.solve = self.solution.solve
         self.run = self.solution.run
+        
+    
+    def set_solution(self, method):
+        if method in self.solutions:
+            self.solution = self.solutions[method]
+            self.pressures = self.solution.pressures
+            self.rates = self.solution.rates
+            self.solve = self.solution.solve
+            self.run = self.solution.run
+        else:
+            raise ValueError("Solution method was not compiled.")
+        
+    def get_solutions(self):
+        return list(self.solutions.keys())
 
     def solve(self, **kwargs):
         """Solve a single timestep.
@@ -141,7 +167,7 @@ class Model(ABC, Base):
 
         This function maps functions as following:
 
-        .. highlight:: python
+
         .. code-block:: python
 
             self.set_compressibility = self.set_comp

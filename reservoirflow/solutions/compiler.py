@@ -52,6 +52,7 @@ class Compiler:
         model,
         stype: str,
         method: str,
+        sparse: bool=True,
     ):
         """Construct compiler object.
 
@@ -63,29 +64,39 @@ class Compiler:
             solution type in ['numerical', 'analytical', 'neurical'].
         method : str
             solution method as following:
-            - 'numerical' methods: ['FDM', 'FVM', 'FEM'].
-            - 'analytical' methods: ['1D1P', '1D2P', etc.].
-            - 'neurical' methods: ['PINN', 'DeepONet'].
+            
+            - numerical methods: ``['FDM', 'FVM', 'FEM']``.
+            - analytical methods: ``['1D1P', '1D2P', etc.]``.
+            - neurical methods: ``['PINN', 'DeepONet']``.
+            
+        sparse : bool, optional, default: True
+            using sparse computing for a better performance.
         """
         self.model = model
+        
+        if isinstance(sparse, bool):
+            self.sparse = sparse
+        else:
+            raise ValueError("Argument sparse must be bool.")
+        
         self.__set_stype(stype)
         self.__set_method(method)
-        self.__add_solution()
+        self.__add_solution(sparse)
 
-    def __add_solution(self):
+    def __add_solution(self, sparse):
         if self.stype == "numerical":
             if self.method == "FDM":
                 from reservoirflow.solutions.numerical.fdm import FDM
 
-                self.model.solution = FDM(self.model)
+                self.model.solution = FDM(self.model, sparse)
             elif self.method == "FVM":
                 from reservoirflow.solutions.numerical.fvm import FVM
 
-                self.model.solution = FVM(self.model)
+                self.model.solution = FVM(self.model, sparse)
             elif self.method == "FEM":
                 from reservoirflow.solutions.numerical.fem import FEM
 
-                self.model.solution = FEM(self.model)
+                self.model.solution = FEM(self.model, sparse)
             else:
                 print("[INFO] Numerical solution could not be assigned.")
                 raise ValueError("Not ready.")
@@ -93,39 +104,39 @@ class Compiler:
             if self.method == "D1P1":
                 from reservoirflow.solutions.analytical.d1p1 import D1P1
 
-                self.model.solution = D1P1(self.model)
+                self.model.solution = D1P1(self.model, sparse)
             elif self.method == "D1P2":
                 from reservoirflow.solutions.analytical.d1p2 import D1P2
 
-                self.model.solution = D1P2(self.model)
+                self.model.solution = D1P2(self.model, sparse)
             elif self.method == "D1P3":
                 from reservoirflow.solutions.analytical.d1p3 import D1P3
 
-                self.model.solution = D1P3(self.model)
+                self.model.solution = D1P3(self.model, sparse)
             elif self.method == "D2P1":
                 from reservoirflow.solutions.analytical.d2p1 import D2P1
 
-                self.model.solution = D2P1(self.model)
+                self.model.solution = D2P1(self.model, sparse)
             elif self.method == "D2P2":
                 from reservoirflow.solutions.analytical.d2p2 import D2P2
 
-                self.model.solution = D2P2(self.model)
+                self.model.solution = D2P2(self.model, sparse)
             elif self.method == "D2P3":
                 from reservoirflow.solutions.analytical.d2p3 import D2P3
 
-                self.model.solution = D2P3(self.model)
+                self.model.solution = D2P3(self.model, sparse)
             elif self.method == "D3P1":
                 from reservoirflow.solutions.analytical.d3p1 import D3P1
 
-                self.model.solution = D3P1(self.model)
+                self.model.solution = D3P1(self.model, sparse)
             elif self.method == "D3P2":
                 from reservoirflow.solutions.analytical.d3p2 import D3P2
 
-                self.model.solution = D3P2(self.model)
+                self.model.solution = D3P2(self.model, sparse)
             elif self.method == "D3P3":
                 from reservoirflow.solutions.analytical.d3p3 import D3P3
 
-                self.model.solution = D3P3(self.model)
+                self.model.solution = D3P3(self.model, sparse)
             else:
                 print("[INFO] Analytical solution could not be assigned.")
                 raise ValueError("Not ready.")
@@ -133,18 +144,18 @@ class Compiler:
             if self.method == "PINN":
                 from reservoirflow.solutions.neurical.pinn import PINN
 
-                self.model.solution = PINN(self.model)
+                self.model.solution = PINN(self.model, sparse)
             elif self.method == "DeepONet":
                 from reservoirflow.solutions.neurical.deeponet import DeepONet
 
-                self.model.solution = DeepONet(self.model)
+                self.model.solution = DeepONet(self.model, sparse)
             else:
                 print("[INFO] Neurical solution could not be assigned.")
                 raise ValueError("Not ready.")
         else:
             print("[INFO] Solution could not be assigned.")
             raise ValueError("Not ready.")
-        self.model.solutions[self.method] = self.model.solution
+        # self.model.solutions[self.method] = self.model.solution
         print(f"[info] {self.method} was assigned as model.solution.")
 
     def __set_stype(self, stype):
@@ -215,8 +226,12 @@ class Compiler:
 
     def __repr__(self):
         return (
-            f"Compiler(model='{self.model.name}', stype='{self.stype}', "
-            + f"method='{self.method}', solution='{self.model.solution.name}')"
+              f"Compiler(model='{self.model.name}'"
+            + f", stype='{self.stype}'"
+            + f", method='{self.method}'"
+            + f", sparse={self.sparse}"
+            # + f", solution='{self.model.solution.name}'"
+            + ")"
         )
 
 

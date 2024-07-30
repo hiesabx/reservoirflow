@@ -32,12 +32,12 @@ ReservoirFlow: a Reservoir Simulation and Engineering Library in Python
    :parser: myst_parser.sphinx_
 
 
-.. include:: sponsors.rst
+.. include:: _static/sponsors.rst
 
 |
 
 Contents
-======================
+========
 
 .. toctree::
    :maxdepth: 1

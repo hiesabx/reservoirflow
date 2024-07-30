@@ -43,13 +43,19 @@
   - Linux or Mac:
 
       ```console
-      $ source .venv/bin/activate
+      $ source .venv/Scripts/Activate
       ```
 
 - Update `pip`:
 
     ```console
     $ pip install --upgrade pip
+    ```
+
+    or
+
+    ```console
+    $ python.exe -m pip install --upgrade pip
     ```
 
 - Setup the library:

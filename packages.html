@@ -1,0 +1,235 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class reservoirflow {
+          }
+          class __main__ {
+          }
+          class backends {
+          }
+          class backend {
+          }
+          class jax {
+          }
+          class numpy {
+          }
+          class pytorch {
+          }
+          class tensorflow {
+          }
+          class base {
+          }
+          class fluids {
+          }
+          class fluid {
+          }
+          class multi_phase {
+          }
+          class single_phase {
+          }
+          class three_phase {
+          }
+          class two_phase {
+          }
+          class grids {
+          }
+          class grid {
+          }
+          class irregular_cartesian {
+          }
+          class radial {
+          }
+          class regular_cartesian {
+          }
+          class models {
+          }
+          class black_oil {
+          }
+          class compositional {
+          }
+          class model {
+          }
+          class thermal {
+          }
+          class scalers {
+          }
+          class dummy {
+          }
+          class minmax {
+          }
+          class scaler {
+          }
+          class scalerdc {
+          }
+          class solutions {
+          }
+          class analytical {
+          }
+          class d1p1 {
+          }
+          class d1p2 {
+          }
+          class d1p3 {
+          }
+          class d2p1 {
+          }
+          class d2p2 {
+          }
+          class d2p3 {
+          }
+          class d3p1 {
+          }
+          class d3p2 {
+          }
+          class d3p3 {
+          }
+          class compiler {
+          }
+          class neurical {
+          }
+          class deeponet {
+          }
+          class pinn {
+          }
+          class numerical {
+          }
+          class fdm {
+          }
+          class fem {
+          }
+          class fvm {
+          }
+          class solvers {
+          }
+          class solution {
+          }
+          class utils {
+          }
+          class helpers {
+          }
+          class profme {
+          }
+          class pyvista {
+          }
+          class wells {
+          }
+          class directional {
+          }
+          class multi_cell {
+          }
+          class single_cell {
+          }
+          class well {
+          }
+          reservoirflow --> base
+          backends --> backend
+          backends --> jax
+          backends --> numpy
+          backends --> pytorch
+          backends --> tensorflow
+          jax --> backends
+          numpy --> backends
+          pytorch --> backends
+          tensorflow --> backends
+          fluids --> fluid
+          fluids --> multi_phase
+          fluids --> single_phase
+          fluids --> three_phase
+          fluids --> two_phase
+          fluid --> base
+          multi_phase --> fluid
+          single_phase --> fluid
+          three_phase --> fluid
+          two_phase --> fluid
+          grids --> grid
+          grids --> irregular_cartesian
+          grids --> radial
+          grids --> regular_cartesian
+          grid --> base
+          irregular_cartesian --> grid
+          radial --> grid
+          regular_cartesian --> reservoirflow
+          regular_cartesian --> grid
+          regular_cartesian --> utils
+          regular_cartesian --> helpers
+          models --> black_oil
+          models --> compositional
+          models --> model
+          models --> thermal
+          black_oil --> reservoirflow
+          black_oil --> model
+          black_oil --> helpers
+          compositional --> model
+          model --> base
+          model --> compiler
+          thermal --> model
+          scalers --> dummy
+          scalers --> minmax
+          scalers --> scaler
+          dummy --> scaler
+          minmax --> scaler
+          solutions --> compiler
+          solutions --> solution
+          analytical --> d1p1
+          analytical --> d1p2
+          analytical --> d1p3
+          analytical --> d2p1
+          analytical --> d2p2
+          analytical --> d2p3
+          analytical --> d3p1
+          analytical --> d3p2
+          analytical --> d3p3
+          d1p1 --> reservoirflow
+          d1p1 --> scalers
+          d1p1 --> solution
+          d1p1 --> profme
+          d1p2 --> solution
+          d1p3 --> solution
+          d2p1 --> solution
+          d2p2 --> solution
+          d2p3 --> solution
+          d3p1 --> solution
+          d3p2 --> solution
+          d3p3 --> solution
+          compiler --> d1p1
+          compiler --> d1p2
+          compiler --> d1p3
+          compiler --> d2p1
+          compiler --> d2p2
+          compiler --> d2p3
+          compiler --> d3p1
+          compiler --> d3p2
+          compiler --> d3p3
+          compiler --> deeponet
+          compiler --> pinn
+          compiler --> fdm
+          compiler --> fem
+          compiler --> fvm
+          neurical --> deeponet
+          neurical --> pinn
+          deeponet --> solution
+          pinn --> solution
+          numerical --> fdm
+          numerical --> fem
+          numerical --> fvm
+          fdm --> reservoirflow
+          fdm --> solution
+          fdm --> helpers
+          fem --> solution
+          fvm --> solution
+          solvers --> helpers
+          wells --> directional
+          wells --> multi_cell
+          wells --> single_cell
+          wells --> well
+          directional --> well
+          multi_cell --> well
+          single_cell --> well
+          well --> base
+  
+       </div>
+  </body>
+</html>

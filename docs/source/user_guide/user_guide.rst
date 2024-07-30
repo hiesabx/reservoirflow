@@ -21,3 +21,6 @@ Contents
    equations/equations
    glossary/glossary
    
+|
+
+.. include:: /_static/sponsors.rst

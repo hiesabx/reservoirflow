@@ -1,5 +1,12 @@
 # Support Us
 
+```{button-link} https://docs.google.com/forms/d/e/1FAIpQLSdsUZdoZAQaKFZt_J9RmJr_MSHuVxqnmSY8jWF4-asdM4UbsA/viewform?usp=pp_url
+:color: secondary
+:align: right
+
+Register for Support
+```
+
 ```{important}
 This project has not been funded or sponsored yet. We are seeking support especially from energy operation companies (both IOCs and NOCs). If you are a company, a university, or an individual who could benefit from this work, please consider supporting this project.
 ```

@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 from reservoirflow import scalers
 from reservoirflow.solutions.solution import Solution
+from reservoirflow.utils.profme import cProfiler
 
 
 class D1P1(Solution):
@@ -30,8 +31,11 @@ class D1P1(Solution):
         output_range=[-1, 1],
         clean=True,
     ):
-        # Independent variables: t, x
+        
+        # Alpha:
         alpha = self.model.get_alpha()
+        
+        # Independent variables: t, x
         t, x = self.model.get_domain(scale=False, boundary=True)
         L = x.max() - x.min()
         xD = (x - x.min()) / L
@@ -39,27 +43,29 @@ class D1P1(Solution):
         tD_values, xD_values = np.meshgrid(tD, xD, indexing="ij")
 
         # Dependent variable: p
-        p = self.model.pressures
+        p = self.model.solution.pressures
         input_range = [0, 1]
         input_scaler = scalers.MinMax(input_range).fit(p, axis=None)
         pDi = input_scaler.transform(self.model.pi)
         pD0 = input_scaler.transform(p[0, 0])
         pDn = input_scaler.transform(p[0, -1])
 
-        # Analytical Solution:
+        # Analytical solution:
         N_range = np.arange(1, N + 1)
         pDi0 = pDi - pD0
         pDin = pDn - pDi
         xDpi = np.pi * xD_values
-        tDpi = -np.pi**2 * tD_values
+        tDpi = -np.pi ** 2 * tD_values
         pDsum = np.zeros_like(xD_values, dtype="double")
         for n in N_range:
             pDsum += (
                 (pDi0 / n + pDin * ((-1) ** n) / n)
-                * np.sin(n * xDpi)
+                * np.sin(n*xDpi)
                 * np.exp((n**2) * tDpi)
             )
         pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * pDsum
+        
+        # Remove values out of range:
         if clean:
             pD[pD < input_range[0]] = input_range[0]
             pD[pD > input_range[1]] = input_range[1]
@@ -94,7 +100,7 @@ class D1P1(Solution):
         isolver=None,
     ):
         start_time = time.time()
-        self.model.nsteps += nsteps
+        self.model.solution.nsteps += nsteps
         self.run_ctime = 0
         if self.model.verbose:
             self.model.verbose = False
@@ -124,7 +130,7 @@ class D1P1(Solution):
             )
 
         self.run_ctime = round(time.time() - start_time, 2)
-        self.model.ctime += self.run_ctime
+        self.model.solution.ctime += self.run_ctime
         print(
             f"[info] Simulation run of {nsteps} steps",
             f"finished in {self.run_ctime} seconds.",

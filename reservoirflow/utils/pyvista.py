@@ -770,9 +770,9 @@ def show_grid(
 def get_model_values(model, prop, boundary):
     prop = prop.lower()
     if prop in ["p", "pressure", "pressures"]:
-        values = model.pressures
+        values = model.solution.pressures
     elif prop in ["q", "rate", "rates"]:
-        values = model.rates
+        values = model.solution.rates
     else:
         raise ValueError("Unknown property.")
 
@@ -961,7 +961,6 @@ def save_gif(
     be mitigated by using discretized colors or by making the first
     cell or layer nontransparent.
 
-    .. highlight:: python
     .. code-block:: python
 
         # making cell 0 nontransparent:
@@ -1026,7 +1025,7 @@ def save_gif(
         subrectangles=False,
     )
 
-    for tstep in range(model.nsteps):
+    for tstep in range(model.solution.nsteps):
         if info:
             date.SetInput(f"    current date: {dates[tstep]}")
             time_step.SetInput(f"current timestep: {tstep:02d}")
@@ -1132,7 +1131,6 @@ def show_model(
     -----
     Key callbacks:
 
-    .. highlight:: python
     .. code-block:: python
 
         def my_cpos_callback():
@@ -1190,7 +1188,7 @@ def show_model(
         return pl
 
     values = get_model_values(model, prop, boundary)
-    last_tstep = model.nsteps - 1
+    last_tstep = model.solution.nsteps - 1
     pl = update_pl(last_tstep)
 
     if not static or not notebook:

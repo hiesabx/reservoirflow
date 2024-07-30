@@ -7,7 +7,6 @@
 *Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns.*
 -->
 
-
 **Table of Content:**
 
 - [ReservoirFlow: a Reservoir Simulation and Engineering Library in Python](#reservoirflow-a-reservoir-simulation-and-engineering-library-in-python)
@@ -28,7 +27,7 @@
 allow="autoplay"  width="100%" height="500" frameborder="0" scrolling="auto" class="iframe-full-height" allowfullscreen></iframe>
 </p>
 
-*ReservoirFlow* is designed to study and model fluid flow in porous media, with the aim of covering a wide range of topics including subsurface energy storage systems, reservoir simulation and engineering. *ReservoirFlow* is the first reservoir simulator based on physics-informed neural network models and one of its kind in a sense that it allows comparing and combining analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). *ReservoirFlow* is planned to be a central platform between education and industry where scientific papers are implemented and distributed in a standard and accessible format with coding examples, tutorials, and trainings.
+*ReservoirFlow* is designed to study and model the process of fluid flow in porous media related to subsurface energy storage systems, reservoir simulation and engineering. *ReservoirFlow* is the first reservoir simulator based on physics-informed neural network models and one of its kind in a sense that it allows comparing and combining analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). *ReservoirFlow* is planned to be a central platform between education and industry where scientific papers are implemented and distributed in a standard and accessible format with coding examples, tutorials, and trainings.
 
 <!--
 تدفق المكامن هي مكتبة حديثة مفتوحة المصدر تم تطويرها بواسطة زكريا أبوقرين وهي مصممة لدراسة ومحاكاة ظاهرة تدفق الموائع في الوسط المسامي المعروفة باسم محاكاة وهندسة المكامن.
@@ -46,10 +45,9 @@ allow="autoplay"  width="100%" height="500" frameborder="0" scrolling="auto" cla
   </em>
 </p>
 
-
 *ReservoirFlow* brings reservoir simulation and engineering to the Python ecosystem to empower automation in intelligent fields where engineers and specialists can deploy their models in containers that will be ready to make real-time optimization for any well in the field. In contrast to commercial black-box software where reservoir simulation studies are relatively isolated, important actions can be immediately predicted and made available for the field hardware to execute. A special attention well be given to provide solutions for environmentally friendly projects with a clear objective to reduce emissions. We are committed to extend our tools to cover the topic of Carbon Capture and Storage (CCS) especially $CO_2$ Underground Storage. In addition, we are looking forward to covering a wider range of topics from Reservoir Engineering including: Pressure Transient Analysis (PTA) and Rate Transient Analysis (RTA), Enhanced Oil Recovery (EOR), Improved Oil Recovery (IOR), Pressure-Volume-Temperature (PVT), Equation-of-State (EOS), etc.
 
-*ReservoirFlow* aims to achieving a high quality open research and science for reservoir simulation and engineering; solutions that combine the strength of scientific computing with the power of deep learning for different applications such as: reverse computing, interpolation or extrapolation, etc. Below are few examples of the problems that will be tackled in the future:
+*ReservoirFlow* aims to achieving a high quality open research for reservoir simulation and engineering to provide solutions that combine the strength of scientific computing with the power of deep learning for different applications such as: reverse computing, interpolation or extrapolation, etc. Below are few examples of the problems that will be tackled in the future:
 
 - Real-time reservoir management and production optimization using Cloud Computing and IoT.
 - Reinforcement learning to achieve better production strategies for specific goals (e.g. maximize recovery, accelerate production).
@@ -57,7 +55,7 @@ allow="autoplay"  width="100%" height="500" frameborder="0" scrolling="auto" cla
 - Advanced computing such as GPU, TPU and Quantum Computing.
 - Scientific Machine learning using Physics-informed neural networks (PINNs) or DeepONets.
 
-An open-source reservoir simulation and engineering library within the Python ecosystem is also very important to students, universities, researchers, engineers, and practitioners. Unlike the common monopolistic approach in the Oil and Gas industry where software is usually offered as a closed black-box at a high cost, we plan to make our tools accessible and available freely to everyone except for commercial-use where an explicit authorization will be required. We aim to offer our sponsors the commercial-use license with other benefits including trainings, custom features, studies, and more. Our license allows universities, students, academics, and researchers to use our tools directly for teaching or publication just with a proper referencing. Therefore, the growth of this tool can only be taken as a positive growth for a new community that we try to create. However, this requires a huge support to meet the upcoming challenges that we are looking for, see [Support Us](/support_us.html).
+An open-source reservoir simulation and engineering library within the Python ecosystem is also very important to students, universities, researchers, engineers, and practitioners. Unlike the common monopolistic approach in the Oil and Gas industry where software is usually offered as a closed black-box at a high cost, we plan to make our tools accessible and freely available to everyone except for commercial-use where an explicit authorization will be required. We aim to offer our sponsors the commercial-use license with other benefits including trainings, custom features, studies, and more. On the other hand, our license allows universities, students, academics, and researchers to use our tools directly for teaching or publication just with a proper referencing. Therefore, the growth of this tool can only be taken as a positive growth for a new community that we try to create. However, this requires a huge support to meet the upcoming challenges that we are looking for, see [Support Us](/support_us.html).
 
 ## Installation
 

@@ -18,6 +18,7 @@ This section includes tutorials to help users learn how to use ``reservoirflow``
     tutorial_understand_grids_module
     tutorial_understand_scalers_module
     tutorial_understand_compiling
+    tutorial_understand_profme
 .. example_notebook/example_notebook
 .. example_markdown/example_markdown
 .. example_sphinx_gallery/build/index

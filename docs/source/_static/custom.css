@@ -26,8 +26,6 @@ html[data-theme="light"] {
     --pst-color-inline-code: rgb(232, 62, 140);
     --pst-color-target: rgb(251, 229, 78);
     --pst-color-panel-background: var(--pst-color-background-up);
-    --pst-violet-300: rgb(206, 124, 52);
-    --pst-violet-600: rgb(206, 124, 52);
 
 }
 
@@ -47,6 +45,4 @@ html[data-theme="dark"] {
     --pst-color-inline-code: rgb(221, 158, 194);
     --pst-color-target: rgb(71, 39, 0);
     --pst-color-panel-background: var(--pst-color-background-up);
-    --pst-violet-300: rgb(206, 124, 52);
-    --pst-violet-600: rgb(206, 124, 52);
 }

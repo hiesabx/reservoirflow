@@ -235,6 +235,7 @@ html_theme_options = {
     "pygments_light_style": "default",
     "pygments_dark_style": "monokai", # 'native'
     "back_to_top_button": True,
+    #"primary_sidebar_end": ["sidebar-ads.html"],
 }
 
 # comments_config = {

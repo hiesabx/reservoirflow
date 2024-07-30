@@ -32,7 +32,7 @@ class MinMax(Scaler):
         Scaler object.
     """
 
-    name = "MinMax Scaler"
+    name = "MinMax"
 
     def __init__(
         self,

@@ -3,24 +3,16 @@ BlackOil
 ========
 """
 
-import time
 import warnings
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from datetime import date
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.linalg as sl
 import scipy.sparse as ss
-import scipy.sparse.linalg as ssl
-import sympy as sym
-from tqdm import tqdm
 
 import reservoirflow as rf
-
-# from reservoirflow import fluids, grids, scalers, utils, wells
 from reservoirflow.models.model import Model
 from reservoirflow.utils.helpers import _lru_cache
 
@@ -34,7 +26,7 @@ class BlackOil(Model):
         Model object.
     """
 
-    name = "BlackOil Model"
+    name = "BlackOil"
 
     def __init__(
         self,
@@ -44,20 +36,19 @@ class BlackOil(Model):
         pi: int = None,
         dt: int = 1,
         start_date: date = None,
-        dtype: str = "double",
         unit: str = "field",
-        sparse: bool = True,
+        dtype: str = "double",
         verbose: bool = False,
     ):
         """Create BlackOil Model.
 
         Parameters
         ----------
-        grid : rf.grids.Grid
+        grid : Grid
             Grid object.
-        fluid : rf.fluids.Fluid
+        fluid : Fluid
             Fluid object.
-        well : rf.wells.Well, optional
+        well : Well, optional
             Well object. Wells can be added latter using ``set_well()``
             method.
         pi : int, optional
@@ -67,15 +58,13 @@ class BlackOil(Model):
         start_date : date, optional
             Start date of the simulation run. If None, today's date is
             used.
-        dtype : str or `np.dtype`, optional
-            data type used in all arrays. Numpy dtype such as
-            `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
             unit used in input and output. Both `units` and `factors`
             attributes will be updated based on the selected `unit` and
             can be accessed directly from this class.
-        sparse : bool, optional
-            using sparse computing for a better performance.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
         verbose : bool, optional
             print information for debugging.
 
@@ -101,12 +90,13 @@ class BlackOil(Model):
         assert self.dtype == fluid.dtype, "fluid dtype is not compatible."
 
         self.cells_terms = {}
+        # newtest:
         self.dt = dt
-        self.nsteps = 1
-        self.tstep = 0
-        self.ctime = 0
+        # self.nsteps = 1
+        # self.tstep = 0
+        # self.ctime = 0
 
-        self.__initialize__(pi, start_date, well, sparse)
+        self.__initialize__(pi, start_date, well)
         self.__calc_comp()
         self.__calc_RHS()
         self.bdict = {}
@@ -116,13 +106,16 @@ class BlackOil(Model):
     # Basic:
     # -------------------------------------------------------------------------
 
-    def __initialize__(self, pi, start_date, well, sparse):
+    def __initialize__(self, pi, start_date, well):
         """Initialize reservoir pressures, rates, and wells.
 
         Parameters
         ----------
         pi : int, float
             initial reservoir pressure.
+        start_date : date, optional
+            Start date of the simulation run. If None, today's date is
+            used. 
         well : Well
             well class.
 
@@ -138,17 +131,23 @@ class BlackOil(Model):
             in the following steps as if this is a constant boundary
             cond which is misleading.
         """
-        ones = self.grid.get_ones(True, False, False)[np.newaxis]
-        self.pressures = ones * np.nan
-        self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
-        self.ds = self.grid.get_zeros(False, False, False)[np.newaxis]
-        n = self.grid.get_n(False)
-        self.As = np.zeros((1, n * n), dtype=self.dtype)
-        self.sparse = sparse
+        self.n = self.grid.get_n(False)
+        self.cells_i = self.grid.get_cells_i(False)
+        self.cells_id = self.grid.get_cells_id(False, False, "array")
+        self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
+        self.boundaries_id = self.grid.get_boundaries("id", "array")
+        
+        # newtest
+        # ones = self.grid.get_ones(True, False, False)[np.newaxis]
+        # self.pressures = ones * np.nan
+        # self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
+        self.init_pressures, self.init_rates = self.get_arrays()
 
         self.pi = pi
         if pi is not None:
-            self.pressures[0, self.grid.cells_id] = pi
+            # newtest
+            # self.pressures[0, self.grid.cells_id] = pi
+            self.init_pressures[0, self.grid.cells_id] = pi
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
             print(f"[warning] Pi is by default set to {self.pi}.")
@@ -162,12 +161,6 @@ class BlackOil(Model):
         self.w_pressures = defaultdict(list)
         if well is not None:
             self.set_well(well)
-
-        self.n = self.grid.get_n(False)
-        self.cells_i = self.grid.get_cells_i(False)
-        self.cells_id = self.grid.get_cells_id(False, False, "array")
-        self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
-        self.boundaries_id = self.grid.get_boundaries("id", "array")
 
         self.scalers_dict = {
             "time": ["MinMaxScaler", (0, 1)],
@@ -197,7 +190,63 @@ class BlackOil(Model):
         tuple
             tuple as (number of time steps, number of girds)
         """
-        return (self.nsteps, self.grid.get_n(boundary))
+        return (self.solution.nsteps, self.grid.get_n(boundary))
+    
+    def get_arrays(self) -> tuple:
+        ones = self.grid.get_ones(True, False, False)[np.newaxis]
+        pressures = ones * np.nan
+        rates = self.grid.get_zeros(True, False, False)[np.newaxis]
+        return pressures, rates
+    
+    def get_init_arrays(self) -> tuple:
+        return self.init_pressures.copy(), self.init_rates.copy()
+    
+    def get_tstep(self):
+        if self.solution is None:
+            return 0
+        else:
+            return self.solution.tstep
+        
+    def get_pressure(self, tstep, cell_id):
+        if tstep == 0:
+            return self.init_pressures[tstep, cell_id]                    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                return self.solution.pressures[:, cell_id]
+            else:
+                return self.solution.pressures[tstep, cell_id]
+        
+    def set_pressure(self, tstep, cell_id, value):
+        if tstep == 0:
+            self.init_pressures[tstep, cell_id] = value    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                self.solution.pressures[:, cell_id] = value
+            else:
+                self.solution.pressures[tstep, cell_id] = value
+            
+    def get_rate(self, tstep, cell_id):
+        if tstep == 0:
+            return self.init_rates[tstep, cell_id]                    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                return self.solution.rates[:, cell_id]
+            else:
+                return self.solution.rates[tstep, cell_id]
+        
+    def set_rate(self, tstep, cell_id, value):
+        if tstep == 0:
+            self.init_rates[tstep, cell_id] = value    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                self.solution.rates[:, cell_id] = value
+            else:
+                self.solution.rates[tstep, cell_id] = value
+        
 
     def __calc_comp(self):
         """Calculates total compressibility."""
@@ -444,7 +493,9 @@ class BlackOil(Model):
                 self.wells[cell_id]["pwf_sp"] = pwf
                 if "q" not in self.wells[cell_id].keys():
                     self.wells[cell_id]["constrain"] = "pwf"
-                self.w_pressures[cell_id].append(self.pressures[self.tstep, cell_id])
+                # newtest
+                # self.w_pressures[cell_id].append(self.pressures[self.get_tstep(), cell_id])
+                self.w_pressures[cell_id].append(self.get_pressure(self.get_tstep(), cell_id))
             if "constrain" not in self.wells[cell_id].keys():
                 self.wells[cell_id]["constrain"] = None
             if r is not None:
@@ -457,7 +508,9 @@ class BlackOil(Model):
         if "pwf" not in self.wells[cell_id].keys():
             self.wells[cell_id]["pwf"] = 0
             self.wells[cell_id]["pwf_sp"] = 0
-            self.w_pressures[cell_id].append(self.pressures[self.tstep, cell_id])
+            # newtest
+            # self.w_pressures[cell_id].append(self.pressures[self.get_tstep(), cell_id])
+            self.w_pressures[cell_id].append(self.get_pressure(self.get_tstep(), cell_id))
 
         if self.verbose:
             print(f"[info] a well in cell {cell_id} was set.")
@@ -488,14 +541,20 @@ class BlackOil(Model):
         # - d is taken at x direction for gradient.
         cond = cond.lower()
         if cond in ["rate", "q"]:
-            self.rates[self.tstep, cell_b_id] = v
+            # newtest
+            # self.rates[self.get_tstep(), cell_b_id] = v
+            self.set_rate(self.get_tstep(), cell_b_id, v)
         elif cond in ["pressure", "press", "p"]:
-            self.pressures[self.tstep, cell_b_id] = v
+            # newtest
+            # self.pressures[self.get_tstep(), cell_b_id] = v
+            self.set_pressure(self.get_tstep(), cell_b_id, v)
         elif cond in ["gradient", "grad", "g"]:
             ((cell_id, T),) = self.get_cell_trans(cell_b_id, None, False).items()
             cell_n = self.grid.get_cell_neighbors(cell_b_id, None, False, "dict")
             dir = [dir for dir in cell_n if cell_id in cell_n[dir]][0]
-            self.rates[self.tstep, cell_b_id] = T * self.grid.d[dir][cell_id] * v
+            # newtest
+            # self.rates[self.get_tstep(), cell_b_id] = T * self.grid.d[dir][cell_id] * v
+            self.set_rate(self.get_tstep(), cell_b_id, T * self.grid.d[dir][cell_id] * v)
         else:
             raise ValueError(f"cond argument {cond} is unknown.")
 
@@ -607,7 +666,7 @@ class BlackOil(Model):
             date_str = ""
         date_series = pd.date_range(
             start=self.start_date,
-            periods=self.tstep + 1,
+            periods=self.get_tstep() + 1,
             freq=str(self.dt) + "D",
         ).strftime("%d.%m.%Y")
         data = pd.Series(date_series, name="Date" + date_str)
@@ -625,7 +684,9 @@ class BlackOil(Model):
         else:
             rate_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        array = self.rates[:, cells_id]
+        # newtest
+        # array = self.rates[:, cells_id]
+        array = self.get_rate(None, cells_id)
         if scale:
             array = self.rates_scaler.transform(array)
         if melt:
@@ -645,7 +706,9 @@ class BlackOil(Model):
         else:
             press_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        array = self.pressures[:, cells_id]
+        # newtest
+        # array = self.pressures[:, cells_id]
+        array = self.get_pressure(None, cells_id)
         if scale:
             array = self.pressures_scaler.transform(array)
         if melt:
@@ -665,7 +728,9 @@ class BlackOil(Model):
         else:
             rate_str = ""
         labels = [f"Qw{str(id)}" + rate_str for id in self.wells.keys()]
-        array = self.rates[:, list(self.wells.keys())]
+        # newtest
+        # array = self.rates[:, list(self.wells.keys())]
+        array = self.get_rate(None, list(self.wells.keys()))
         if scale:
             array = self.rates_scaler.transform(array)
         data = pd.DataFrame(array, columns=labels)
@@ -690,13 +755,13 @@ class BlackOil(Model):
     def __add_xyz(self, boundary, melt, scale, df=None):
         if melt:
             cells_center, fdir = self.get_centers(scale, boundary)
-            array = np.tile(cells_center.flatten(), self.nsteps).reshape(-1, len(fdir))
+            array = np.tile(cells_center.flatten(), self.solution.nsteps).reshape(-1, len(fdir))
             data = pd.DataFrame(array, columns=fdir)
             return self.__concat(data, df)
         return df
 
     def __get_time_vector(self):
-        return np.arange(0, (self.tstep + 1) * self.dt, self.dt)
+        return np.arange(0, (self.get_tstep() + 1) * self.dt, self.dt)
 
     def __update_time_scaler(self):
         time = self.__get_time_vector()
@@ -789,7 +854,6 @@ class BlackOil(Model):
         under ``scalers_dict``. By default the following settings are
         used:
 
-        .. highlight:: python
         .. code-block:: python
 
             scalers_dict = {
@@ -829,7 +893,7 @@ class BlackOil(Model):
             "pressure": ["p", "pressures", "pressure", "all"],
             "rate": ["q", "rates", "rate", "all"],
         }
-        col_vals = sum(col_dict.values(), [])
+        # col_vals = sum(col_dict.values(), [])
 
         for column in scalers_dict.keys():
             scaler_type = scalers_dict[column][0]
@@ -872,16 +936,18 @@ class BlackOil(Model):
         columns : list[str], optional
             selected columns to be added to the dataframe. The following
             options are available:
-            "time": for time steps as specified in dt.
-            "date": for dates as specified in dt and start_date.
-            "q", "rates": for all (cells and wells) rates.
-            "p", "pressures": for all (cells and wells) pressures.
-            "cells": for all cells rates and pressures.
-            "wells": for all wells rates and pressures.
-            "cells_rate": for all cells rates (including wells' cells).
-            "cells_pressure": for all cells pressures.
-            "wells_rate": for all wells rates.
-            "wells_pressure": for all wells pressures.
+            
+                - ``"time"``: for time steps as specified in dt.
+                - ``"date"``: for dates as specified in dt and start_date.
+                - ``"q"``, ``"rates"``: for all (cells and wells) rates.
+                - ``"p"``, ``"pressures"``: for all (cells and wells) pressures.
+                - ``"cells"``: for all cells rates and pressures.
+                - ``"wells"``: for all wells rates and pressures.
+                - ``"cells_rate"``: for all cells rates (including wells' cells).
+                - ``"cells_pressure"``: for all cells pressures.
+                - ``"wells_rate"``: for all wells rates.
+                - ``"wells_pressure"``: for all wells pressures.
+                
         boundary : bool, optional
             include boundary cells.
             It is only relevant when cells columns are selected.
@@ -898,7 +964,6 @@ class BlackOil(Model):
             Current settings can be shown under scalers_dict.
             By default:
 
-            .. highlight:: python
             .. code-block:: python
 
                 scalers_dict = {
@@ -941,8 +1006,8 @@ class BlackOil(Model):
         if melt:
             n_cells = self.grid.get_n(boundary)
             cells_id = self.grid.get_cells_id(boundary, False, "array")
-            df["id"] = np.tile(cells_id, self.nsteps)
-            df["Step"] = np.repeat(np.arange(self.nsteps), n_cells)
+            df["id"] = np.tile(cells_id, self.solution.nsteps)
+            df["Step"] = np.repeat(np.arange(self.solution.nsteps), n_cells)
             df = self.__add_xyz(boundary, melt, scale, df)
 
         for c in columns:
@@ -1003,7 +1068,7 @@ class BlackOil(Model):
             time step. If None, the last time step is selected.
         """
         if tstep is None:
-            tstep = self.tstep
+            tstep = self.get_tstep()
 
         if id is not None:
             exec(f"plt.plot(self.{prop}[:, id].flatten())")
@@ -1022,7 +1087,7 @@ class BlackOil(Model):
 
     def plot_grid(self, property: str = "pressures", tstep: int = None):
         if tstep is None:
-            tstep = self.tstep
+            tstep = self.get_tstep()
         cells_id = self.grid.get_cells_id(False, False, "list")
         exec(f"plt.imshow(self.{property}[tstep][cells_id][np.newaxis, :])")
         plt.colorbar(label=f"{property.capitalize()} ({self.units[property[:-1]]})")
@@ -1062,7 +1127,6 @@ class BlackOil(Model):
 
         This function maps functions as following:
 
-        .. highlight:: python
         .. code-block:: python
 
             self.set_transmissibility = self.set_trans
@@ -1089,7 +1153,7 @@ if __name__ == "__main__":
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
-    def create_model(sparse):
+    def create_model():
         grid = rf.grids.RegularCartesian(
             nx=10,
             ny=10,
@@ -1117,7 +1181,6 @@ if __name__ == "__main__":
             pi=6000,
             dt=5,
             start_date="10.10.2018",
-            sparse=sparse,
             dtype="double",
         )
 
@@ -1134,12 +1197,12 @@ if __name__ == "__main__":
 
     sparse = True
 
-    model = create_model(sparse)
-    model.compile(stype="numerical", method="FDM")
+    model = create_model()
+    model.compile(stype="numerical", method="FDM", sparse=sparse)
     model.run(nsteps=10, vectorize=True, isolver="cgs")
     model.show("pressures")
 
-    model = create_model(sparse)
-    model.compile(stype="numerical", method="FDM")
+    model = create_model()
+    model.compile(stype="numerical", method="FDM", sparse=sparse)
     model.run(nsteps=10, vectorize=True, isolver=None)
     model.show("pressures")

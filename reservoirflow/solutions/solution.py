@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+import reservoirflow as rf
 
 class Solution(ABC):
     """Abstract solution class.
@@ -18,7 +18,8 @@ class Solution(ABC):
 
     def __init__(
         self,
-        model,
+        model,#: rf.models.Model,
+        sparse,
     ):
         """Construct solution object.
 
@@ -26,8 +27,16 @@ class Solution(ABC):
         ----------
         model : Model
             a model object from ``models`` module.
+        sparse : bool
+            using sparse computing for a better performance.
         """
         self.model = model
+        self.sparse = sparse
+        self.pressures, self.rates = self.model.get_init_arrays()
+        
+        self.nsteps = 1
+        self.tstep = 0
+        self.ctime = 0
 
     @abstractmethod
     def solve(self):

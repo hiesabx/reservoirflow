@@ -1,5 +1,6 @@
 tcolab_0001 ✏
 ==============
+:bdg-secondary-line:`ic_202401`
 
 This is the first team collaboration.
 
@@ -9,3 +10,5 @@ This is the first team collaboration.
 .. toctree::
     :maxdepth: 1
     :caption: Current Topics
+
+.. include:: /_static/comments_section.rst

@@ -139,10 +139,10 @@ def create_model(sparse):
         unify=False,
     )
     fluid = fluids.SinglePhase(mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double")
-    model = models.BlackOil(grid, fluid, pi=3000, dt=5, sparse=sparse, dtype="double")
+    model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
     model.set_well(cell_id=4, q=-400, pwf=1500, s=0, r=3)
     model.set_boundaries({0: ("rate", 0), 6: ("rate", 0)})
-    model.compile(stype="numerical", method="fdm")
+    model.compile(stype="numerical", method="fdm", sparse=sparse)
     return model
 
 
