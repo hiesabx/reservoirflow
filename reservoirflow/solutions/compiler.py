@@ -226,12 +226,21 @@ class Compiler:
 
     def __repr__(self):
         return (
-              f"Compiler(model='{self.model.name}'"
+              "rf.solutions.Compiler("
+            + f"model='{self.model.name}'"
             + f", stype='{self.stype}'"
             + f", method='{self.method}'"
             + f", sparse={self.sparse}"
             # + f", solution='{self.model.solution.name}'"
             + ")"
+        )
+        
+    def __str__(self):
+        return (
+              f"{self.model.name}"
+            + f"-{self.stype}"
+            + f"-{self.method}"
+            + f"-{self.sparse}"
         )
 
 

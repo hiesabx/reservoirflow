@@ -324,7 +324,6 @@ class FDM(Solution):
         n_threads = self.model.n // 2
         if threading:
             from concurrent.futures import ThreadPoolExecutor
-            
             with ThreadPoolExecutor(n_threads) as executor:
                 # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
@@ -854,7 +853,7 @@ class FDM(Solution):
             f"finished in {self.run_ctime} seconds.",
         )
         if check_MB:
-            print(f"[info] Material Balance Error: {self.model.error}.")
+            print(f"[info] Material Balance Error: {self.error}.")
 
         if verbose_restore:
             self.model.verbose = True
@@ -878,12 +877,12 @@ class FDM(Solution):
 
         if self.model.comp_type == "incompressible":
             # rates must add up to 0:
-            self.model.error = self.rates[self.tstep].sum()
+            self.error = self.rates[self.tstep].sum()
             if verbose:
-                print(f"[info]    - Error: {self.model.error}")
+                print(f"[info]    - Error: {self.error}")
         elif self.model.comp_type == "compressible":
             # error over a timestep:
-            self.model.error = (
+            self.error = (
                 self.model.RHS[self.model.grid.cells_id]
                 * (
                     self.pressures[self.tstep, self.model.grid.cells_id]
@@ -893,7 +892,7 @@ class FDM(Solution):
                 )
             ).sum() / self.rates[self.tstep].sum()
             # error from initial timestep to current timestep: (less accurate)
-            self.model.cumulative_error = (
+            self.cumulative_error = (
                 self.model.RHS[self.model.grid.cells_id]
                 * self.model.dt
                 * (
@@ -901,18 +900,18 @@ class FDM(Solution):
                     - self.pressures[0, self.model.grid.cells_id]
                 )
             ).sum() / (self.model.dt * self.tstep * self.rates.sum())
-            self.model.error = abs(self.model.error - 1)
+            self.error = abs(self.error - 1)
             if self.model.verbose:
-                print(f"[info]    - Incremental Error: {self.model.error}")
-                print(f"[info]    -  Cumulative Error: {self.model.cumulative_error}")
+                print(f"[info]    - Incremental Error: {self.error}")
+                print(f"[info]    -  Cumulative Error: {self.cumulative_error}")
                 print(
-                    f"[info]    -       Total Error: {self.model.error+self.model.cumulative_error}"
+                    f"[info]    -       Total Error: {self.error+self.cumulative_error}"
                 )
 
-        if abs(self.model.error) > error_threshold:
+        if abs(self.error) > error_threshold:
             warnings.warn("High material balance error.")
             print(
-                f"[warning] Material balance error ({self.model.error})",
+                f"[warning] Material balance error ({self.error})",
                 f"in step {self.tstep}",
                 f"is higher than the allowed error ({error_threshold}).",
             )

@@ -30,7 +30,7 @@ class TestApp(unittest.TestCase):
         df.index = df.index.astype(int)
         # df.to_csv("tests/test_example_7_7_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
+        np.testing.assert_almost_equal(model.solution.error, 3.320340669077382e-10)
         self.assertLess(model.solution.ctime, 5)
 
     def test_trans(self):
@@ -101,7 +101,7 @@ class TestApp(unittest.TestCase):
         model = create_model(sparse=True)
         model.solve(update=True, check_MB=True)
         error_desired = -4.547e-12
-        np.testing.assert_almost_equal(model.error, error_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.error, error_desired, decimal=5)
 
     def test_simulation_run(self):
         model = create_model(sparse=False)

@@ -33,7 +33,6 @@ class Solution(ABC):
         self.model = model
         self.sparse = sparse
         self.pressures, self.rates = self.model.get_init_arrays()
-        
         self.nsteps = 1
         self.tstep = 0
         self.ctime = 0

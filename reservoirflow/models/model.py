@@ -48,6 +48,8 @@ class Model(ABC, Base):
         super().__init__(unit, dtype, verbose)
         self.solution = None
         self.solutions = {}
+        self.compiler = None
+        self.compilers = {}
 
     def set_comp(self, comp: float):
         """Set model compressibility
@@ -104,18 +106,19 @@ class Model(ABC, Base):
             
         sparse : bool, optional, default: True
             using sparse computing for a better performance.
+        
         """
         self.compiler = Compiler(self, stype, method, sparse)
-        self.solutions[self.compiler.method] = self.solution
+        self.solutions[str(self.compiler)] = self.solution
+        self.compilers[str(self.compiler)] = self.compiler
         self.solve = self.solution.solve
         self.run = self.solution.run
         
     
-    def set_solution(self, method):
-        if method in self.solutions:
-            self.solution = self.solutions[method]
-            self.pressures = self.solution.pressures
-            self.rates = self.solution.rates
+    def set_solution(self, name):
+        if name in self.solutions:
+            self.solution = self.solutions[name]
+            self.compiler = self.compilers[name]
             self.solve = self.solution.solve
             self.run = self.solution.run
         else:

@@ -29,7 +29,7 @@ class TestApp(unittest.TestCase):
         )
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # vectorize, sparse:
         model = create_model(sparse=True)
         model.run(nsteps=27, vectorize=True, threading=True)
@@ -45,7 +45,7 @@ class TestApp(unittest.TestCase):
         )
         df.index = df.index.astype(int)
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # symbolic, dense:
         model = create_model(sparse=False)
         model.run(nsteps=27, vectorize=False, threading=True)
@@ -61,7 +61,7 @@ class TestApp(unittest.TestCase):
         )
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # symbolic, sparse:
         model = create_model(sparse=True)
         model.run(nsteps=27, vectorize=False, threading=True)
@@ -77,7 +77,7 @@ class TestApp(unittest.TestCase):
         )
         df.index = df.index.astype(int)
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
 
     def test_trans(self):
         trans_desired = np.array(
