@@ -1,4 +1,5 @@
 """conf file"""
+
 # import os
 # import sys
 from datetime import datetime
@@ -54,12 +55,13 @@ extensions = [
     "sphinx.ext.todo",  # allow .. todo:: directive.
     "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
     # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
+    # Admonition: https://myst-parser.readthedocs.io/en/latest/syntax/admonitions.html
     "sphinx_comments",  # allow comments
     # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
     # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
     "sphinx_design",  # https://sphinx-design.readthedocs.io/en/latest/get_started.html
     "sphinxcontrib.bibtex",  # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html
-    'sphinx_copybutton', # https://sphinx-copybutton.readthedocs.io/en/latest/
+    "sphinx_copybutton",  # https://sphinx-copybutton.readthedocs.io/en/latest/
 ]
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -132,7 +134,7 @@ nb_number_source_lines = True
 
 # copybutton
 copybutton_selector = ":not(.prompt) > div.highlight pre"
-copybutton_exclude = '.linenos, .gp, .go'
+copybutton_exclude = ".linenos, .gp, .go"
 
 # numpydoc: https://numpydoc.readthedocs.io/en/latest/install.html
 # numpydoc_use_plots = True
@@ -179,12 +181,12 @@ html_css_files = [
 
 # bug in pydata theme: remove in future version starting at 0.15.4
 html_sidebars = {
-    'support_us': [],
-    'capabilities': [],
-    'about_us': [],
-    'release_notes/*': [],
+    "support_us": [],
+    "capabilities": [],
+    "about_us": [],
+    "release_notes/*": [],
 }
-pygments_style = 'none'
+pygments_style = "none"
 
 # announcement = """
 # Are you new to ReservoirFlow? Please find some time to read the first release note
@@ -233,9 +235,9 @@ html_theme_options = {
     "secondary_sidebar_items": ["page-toc"],
     # "announcement": announcement,
     "pygments_light_style": "default",
-    "pygments_dark_style": "monokai", # 'native'
+    "pygments_dark_style": "monokai",  # 'native'
     "back_to_top_button": True,
-    #"primary_sidebar_end": ["sidebar-ads.html"],
+    # "primary_sidebar_end": ["sidebar-ads.html"],
 }
 
 # comments_config = {
@@ -246,6 +248,7 @@ html_theme_options = {
 #         "repo": "zakgrin/reservoirflow_utterances",
 #     }
 # }
+
 
 # Units and Factors:
 def store_dict(in_dict, name="FACTORS", folder=""):
