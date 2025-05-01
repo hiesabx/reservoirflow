@@ -17,7 +17,8 @@ with open("requirements.txt", encoding="utf8", errors="ignore") as f:
     requirements = [r for r in requirements if r[:2] != "-e"]
 
 with open("reservoirflow/__init__.py") as f:
-    version = re.findall("__version__.*(\d.\d.\d).*", f.read())[0]
+    # version = re.findall("__version__.*(\d.\d.\d).*", f.read())[0]
+    version = re.findall('__version__ = "(.*)"', f.read())[0]
 
 setup(
     name="reservoirflow",
