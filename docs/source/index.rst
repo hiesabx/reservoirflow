@@ -1,7 +1,7 @@
 Home
 ====
 
-ReservoirFlow: a Reservoir Simulation and Engineering Library in Python
+ReservoirFlow: Reservoir Simulation and Engineering Library in Python
 
 .. attention:: 
    Are you new to ReservoirFlow? Please find some time to read the first release note,

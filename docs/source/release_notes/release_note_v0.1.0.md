@@ -9,7 +9,7 @@ There are many goals for this library, but one of the main goals is to provide o
 
 The research on the topic of reservoir simulation is extremely rich but has been missing a tool where important papers are implemented in a standard, accessible and clean way that can be understood by others. We hope that we can provide such material in this platform to motivate students and researchers to use this tool in their research and also professors and academics in their lectures. Furthermore, we highly appreciate your support, especially by giving a proper credit to this work using the following citation:
 
-_ReservoirFlow: a Reservoir Simulation and Engineering Library in Python_, Zakariya Abugrin (2024)
+_ReservoirFlow: Reservoir Simulation and Engineering Library in Python_, Zakariya Abugrin (2025)
 
 Reservoir simulation books are very challenging to understand since they combine a wide range of topics from applied mathematics to programming and engineering. However, most of these books lack hands-on coding examples. Perhaps this is the reason why there are not many open-source tools for reservoir simulation. As a result, there is a huge gap between reservoir simulation books and how things actually work when it comes to implementing these concepts.
 

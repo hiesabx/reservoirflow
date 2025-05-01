@@ -1,4 +1,4 @@
-# ReservoirFlow: a Reservoir Simulation and Engineering Library in Python
+# ReservoirFlow: Reservoir Simulation and Engineering Library in Python
 
 <!-- 
 ![five_spot_single_phase](/docs\source\user_guide\tutorials\tutorial_five_spot_single_phase\grid_animated.gif)\ 
@@ -9,7 +9,7 @@
 
 **Table of Content:**
 
-- [ReservoirFlow: a Reservoir Simulation and Engineering Library in Python](#reservoirflow-a-reservoir-simulation-and-engineering-library-in-python)
+- [ReservoirFlow: Reservoir Simulation and Engineering Library in Python](#reservoirflow-reservoir-simulation-and-engineering-library-in-python)
   - [Introduction](#introduction)
   - [Installation](#installation)
   - [Import Convention](#import-convention)

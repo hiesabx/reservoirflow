@@ -26,7 +26,7 @@ setup(
     author_email="contact@hiesab.com",
     maintainer="Zakariya Abugrin",
     maintainer_email="zakariya.abugrin@hiesab.com",
-    description="a Reservoir Simulation and Engineering Library in Python",
+    description="Reservoir Simulation and Engineering Library in Python",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/zakgrin/reservoirflow",
