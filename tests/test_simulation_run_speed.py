@@ -44,10 +44,10 @@ if generate_data:
         for n in [5, 10, 100]:
             model = create_model(n)
             model.run(nsteps=s, vectorize=False)
-            results["not.vectorized"].append(model.ctime)
+            results["not.vectorized"].append(model.solution.ctime)
             model = create_model(n)
             model.run(nsteps=s, vectorize=True)
-            results["vectorized"].append(model.ctime)
+            results["vectorized"].append(model.solution.ctime)
             results["num.grids"].append(n)
             results["num.steps"].append(s)
 

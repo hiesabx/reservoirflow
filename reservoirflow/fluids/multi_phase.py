@@ -18,7 +18,7 @@ class MultiPhase(Fluid):
         Fluid object.
     """
 
-    name = "MultiPhase Fluid"
+    name = "MultiPhase"
 
     def __init__(self, **kwargs):
         raise NotImplementedError("This class is not implemented.")

@@ -18,7 +18,7 @@ class Dummy(Scaler):
         Scaler object.
     """
 
-    name = "Dummy Scaler"
+    name = "Dummy"
 
     def set_output_range(self, output_range):
         return self

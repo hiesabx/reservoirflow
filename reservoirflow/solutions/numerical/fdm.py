@@ -7,19 +7,15 @@ Finite Difference Method (FDM) class.
 import time
 import warnings
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from datetime import date
 
-import matplotlib.pyplot as plt
+
 import numpy as np
-import pandas as pd
 import scipy.linalg as sl
 import scipy.sparse as ss
 import scipy.sparse.linalg as ssl
 import sympy as sym
 from tqdm import tqdm
 
-# from ..solution import Solution
 import reservoirflow as rf
 from reservoirflow.solutions.solution import Solution
 from reservoirflow.utils.helpers import _lru_cache
@@ -37,6 +33,26 @@ class FDM(Solution):
     """
 
     name = "FDM"
+    
+    def __init__(
+        self,
+        model,#: rf.models.Model,
+        sparse: bool=True,
+    ):
+        """Create Finite-Difference-Method Solution.
+
+        Parameters
+        ----------
+        model : Model
+            Model object.
+        sparse : bool, optional, default: True
+            using sparse computing for a better performance.
+        """
+        super().__init__(model, sparse)
+        # newtest
+        self.ds = self.model.grid.get_zeros(False, False, False)[np.newaxis]
+        self.As = np.zeros((1, self.model.n * self.model.n), dtype=self.model.dtype)
+
 
     # -------------------------------------------------------------------------
     # Flow Equations: symbolic
@@ -107,12 +123,12 @@ class FDM(Solution):
 
         # implementation 1:
         # problamatic in case initial pressure is set at boundaries.
-        # cell_b_p = self.model.pressures[self.model.tstep, cell_b_id]
+        # cell_b_p = self.pressures[self.tstep, cell_b_id]
         # if not np.isnan(cell_b_p):
         #     dz = self.model.grid.z[cell_b_id] - self.model.grid.z[cell_id]
         #     b_term = trans * 2 * ((cell_b_p - cell_p) - (self.model.fluid.g * dz))
         # else:
-        #     b_term = self.model.rates[self.model.tstep, cell_b_id]
+        #     b_term = self.rates[self.tstep, cell_b_id]
 
         # implementation 2:
         if cell_b_id in self.model.bdict:
@@ -189,7 +205,7 @@ class FDM(Solution):
         else:
             try:
                 return self.model.RHS[cell_id] * (
-                    cell_p - self.model.pressures[self.model.tstep, cell_id]
+                    cell_p - self.pressures[self.tstep, cell_id]
                 )
             except:
                 raise ValueError("Initial pressure (pi) must be specified")
@@ -225,12 +241,12 @@ class FDM(Solution):
         # - constant pressure:
         #     # exec(f"p{i}=sym.Symbol('p{i}')")
         #     # ToDo: keep pressure constant at specific cell (requires A adjust)
-        #     # if not np.isnan(self.model.pressures[self.model.tstep][i]):
-        #     #     exec(f"p{i} = {self.model.pressures[self.model.tstep][i]}")
+        #     # if not np.isnan(self.pressures[self.tstep][i]):
+        #     #     exec(f"p{i} = {self.pressures[self.tstep][i]}")
         # - n_term to use pressure values:
         #     # To Do: keep pressure constant at specific cell (requires A adjust)
-        #     # if not np.isnan(self.model.pressures[self.model.tstep][neighbor]):
-        #     #     exec(f"p{neighbor} = {self.model.pressures[self.model.tstep][neighbor]}")
+        #     # if not np.isnan(self.pressures[self.tstep][neighbor]):
+        #     #     exec(f"p{neighbor} = {self.pressures[self.tstep][neighbor]}")
         # - n_term in one calc.
         # exec(
         #     f"n_term = self.T[dir][min(neighbor,id)] * ((p{n_id} - p{id})
@@ -307,7 +323,9 @@ class FDM(Solution):
         cells_eq = {}
         n_threads = self.model.n // 2
         if threading:
+            from concurrent.futures import ThreadPoolExecutor
             with ThreadPoolExecutor(n_threads) as executor:
+                # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
                 equations = executor.map(self.get_cell_eq, self.model.grid.cells_id)
                 for id, eq in zip(self.model.grid.cells_id, equations):
@@ -374,10 +392,10 @@ class FDM(Solution):
         # - Update only required cells.
         self.cells_eq = self.get_cells_eq(threading)
 
-        if self.model.tstep == 0 or not hasattr(self, "A") or not hasattr(self, "d"):
+        if self.tstep == 0 or not hasattr(self, "A") or not hasattr(self, "d"):
             # second and third conditions allow switching vectorize
             # True/False after timestep=0.
-            if self.model.sparse:
+            if self.sparse:
                 self.d = ss.lil_matrix((self.model.n, 1), dtype=self.model.dtype)
                 self.A = ss.lil_matrix(
                     (self.model.n, self.model.n), dtype=self.model.dtype
@@ -387,7 +405,10 @@ class FDM(Solution):
                 self.A = np.zeros((self.model.n, self.model.n), dtype=self.model.dtype)
 
         if threading:
+            from concurrent.futures import ThreadPoolExecutor
+            
             with ThreadPoolExecutor(self.model.n) as executor:
+                # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices_symb, self.model.cells_id)
         else:
@@ -429,12 +450,12 @@ class FDM(Solution):
 
         # return self.A_
         # self.A_ = self.get_cells_T_array(False, True).toarray()
-        self.A_ = self.model.get_cells_trans(False, self.model.sparse, True)
+        self.A_ = self.model.get_cells_trans(False, self.sparse, True)
         v1 = -self.A_[self.model.cells_i, :].sum(axis=1).flatten()
         v2 = self.model.RHS[self.model.cells_id].flatten()
         v3 = v1 - v2
         self.A_[self.model.cells_i, self.model.cells_i] = v3
-        if self.model.sparse:
+        if self.sparse:
             self.A_ = ss.lil_matrix(self.A_, dtype=self.model.dtype)
         return self.A_
 
@@ -461,7 +482,7 @@ class FDM(Solution):
         Exception
             in case the initial reservoir pressure was not defined.
         """
-        if self.model.sparse:
+        if self.sparse:
             self.d_ = ss.lil_matrix((self.model.n, 1), dtype=self.model.dtype)
         else:
             self.d_ = np.zeros((self.model.n, 1), dtype=self.model.dtype)
@@ -470,7 +491,7 @@ class FDM(Solution):
             try:
                 self.d_[:] = (
                     -self.model.RHS[self.model.grid.cells_id]
-                    * self.model.pressures[self.model.tstep, self.model.grid.cells_id]
+                    * self.pressures[self.tstep, self.model.grid.cells_id]
                 ).reshape(-1, 1)
             except:
                 raise Exception("Initial pressure (pi) must be specified")
@@ -512,7 +533,7 @@ class FDM(Solution):
             _description_
         """
         update_z = False
-        if self.model.tstep == 0 or not hasattr(self, "A_"):
+        if self.tstep == 0 or not hasattr(self, "A_"):
             # second condition allow switching vectorize True/False after
             # timestep=0.
             self.resolve = defaultdict(lambda: False)
@@ -532,7 +553,7 @@ class FDM(Solution):
         for id in self.model.wells.keys():
             if self.model.wells[id]["constrain"] == "q":
                 w_term = self.__calc_w_term(
-                    id, self.model.pressures[self.model.tstep, id]
+                    id, self.pressures[self.tstep, id]
                 )
                 self.d_[self.model.cells_i_dict[id], 0] -= w_term
                 update_z = True
@@ -563,8 +584,8 @@ class FDM(Solution):
                 if self.model.bdict[id_b][0] == "pressure":
                     self.d_[self.model.cells_i_dict[id], 0] -= self.bdict_v[id_b][0]
                 else:  # elif self.model.bdict[id_b][0] in ["gradient", "rate"]:
-                    self.d_[self.model.cells_i_dict[id], 0] -= self.model.rates[
-                        self.model.tstep, id_b
+                    self.d_[self.model.cells_i_dict[id], 0] -= self.rates[
+                        self.tstep, id_b
                     ]
 
         if update_z:
@@ -584,17 +605,17 @@ class FDM(Solution):
         -----
         - well q calc:
             self.__calc_w_terms(
-                    id, self.model.pressures[self.model.tstep][id]
+                    id, self.pressures[self.tstep][id]
                 )
             or
             self.model.wells[id]["q"] = (
                 -self.model.wells[id]["G"]
                 / (self.model.fluid.B * self.model.fluid.mu)
-                * (self.model.pressures[self.model.tstep][id] - self.model.wells[id]["pwf"])
+                * (self.pressures[self.tstep][id] - self.model.wells[id]["pwf"])
             )
         - all calc original:
             if "q" in self.model.wells[id]:
-                self.model.wells[id]["pwf"] = self.model.pressures[self.model.tstep][id] + (
+                self.model.wells[id]["pwf"] = self.pressures[self.tstep][id] + (
                     self.model.wells[id]["q"]
                     * self.model.fluid.B
                     * self.model.fluid.mu
@@ -605,15 +626,15 @@ class FDM(Solution):
                 self.model.wells[id]["q"] = (
                     -self.model.wells[id]["G"]
                     / (self.model.fluid.B * self.model.fluid.mu)
-                    * (self.model.pressures[self.model.tstep][id] - self.model.wells[id]["pwf"])
+                    * (self.pressures[self.tstep][id] - self.model.wells[id]["pwf"])
                 )
-                self.model.rates[self.model.tstep][id] = self.model.wells[id]["q"]
+                self.rates[self.tstep][id] = self.model.wells[id]["q"]
         """
         resolve = False
         tstep_w_pressures = {}
         for id in self.model.wells.keys():
             if "q_sp" in self.model.wells[id]:
-                pwf_est = self.model.pressures[self.model.tstep, id] + (
+                pwf_est = self.pressures[self.tstep, id] + (
                     self.model.wells[id]["q_sp"]
                     * self.model.fluid.B
                     * self.model.fluid.mu
@@ -635,8 +656,8 @@ class FDM(Solution):
                 pwf_est = self.model.wells[id]["pwf_sp"]
 
             self.model.wells[id]["pwf"] = pwf_est
-            q_est = self.__calc_w_term(id, self.model.pressures[self.model.tstep, id])
-            self.model.wells[id]["q"] = self.model.rates[self.model.tstep, id] = q_est
+            q_est = self.__calc_w_term(id, self.pressures[self.tstep, id])
+            self.model.wells[id]["q"] = self.rates[self.tstep, id] = q_est
 
             if resolve:
                 return True
@@ -651,9 +672,9 @@ class FDM(Solution):
     def __update_boundaries(self):
         for id_b in self.model.bdict_update:
             ((id_n, T),) = self.model.get_cell_trans(id_b, None, False).items()
-            p_n = self.model.pressures[self.model.tstep, id_n]
+            p_n = self.pressures[self.tstep, id_n]
             b_terms = self.__calc_b_term(id_n, id_b, p_n, T)
-            self.model.rates[self.model.tstep, id_b] = b_terms
+            self.rates[self.tstep, id_b] = b_terms
 
     def __print_arrays(self, sparse):
         if sparse:
@@ -662,7 +683,7 @@ class FDM(Solution):
         else:
             A, d = self.A, self.d
             A_, d_ = self.A_, self.d_
-        print("step:", self.model.tstep)
+        print("step:", self.tstep)
         print(np.concatenate([A, A_, abs(A) - abs(A_)], axis=0))
         print(np.concatenate([d, d_, abs(d) - abs(d_)], axis=1))
         print()
@@ -706,63 +727,62 @@ class FDM(Solution):
 
         >>> pressures = np.dot(np.linalg.inv(A), d).flatten()
         """
-        # sparse = self.model.sparse
+        # sparse = self.sparse
         if print_arrays:
             A, d = self.get_matrices_symb(threading)  #  has to be first
             self.get_matrices_vect(threading)
-            print(f"self.A : {type(self.A)}")
-            print(f"self.d : {type(self.d)}")
-            print(f"self.A_: {type(self.A_)}")
-            print(f"self.d_: {type(self.d_)}")
-            self.__print_arrays(self.model.sparse)
+            self.__print_arrays(self.sparse)
         else:
             if vectorize:
                 A, d = self.get_matrices_vect(threading)
             else:
                 A, d = self.get_matrices_symb(threading)
 
-        if self.model.sparse:
-            A, d = A.tocsc(), d.todense()
+        if self.sparse:
+            A, d = A.tocsc(), d.toarray()
             if isolver:
                 solver = rf.solutions.numerical.solvers.get_isolver(isolver)
                 pressures, exit_code = solver(
                     A,
                     d,
                     atol=0,
-                    # x0=self.model.pressures[self.model.tstep, self.model.cells_id],
+                    # x0=self.pressures[self.tstep, self.model.cells_id],
                 )
                 assert exit_code == 0, "unsuccessful convergence"
             else:
                 pressures = ssl.spsolve(A, d, use_umfpack=True)
-            A = A.todense()
+            A = A.toarray()
         else:
             pressures = sl.solve(A, d).flatten()
 
         if update:
-            self.model.tstep += 1
-            self.model.pressures = np.vstack(
-                [self.model.pressures, self.model.pressures[-1]]
+            self.tstep += 1
+            self.pressures = np.vstack(
+                [self.pressures, self.pressures[-1]]
             )
-            self.model.pressures[self.model.tstep, self.model.grid.cells_id] = pressures
-            self.model.rates = np.vstack([self.model.rates, self.model.rates[-1]])
-            self.model.As = np.vstack([self.model.As, A.reshape(1, -1)])
-            self.model.ds = np.vstack([self.model.ds, d.reshape(1, -1)])
+            self.pressures[self.tstep, self.model.grid.cells_id] = pressures
+            self.rates = np.vstack([self.rates, self.rates[-1]])
+            # newtest
+            # self.model.As = np.vstack([self.model.As, A.reshape(1, -1)])
+            # self.model.ds = np.vstack([self.model.ds, d.reshape(1, -1)])
+            self.As = np.vstack([self.As, A.reshape(1, -1)])
+            self.ds = np.vstack([self.ds, d.reshape(1, -1)])
             self.__update_boundaries()
             resolve = self.__update_wells()
             if resolve:
-                self.model.rates = self.model.rates[: self.model.tstep]
-                self.model.pressures = self.model.pressures[: self.model.tstep]
-                self.model.tstep -= 1
+                self.rates = self.rates[: self.tstep]
+                self.pressures = self.pressures[: self.tstep]
+                self.tstep -= 1
                 self.solve(threading, vectorize, False, True, False)
                 if self.model.verbose:
-                    print(f"[info] Time step {self.model.tstep} was resolved.")
+                    print(f"[info] Time step {self.tstep} was resolved.")
 
             if check_MB:
                 self.check_MB()
 
         if self.model.verbose:
-            print("[info] Pressures:\n", self.model.pressures[self.model.tstep])
-            print("[info] rates:\n", self.model.rates[self.model.tstep])
+            print("[info] Pressures:\n", self.pressures[self.tstep])
+            print("[info] rates:\n", self.rates[self.tstep])
 
     def run(
         self,
@@ -799,7 +819,7 @@ class FDM(Solution):
         - SciPy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
         """
         start_time = time.time()
-        self.model.nsteps += nsteps
+        self.nsteps += nsteps
         self.run_ctime = 0
         if self.model.verbose:
             self.model.verbose = False
@@ -816,8 +836,8 @@ class FDM(Solution):
         )
 
         for step in pbar:
+            pbar.set_description(f"[step] {step}")
             self.solve(
-                # sparse,
                 threading,
                 vectorize,
                 check_MB,
@@ -825,16 +845,15 @@ class FDM(Solution):
                 print_arrays,
                 isolver,
             )
-            pbar.set_description(f"[step] {step}")
 
         self.run_ctime = round(time.time() - start_time, 2)
-        self.model.ctime += self.run_ctime
+        self.ctime += self.run_ctime
         print(
             f"[info] Simulation run of {nsteps} steps",
             f"finished in {self.run_ctime} seconds.",
         )
         if check_MB:
-            print(f"[info] Material Balance Error: {self.model.error}.")
+            print(f"[info] Material Balance Error: {self.error}.")
 
         if verbose_restore:
             self.model.verbose = True
@@ -854,45 +873,45 @@ class FDM(Solution):
             _description_
         """
         if verbose:
-            print(f"[info] Error in step {self.model.tstep}")
+            print(f"[info] Error in step {self.tstep}")
 
         if self.model.comp_type == "incompressible":
             # rates must add up to 0:
-            self.model.error = self.model.rates[self.model.tstep].sum()
+            self.error = self.rates[self.tstep].sum()
             if verbose:
-                print(f"[info]    - Error: {self.model.error}")
+                print(f"[info]    - Error: {self.error}")
         elif self.model.comp_type == "compressible":
             # error over a timestep:
-            self.model.error = (
+            self.error = (
                 self.model.RHS[self.model.grid.cells_id]
                 * (
-                    self.model.pressures[self.model.tstep, self.model.grid.cells_id]
-                    - self.model.pressures[
-                        self.model.tstep - 1, self.model.grid.cells_id
+                    self.pressures[self.tstep, self.model.grid.cells_id]
+                    - self.pressures[
+                        self.tstep - 1, self.model.grid.cells_id
                     ]
                 )
-            ).sum() / self.model.rates[self.model.tstep].sum()
+            ).sum() / self.rates[self.tstep].sum()
             # error from initial timestep to current timestep: (less accurate)
-            self.model.cumulative_error = (
+            self.cumulative_error = (
                 self.model.RHS[self.model.grid.cells_id]
                 * self.model.dt
                 * (
-                    self.model.pressures[self.model.tstep, self.model.grid.cells_id]
-                    - self.model.pressures[0, self.model.grid.cells_id]
+                    self.pressures[self.tstep, self.model.grid.cells_id]
+                    - self.pressures[0, self.model.grid.cells_id]
                 )
-            ).sum() / (self.model.dt * self.model.tstep * self.model.rates.sum())
-            self.model.error = abs(self.model.error - 1)
+            ).sum() / (self.model.dt * self.tstep * self.rates.sum())
+            self.error = abs(self.error - 1)
             if self.model.verbose:
-                print(f"[info]    - Incremental Error: {self.model.error}")
-                print(f"[info]    -  Cumulative Error: {self.model.cumulative_error}")
+                print(f"[info]    - Incremental Error: {self.error}")
+                print(f"[info]    -  Cumulative Error: {self.cumulative_error}")
                 print(
-                    f"[info]    -       Total Error: {self.model.error+self.model.cumulative_error}"
+                    f"[info]    -       Total Error: {self.error+self.cumulative_error}"
                 )
 
-        if abs(self.model.error) > error_threshold:
+        if abs(self.error) > error_threshold:
             warnings.warn("High material balance error.")
             print(
-                f"[warning] Material balance error ({self.model.error})",
-                f"in step {self.model.tstep}",
+                f"[warning] Material balance error ({self.error})",
+                f"in step {self.tstep}",
                 f"is higher than the allowed error ({error_threshold}).",
             )

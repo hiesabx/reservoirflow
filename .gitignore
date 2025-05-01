@@ -135,3 +135,4 @@ dmypy.json
 
 # Sphinx (Python Documentation)
 docs/source/api
+docs/source/user_guide/tutorials/grid_animated.gif

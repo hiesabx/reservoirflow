@@ -12,6 +12,8 @@ __all__ = [
     "timeit",
 ]
 
+import os
+import sys
 import cProfile
 import io
 import pstats
@@ -22,6 +24,13 @@ from functools import wraps
 import pandas as pd
 from line_profiler import LineProfiler
 
+
+def get_path():
+    try:
+        eval('__IPYTHON__')
+        return os.getcwd()
+    except NameError:
+        return sys.path[0]
 
 def cProfiler(sort_stats="tottime", print_output=True, save_output=False):
     """cProfile decorator.
@@ -68,7 +77,8 @@ def cProfiler(sort_stats="tottime", print_output=True, save_output=False):
                 print("\n\n", df)
             if save_output:
                 file_name = f"cProfiler_{func.__qualname__}.csv"
-                with open(file_name, mode="w") as f:
+                path = os.path.join(get_path(), file_name)
+                with open(path, mode="w") as f:
                     f.write("\n".join(result))
             return _func
 
@@ -116,7 +126,8 @@ def lProfiler(print_output=True, save_output=False):
                 ]
                 lines[0] = re.sub(", ", "; ", lines[0])
                 file_name = f"lProfiler_{func.__qualname__}.csv"
-                with open(file_name, mode="w") as f:
+                path = os.path.join(get_path(), file_name)
+                with open(path, mode="w") as f:
                     f.write(",".join(head) + "\n")
                     f.write("\n".join(lines))
 
@@ -129,16 +140,6 @@ def lProfiler(print_output=True, save_output=False):
 
 def profile(func):
     """line profiler decorator.
-
-    Parameters
-    ----------
-    func : _type_
-        _description_
-
-    Returns
-    -------
-    _type_
-        _description_
 
     Notes
     -----

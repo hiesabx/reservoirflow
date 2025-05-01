@@ -1,0 +1,513 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class Backend {
+            name
+            ones()*
+            transpose()*
+          }
+          class Base {
+            dtype : str
+            factors : dict
+            name : str
+            unit : str
+            units : dict
+            verbose : bool
+            report(prop: str, showindex: bool, ifmt: int)
+            set_units(unit: str)
+          }
+          class BlackOil {
+            As : ndarray
+            RHS : ndarray
+            alpha
+            bdict : dict
+            bdict_update : list
+            boundaries_id
+            cells_i
+            cells_i_dict : dict
+            cells_id
+            cells_terms : dict
+            ctime : int
+            ds
+            dt : int
+            fluid
+            grid
+            n
+            name : str
+            nsteps : int
+            pi
+            pressures
+            pressures_scaler
+            rates
+            rates_scaler
+            save_gif
+            scalers_dict : dict
+            set_transmissibility
+            show
+            space_scaler
+            sparse
+            start_date : date
+            time_scaler
+            transmissibility
+            tstep : int
+            w_pressures : defaultdict
+            wells : dict
+            allow_synonyms()
+            copy()
+            get_alpha()
+            get_cell_trans(cell_id, cell_coords, boundary: bool)
+            get_cells_trans(boundary: bool, sparse: bool, vectorize: bool)
+            get_cells_trans_diag(boundary: bool, diag_n)
+            get_centers(scale, boundary: bool)
+            get_df(columns: list, boundary: bool, units: bool, melt: bool, scale: bool, save: bool, drop_nan: bool, drop_zero: bool)
+            get_domain(scale, boundary)
+            get_shape(boundary: bool) tuple
+            get_time(scale)
+            plot(prop: str, id: int, tstep: int)
+            plot_grid(property: str, tstep: int)
+            set_all_boundaries(cond, v)
+            set_boundaries(bdict: dict)
+            set_boundary(cell_b_id: int, cond: str, v: float)
+            set_scalers(scalers_dict: dict)
+            set_well(well, cell_id, q, pwf, r, s)
+            update_scalers(boundary)
+          }
+          class Compiler {
+            method : str
+            model
+            stype : str
+          }
+          class Compositional {
+            name : str
+          }
+          class D1P1 {
+            name : str
+            run_ctime : int
+            calc_solution(N, scale, output_range, clean)
+            run(nsteps, threading, vectorize, check_MB, print_arrays, isolver)
+            solve()*
+          }
+          class D1P2 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D1P3 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D2P1 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D2P2 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D2P3 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D3P1 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D3P2 {
+            name : str
+            run()*
+            solve()*
+          }
+          class D3P3 {
+            name : str
+            run()*
+            solve()*
+          }
+          class DeepONet {
+            name : str
+            run()*
+            solve()*
+          }
+          class Directional {
+            name : str
+          }
+          class Dummy {
+            name : str
+            fit(v, axis)
+            fit_transform(v, axis)
+            inverse_transform(vbar)
+            set_output_range(output_range)
+            transform(v)
+          }
+          class FDM {
+            A : lil_matrix, ndarray
+            A_ : lil_matrix
+            bdict_v : dict
+            cells_eq : dict
+            d : lil_matrix, ndarray
+            d_ : lil_matrix, ndarray
+            name : str
+            resolve : defaultdict
+            run_ctime : int
+            check_MB(verbose, error_threshold)
+            get_cell_eq(cell_id)
+            get_cells_eq(threading)
+            get_matrices_symb(threading)
+            get_matrices_vect(threading)
+            run(nsteps, threading, vectorize, check_MB, print_arrays, isolver)
+            solve(threading, vectorize, check_MB, update, print_arrays, isolver)
+          }
+          class FEM {
+            name : str
+            run()*
+            solve()*
+          }
+          class FVM {
+            name : str
+            run()*
+            solve()*
+          }
+          class Fluid {
+            comp : float
+            comp_type : NoneType, str
+            compressibility
+            compressibility_type : NoneType, str
+            name : str
+            set_compressibility
+            allow_synonyms()
+            set_comp(comp: float)
+          }
+          class Grid {
+            A : dict
+            comp : float
+            comp_type : NoneType, str
+            compressibility
+            compressibility_type : NoneType, str
+            d : dict
+            k : dict
+            name : str
+            set_compressibility
+            unify
+            allow_synonyms()
+            set_comp(comp: float)
+          }
+          class IrregularCartesian {
+            name : str
+          }
+          class JAX {
+            name : str
+            ones()*
+            transpose()*
+          }
+          class MinMax {
+            Vmax
+            Vmin
+            name : str
+            vmax : NoneType
+            vmin : NoneType
+            fit(v, axis)
+            fit_transform(v, axis)
+            inverse_transform(vbar)
+            set_output_range(output_range: tuple)
+            transform(v)
+          }
+          class Model {
+            comp : float
+            comp_type : NoneType, str
+            compiler
+            compressibility
+            compressibility_type : NoneType, str
+            name : str
+            run
+            set_compressibility
+            solutions : dict
+            solve
+            allow_synonyms()
+            compile(stype: str, method: str)
+            run()
+            set_comp(comp: float)
+            solve()
+          }
+          class MultiCell {
+            name : str
+          }
+          class MultiPhase {
+            name : str
+          }
+          class NumPy {
+            name : str
+            ones()*
+            transpose()*
+          }
+          class PINN {
+            name : str
+            fit()*
+            run()*
+            solve()*
+          }
+          class PyTorch {
+            name : str
+            ones()*
+            transpose()*
+          }
+          class Radial {
+            name : str
+          }
+          class RegularCartesian {
+            Ax
+            Ay
+            Az
+            D
+            V
+            Vt
+            cells_d_ : list
+            cells_i : list, ndarray, set, tuple
+            cells_id
+            dimension
+            dx
+            dx_
+            dy
+            dy_
+            dz
+            dz_
+            fdir : str
+            flow_shape : tuple
+            fshape : tuple
+            get_dimension
+            get_flow_shape
+            is_anisotropic
+            is_heterogeneous
+            is_homogeneous
+            is_irregular
+            is_isotropic
+            is_regular
+            kx : NoneType
+            ky : NoneType
+            kz : NoneType
+            n : ndarray
+            n_max
+            name : str
+            nx
+            nx_b
+            ny
+            ny_b
+            nz
+            nz_b
+            ones : lil_matrix, ndarray
+            order
+            permeability : dict
+            permeability_x : NoneType
+            permeability_y : NoneType
+            permeability_z : NoneType
+            phi : NoneType
+            porosity : NoneType
+            set_properties
+            shape : tuple
+            show
+            tops : NoneType
+            z : NoneType
+            zeros : ndarray
+            allow_synonyms()
+            extract_boundaries(in_data, points, fmt)
+            get_D() int
+            get_Vt(boundary: bool, pyvista)
+            get_boundaries(by, fmt)
+            get_cell_A(dir, id, coords)
+            get_cell_Ax(id, coords)
+            get_cell_Ay(id, coords)
+            get_cell_Az(id, coords)
+            get_cell_G(id, coords, boundary: bool)
+            get_cell_V(id, coords)
+            get_cell_boundaries(id, coords, fmt)
+            get_cell_center(id, coords)
+            get_cell_coords(id, boundary: bool)
+            get_cell_d(dir, id, coords)
+            get_cell_dx(id, coords)
+            get_cell_dy(id, coords)
+            get_cell_dz(id, coords)
+            get_cell_icoords(coords)
+            get_cell_id(coords, boundary: bool)
+            get_cell_k(dir, id, coords)
+            get_cell_kx(id, coords)
+            get_cell_ky(id, coords)
+            get_cell_kz(id, coords)
+            get_cell_neighbors(id, coords, boundary: bool, fmt)
+            get_cells_A(dir, boundary: bool, fshape: bool)
+            get_cells_Ax(boundary: bool, fshape: bool)
+            get_cells_Ay(boundary: bool, fshape: bool)
+            get_cells_Az(boundary: bool, fshape: bool)
+            get_cells_G(boundary: bool, sparse: bool)
+            get_cells_G_diag_1(boundary: bool)
+            get_cells_G_diag_2(boundary: bool, diag_1)
+            get_cells_G_diag_3(boundary: bool, diag_2)
+            get_cells_V(boundary: bool, fshape: bool, pyvista)
+            get_cells_center(boundary: bool, fshape: bool, pyvista)
+            get_cells_coords(boundary: bool, fshape: bool, fmt)
+            get_cells_d(dir, boundary: bool, fshape: bool)
+            get_cells_dx(boundary: bool, fshape: bool)
+            get_cells_dy(boundary: bool, fshape: bool)
+            get_cells_dz(boundary: bool, fshape: bool)
+            get_cells_i(boundary: bool, fshape: bool, fmt)
+            get_cells_icoords(boundary: bool, fshape: bool, fmt)
+            get_cells_id(boundary: bool, fshape: bool, fmt)
+            get_cells_k(dir, boundary: bool, fshape: bool, fmt)
+            get_corners(boundary: bool)
+            get_fdir() str
+            get_fshape(boundary: bool, points)
+            get_n(boundary: bool) int
+            get_n_max(boundary: bool)
+            get_ones(boundary: bool, fshape: bool, sparse: bool)
+            get_order(type: str, boundary: bool, fshape: bool) np.ndarray
+            get_prop(name, boundary: bool, fshape: bool, fmt)
+            get_pyvista_grid(boundary: bool)
+            get_shape(boundary: bool) tuple
+            get_zeros(boundary: bool, fshape: bool, sparse: bool)
+            remove_boundaries(in_data, points, remove)
+            set_cell_value(array, value, id, coords)
+            set_prop(name, value, id, coords)
+            set_props(kx, ky, kz, phi, z, comp, id, coords)
+          }
+          class Scaler {
+            name : str
+            fit(v, axis: int)*
+            fit_transform(v, axis)*
+            inverse_transform(vbar)*
+            set_output_range(output_range: tuple)*
+            transform(v)*
+          }
+          class ScalerDC {
+            another_name : str
+            input_range : Optional[tuple]
+            name : str
+            output_range : tuple | None
+            fit(v, axis: int)*
+            fit_transform(v, axis)*
+            inverse_transform(vbar)*
+            set_output_range(output_range: tuple)*
+            transform(v)*
+          }
+          class SingleCell {
+            cell_id
+            constrain
+            name : str
+            q
+            r
+            radius
+            rate
+            s
+            set_properties
+            set_radius
+            set_rate
+            set_skin
+            skin
+            allow_synonyms()
+            set_cell_id(cell_id)
+            set_constrain(constrain)
+            set_props(cell_id, q, s, r, constrain)
+            set_q(q)
+            set_r(r)
+            set_s(s)
+          }
+          class SinglePhase {
+            B : float
+            FVF
+            density
+            formation_volume_factor
+            g
+            gravity
+            mu
+            name : str
+            rho : float
+            set_FVF
+            set_density
+            set_formation_volume_factor
+            set_properties
+            set_viscosity
+            viscosity
+            allow_synonyms()
+            set_B(B: float)
+            set_mu(mu)
+            set_props(mu: float, B: float, rho: float, comp: float)
+            set_rho(rho: float)
+          }
+          class Solution {
+            model
+            run()*
+            solve()*
+          }
+          class TensorFlow {
+            name : str
+            ones()*
+            transpose()*
+          }
+          class Thermal {
+            name : str
+          }
+          class ThreePhase {
+            name : str
+          }
+          class TwoPhase {
+            name : str
+          }
+          class Well {
+            name : str
+          }
+          JAX --|> Backend
+          NumPy --|> Backend
+          PyTorch --|> Backend
+          TensorFlow --|> Backend
+          Fluid --|> Base
+          MultiPhase --|> Fluid
+          SinglePhase --|> Fluid
+          ThreePhase --|> Fluid
+          TwoPhase --|> Fluid
+          Grid --|> Base
+          IrregularCartesian --|> Grid
+          Radial --|> Grid
+          RegularCartesian --|> Grid
+          BlackOil --|> Model
+          Compositional --|> Model
+          Model --|> Base
+          Thermal --|> Model
+          Dummy --|> Scaler
+          MinMax --|> Scaler
+          D1P1 --|> Solution
+          D1P2 --|> Solution
+          D1P3 --|> Solution
+          D2P1 --|> Solution
+          D2P2 --|> Solution
+          D2P3 --|> Solution
+          D3P1 --|> Solution
+          D3P2 --|> Solution
+          D3P3 --|> Solution
+          DeepONet --|> Solution
+          PINN --|> Solution
+          FDM --|> Solution
+          FEM --|> Solution
+          FVM --|> Solution
+          Directional --|> Well
+          MultiCell --|> Well
+          SingleCell --|> Well
+          Well --|> Base
+          Dummy --* BlackOil : time_scaler
+          Dummy --* BlackOil : space_scaler
+          Dummy --* BlackOil : pressures_scaler
+          Dummy --* BlackOil : rates_scaler
+          MinMax --* BlackOil : time_scaler
+          MinMax --* BlackOil : space_scaler
+          MinMax --* BlackOil : pressures_scaler
+          MinMax --* BlackOil : rates_scaler
+          Compiler --* Model : compiler
+          Fluid --o BlackOil : fluid
+          Grid --o BlackOil : grid
+  
+       </div>
+  </body>
+</html>

@@ -24,7 +24,6 @@ def get_isolver(name):
     Iterative solvers for linear systems in sparse matrices using SciPy.
     Available iterative solvers are:
 
-    .. highlight:: python
     .. code-block:: python
 
         isolvers = [

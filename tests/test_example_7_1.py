@@ -19,19 +19,19 @@ class TestApp(unittest.TestCase):
         # vectorize, sparse:
         model = create_model(sparse=True)
         model.solve(vectorize=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.pressures[1], p_desired, decimal=5)
         # vectorize, dense:
         model = create_model(sparse=False)
         model.solve(vectorize=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.pressures[1], p_desired, decimal=5)
         # symbolic, sparse:
         model = create_model(sparse=True)
         model.solve(vectorize=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.pressures[1], p_desired, decimal=5)
         # symbolic, dense:
         model = create_model(sparse=False)
         model.solve(vectorize=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.pressures[1], p_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.pressures[1], p_desired, decimal=5)
 
     def test_well(self):
         model = create_model(sparse=True)
@@ -48,19 +48,19 @@ class TestApp(unittest.TestCase):
         # vectorize, sparse:
         model = create_model(sparse=True)
         model.solve(vectorize=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.rates[1], rates_desired, decimal=5)
         # vectorize, dense:
         model = create_model(sparse=False)
         model.solve(vectorize=True, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.rates[1], rates_desired, decimal=5)
         # symbolic, sparse:
         model = create_model(sparse=True)
         model.solve(vectorize=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.rates[1], rates_desired, decimal=5)
         # symbolic, dense:
         model = create_model(sparse=False)
         model.solve(vectorize=False, update=True, check_MB=True)
-        np.testing.assert_almost_equal(model.rates[1], rates_desired, decimal=5)
+        np.testing.assert_almost_equal(model.solution.rates[1], rates_desired, decimal=5)
 
     def test_simulation_run(self):
         model = create_model(sparse=False)
@@ -90,7 +90,6 @@ def create_model(sparse):
         grid,
         fluid,
         dtype="double",
-        sparse=sparse,
         verbose=False,
     )
     model.set_well(
@@ -103,7 +102,7 @@ def create_model(sparse):
         {0: ("pressure", 4000), 5: ("rate", 0)},
     )
 
-    model.compile(stype="numerical", method="fdm", mode="v", solver="d")
+    model.compile(stype="numerical", method="fdm", sparse=sparse)
 
     return model
 

@@ -3,24 +3,16 @@ BlackOil
 ========
 """
 
-import time
 import warnings
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from datetime import date
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.linalg as sl
 import scipy.sparse as ss
-import scipy.sparse.linalg as ssl
-import sympy as sym
-from tqdm import tqdm
 
 import reservoirflow as rf
-
-# from reservoirflow import fluids, grids, scalers, utils, wells
 from reservoirflow.models.model import Model
 from reservoirflow.utils.helpers import _lru_cache
 
@@ -34,7 +26,7 @@ class BlackOil(Model):
         Model object.
     """
 
-    name = "BlackOil Model"
+    name = "BlackOil"
 
     def __init__(
         self,
@@ -44,20 +36,19 @@ class BlackOil(Model):
         pi: int = None,
         dt: int = 1,
         start_date: date = None,
-        dtype: str = "double",
         unit: str = "field",
-        sparse: bool = True,
+        dtype: str = "double",
         verbose: bool = False,
     ):
         """Create BlackOil Model.
 
         Parameters
         ----------
-        grid : rf.grids.Grid
+        grid : Grid
             Grid object.
-        fluid : rf.fluids.Fluid
+        fluid : Fluid
             Fluid object.
-        well : rf.wells.Well, optional
+        well : Well, optional
             Well object. Wells can be added latter using ``set_well()``
             method.
         pi : int, optional
@@ -67,15 +58,13 @@ class BlackOil(Model):
         start_date : date, optional
             Start date of the simulation run. If None, today's date is
             used.
-        dtype : str or `np.dtype`, optional
-            data type used in all arrays. Numpy dtype such as
-            `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
             unit used in input and output. Both `units` and `factors`
             attributes will be updated based on the selected `unit` and
             can be accessed directly from this class.
-        sparse : bool, optional
-            using sparse computing for a better performance.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
         verbose : bool, optional
             print information for debugging.
 
@@ -101,12 +90,13 @@ class BlackOil(Model):
         assert self.dtype == fluid.dtype, "fluid dtype is not compatible."
 
         self.cells_terms = {}
+        # newtest:
         self.dt = dt
-        self.nsteps = 1
-        self.tstep = 0
-        self.ctime = 0
+        # self.nsteps = 1
+        # self.tstep = 0
+        # self.ctime = 0
 
-        self.__initialize__(pi, start_date, well, sparse)
+        self.__initialize__(pi, start_date, well)
         self.__calc_comp()
         self.__calc_RHS()
         self.bdict = {}
@@ -116,13 +106,16 @@ class BlackOil(Model):
     # Basic:
     # -------------------------------------------------------------------------
 
-    def __initialize__(self, pi, start_date, well, sparse):
+    def __initialize__(self, pi, start_date, well):
         """Initialize reservoir pressures, rates, and wells.
 
         Parameters
         ----------
         pi : int, float
             initial reservoir pressure.
+        start_date : date, optional
+            Start date of the simulation run. If None, today's date is
+            used. 
         well : Well
             well class.
 
@@ -138,17 +131,23 @@ class BlackOil(Model):
             in the following steps as if this is a constant boundary
             cond which is misleading.
         """
-        ones = self.grid.get_ones(True, False, False)[np.newaxis]
-        self.pressures = ones * np.nan
-        self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
-        self.ds = self.grid.get_zeros(False, False, False)[np.newaxis]
-        n = self.grid.get_n(False)
-        self.As = np.zeros((1, n * n), dtype=self.dtype)
-        self.sparse = sparse
+        self.n = self.grid.get_n(False)
+        self.cells_i = self.grid.get_cells_i(False)
+        self.cells_id = self.grid.get_cells_id(False, False, "array")
+        self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
+        self.boundaries_id = self.grid.get_boundaries("id", "array")
+        
+        # newtest
+        # ones = self.grid.get_ones(True, False, False)[np.newaxis]
+        # self.pressures = ones * np.nan
+        # self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
+        self.init_pressures, self.init_rates = self.__get_arrays()
 
         self.pi = pi
         if pi is not None:
-            self.pressures[0, self.grid.cells_id] = pi
+            # newtest
+            # self.pressures[0, self.grid.cells_id] = pi
+            self.init_pressures[0, self.grid.cells_id] = pi
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
             print(f"[warning] Pi is by default set to {self.pi}.")
@@ -162,12 +161,6 @@ class BlackOil(Model):
         self.w_pressures = defaultdict(list)
         if well is not None:
             self.set_well(well)
-
-        self.n = self.grid.get_n(False)
-        self.cells_i = self.grid.get_cells_i(False)
-        self.cells_id = self.grid.get_cells_id(False, False, "array")
-        self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
-        self.boundaries_id = self.grid.get_boundaries("id", "array")
 
         self.scalers_dict = {
             "time": ["MinMaxScaler", (0, 1)],
@@ -197,7 +190,71 @@ class BlackOil(Model):
         tuple
             tuple as (number of time steps, number of girds)
         """
-        return (self.nsteps, self.grid.get_n(boundary))
+        assert self.solution is not None, "Model was not compiled."
+        return (self.solution.nsteps, self.grid.get_n(boundary))
+    
+    def __get_arrays(self) -> tuple:
+        ones = self.grid.get_ones(True, False, False)[np.newaxis]
+        pressures = ones * np.nan
+        rates = self.grid.get_zeros(True, False, False)[np.newaxis]
+        return pressures, rates
+    
+    def get_init_arrays(self) -> tuple:
+        """Initialization arrays.
+
+        Returns
+        -------
+        tuple
+            tuple as (pressures_array, rates_array)
+        """
+        return self.init_pressures.copy(), self.init_rates.copy()
+    
+    def __get_tstep(self):
+        if self.solution is None:
+            return 0
+        else:
+            return self.solution.tstep
+        
+    def __get_pressure(self, tstep, cell_id):
+        if tstep == 0:
+            return self.init_pressures[tstep, cell_id]                    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                return self.solution.pressures[:, cell_id]
+            else:
+                return self.solution.pressures[tstep, cell_id]
+        
+    def __set_pressure(self, tstep, cell_id, value):
+        if tstep == 0:
+            self.init_pressures[tstep, cell_id] = value    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                self.solution.pressures[:, cell_id] = value
+            else:
+                self.solution.pressures[tstep, cell_id] = value
+            
+    def __get_rate(self, tstep, cell_id):
+        if tstep == 0:
+            return self.init_rates[tstep, cell_id]                    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                return self.solution.rates[:, cell_id]
+            else:
+                return self.solution.rates[tstep, cell_id]
+        
+    def __set_rate(self, tstep, cell_id, value):
+        if tstep == 0:
+            self.init_rates[tstep, cell_id] = value    
+        else:
+            assert self.solution is not None, "Model was not compiled."
+            if tstep is None:
+                self.solution.rates[:, cell_id] = value
+            else:
+                self.solution.rates[tstep, cell_id] = value
+        
 
     def __calc_comp(self):
         """Calculates total compressibility."""
@@ -444,7 +501,9 @@ class BlackOil(Model):
                 self.wells[cell_id]["pwf_sp"] = pwf
                 if "q" not in self.wells[cell_id].keys():
                     self.wells[cell_id]["constrain"] = "pwf"
-                self.w_pressures[cell_id].append(self.pressures[self.tstep, cell_id])
+                # newtest
+                # self.w_pressures[cell_id].append(self.pressures[self.get_tstep(), cell_id])
+                self.w_pressures[cell_id].append(self.__get_pressure(self.__get_tstep(), cell_id))
             if "constrain" not in self.wells[cell_id].keys():
                 self.wells[cell_id]["constrain"] = None
             if r is not None:
@@ -457,7 +516,9 @@ class BlackOil(Model):
         if "pwf" not in self.wells[cell_id].keys():
             self.wells[cell_id]["pwf"] = 0
             self.wells[cell_id]["pwf_sp"] = 0
-            self.w_pressures[cell_id].append(self.pressures[self.tstep, cell_id])
+            # newtest
+            # self.w_pressures[cell_id].append(self.pressures[self.get_tstep(), cell_id])
+            self.w_pressures[cell_id].append(self.__get_pressure(self.__get_tstep(), cell_id))
 
         if self.verbose:
             print(f"[info] a well in cell {cell_id} was set.")
@@ -488,14 +549,20 @@ class BlackOil(Model):
         # - d is taken at x direction for gradient.
         cond = cond.lower()
         if cond in ["rate", "q"]:
-            self.rates[self.tstep, cell_b_id] = v
+            # newtest
+            # self.rates[self.get_tstep(), cell_b_id] = v
+            self.__set_rate(self.__get_tstep(), cell_b_id, v)
         elif cond in ["pressure", "press", "p"]:
-            self.pressures[self.tstep, cell_b_id] = v
+            # newtest
+            # self.pressures[self.get_tstep(), cell_b_id] = v
+            self.__set_pressure(self.__get_tstep(), cell_b_id, v)
         elif cond in ["gradient", "grad", "g"]:
             ((cell_id, T),) = self.get_cell_trans(cell_b_id, None, False).items()
             cell_n = self.grid.get_cell_neighbors(cell_b_id, None, False, "dict")
             dir = [dir for dir in cell_n if cell_id in cell_n[dir]][0]
-            self.rates[self.tstep, cell_b_id] = T * self.grid.d[dir][cell_id] * v
+            # newtest
+            # self.rates[self.get_tstep(), cell_b_id] = T * self.grid.d[dir][cell_id] * v
+            self.__set_rate(self.__get_tstep(), cell_b_id, T * self.grid.d[dir][cell_id] * v)
         else:
             raise ValueError(f"cond argument {cond} is unknown.")
 
@@ -541,16 +608,13 @@ class BlackOil(Model):
         for cell_id in boundaries:
             self.set_boundary(cell_id, cond, v)
 
-    # # -------------------------------------------------------------------------
-    # # Flow Equations: symbolic
-    # # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Flow Equations:
+    # -------------------------------------------------------------------------
 
     @_lru_cache(maxsize=1)
     def __calc_RHS(self):
         """Calculates flow equation for RHS."""
-        # ToDo
-        # ----
-        # - make sure RHS is suitable in case of floats.
         if self.comp_type == "incompressible":
             n = self.grid.get_n(True)
             self.RHS = np.zeros(n, dtype=self.dtype)
@@ -562,863 +626,19 @@ class BlackOil(Model):
             raise ValueError("compressibility type is unknown.")
         return self.RHS
 
-    # @_lru_cache(maxsize=None)
-    # def __calc_n_term(
-    #     self,
-    #     cell_id,
-    #     cell_n_id,
-    #     cell_p,
-    #     trans,
-    # ) -> float:
-    #     """Calculates neighbor flow term.
-
-    #     This function calculates the neighbor flow term between
-    #     a specific cell (cell_id) and its neighbor cell (cell_n_id).
-
-    #     Parameters
-    #     ----------
-    #     cell_id : int
-    #         cell id based on natural order as int.
-    #     cell_n_id : int
-    #         neighbor cell id based on natural order as int.
-    #     cell_p : Symbol
-    #         cell pressure at cell_id.
-    #     trans : float
-    #         transmissibility between cell_id and cell_b_id.
-
-    #     Returns
-    #     -------
-    #     float
-    #         neighbor flow term (n_term).
-    #     """
-    #     cell_n_p = eval(f"sym.Symbol('p{cell_n_id}')")
-    #     dz = self.grid.z[cell_n_id] - self.grid.z[cell_id]
-    #     return trans * ((cell_n_p - cell_p) - (self.fluid.g * dz))
-
-    # @_lru_cache(maxsize=None)
-    # def __calc_b_term(
-    #     self,
-    #     cell_id,
-    #     cell_b_id,
-    #     cell_p,
-    #     trans,
-    # ) -> float:
-    #     """Calculates boundary flow term.
-
-    #     This function calculates the boundary flow term between a
-    #     specific cell (cell_id) and its boundary cell (cell_b_id).
-
-    #     Parameters
-    #     ----------
-    #     cell_id : int
-    #         cell id based on natural order as int.
-    #     cell_b_id : int
-    #         boundary cell id based on natural order as int.
-    #     cell_p : Symbol
-    #         pressure symbol at cell id.
-    #     trans : float
-    #         transmissibility between cell_id and cell_b_id.
-
-    #     Returns
-    #     -------
-    #     float
-    #         boundary flow term (b_term).
-    #     """
-
-    #     # implementation 1:
-    #     # problamatic in case initial pressure is set at boundaries.
-    #     # cell_b_p = self.pressures[self.tstep, cell_b_id]
-    #     # if not np.isnan(cell_b_p):
-    #     #     dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
-    #     #     b_term = trans * 2 * ((cell_b_p - cell_p) - (self.fluid.g * dz))
-    #     # else:
-    #     #     b_term = self.rates[self.tstep, cell_b_id]
-
-    #     # implementation 2:
-    #     if cell_b_id in self.bdict:
-    #         cond, v = self.bdict[cell_b_id]
-    #         if cond.lower() in ["pressure", "press", "p"]:
-    #             dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
-    #             return trans * 2 * ((v - cell_p) - (self.fluid.g * dz))
-    #         else:  # elif cond in ["rate", "q", "gradient", "grad", "g"]:
-    #             return v
-    #     else:
-    #         return 0.0
-
-    # def __calc_w_term(
-    #     self,
-    #     cell_id,
-    #     cell_p,
-    # ) -> float:
-    #     """Calculates well flow term.
-
-    #     This function calculates the well flow term between a
-    #     specific cell (cell_id) and its well (if exists).
-
-    #     Parameters
-    #     ----------
-    #     cell_id : int
-    #         cell id based on natural order as int.
-    #     cell_p : Symbol or value
-    #         cell pressure symbol or value at cell id.
-
-    #     Returns
-    #     -------
-    #     float
-    #         well flow term (w_term).
-    #     """
-    #     if "q" in self.wells[cell_id] and self.wells[cell_id]["constrain"] == "q":
-    #         return self.wells[cell_id]["q"]
-    #     else:
-    #         return (
-    #             -self.wells[cell_id]["G"]
-    #             / (self.fluid.B * self.fluid.mu)
-    #             * (cell_p - self.wells[cell_id]["pwf"])
-    #         )
-
-    # def __calc_a_term(
-    #     self,
-    #     cell_id,
-    #     cell_p,
-    # ):
-    #     """Calculates accumulation term.
-
-    #     Parameters
-    #     ----------
-    #     cell_id : int
-    #         cell id based on natural order as int.
-
-    #     Returns
-    #     -------
-    #     float
-    #         accumulation term (a_term).
-
-    #     Raises
-    #     ------
-    #     ValueError
-    #         Initial pressure was not defined.
-    #     """
-    #     # ToDo
-    #     # ----
-    #     # - consider unifying RHS or if cond.
-    #     if self.comp_type == "incompressible":
-    #         return 0.0
-    #     else:
-    #         try:
-    #             return self.RHS[cell_id] * (
-    #                 cell_p - self.pressures[self.tstep, cell_id]
-    #             )
-    #         except:
-    #             raise ValueError("Initial pressure (pi) must be specified")
-
-    # def __simplify_eq(self, cell_eq):
-    #     if (
-    #         cell_eq.lhs.as_coefficients_dict()[1] != 0
-    #         or cell_eq.rhs.as_coefficients_dict()[1] != 0
-    #     ):
-    #         cell_eq = cell_eq.simplify()
-    #     return cell_eq
-
-    # def get_cell_eq(self, cell_id):
-    #     """Return cell equation.
-
-    #     Parameters
-    #     ----------
-    #     id : int, optional
-    #         cell id based on natural order as int.
-
-    #     Returns
-    #     -------
-    #     tuple
-    #         cell equation as a tuple of (lhs, rhs).
-
-    #     """
-    #     # ToDo
-    #     # ----
-    #     # - n_term naming.
-
-    #     # Backup
-    #     # ------
-    #     # - constant pressure:
-    #     #     # exec(f"p{i}=sym.Symbol('p{i}')")
-    #     #     # ToDo: keep pressure constant at specific cell (requires A adjust)
-    #     #     # if not np.isnan(self.pressures[self.tstep][i]):
-    #     #     #     exec(f"p{i} = {self.pressures[self.tstep][i]}")
-    #     # - n_term to use pressure values:
-    #     #     # To Do: keep pressure constant at specific cell (requires A adjust)
-    #     #     # if not np.isnan(self.pressures[self.tstep][neighbor]):
-    #     #     #     exec(f"p{neighbor} = {self.pressures[self.tstep][neighbor]}")
-    #     # - n_term in one calc.
-    #     # exec(
-    #     #     f"n_term = self.T[dir][min(neighbor,id)] * ((p{n_id} - p{id})
-    #     #     - (self.fluid.g * (self.grid.z[neighbor] - self.grid.z[id])))"
-    #     # )
-    #     cell_p = eval(f"sym.Symbol('p{cell_id}')")
-
-    #     if cell_id not in self.cells_terms:
-    #         assert (
-    #             cell_id in self.grid.cells_id
-    #         ), f"id is out of range {self.grid.cells_id}."
-    #         neighbors = self.grid.get_cell_neighbors(
-    #             id=cell_id, boundary=False, fmt="array"
-    #         )
-    #         boundaries = self.grid.get_cell_boundaries(id=cell_id, fmt="array")
-    #         # f_terms: flow terms, a_terms: accumulation terms
-    #         terms = {"f_terms": [], "a_term": 0}
-    #         T = self.get_cell_trans(cell_id, None, True)
-    #         if self.verbose:
-    #             print(f"[info] cell id: {cell_id}")
-    #             print(f"[info]    - Neighbors: {neighbors}")
-    #             print(f"[info]    - Boundaries: {boundaries}")
-
-    #         for id_n in neighbors:
-    #             n_term = self.__calc_n_term(cell_id, id_n, cell_p, T[id_n])
-    #             terms["f_terms"].append(n_term)
-    #             if self.verbose:
-    #                 print(f"[info] Neighbor terms: {n_term}")
-
-    #         for cell_b_id in boundaries:
-    #             b_term = self.__calc_b_term(cell_id, cell_b_id, cell_p, T[cell_b_id])
-    #             terms["f_terms"].append(b_term)
-    #             if self.verbose:
-    #                 print(f"[info] Boundary terms: {b_term}")
-
-    #         if cell_id in self.wells.keys():
-    #             w_term = self.__calc_w_term(cell_id, cell_p)
-    #             terms["f_terms"].append(w_term)
-    #             if self.verbose:
-    #                 print(f"[info] Well terms: {w_term}")
-
-    #         terms["a_term"] = self.__calc_a_term(cell_id, cell_p)
-    #         if self.verbose:
-    #             print("[info] Accumulation term:", terms["a_term"])
-
-    #         self.cells_terms[cell_id] = terms
-    #         if self.verbose:
-    #             print("[info] terms:", terms)
-
-    #     else:
-    #         terms = self.cells_terms[cell_id]
-    #         if (
-    #             cell_id in self.wells.keys()
-    #             and self.wells[cell_id]["constrain"] == "pwf"
-    #         ):
-    #             w_term = self.__calc_w_term(cell_id, cell_p)
-    #             if self.verbose:
-    #                 print(f"[info] Well terms (updated): {w_term}")
-    #             terms["f_terms"][-1] = w_term
-    #         if self.comp_type == "compressible":
-    #             terms["a_term"] = self.__calc_a_term(cell_id, cell_p)
-
-    #     cell_eq = sym.Eq(sum(terms["f_terms"]), terms["a_term"])
-    #     cell_eq = self.__simplify_eq(cell_eq)
-    #     cell_eq_lhs = cell_eq.lhs.as_coefficients_dict()
-
-    #     if self.verbose:
-    #         print(f"[info] Flow equation {cell_id}:", cell_eq)
-
-    #     return cell_eq_lhs, cell_eq.rhs
-
-    # def get_cells_eq(self, threading=False):
-    #     """Return flow equations for all internal cells."""
-    #     cells_eq = {}
-    #     n_threads = self.n // 2
-    #     if threading:
-    #         with ThreadPoolExecutor(n_threads) as executor:
-    #             # with ProcessPoolExecutor(2) as executor:
-    #             equations = executor.map(self.get_cell_eq, self.grid.cells_id)
-    #             for id, eq in zip(self.grid.cells_id, equations):
-    #                 cells_eq[id] = eq
-    #     else:
-    #         for id in self.grid.cells_id:
-    #             cells_eq[id] = self.get_cell_eq(id)
-    #             if self.verbose:
-    #                 print(f"[info] cell id: {id}")
-    #                 print(f"[info]      - lhs: {cells_eq[id][0]}")
-    #                 print(f"[info]      - rhs: {cells_eq[id][1]}")
-
-    #     return cells_eq
-
-    # # -------------------------------------------------------------------------
-    # # Matrices: symbolic
-    # # -------------------------------------------------------------------------
-
-    # def __update_matrices_symb(self, cell_id):
-    #     """Update flow equations' matrices (A, d).
-
-    #     Parameters
-    #     ----------
-    #     id : int
-    #         cell id based on natural order as int.
-
-    #     Notes
-    #     -----
-    #     - arrays for lhs and rhs:
-    #         self.d[i] = np.array(cell_rhs).astype(self.dtype)
-    #         self.A[i, ids] = np.array(list(cell_lhs.values())).astype(self.dtype)
-    #     - finding cell i:
-    #         ids = [self.cells_id.index(int(str(s)[1:])) for s in cell_lhs.keys()]
-    #     """
-    #     cell_lhs, cell_rhs = self.cells_eq[cell_id]
-    #     ids = [self.cells_i_dict[int(str(s)[1:])] for s in cell_lhs.keys()]
-    #     self.d[self.cells_i_dict[cell_id]] = cell_rhs
-    #     self.A[self.cells_i_dict[cell_id], ids] = list(cell_lhs.values())
-    #     if self.verbose:
-    #         print(f"[info] cell id: {cell_id}")
-    #         print(f"[info]      - ids: {ids}")
-    #         print(f"[info]      - lhs: {cell_lhs}")
-    #         print(f"[info]      - rhs: {cell_rhs}")
-
-    # def get_matrices_symb(self, threading=False):
-    #     """Initialize flow equations' matrices (A, d).
-
-    #     Parameters
-    #     ----------
-    #     sparse : bool, optional
-    #         use sparse matrices instead of dense matrices.
-    #     threading : bool, optional
-    #         use multiple threads for concurrence workers. The maximum
-    #         number of threads are set to the half number of cells.
-
-    #     Returns
-    #     -------
-    #     _type_
-    #         _description_
-
-    #     """
-    #     # ToDo
-    #     # ----
-    #     # - Update only required cells.
-    #     self.cells_eq = self.get_cells_eq(threading)
-
-    #     if self.tstep == 0 or not hasattr(self, "A") or not hasattr(self, "d"):
-    #         # second and third conditions allow switching vectorize
-    #         # True/False after timestep=0.
-    #         if self.sparse:
-    #             self.d = ss.lil_matrix((self.n, 1), dtype=self.dtype)
-    #             self.A = ss.lil_matrix((self.n, self.n), dtype=self.dtype)
-    #         else:
-    #             self.d = np.zeros((self.n, 1), dtype=self.dtype)
-    #             self.A = np.zeros((self.n, self.n), dtype=self.dtype)
-
-    #     if threading:
-    #         with ThreadPoolExecutor(self.n) as executor:
-    #             # with ProcessPoolExecutor(2) as executor:
-    #             executor.map(self.__update_matrices_symb, self.cells_id)
-    #     else:
-    #         for cell_id in self.cells_id:
-    #             self.__update_matrices_symb(cell_id)
-
-    #     if self.verbose:
-    #         print("[info] - A:\n", self.A)
-    #         print("[info] - d:\n", self.d)
-
-    #     return self.A, self.d
-
-    # # -------------------------------------------------------------------------
-    # # Matrices: vectorized
-    # # -------------------------------------------------------------------------
-
-    # def __init_A(self):
-    #     """Initialize ceofficient matrix (`A`).
-
-    #     For a system of linear equations `Au=d`, `A` is the
-    #     ceofficient matrix (known), `d` is the constant vector (known),
-    #     and `u` is the variable vector (unknown e.g., pressure).
-
-    #     This function initialize the ceofficient matrix (`A`) which is
-    #     needed only at initial timestep (i.e., `timestep=0`).
-
-    #     Returns
-    #     -------
-    #     ndarray
-    #         ceofficient A is initialized in place.
-    #     """
-    #     # T = self.get_cells_T_array(True).toarray()
-    #     # self.A_ = T[:, self.cells_id][self.cells_id]
-    #     # self.A_[self.cells_i, self.cells_i] = (
-    #     #     -self.A_[self.cells_i, :].sum(axis=1) - self.RHS[self.cells_id]
-    #     # )
-    #     # if sparse:
-    #     #     self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
-
-    #     # return self.A_
-    #     # self.A_ = self.get_cells_T_array(False, True).toarray()
-    #     self.A_ = self.get_cells_trans(False, self.sparse, True)
-    #     v1 = -self.A_[self.cells_i, :].sum(axis=1).flatten()
-    #     v2 = self.RHS[self.cells_id].flatten()
-    #     v3 = v1 - v2
-    #     self.A_[self.cells_i, self.cells_i] = v3
-    #     if self.sparse:
-    #         self.A_ = ss.lil_matrix(self.A_, dtype=self.dtype)
-    #     return self.A_
-
-    # def __init_d(self):
-    #     """Initialize constant vector (`d`).
-
-    #     For a system of linear equations `Au=d`, `A` is the
-    #     ceofficient matrix (known), `d` is the constant vector (known),
-    #     and `u` is the variable vector (unknown e.g., pressure).
-
-    #     This function initialize the constant vector (`d`) which is
-    #     needed at every timestep in case of a compressible system. In
-    #     case of an incompressible system, a constant zero vector is
-    #     used.
-
-    #     Returns
-    #     -------
-    #     ndarray
-    #         vector d is initialized in place and can be accessed by
-    #         `self.d_`.
-
-    #     Raises
-    #     ------
-    #     Exception
-    #         in case the initial reservoir pressure was not defined.
-    #     """
-    #     if self.sparse:
-    #         self.d_ = ss.lil_matrix((self.n, 1), dtype=self.dtype)
-    #     else:
-    #         self.d_ = np.zeros((self.n, 1), dtype=self.dtype)
-
-    #     if self.comp_type == "compressible":
-    #         try:
-    #             self.d_[:] = (
-    #                 -self.RHS[self.grid.cells_id]
-    #                 * self.pressures[self.tstep, self.grid.cells_id]
-    #             ).reshape(-1, 1)
-    #         except:
-    #             raise Exception("Initial pressure (pi) must be specified")
-
-    #     return self.d_
-
-    # def __update_z(self):
-    #     """_summary_"""
-    #     # ToDo
-    #     # ----
-    #     # - T for different geometries is still not ready.
-
-    #     # all 1D in x direction.
-    #     z = self.grid.z[self.grid.cells_id]
-    #     if not np.all(z == z[0]):
-    #         z_l = np.append(z[1:], np.nan)
-    #         z_u = np.append(np.nan, z[:-1])
-    #         dz_l = self.fluid.g * np.nan_to_num(z_l - z)
-    #         dz_u = self.fluid.g * np.nan_to_num(z_u - z)
-    #         # T = self.T["x"][self.grid.cells_id]
-    #         # T = np.diag(self.get_cells_T(True, False), 1)[self.cells_i]
-    #         T = self.get_cells_trans_diag(True, 1)[self.cells_id]
-    #         v = T * dz_l + T * dz_u
-    #         self.d_ += v.reshape(-1, 1)
-
-    # def get_matrices_vect(self, threading=False):
-    #     """_summary_
-
-    #     Parameters
-    #     ----------
-    #     sparse : bool, optional
-    #         _description_
-    #     threading : bool, optional
-    #         _description_
-
-    #     Returns
-    #     -------
-    #     _type_
-    #         _description_
-    #     """
-    #     update_z = False
-    #     if self.tstep == 0 or not hasattr(self, "A_"):
-    #         # second condition allow switching vectorize True/False after
-    #         # timestep=0.
-    #         self.resolve = defaultdict(lambda: False)
-    #         self.__init_A()
-    #         self.bdict_v = {}
-    #         for id_b in self.bdict_update:
-    #             ((id, T),) = self.get_cell_trans(id_b, None, False).items()
-    #             p = eval(f"sym.Symbol('p{id}')")
-    #             b_term = self.__calc_b_term(id, id_b, p, T)
-    #             v0, v1 = b_term.as_coefficients_dict().values()
-    #             self.bdict_v[id_b] = (v0, v1, id)
-    #             self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] += v1
-    #             # self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] -= T * 2
-
-    #     self.__init_d()
-
-    #     for id in self.wells.keys():
-    #         if self.wells[id]["constrain"] == "q":
-    #             w_term = self.__calc_w_term(id, self.pressures[self.tstep, id])
-    #             self.d_[self.cells_i_dict[id], 0] -= w_term
-    #             update_z = True
-    #         elif self.wells[id]["constrain"] == "pwf":
-    #             p = eval(f"sym.Symbol('p{id}')")
-    #             w_term = self.__calc_w_term(id, p)
-    #             v = w_term.as_coefficients_dict().values()
-    #             if len(v) == 1:
-    #                 ((v0),) = v
-    #                 v1 = 0
-    #             elif len(v) == 2:
-    #                 v0, v1 = v
-    #             else:
-    #                 raise ValueError("unknown length")
-    #             self.d_[self.cells_i_dict[id], 0] -= v0
-    #             if not self.resolve[id]:
-    #                 self.A_[self.cells_i_dict[id], self.cells_i_dict[id]] += v1
-    #                 self.resolve[id] = True
-    #         else:
-    #             pass  # no constrain
-
-    #     for id_b in self.bdict.keys():
-    #         id = self.grid.get_cell_neighbors(id_b, None, False, "list")
-    #         if len(id) > 0:
-    #             id = id[0]
-    #             if self.bdict[id_b][0] == "pressure":
-    #                 self.d_[self.cells_i_dict[id], 0] -= self.bdict_v[id_b][0]
-    #             else:  # elif self.bdict[id_b][0] in ["gradient", "rate"]:
-    #                 self.d_[self.cells_i_dict[id], 0] -= self.rates[self.tstep, id_b]
-
-    #     if update_z:
-    #         self.__update_z()
-
-    #     return self.A_, self.d_
-
-    # def get_d(self, sparse=False):
-    #     if self.comp_type == "incompressible":
-    #         self.d = ss.lil_matrix((self.n, 1), dtype=self.dtype)
-    #     else:
-    #         pressures = self.pressures[self.tstep, self.grid.cells_id]
-    #         RHS = self.RHS[self.grid.cells_id]
-    #         try:
-    #             self.d = ss.lil_matrix((-RHS * pressures).reshape(-1, 1))
-    #         except:
-    #             raise Exception("Initial pressure (pi) must be specified")
-
-    #     if not sparse:
-    #         self.d = self.d.toarray()
-
-    #     if self.verbose:
-    #         print("[info] - d:\n", self.d)
-
-    #     return self.d
-
-    # # -------------------------------------------------------------------------
-    # # Numerical Solution:
-    # # -------------------------------------------------------------------------
-
-    # def __update_wells(self):
-    #     """_summary_
-
-    #     Notes
-    #     -----
-    #     - well q calc:
-    #         self.__calc_w_terms(
-    #                 id, self.pressures[self.tstep][id]
-    #             )
-    #         or
-    #         self.wells[id]["q"] = (
-    #             -self.wells[id]["G"]
-    #             / (self.fluid.B * self.fluid.mu)
-    #             * (self.pressures[self.tstep][id] - self.wells[id]["pwf"])
-    #         )
-    #     - all calc original:
-    #         if "q" in self.wells[id]:
-    #             self.wells[id]["pwf"] = self.pressures[self.tstep][id] + (
-    #                 self.wells[id]["q"]
-    #                 * self.fluid.B
-    #                 * self.fluid.mu
-    #                 / self.wells[id]["G"]
-    #             )
-    #         self.w_pressures[id].append(self.wells[id]["pwf"])
-    #         if "pwf" in self.wells[id]:
-    #             self.wells[id]["q"] = (
-    #                 -self.wells[id]["G"]
-    #                 / (self.fluid.B * self.fluid.mu)
-    #                 * (self.pressures[self.tstep][id] - self.wells[id]["pwf"])
-    #             )
-    #             self.rates[self.tstep][id] = self.wells[id]["q"]
-    #     """
-    #     resolve = False
-    #     tstep_w_pressures = {}
-    #     for id in self.wells.keys():
-    #         if "q_sp" in self.wells[id]:
-    #             pwf_est = self.pressures[self.tstep, id] + (
-    #                 self.wells[id]["q_sp"]
-    #                 * self.fluid.B
-    #                 * self.fluid.mu
-    #                 / self.wells[id]["G"]
-    #             )
-    #         else:
-    #             pwf_est = self.wells[id]["pwf"]
-
-    #         if pwf_est > self.wells[id]["pwf_sp"]:
-    #             self.wells[id]["constrain"] = "q"
-    #         else:
-    #             if (
-    #                 pwf_est < self.wells[id]["pwf_sp"]
-    #                 and self.wells[id]["q"] == self.wells[id]["q_sp"]
-    #             ):
-    #                 resolve = True
-
-    #             self.wells[id]["constrain"] = "pwf"
-    #             pwf_est = self.wells[id]["pwf_sp"]
-
-    #         self.wells[id]["pwf"] = pwf_est
-    #         q_est = self.__calc_w_term(id, self.pressures[self.tstep, id])
-    #         self.wells[id]["q"] = self.rates[self.tstep, id] = q_est
-
-    #         if resolve:
-    #             return True
-    #         else:
-    #             tstep_w_pressures[id] = pwf_est
-
-    #     for id in self.wells.keys():
-    #         self.w_pressures[id].append(tstep_w_pressures[id])
-
-    #     return False
-
-    # def __update_boundaries(self):
-    #     for id_b in self.bdict_update:
-    #         ((id_n, T),) = self.get_cell_trans(id_b, None, False).items()
-    #         p_n = self.pressures[self.tstep, id_n]
-    #         b_terms = self.__calc_b_term(id_n, id_b, p_n, T)
-    #         self.rates[self.tstep, id_b] = b_terms
-
-    # def __print_arrays(self, sparse):
-    #     if sparse:
-    #         A, d = self.A.toarray(), self.d.toarray()
-    #         A_, d_ = self.A_.toarray(), self.d_.toarray()
-    #     else:
-    #         A, d = self.A, self.d
-    #         A_, d_ = self.A_, self.d_
-    #     print("step:", self.tstep)
-    #     print(np.concatenate([A, A_, abs(A) - abs(A_)], axis=0))
-    #     print(np.concatenate([d, d_, abs(d) - abs(d_)], axis=1))
-    #     print()
-
-    # def solve(
-    #     self,
-    #     threading=False,
-    #     vectorize=True,
-    #     check_MB=True,
-    #     update=True,
-    #     print_arrays=False,
-    #     isolver="cgs",
-    # ):
-    #     """Solve a single simulation tstep.
-
-    #     Parameters
-    #     ----------
-    #     threading : bool, optional
-    #         _description_
-    #     vectorize : bool, optional
-    #         _description_
-    #     check_MB : bool, optional
-    #         _description_
-    #     update : bool, optional
-    #         _description_
-    #     print_arrays : bool, optional
-    #         _description_
-    #     isolver : str, optional
-    #         iterative solver for sparse matrices. Available solvers are
-    #         `["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
-    #         "minres", "qmr", "gcrotmk", "tfqmr"]`.
-    #         If None, direct solver is used. Only relevant when argument
-    #         sparse=True. Option "cgs" is recommended to increase
-    #         performance while option "minres" is not recommended due to
-    #         high MB error.
-
-    #     Notes
-    #     -----
-    #     Direct solutions can also be obtained using matrix dot product
-    #     (usually slower) as following:
-
-    #     >>> pressures = np.dot(np.linalg.inv(A), d).flatten()
-    #     """
-    #     # sparse = self.sparse
-    #     if print_arrays:
-    #         A, d = self.get_matrices_symb(threading)  #  has to be first
-    #         self.get_matrices_vect(threading)
-    #         print(f"self.A : {type(self.A)}")
-    #         print(f"self.d : {type(self.d)}")
-    #         print(f"self.A_: {type(self.A_)}")
-    #         print(f"self.d_: {type(self.d_)}")
-    #         self.__print_arrays(self.sparse)
-    #     else:
-    #         if vectorize:
-    #             A, d = self.get_matrices_vect(threading)
-    #         else:
-    #             A, d = self.get_matrices_symb(threading)
-
-    #     if self.sparse:
-    #         A, d = A.tocsc(), d.todense()
-    #         if isolver:
-    #             solver = rf.utils.solvers.get_isolver(isolver)
-    #             pressures, exit_code = solver(
-    #                 A,
-    #                 d,
-    #                 atol=0,
-    #                 # x0=self.pressures[self.tstep, self.cells_id],
-    #             )
-    #             assert exit_code == 0, "unsuccessful convergence"
-    #         else:
-    #             pressures = ssl.spsolve(A, d, use_umfpack=True)
-    #         A = A.todense()
-    #     else:
-    #         pressures = sl.solve(A, d).flatten()
-
-    #     if update:
-    #         self.tstep += 1
-    #         self.pressures = np.vstack([self.pressures, self.pressures[-1]])
-    #         self.pressures[self.tstep, self.grid.cells_id] = pressures
-    #         self.rates = np.vstack([self.rates, self.rates[-1]])
-    #         self.As = np.vstack([self.As, A.reshape(1, -1)])
-    #         self.ds = np.vstack([self.ds, d.reshape(1, -1)])
-    #         self.__update_boundaries()
-    #         resolve = self.__update_wells()
-    #         if resolve:
-    #             self.rates = self.rates[: self.tstep]
-    #             self.pressures = self.pressures[: self.tstep]
-    #             self.tstep -= 1
-    #             self.solve(threading, vectorize, False, True, False)
-    #             if self.verbose:
-    #                 print(f"[info] Time step {self.tstep} was resolved.")
-
-    #         if check_MB:
-    #             self.check_MB()
-
-    #     if self.verbose:
-    #         print("[info] Pressures:\n", self.pressures[self.tstep])
-    #         print("[info] rates:\n", self.rates[self.tstep])
-
-    # def run(
-    #     self,
-    #     nsteps=10,
-    #     threading=True,
-    #     vectorize=True,
-    #     check_MB=True,
-    #     print_arrays=False,
-    #     isolver=None,
-    # ):
-    #     """Perform a simulation run for nsteps.
-
-    #     Parameters
-    #     ----------
-    #     nsteps : int, optional
-    #         _description_
-    #     threading : bool, optional
-    #         _description_
-    #     check_MB : bool, optional
-    #         _description_
-    #     isolver : str, optional
-    #         iterative solver for sparse matrices. Available solvers are
-    #         ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
-    #         "minres", "qmr", "gcrotmk", "tfqmr"].
-    #         If None, direct solver is used. Only relevant when argument
-    #         sparse=True. Direct solver is recommended for more accurate
-    #         calculations. To improve performance, "cgs" is recommended
-    #         to increase performance while option "minres" is not recommended due to
-    #         high MB error. For more information check [1][2].
-
-    #     References
-    #     ----------
-    #     - SciPy: `Solving Linear Problems <https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#solving-linear-problems>`_.
-    #     - SciPy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
-    #     """
-    #     start_time = time.time()
-    #     self.nsteps += nsteps
-    #     self.run_ctime = 0
-    #     if self.verbose:
-    #         self.verbose = False
-    #         verbose_restore = True
-    #     else:
-    #         verbose_restore = False
-    #     print(f"[info] Simulation run started: {nsteps} timesteps.")
-    #     pbar = tqdm(
-    #         range(1, nsteps + 1),
-    #         unit="steps",
-    #         colour="green",
-    #         position=0,
-    #         leave=True,
-    #     )
-
-    #     for step in pbar:
-    #         self.solve(
-    #             # sparse,
-    #             threading,
-    #             vectorize,
-    #             check_MB,
-    #             True,
-    #             print_arrays,
-    #             isolver,
-    #         )
-    #         pbar.set_description(f"[step] {step}")
-
-    #     self.run_ctime = round(time.time() - start_time, 2)
-    #     self.ctime += self.run_ctime
-    #     print(
-    #         f"[info] Simulation run of {nsteps} steps",
-    #         f"finished in {self.run_ctime} seconds.",
-    #     )
-    #     if check_MB:
-    #         print(f"[info] Material Balance Error: {self.error}.")
-
-    #     if verbose_restore:
-    #         self.verbose = True
-
-    # # -------------------------------------------------------------------------
-    # # Material Balance:
-    # # -------------------------------------------------------------------------
-
-    # def check_MB(self, verbose=False, error_threshold=0.1):
-    #     """Material Balance Check
-
-    #     Parameters
-    #     ----------
-    #     verbose : bool, optional
-    #         _description_
-    #     error_threshold : float, optional
-    #         _description_
-    #     """
-    #     if verbose:
-    #         print(f"[info] Error in step {self.tstep}")
-
-    #     if self.comp_type == "incompressible":
-    #         # rates must add up to 0:
-    #         self.error = self.rates[self.tstep].sum()
-    #         if verbose:
-    #             print(f"[info]    - Error: {self.error}")
-    #     elif self.comp_type == "compressible":
-    #         # error over a timestep:
-    #         self.error = (
-    #             self.RHS[self.grid.cells_id]
-    #             * (
-    #                 self.pressures[self.tstep, self.grid.cells_id]
-    #                 - self.pressures[self.tstep - 1, self.grid.cells_id]
-    #             )
-    #         ).sum() / self.rates[self.tstep].sum()
-    #         # error from initial timestep to current timestep: (less accurate)
-    #         self.cumulative_error = (
-    #             self.RHS[self.grid.cells_id]
-    #             * self.dt
-    #             * (
-    #                 self.pressures[self.tstep, self.grid.cells_id]
-    #                 - self.pressures[0, self.grid.cells_id]
-    #             )
-    #         ).sum() / (self.dt * self.tstep * self.rates.sum())
-    #         self.error = abs(self.error - 1)
-    #         if self.verbose:
-    #             print(f"[info]    - Incremental Error: {self.error}")
-    #             print(f"[info]    -  Cumulative Error: {self.cumulative_error}")
-    #             print(
-    #                 f"[info]    -       Total Error: {self.error+self.cumulative_error}"
-    #             )
-
-    #     if abs(self.error) > error_threshold:
-    #         warnings.warn("High material balance error.")
-    #         print(
-    #             f"[warning] Material balance error ({self.error})",
-    #             f"in step {self.tstep}",
-    #             f"is higher than the allowed error ({error_threshold}).",
-    #         )
+    @_lru_cache(maxsize=1)
+    def get_alpha(
+        self,
+    ):
+        lhs_f = (self.factors["transmissibility conversion"] * self.grid.kx) / (
+            self.fluid.mu * self.fluid.B
+        )
+        rhs_f = (self.grid.phi * self.comp) / (
+            self.factors["volume conversion"] * self.fluid.B
+        )
+        self.alpha = lhs_f / rhs_f
+
+        return self.alpha
 
     # -------------------------------------------------------------------------
     # Data:
@@ -1454,7 +674,7 @@ class BlackOil(Model):
             date_str = ""
         date_series = pd.date_range(
             start=self.start_date,
-            periods=self.tstep + 1,
+            periods=self.__get_tstep() + 1,
             freq=str(self.dt) + "D",
         ).strftime("%d.%m.%Y")
         data = pd.Series(date_series, name="Date" + date_str)
@@ -1472,7 +692,9 @@ class BlackOil(Model):
         else:
             rate_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        array = self.rates[:, cells_id]
+        # newtest
+        # array = self.rates[:, cells_id]
+        array = self.__get_rate(None, cells_id)
         if scale:
             array = self.rates_scaler.transform(array)
         if melt:
@@ -1492,7 +714,9 @@ class BlackOil(Model):
         else:
             press_str = ""
         cells_id = self.grid.get_cells_id(boundary, False, "array")
-        array = self.pressures[:, cells_id]
+        # newtest
+        # array = self.pressures[:, cells_id]
+        array = self.__get_pressure(None, cells_id)
         if scale:
             array = self.pressures_scaler.transform(array)
         if melt:
@@ -1512,7 +736,9 @@ class BlackOil(Model):
         else:
             rate_str = ""
         labels = [f"Qw{str(id)}" + rate_str for id in self.wells.keys()]
-        array = self.rates[:, list(self.wells.keys())]
+        # newtest
+        # array = self.rates[:, list(self.wells.keys())]
+        array = self.__get_rate(None, list(self.wells.keys()))
         if scale:
             array = self.rates_scaler.transform(array)
         data = pd.DataFrame(array, columns=labels)
@@ -1537,13 +763,13 @@ class BlackOil(Model):
     def __add_xyz(self, boundary, melt, scale, df=None):
         if melt:
             cells_center, fdir = self.get_centers(scale, boundary)
-            array = np.tile(cells_center.flatten(), self.nsteps).reshape(-1, len(fdir))
+            array = np.tile(cells_center.flatten(), self.solution.nsteps).reshape(-1, len(fdir))
             data = pd.DataFrame(array, columns=fdir)
             return self.__concat(data, df)
         return df
 
     def __get_time_vector(self):
-        return np.arange(0, (self.tstep + 1) * self.dt, self.dt)
+        return np.arange(0, (self.__get_tstep() + 1) * self.dt, self.dt)
 
     def __update_time_scaler(self):
         time = self.__get_time_vector()
@@ -1636,7 +862,6 @@ class BlackOil(Model):
         under ``scalers_dict``. By default the following settings are
         used:
 
-        .. highlight:: python
         .. code-block:: python
 
             scalers_dict = {
@@ -1676,7 +901,7 @@ class BlackOil(Model):
             "pressure": ["p", "pressures", "pressure", "all"],
             "rate": ["q", "rates", "rate", "all"],
         }
-        col_vals = sum(col_dict.values(), [])
+        # col_vals = sum(col_dict.values(), [])
 
         for column in scalers_dict.keys():
             scaler_type = scalers_dict[column][0]
@@ -1719,16 +944,18 @@ class BlackOil(Model):
         columns : list[str], optional
             selected columns to be added to the dataframe. The following
             options are available:
-            "time": for time steps as specified in dt.
-            "date": for dates as specified in dt and start_date.
-            "q", "rates": for all (cells and wells) rates.
-            "p", "pressures": for all (cells and wells) pressures.
-            "cells": for all cells rates and pressures.
-            "wells": for all wells rates and pressures.
-            "cells_rate": for all cells rates (including wells' cells).
-            "cells_pressure": for all cells pressures.
-            "wells_rate": for all wells rates.
-            "wells_pressure": for all wells pressures.
+            
+                - ``"time"``: for time steps as specified in dt.
+                - ``"date"``: for dates as specified in dt and start_date.
+                - ``"q"``, ``"rates"``: for all (cells and wells) rates.
+                - ``"p"``, ``"pressures"``: for all (cells and wells) pressures.
+                - ``"cells"``: for all cells rates and pressures.
+                - ``"wells"``: for all wells rates and pressures.
+                - ``"cells_rate"``: for all cells rates (including wells' cells).
+                - ``"cells_pressure"``: for all cells pressures.
+                - ``"wells_rate"``: for all wells rates.
+                - ``"wells_pressure"``: for all wells pressures.
+                
         boundary : bool, optional
             include boundary cells.
             It is only relevant when cells columns are selected.
@@ -1745,7 +972,6 @@ class BlackOil(Model):
             Current settings can be shown under scalers_dict.
             By default:
 
-            .. highlight:: python
             .. code-block:: python
 
                 scalers_dict = {
@@ -1788,8 +1014,8 @@ class BlackOil(Model):
         if melt:
             n_cells = self.grid.get_n(boundary)
             cells_id = self.grid.get_cells_id(boundary, False, "array")
-            df["id"] = np.tile(cells_id, self.nsteps)
-            df["Step"] = np.repeat(np.arange(self.nsteps), n_cells)
+            df["id"] = np.tile(cells_id, self.solution.nsteps)
+            df["Step"] = np.repeat(np.arange(self.solution.nsteps), n_cells)
             df = self.__add_xyz(boundary, melt, scale, df)
 
         for c in columns:
@@ -1850,7 +1076,7 @@ class BlackOil(Model):
             time step. If None, the last time step is selected.
         """
         if tstep is None:
-            tstep = self.tstep
+            tstep = self.__get_tstep()
 
         if id is not None:
             exec(f"plt.plot(self.{prop}[:, id].flatten())")
@@ -1869,7 +1095,7 @@ class BlackOil(Model):
 
     def plot_grid(self, property: str = "pressures", tstep: int = None):
         if tstep is None:
-            tstep = self.tstep
+            tstep = self.__get_tstep()
         cells_id = self.grid.get_cells_id(False, False, "list")
         exec(f"plt.imshow(self.{property}[tstep][cells_id][np.newaxis, :])")
         plt.colorbar(label=f"{property.capitalize()} ({self.units[property[:-1]]})")
@@ -1909,7 +1135,6 @@ class BlackOil(Model):
 
         This function maps functions as following:
 
-        .. highlight:: python
         .. code-block:: python
 
             self.set_transmissibility = self.set_trans
@@ -1936,7 +1161,7 @@ if __name__ == "__main__":
         model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
         return model
 
-    def create_model(sparse):
+    def create_model():
         grid = rf.grids.RegularCartesian(
             nx=10,
             ny=10,
@@ -1964,7 +1189,6 @@ if __name__ == "__main__":
             pi=6000,
             dt=5,
             start_date="10.10.2018",
-            sparse=sparse,
             dtype="double",
         )
 
@@ -1981,18 +1205,12 @@ if __name__ == "__main__":
 
     sparse = True
 
-    model = create_model(sparse)
-    model.run(10, vectorize=True, isolver="cgs")
+    model = create_model()
+    model.compile(stype="numerical", method="FDM", sparse=sparse)
+    model.run(nsteps=10, vectorize=True, isolver="cgs")
     model.show("pressures")
 
-    model = create_model(sparse)
-    model.run(10, vectorize=True, isolver=None)
+    model = create_model()
+    model.compile(stype="numerical", method="FDM", sparse=sparse)
+    model.run(nsteps=10, vectorize=True, isolver=None)
     model.show("pressures")
-
-    # model = create_model(sparse)
-    # model.run(10, vectorize=False, isolver="cgs")
-    # model.show("pressures")
-
-    # model = create_model(sparse)
-    # model.run(10, vectorize=False, isolver=None)
-    # model.show("pressures")

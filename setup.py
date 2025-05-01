@@ -1,5 +1,6 @@
 # usage  (fixed): pip install .
 # usage (listen): pip install --editable .
+# usage (listen): pip install --editable .
 # usage  (fixed ): python setup.py install
 # usage (listen): python setup.py develop
 import re
@@ -8,11 +9,11 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 this_directory = Path(__file__).parent
-readme = (this_directory / "README.md").read_text(encoding='utf8', errors='ignore')
-license = (this_directory / "LICENSE").read_text(encoding='utf8', errors='ignore')
+readme = (this_directory / "README.md").read_text(encoding="utf8", errors="ignore")
+license = (this_directory / "LICENSE").read_text(encoding="utf8", errors="ignore")
 
 
-with open("requirements.txt", encoding='utf8', errors='ignore') as f:
+with open("requirements.txt", encoding="utf8", errors="ignore") as f:
     requirements = f.read().splitlines()
     requirements = [r for r in requirements if r[:2] != "-e"]
 
@@ -22,11 +23,11 @@ with open("reservoirflow/__init__.py") as f:
 setup(
     name="reservoirflow",
     version=version,
-    author="Zakariya Abugrin",
-    author_email="zakariya.abugrin@gmail.com",
+    author="Hiesab",
+    author_email="contact@hiesab.com",
     maintainer="Zakariya Abugrin",
-    maintainer_email="zakariya.abugrin@gmail.com",
-    description="a Reservoir Simulation and Engineering Library in Python",
+    maintainer_email="zakariya.abugrin@hiesab.com",
+    description="Reservoir Simulation and Engineering Library in Python",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/zakgrin/reservoirflow",

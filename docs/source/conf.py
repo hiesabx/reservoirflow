@@ -1,4 +1,5 @@
 """conf file"""
+
 # import os
 # import sys
 from datetime import datetime
@@ -10,8 +11,9 @@ import reservoirflow as rf
 # sys.path.insert(0, os.path.abspath("../"))
 
 project = "ReservoirFlow"
-author = "Bayanatics"
-copyright = f"{datetime.now().year}, {author}"
+author = "Developed by Hiesab"
+disclaimer = "Third-party components are copyrighted by their respective authors"
+copyright = f"{datetime.now().year}, {author}. {disclaimer}"
 version = rf.__version__
 release = f"v{version}"
 master_doc = "index"
@@ -53,11 +55,13 @@ extensions = [
     "sphinx.ext.todo",  # allow .. todo:: directive.
     "myst_nb",  # read md and ipynb files or "myst_parser",  # read md files
     # "sphinx_gallery.gen_gallery",  # read py files as sphinx gallery
+    # Admonition: https://myst-parser.readthedocs.io/en/latest/syntax/admonitions.html
     "sphinx_comments",  # allow comments
     # "numpydoc",  # numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
     # "autodoc2",  # markdown in docstring: https://sphinx-autodoc2.readthedocs.io/en/latest/quickstart.html
     "sphinx_design",  # https://sphinx-design.readthedocs.io/en/latest/get_started.html
     "sphinxcontrib.bibtex",  # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html
+    "sphinx_copybutton",  # https://sphinx-copybutton.readthedocs.io/en/latest/
 ]
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -120,11 +124,17 @@ myst_enable_extensions = [
     "fieldlist",
 ]
 myst_footnote_transition = False  # solves the issue with references in nb.
+myst_highlight_code_blocks = False
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
-# nb_output_stderr = "remove"  # remove progress bar
+nb_output_stderr = "remove"  # 'remove' progress bar
 nb_merge_streams = True  # combine print output in one cell
 nb_execution_mode = "auto"
+nb_number_source_lines = True
+
+# copybutton
+copybutton_selector = ":not(.prompt) > div.highlight pre"
+copybutton_exclude = ".linenos, .gp, .go"
 
 # numpydoc: https://numpydoc.readthedocs.io/en/latest/install.html
 # numpydoc_use_plots = True
@@ -166,8 +176,18 @@ html_static_path = [
     "_static",
 ]
 html_css_files = [
-    "css/custom.css",
+    "custom.css",
 ]
+
+# bug in pydata theme: remove in future version starting at 0.15.4
+html_sidebars = {
+    "support_us": [],
+    "capabilities": [],
+    "about_us": [],
+    "release_notes/*": [],
+}
+pygments_style = "none"
+
 # announcement = """
 # Are you new to ReservoirFlow? Please find some time to read the first release note
 # (see <a href='/release_notes/release_note_v0.1.0.html'>Release Note v0.1.0</a>).
@@ -214,14 +234,20 @@ html_theme_options = {
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc"],
     # "announcement": announcement,
+    "pygments_light_style": "default",
+    "pygments_dark_style": "monokai",  # 'native'
+    "back_to_top_button": True,
+    # "primary_sidebar_end": ["sidebar-ads.html"],
 }
 
-# utteranc.es:
-comments_config = {
-    "utterances": {
-        "repo": "zakgrin/reservoirflow_utterances",
-    }
-}
+# comments_config = {
+#     # "utterances": {
+#     #     "repo": "zakgrin/reservoirflow_utterances",
+#     # },
+#     "giscus": {
+#         "repo": "zakgrin/reservoirflow_utterances",
+#     }
+# }
 
 
 # Units and Factors:

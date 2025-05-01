@@ -29,7 +29,7 @@ class TestApp(unittest.TestCase):
         )
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # vectorize, sparse:
         model = create_model(sparse=True)
         model.run(nsteps=27, vectorize=True, threading=True)
@@ -45,7 +45,7 @@ class TestApp(unittest.TestCase):
         )
         df.index = df.index.astype(int)
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # symbolic, dense:
         model = create_model(sparse=False)
         model.run(nsteps=27, vectorize=False, threading=True)
@@ -61,7 +61,7 @@ class TestApp(unittest.TestCase):
         )
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # symbolic, sparse:
         model = create_model(sparse=True)
         model.run(nsteps=27, vectorize=False, threading=True)
@@ -77,7 +77,7 @@ class TestApp(unittest.TestCase):
         )
         df.index = df.index.astype(int)
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.450062457943659e-11)
+        np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
 
     def test_trans(self):
         trans_desired = np.array(
@@ -139,10 +139,10 @@ def create_model(sparse):
         unify=False,
     )
     fluid = fluids.SinglePhase(mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double")
-    model = models.BlackOil(grid, fluid, pi=3000, dt=5, sparse=sparse, dtype="double")
+    model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
     model.set_well(cell_id=4, q=-400, pwf=1500, s=0, r=3)
     model.set_boundaries({0: ("rate", 0), 6: ("rate", 0)})
-    model.compile(stype="numerical", method="fdm", mode="v", solver="d")
+    model.compile(stype="numerical", method="fdm", sparse=sparse)
     return model
 
 

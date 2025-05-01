@@ -3,7 +3,7 @@ property                        abbreviation    symbol
 ==============================  ==============  ==================
 transmissibility                trans           :math:`\mathbb{T}`
 error                           err             :math:`e`
-pressure                        press           :math:`p`
+pressure                        press           :math:`P`
 potential                       poten           :math:`\Phi`
 time                            t               :math:`t`
 rate                            q               :math:`q`

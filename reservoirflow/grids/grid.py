@@ -31,18 +31,24 @@ class Grid(ABC, Base):
 
     name = "Grid"
 
-    def __init__(self, unit, dtype, verbose, unify):
+    def __init__(
+        self, 
+        unit,
+        dtype,
+        unify,
+        verbose,
+    ):
         """Construct grid object.
 
         Parameters
         ----------
-        dtype : str or `np.dtype`, optional
-            data type used in all arrays. Numpy dtype such as
-            `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
             unit used in input and output. Both `units` and `factors`
             attributes will be updated based on the selected `unit` and
             can be accessed directly from this class.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
         unify : bool, optional
             unify shape to be always tuple of 3 when set to True. When
             set to False, shape includes only the number of girds in
@@ -92,7 +98,6 @@ class Grid(ABC, Base):
 
         This function maps functions as following:
 
-        .. highlight:: python
         .. code-block:: python
 
             self.set_compressibility = self.set_comp

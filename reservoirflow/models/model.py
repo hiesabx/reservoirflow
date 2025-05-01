@@ -25,7 +25,12 @@ class Model(ABC, Base):
 
     name = "Model"
 
-    def __init__(self, unit, dtype, verbose):
+    def __init__(
+        self, 
+        unit,
+        dtype,
+        verbose,
+    ):
         """Construct model object.
 
         Parameters
@@ -41,6 +46,10 @@ class Model(ABC, Base):
             print information for debugging.
         """
         super().__init__(unit, dtype, verbose)
+        self.solution = None
+        self.solutions = {}
+        self.compiler = None
+        self.compilers = {}
 
     def set_comp(self, comp: float):
         """Set model compressibility
@@ -69,8 +78,7 @@ class Model(ABC, Base):
         self,
         stype: str,
         method: str,
-        mode: str,
-        solver: str,
+        sparse: bool=True,
     ):
         """Build a solution (equation system) for the model.
 
@@ -91,25 +99,43 @@ class Model(ABC, Base):
             solution type in ``['numerical', 'analytical', 'neurical']``.
         method : str
             solution method as following:
+            
             - 'numerical' methods: ``['FDM', 'FVM', 'FEM']``.
             - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
             - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
-        mode : str
-            solution mode in ``['vectorized', 'symbolized']``.
-        solver : str
-            solution solver in ``['direct', 'iterative', 'neurical']``.
+            
+        sparse : bool, optional, default: True
+            using sparse computing for a better performance.
+        
         """
-        self.compiler = Compiler(self, stype, method, mode, solver)
+        self.compiler = Compiler(self, stype, method, sparse)
+        self.solutions[str(self.compiler)] = self.solution
+        self.compilers[str(self.compiler)] = self.compiler
         self.solve = self.solution.solve
         self.run = self.solution.run
+        
+    
+    def set_solution(self, name):
+        if name in self.solutions:
+            self.solution = self.solutions[name]
+            self.compiler = self.compilers[name]
+            self.solve = self.solution.solve
+            self.run = self.solution.run
+        else:
+            raise ValueError("Solution method was not compiled.")
+        
+    def get_solutions(self):
+        return list(self.solutions.keys())
 
     def solve(self, **kwargs):
         """Solve a single timestep.
 
-        This method is not available until the model is compiled
-        using ``model.compile()``. Once the model is compiled, the
-        documentation of the assigned solution can be accessed using
-        one of the following methods:
+        .. attention::
+            This method is not available until the model is compiled
+            using ``model.compile()``.
+
+        Once the model is compiled, the documentation of the assigned
+        solution can be accessed using one of the following methods:
 
         >>> help(model.solve) # or help(model.solution.solve)
         >>> print(model.solve.__doc__) # or print(model.solution.solve.__doc__)
@@ -123,10 +149,12 @@ class Model(ABC, Base):
     def run(self, **kwargs):
         """Solve multiple timesteps.
 
-        This method is not available until the model is compiled
-        using ``model.compile()``. Once the model is compiled, the
-        documentation of the assigned solution can be accessed using
-        one of the following methods:
+        .. attention::
+            This method is not available until the model is compiled
+            using ``model.compile()``.
+
+        Once the model is compiled, the documentation of the assigned
+        solution can be accessed using one of the following methods:
 
         >>> help(model.run) # or help(model.solution.run)
         >>> print(model.run.__doc__) # or print(model.solution.run.__doc__)
@@ -142,7 +170,7 @@ class Model(ABC, Base):
 
         This function maps functions as following:
 
-        .. highlight:: python
+
         .. code-block:: python
 
             self.set_compressibility = self.set_comp

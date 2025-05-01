@@ -318,7 +318,6 @@ class Base:
         ifmt : int, by default 0
             integer format based on the following list:
 
-            .. highlight:: python
             .. code-block:: python
 
                 tablefmt = [

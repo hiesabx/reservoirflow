@@ -5,9 +5,10 @@ We are looking to collaborate with professional individuals.
 
 .. toctree::
     :maxdepth: 1
+    :caption: Collaborators
 
     icolab_0001/icolab_0001
 
 |
 
-.. include:: /_static/comments_section.rst
+.. include: /_static/comments_section.rst

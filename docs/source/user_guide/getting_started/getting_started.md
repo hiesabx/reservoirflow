@@ -4,8 +4,8 @@
 
 - Install `reservoirflow` directly from [PyPi](https://pypi.org/):
 
-    ```bash
-    pip install reservoirflow
+    ```console
+    $ pip install reservoirflow
     ```
 
     You need to install python. In addition, you may need to create a project directory with a dedicated virtual environment. If you are new to the python ecosystem, follow the steps below. Note that the steps below require command-line tool. You can execute these commands in IDE, `cmd`, or `bash` terminals.
@@ -16,46 +16,52 @@
 
 - Create a new folder:
 
-    ```bash
-    mkdir myrf
+    ```console
+    $ mkdir myrf
     ```
 
 - Navigate to the project folder:
 
-    ```bash
-    cd myrf
+    ```console
+    $ cd myrf
     ```
 
 - Setup a Python virtual environment:
 
-    ```bash
-    python -m venv .venv
+    ```console
+    $ python -m venv .venv
     ```
 
 - Activate your environment:
 
   - Windows:
 
-      ```bash
-      .venv/Scripts/Activate.bat
+      ```console
+      $ .venv/Scripts/Activate.bat
       ```
 
   - Linux or Mac:
 
-      ```bash
-      source .venv/bin/activate
+      ```console
+      $ source .venv/Scripts/Activate
       ```
 
 - Update `pip`:
 
-    ```bash
-    pip install --upgrade pip
+    ```console
+    $ pip install --upgrade pip
+    ```
+
+    or
+
+    ```console
+    $ python.exe -m pip install --upgrade pip
     ```
 
 - Setup the library:
 
-    ```bash
-    pip install reservoirflow
+    ```console
+    $ pip install reservoirflow
     ```
 
     This library will also install `numpy`, `pandas`, and `pyvista`.

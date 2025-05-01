@@ -15,7 +15,7 @@ class SinglePhase(Fluid):
         SinglePhase fluid object.
     """
 
-    name = "SinglePhase Fluid"
+    name = "SinglePhase"
 
     def __init__(
         self,
@@ -23,8 +23,8 @@ class SinglePhase(Fluid):
         B: float = None,
         rho: float = None,
         comp: float = None,
-        dtype="double",
         unit: str = "field",
+        dtype="double",
         verbose: bool = False,
     ):
         """Create SinglePhase Fluid.
@@ -39,13 +39,13 @@ class SinglePhase(Fluid):
             fluid density.
         comp : float, optional
             fluid compressibility.
-        dtype : str or `np.dtype`, optional
-            data type used in all arrays. Numpy dtype such as
-            `np.single` or `np.double` can be used.
         unit : str ('field', 'metric', 'lab'), optional
             unit used in input and output. Both `units` and `factors`
             attributes will be updated based on the selected `unit` and
             can be accessed directly from this class.
+        dtype : str or `np.dtype`, optional
+            data type used in all arrays. Numpy dtype such as
+            `np.single` or `np.double` can be used.
         verbose : bool, optional
             print information for debugging.
 
@@ -72,6 +72,19 @@ class SinglePhase(Fluid):
             ...         unit="field",
             ...         )
             >>> print(fluid)
+            
+        .. code-block:: python
+            :linenos:
+            
+            import reservoirflow as rf
+            fluid = rf.fluids.SinglePhase(
+                    mu=0.5,
+                    B=1,
+                    rho=50,
+                    comp=1e-5,
+                    unit="field",
+                    )
+            print(fluid)
         """
         super().__init__(unit, dtype, verbose)
         self.set_props(mu, B, rho, comp)
@@ -155,7 +168,6 @@ class SinglePhase(Fluid):
 
         This function maps functions as following:
 
-        .. highlight:: python
         .. code-block:: python
 
             self.set_viscosity = self.set_mu

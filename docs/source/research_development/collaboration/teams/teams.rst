@@ -1,13 +1,13 @@
-Universities 🎓
-===============
+Teams 👯
+=========
 
-We are looking to collaborate with universities.
+We are looking to collaborate with teams.
 
 .. toctree::
     :maxdepth: 1
     :caption: Collaborators
 
-    ucolab_0001/ucolab_0001
+    tcolab_0001/tcolab_0001
 
 |
 

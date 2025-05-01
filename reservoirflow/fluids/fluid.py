@@ -19,7 +19,12 @@ class Fluid(ABC, Base):
 
     name = "Fluid"
 
-    def __init__(self, unit, dtype, verbose):
+    def __init__(
+        self, 
+        unit,
+        dtype,
+        verbose,
+    ):
         """Construct fluid object.
 
         Parameters
@@ -67,7 +72,6 @@ class Fluid(ABC, Base):
 
         This function maps functions as following:
 
-        .. highlight:: python
         .. code-block:: python
 
             self.set_compressibility = self.set_comp

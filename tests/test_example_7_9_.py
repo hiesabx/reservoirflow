@@ -27,7 +27,7 @@ class TestApp(unittest.TestCase):
         )
         # df.to_csv("tests/test_example_7_9_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.error, 3.320340669077382e-10)
+        np.testing.assert_almost_equal(model.solution.error, 3.320340669077382e-10)
 
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
@@ -55,31 +55,31 @@ class TestApp(unittest.TestCase):
 
         model = create_model(sparse=False)
         model.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(1 - model.solution.error, error_desired, decimal=3)
         np.testing.assert_almost_equal(
-            model.cumulative_error, cumulative_error_desired, decimal=5
+            model.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
 
         model_sp = create_model(sparse=True)
         model_sp.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model_sp.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(1 - model_sp.solution.error, error_desired, decimal=3)
         np.testing.assert_almost_equal(
-            model_sp.cumulative_error, cumulative_error_desired, decimal=5
+            model_sp.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
 
         error_desired = 0.99891
         cumulative_error_desired = 0.499999
 
         model.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(1 - model.solution.error, error_desired, decimal=3)
         np.testing.assert_almost_equal(
-            model.cumulative_error, cumulative_error_desired, decimal=5
+            model.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
 
         model_sp.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model_sp.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(1 - model_sp.solution.error, error_desired, decimal=3)
         np.testing.assert_almost_equal(
-            model_sp.cumulative_error, cumulative_error_desired, decimal=5
+            model_sp.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
 
     def test_well(self):
@@ -112,11 +112,11 @@ def create_model(sparse):
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
     model = models.BlackOil(
-        grid, fluid, pi=4000, dt=1, dtype="double", sparse=sparse, verbose=False
+        grid, fluid, pi=4000, dt=1, dtype="double", verbose=False
     )
     model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-    model.compile(stype="numerical", method="fdm", mode="v", solver="d")
+    model.compile(stype="numerical", method="fdm", sparse=sparse)
     return model
 
 
