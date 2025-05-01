@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=60.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reservoirflow"
+dynamic = ["version"]
+version = "0.1.0"
+authors = [
+    {name = "Hiesab", email = "contact@hiesab.com"},
+    {name = "Zakariya Abugrin", email = "zakariya.abugrin@hiesab.com"},
+
+]
+maintainers = [
+    {name = "Zakariya Abugrin", email = "zakariya.abugrin@hiesab.com"},
+]
+description = "Reservoir Simulation and Engineering Library in Python"
+readme = "README.md"
+keywords = ["Petroleum", "Reservoir", "Simulation", "Scientific Computing"]
+license = { text = "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License" }
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Reservoir Engineers",
+    "Intended Audience :: Mathematicians",
+    "Intended Audience :: Physicists",
+    "Intended Audience :: Researchers",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # List your dependencies here, pulled from requirements.txt
+    # Example: "numpy >= 1.21.0",
+]
+
+[project.urls]
+Repository = "https://github.com/zakgrin/reservoirflow"
+Download = "https://github.com/zakgrin/reservoirflow.git"
+website = "https://www.hiesab.com/en/"
+
+[tool.setuptools]
+# Use setuptools configurations accordingly
+packages = ["reservoirflow"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { file = "reservoirflow/__init__.py", pattern = '^\s*__version__\s*=\s*"(.*)"'}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

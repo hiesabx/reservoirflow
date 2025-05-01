@@ -85,8 +85,8 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 | |**Version**  |**Status**         |**Release Date (dd.mm.yyyy)**  |
 |-|-            |-                  |-                              |
-|1|`v0.1.0`     |current version    |01.01.2024                     |
-|2|`v0.1.1`     |*under development*|*ongoing*                      |
+|1|`v0.1.0b1`     |current version    |01.05.2025                     |
+|2|`v0.1.0rc1`     |*under development*|*ongoing*                      |
 
 ## License
 
@@ -100,4 +100,4 @@ This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareA
 
 ## Contact
 
-You can contact us directly on the following email: <reservoirflow.contact@gmail.com>.
+Check our [website](https://www.hiesab.com/en/contact/).
