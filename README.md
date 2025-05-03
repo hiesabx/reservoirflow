@@ -79,7 +79,7 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 ## Version
 
-[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under active development, `major=0` is used until the first stable version is reached. The first version `v0.1.0` was released on January 1, 2024. The current version is `v0.1.0`. To know about which features are currently supported, check [Capabilities](capabilities.html).
+[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under active development, `major=0` is used until the first stable version is reached. The first version `v0.1.0b1` was released on May 1, 2025. The current version is `v0.1.0b1`. To know about which features are currently supported, check [Capabilities](capabilities.html).
 
 **Version History:**
 
