@@ -115,7 +115,7 @@ class BlackOil(Model):
             initial reservoir pressure.
         start_date : date, optional
             Start date of the simulation run. If None, today's date is
-            used. 
+            used.
         well : Well
             well class.
 
@@ -136,7 +136,7 @@ class BlackOil(Model):
         self.cells_id = self.grid.get_cells_id(False, False, "array")
         self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
         self.boundaries_id = self.grid.get_boundaries("id", "array")
-        
+
         # newtest
         # ones = self.grid.get_ones(True, False, False)[np.newaxis]
         # self.pressures = ones * np.nan
@@ -192,13 +192,13 @@ class BlackOil(Model):
         """
         assert self.solution is not None, "Model was not compiled."
         return (self.solution.nsteps, self.grid.get_n(boundary))
-    
+
     def __get_arrays(self) -> tuple:
         ones = self.grid.get_ones(True, False, False)[np.newaxis]
         pressures = ones * np.nan
         rates = self.grid.get_zeros(True, False, False)[np.newaxis]
         return pressures, rates
-    
+
     def get_init_arrays(self) -> tuple:
         """Initialization arrays.
 
@@ -208,53 +208,52 @@ class BlackOil(Model):
             tuple as (pressures_array, rates_array)
         """
         return self.init_pressures.copy(), self.init_rates.copy()
-    
+
     def __get_tstep(self):
         if self.solution is None:
             return 0
         else:
             return self.solution.tstep
-        
+
     def __get_pressure(self, tstep, cell_id):
         if tstep == 0:
-            return self.init_pressures[tstep, cell_id]                    
+            return self.init_pressures[tstep, cell_id]
         else:
             assert self.solution is not None, "Model was not compiled."
             if tstep is None:
                 return self.solution.pressures[:, cell_id]
             else:
                 return self.solution.pressures[tstep, cell_id]
-        
+
     def __set_pressure(self, tstep, cell_id, value):
         if tstep == 0:
-            self.init_pressures[tstep, cell_id] = value    
+            self.init_pressures[tstep, cell_id] = value
         else:
             assert self.solution is not None, "Model was not compiled."
             if tstep is None:
                 self.solution.pressures[:, cell_id] = value
             else:
                 self.solution.pressures[tstep, cell_id] = value
-            
+
     def __get_rate(self, tstep, cell_id):
         if tstep == 0:
-            return self.init_rates[tstep, cell_id]                    
+            return self.init_rates[tstep, cell_id]
         else:
             assert self.solution is not None, "Model was not compiled."
             if tstep is None:
                 return self.solution.rates[:, cell_id]
             else:
                 return self.solution.rates[tstep, cell_id]
-        
+
     def __set_rate(self, tstep, cell_id, value):
         if tstep == 0:
-            self.init_rates[tstep, cell_id] = value    
+            self.init_rates[tstep, cell_id] = value
         else:
             assert self.solution is not None, "Model was not compiled."
             if tstep is None:
                 self.solution.rates[:, cell_id] = value
             else:
                 self.solution.rates[tstep, cell_id] = value
-        
 
     def __calc_comp(self):
         """Calculates total compressibility."""
@@ -503,7 +502,9 @@ class BlackOil(Model):
                     self.wells[cell_id]["constrain"] = "pwf"
                 # newtest
                 # self.w_pressures[cell_id].append(self.pressures[self.get_tstep(), cell_id])
-                self.w_pressures[cell_id].append(self.__get_pressure(self.__get_tstep(), cell_id))
+                self.w_pressures[cell_id].append(
+                    self.__get_pressure(self.__get_tstep(), cell_id)
+                )
             if "constrain" not in self.wells[cell_id].keys():
                 self.wells[cell_id]["constrain"] = None
             if r is not None:
@@ -518,7 +519,9 @@ class BlackOil(Model):
             self.wells[cell_id]["pwf_sp"] = 0
             # newtest
             # self.w_pressures[cell_id].append(self.pressures[self.get_tstep(), cell_id])
-            self.w_pressures[cell_id].append(self.__get_pressure(self.__get_tstep(), cell_id))
+            self.w_pressures[cell_id].append(
+                self.__get_pressure(self.__get_tstep(), cell_id)
+            )
 
         if self.verbose:
             print(f"[info] a well in cell {cell_id} was set.")
@@ -562,7 +565,9 @@ class BlackOil(Model):
             dir = [dir for dir in cell_n if cell_id in cell_n[dir]][0]
             # newtest
             # self.rates[self.get_tstep(), cell_b_id] = T * self.grid.d[dir][cell_id] * v
-            self.__set_rate(self.__get_tstep(), cell_b_id, T * self.grid.d[dir][cell_id] * v)
+            self.__set_rate(
+                self.__get_tstep(), cell_b_id, T * self.grid.d[dir][cell_id] * v
+            )
         else:
             raise ValueError(f"cond argument {cond} is unknown.")
 
@@ -664,7 +669,7 @@ class BlackOil(Model):
         if melt:
             n_cells = self.grid.get_n(boundary)
             time = np.repeat(time, n_cells)
-        data = pd.Series(time, name="Time" + time_str)
+        data = pd.Series(time, name="Time" + time_str, dtype="int32")
         return self.__concat(data, df)
 
     def __add_date(self, units, melt, boundary, df=None):
@@ -763,7 +768,9 @@ class BlackOil(Model):
     def __add_xyz(self, boundary, melt, scale, df=None):
         if melt:
             cells_center, fdir = self.get_centers(scale, boundary)
-            array = np.tile(cells_center.flatten(), self.solution.nsteps).reshape(-1, len(fdir))
+            array = np.tile(cells_center.flatten(), self.solution.nsteps).reshape(
+                -1, len(fdir)
+            )
             data = pd.DataFrame(array, columns=fdir)
             return self.__concat(data, df)
         return df
@@ -944,7 +951,7 @@ class BlackOil(Model):
         columns : list[str], optional
             selected columns to be added to the dataframe. The following
             options are available:
-            
+
                 - ``"time"``: for time steps as specified in dt.
                 - ``"date"``: for dates as specified in dt and start_date.
                 - ``"q"``, ``"rates"``: for all (cells and wells) rates.
@@ -955,7 +962,7 @@ class BlackOil(Model):
                 - ``"cells_pressure"``: for all cells pressures.
                 - ``"wells_rate"``: for all wells rates.
                 - ``"wells_pressure"``: for all wells pressures.
-                
+
         boundary : bool, optional
             include boundary cells.
             It is only relevant when cells columns are selected.
@@ -1044,7 +1051,7 @@ class BlackOil(Model):
             if drop_zero:
                 df = df.loc[:, (df != 0).any(axis=0)]
             df.index.name = "Step"
-        df.index = df.index.astype(int, copy=False)
+        df.index = df.index.astype("int32", copy=False)
 
         if save:
             df.to_csv("model_data.csv")

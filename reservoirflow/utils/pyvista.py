@@ -2,9 +2,9 @@
 pyvista
 =======
 
-This module is used to provide 3D shows for ``grids`` and ``models`` 
-modules using `Pyvista <https://docs.pyvista.org/version/stable/>`_. 
-These functions are used as class methods to provide direct 
+This module is used to provide 3D shows for ``grids`` and ``models``
+modules using `Pyvista <https://docs.pyvista.org/version/stable/>`_.
+These functions are used as class methods to provide direct
 accessibility to 3D visualizations using ``show()`` method.
 """
 

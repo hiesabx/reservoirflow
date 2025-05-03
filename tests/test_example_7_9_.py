@@ -55,14 +55,18 @@ class TestApp(unittest.TestCase):
 
         model = create_model(sparse=False)
         model.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model.solution.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(
+            1 - model.solution.error, error_desired, decimal=3
+        )
         np.testing.assert_almost_equal(
             model.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
 
         model_sp = create_model(sparse=True)
         model_sp.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model_sp.solution.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(
+            1 - model_sp.solution.error, error_desired, decimal=3
+        )
         np.testing.assert_almost_equal(
             model_sp.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
@@ -71,13 +75,17 @@ class TestApp(unittest.TestCase):
         cumulative_error_desired = 0.499999
 
         model.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model.solution.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(
+            1 - model.solution.error, error_desired, decimal=3
+        )
         np.testing.assert_almost_equal(
             model.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
 
         model_sp.solve(update=True, check_MB=True)
-        np.testing.assert_almost_equal(1 - model_sp.solution.error, error_desired, decimal=3)
+        np.testing.assert_almost_equal(
+            1 - model_sp.solution.error, error_desired, decimal=3
+        )
         np.testing.assert_almost_equal(
             model_sp.solution.cumulative_error, cumulative_error_desired, decimal=5
         )
@@ -111,9 +119,7 @@ def create_model(sparse):
         dtype="double",
     )
     fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = models.BlackOil(
-        grid, fluid, pi=4000, dt=1, dtype="double", verbose=False
-    )
+    model = models.BlackOil(grid, fluid, pi=4000, dt=1, dtype="double", verbose=False)
     model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     model.compile(stype="numerical", method="fdm", sparse=sparse)

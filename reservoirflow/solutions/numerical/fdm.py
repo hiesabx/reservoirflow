@@ -4,6 +4,7 @@ FDM
 
 Finite Difference Method (FDM) class.
 """
+
 import time
 import warnings
 from collections import defaultdict
@@ -33,11 +34,11 @@ class FDM(Solution):
     """
 
     name = "FDM"
-    
+
     def __init__(
         self,
-        model,#: rf.models.Model,
-        sparse: bool=True,
+        model,  #: rf.models.Model,
+        sparse: bool = True,
     ):
         """Create Finite-Difference-Method Solution.
 
@@ -52,7 +53,6 @@ class FDM(Solution):
         # newtest
         self.ds = self.model.grid.get_zeros(False, False, False)[np.newaxis]
         self.As = np.zeros((1, self.model.n * self.model.n), dtype=self.model.dtype)
-
 
     # -------------------------------------------------------------------------
     # Flow Equations: symbolic
@@ -212,8 +212,8 @@ class FDM(Solution):
 
     def __simplify_eq(self, cell_eq):
         if (
-            cell_eq.lhs.as_coefficients_dict()[1] != 0
-            or cell_eq.rhs.as_coefficients_dict()[1] != 0
+            cell_eq.lhs.as_coefficients_dict()[1] != 0.0
+            or cell_eq.rhs.as_coefficients_dict()[1] != 0.0
         ):
             cell_eq = cell_eq.simplify()
         return cell_eq
@@ -324,6 +324,7 @@ class FDM(Solution):
         n_threads = self.model.n // 2
         if threading:
             from concurrent.futures import ThreadPoolExecutor
+
             with ThreadPoolExecutor(n_threads) as executor:
                 # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
@@ -406,7 +407,7 @@ class FDM(Solution):
 
         if threading:
             from concurrent.futures import ThreadPoolExecutor
-            
+
             with ThreadPoolExecutor(self.model.n) as executor:
                 # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
@@ -552,9 +553,7 @@ class FDM(Solution):
 
         for id in self.model.wells.keys():
             if self.model.wells[id]["constrain"] == "q":
-                w_term = self.__calc_w_term(
-                    id, self.pressures[self.tstep, id]
-                )
+                w_term = self.__calc_w_term(id, self.pressures[self.tstep, id])
                 self.d_[self.model.cells_i_dict[id], 0] -= w_term
                 update_z = True
             elif self.model.wells[id]["constrain"] == "pwf":
@@ -757,9 +756,7 @@ class FDM(Solution):
 
         if update:
             self.tstep += 1
-            self.pressures = np.vstack(
-                [self.pressures, self.pressures[-1]]
-            )
+            self.pressures = np.vstack([self.pressures, self.pressures[-1]])
             self.pressures[self.tstep, self.model.grid.cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
             # newtest
@@ -886,9 +883,7 @@ class FDM(Solution):
                 self.model.RHS[self.model.grid.cells_id]
                 * (
                     self.pressures[self.tstep, self.model.grid.cells_id]
-                    - self.pressures[
-                        self.tstep - 1, self.model.grid.cells_id
-                    ]
+                    - self.pressures[self.tstep - 1, self.model.grid.cells_id]
                 )
             ).sum() / self.rates[self.tstep].sum()
             # error from initial timestep to current timestep: (less accurate)

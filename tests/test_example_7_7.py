@@ -13,8 +13,7 @@ class TestApp(unittest.TestCase):
             index_col=0,
             dtype={"Step": "int32", "Time [days]": "int32"},
         )
-        df_desired.index = df_desired.index.astype(int)
-
+        # df_desired.index = df_desired.index.astype("int32")
         model = create_model(sparse=True)
         model.solve(threading=True, vectorize=True)
         df = model.get_df(
@@ -27,7 +26,6 @@ class TestApp(unittest.TestCase):
             drop_nan=False,
             drop_zero=False,
         )
-        df.index = df.index.astype(int)
         # df.to_csv("tests/test_example_7_7_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.solution.error, 3.320340669077382e-10)
