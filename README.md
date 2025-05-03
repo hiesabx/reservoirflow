@@ -59,7 +59,7 @@ An open-source reservoir simulation and engineering library within the Python ec
 
 ## Installation
 
-Install `reservoirflow` directly from [PyPi](https://pypi.org/):
+Install `reservoirflow` directly from [PyPi](https://pypi.org/project/reservoirflow/):
 
 ```console
 $ pip install reservoirflow
