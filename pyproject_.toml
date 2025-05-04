@@ -39,8 +39,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/zakgrin/reservoirflow"
-Download = "https://github.com/zakgrin/reservoirflow.git"
+Repository = "https://github.com/hiesabx/reservoirflow"
+Download = "https://github.com/hiesabx/reservoirflow.git"
 website = "https://www.hiesab.com/en/"
 
 [tool.setuptools]

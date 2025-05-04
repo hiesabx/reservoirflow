@@ -53,7 +53,7 @@ Our Philosophy is to try to attack the same problem from multiple angles by comb
 
 Team
 ----
-- `Zakariya Abugrin <https://github.com/zakgrin>`_, Author of *ReservoirFlow*, Founder and CEO of *Hiesab*
+- `Zakariya Abugrin <https://github.com/zakgrin>`_, Author of *ReservoirFlow*
     roles: Mathephysineer: researcher, scientist, mathematician, physicist, developer, and engineer.
 
 .. note::

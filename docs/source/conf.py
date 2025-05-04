@@ -200,13 +200,13 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/zakgrin/reservoirflow",
+            "url": "https://github.com/hiesabx/reservoirflow",
             "icon": "fab fa-github",
             "type": "fontawesome",
         },
         {
             "name": "LinkedIn",
-            "url": "https://www.linkedin.com/in/zakariya-abugrin/",
+            "url": "https://www.linkedin.com/company/hiesab/",
             "icon": "fab fa-linkedin-in",
         },
     ],
@@ -242,10 +242,10 @@ html_theme_options = {
 
 # comments_config = {
 #     # "utterances": {
-#     #     "repo": "zakgrin/reservoirflow_utterances",
+#     #     "repo": "hiesabx/reservoirflow_comments",
 #     # },
 #     "giscus": {
-#         "repo": "zakgrin/reservoirflow_utterances",
+#         "repo": "hiesabx/reservoirflow_comments",
 #     }
 # }
 

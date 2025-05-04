@@ -25,6 +25,7 @@ class TestApp(unittest.TestCase):
             drop_nan=False,
             drop_zero=False,
         )
+        df = df.astype({"Time [days]": "int32"})
         # df.to_csv("tests/test_example_7_9_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.solution.error, 3.320340669077382e-10)

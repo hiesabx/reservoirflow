@@ -2,7 +2,7 @@
 
 ## Installation
 
-- Install `reservoirflow` directly from [PyPi](https://pypi.org/):
+- Install `reservoirflow` directly from [PyPi](https://pypi.org/project/reservoirflow/):
 
     ```console
     $ pip install reservoirflow

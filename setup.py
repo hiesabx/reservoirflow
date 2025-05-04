@@ -40,7 +40,7 @@ setup(
         "GitHub": "https://github.com/hiesabx/reservoirflow",
         "Website": "https://www.hiesab.com/en/",
     },
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,

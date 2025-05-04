@@ -669,7 +669,7 @@ class BlackOil(Model):
         if melt:
             n_cells = self.grid.get_n(boundary)
             time = np.repeat(time, n_cells)
-        data = pd.Series(time, name="Time" + time_str, dtype="int32")
+        data = pd.Series(time, name="Time" + time_str)
         return self.__concat(data, df)
 
     def __add_date(self, units, melt, boundary, df=None):

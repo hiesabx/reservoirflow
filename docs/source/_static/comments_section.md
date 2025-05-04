@@ -17,10 +17,10 @@ Please keep in mind the [Commenting Guidelines ⚖](/community/commenting_guidel
         let giscusTheme = localStorage.theme;
         let giscusAttributes = {
             "src": "https://giscus.app/client.js",
-            "data-repo": "zakgrin/reservoirflow_utterances",
-            "data-repo-id": "R_kgDOKTqNNg",
-            "data-category": "General",
-            "data-category-id": "DIC_kwDOKTqNNs4Cgs8l",
+            "data-repo": "hiesabx/reservoirflow",
+            "data-repo-id": "R_kgDOG3v41g",
+            "data-category": "Documentation",
+            "data-category-id": "DIC_kwDOG3v41s4CpxFL",
             "data-mapping": "pathname",
             "data-strict": "1",
             "data-reactions-enabled": "1",
@@ -43,7 +43,7 @@ Please keep in mind the [Commenting Guidelines ⚖](/community/commenting_guidel
 class: only-light
 ---
     <script src="https://giscus.app/client.js"
-        data-repo="zakgrin/reservoirflow_utterances"
+        data-repo="hiesabx/reservoirflow_comments"
         data-repo-id="R_kgDOKTqNNg"
         data-category="General"
         data-category-id="DIC_kwDOKTqNNs4Cgs8l"
@@ -66,7 +66,7 @@ class: only-light
 class: only-dark
 ---
     <script src="https://giscus.app/client.js"
-        data-repo="zakgrin/reservoirflow_utterances"
+        data-repo="hiesabx/reservoirflow_comments"
         data-repo-id="R_kgDOKTqNNg"
         data-category="General"
         data-category-id="DIC_kwDOKTqNNs4Cgs8l"
@@ -93,7 +93,7 @@ class: only-dark
         type="text/javascript"
         src="https://utteranc.es/client.js"
         async="async"
-        repo="zakgrin/reservoirflow_utterances"
+        repo="hiesabx/reservoirflow_comments"
         issue-term="pathname"
         theme="github-dark"
         label="comments 💬"
@@ -110,7 +110,7 @@ class: only-light
         type="text/javascript"
         src="https://utteranc.es/client.js"
         async="async"
-        repo="zakgrin/reservoirflow_utterances"
+        repo="hiesabx/reservoirflow_comments"
         issue-term="pathname"
         theme="github-light"
         label="comments 💬"

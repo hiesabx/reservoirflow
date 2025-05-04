@@ -13,7 +13,6 @@ class TestApp(unittest.TestCase):
             index_col=0,
             dtype={"Step": "int32", "Time [days]": "int32"},
         )
-        # df_desired.index = df_desired.index.astype("int32")
         # vectorize, dense:
         model = create_model(sparse=False)
         model.run(nsteps=27, vectorize=True, threading=True)
@@ -27,6 +26,7 @@ class TestApp(unittest.TestCase):
             drop_nan=True,
             drop_zero=True,
         )
+        df = df.astype({"Time [days]": "int32"})
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
@@ -43,6 +43,7 @@ class TestApp(unittest.TestCase):
             drop_nan=True,
             drop_zero=True,
         )
+        df = df.astype({"Time [days]": "int32"})
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
         # symbolic, dense:
@@ -58,6 +59,7 @@ class TestApp(unittest.TestCase):
             drop_nan=True,
             drop_zero=True,
         )
+        df = df.astype({"Time [days]": "int32"})
         # df.to_csv("tests/test_example_7_11_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
@@ -74,6 +76,7 @@ class TestApp(unittest.TestCase):
             drop_nan=True,
             drop_zero=True,
         )
+        df = df.astype({"Time [days]": "int32"})
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(model.solution.error, 3.450062457943659e-11)
 

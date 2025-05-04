@@ -23,7 +23,7 @@ To reach a stable production level, we will need enough investment to develop, u
 
 ## How Can I Support This Project?
 
-There are several ways to support this project including [Funding](#funding) or [Sponsorship](#sponsorship). If you are an individual who may benefit from this work, consider supporting this project by [Sponsorship on Patreon](https://www.patreon.com/zakgrin) or by any means even by just using this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to keep this tool available and accessible to everyone. Below are some ideas on how you can support us based on which side are you coming from.
+There are several ways to support this project including [Funding](#funding) or [Sponsorship](#sponsorship). If you are an individual who may benefit from this work, consider supporting this project by <!-- [Sponsorship on Patreon](https://www.patreon.com/zakgrin) -->or by any means even by just using this tool and reporting some errors or insights. If you can't then that is fine. Our main duty is to keep this tool available and accessible to everyone. Below are some ideas on how you can support us based on which side are you coming from. -->
 
 ### Universities
 
@@ -43,9 +43,9 @@ If you are a company that plan to use this tool for commercial applications, the
 
 As a normal user, you can support this project as following:
 
-- Give a star in GitHub for [`reservoirflow`](https://github.com/zakgrin/reservoirflow) (you need a GitHub Account).
+- Give a star in GitHub for [`reservoirflow`](https://github.com/hiesabx/reservoirflow) (you need a GitHub Account).
 - Start using `reservoirflow` for your projects or thesis if you are a student.
-- Report issues you face under [issues](https://github.com/zakgrin/reservoirflow/issues).
+- Report issues you face under [issues](https://github.com/hiesabx/reservoirflow/issues).
 - Compare `reservoirflow` with other tools and share your feedback.
 - Share your progress and experience on [LinkedIn](https://www.linkedin.com/feed/) or any other platform.
 - Use `#reservoirflow` hashtag, so the community can interact with your work and give you a quick feedback.

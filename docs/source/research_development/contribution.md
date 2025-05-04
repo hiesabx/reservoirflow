@@ -20,10 +20,10 @@ Future developers and engineers who intend to contribute to this library should 
 
 You can load project files directly from the official GitHub repository. Skip this step if you want to install this library using `pip` command directly.
 
-- Download [reservoirflow](https://github.com/zakgrin/reservoirflow) repository from GitHub:
+- Download [reservoirflow](https://github.com/hiesabx/reservoirflow.git) repository from GitHub:
 
     ```bash
-    git clone https://github.com/zakgrin/reservoirflow.git
+    git clone https://github.com/hiesabx/reservoirflow.git
     ```
 
 - Navigate to the project folder:
@@ -81,7 +81,7 @@ If you are a developer or want to be one, who wants to work on additional featur
     git checkout -b my_new_feature
     ```
 
-- Try to solve one of our [issues](https://github.com/zakgrin/reservoirflow/issues). It is also possible that dive deep in a topic of your interest. You can bring a topic with you or work on something that is in our [Backlog](/research_development/backlog/backlog.html).
+- Try to solve one of our [issues](https://github.com/hiesabx/reservoirflow/issues). It is also possible that dive deep in a topic of your interest. You can bring a topic with you or work on something that is in our [Backlog](/research_development/backlog/backlog.html).
 - Commit your changes:
 
     ```Bash
@@ -94,7 +94,7 @@ If you are a developer or want to be one, who wants to work on additional featur
     git push origin my_new_feature
     ```
 
-- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/zakgrin/reservoirflow/pulls) to add features or solve bugs under [Issues](https://github.com/zakgrin/reservoirflow/issues). Please keep in mind that you need to stick with the project [Code of Conduct](#code-of-conduct).
+- [Contribute](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) by creating a [Pull Request](https://github.com/hiesabx/reservoirflow/pulls) to add features or solve bugs under [Issues](https://github.com/hiesabx/reservoirflow/issues). Please keep in mind that you need to stick with the project [Code of Conduct](#code-of-conduct).
 
 
 ```{include} /_static/comments_section.md
