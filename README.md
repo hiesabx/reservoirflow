@@ -94,7 +94,7 @@ This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareA
 
 ## Disclaimer
 
-*ReservoirFlow* is in a Beta state and still under active development where most modules are not fully functional. We expect our users and partners to collaborate with us to improve this library to reach a production state withing the following 2 years.
+*ReservoirFlow* is in a Beta state and still under active development where most modules are not fully functional. We expect our users and partners to collaborate with us to improve this library to reach a production state withing the following years.
 
 *ReservoirFlow* is developed and copyrighted by Hiesab. Third-party components are copyrighted by their respective authors.
 
