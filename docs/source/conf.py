@@ -38,8 +38,7 @@ exclude_patterns = [
     "**/example_*",
 ]
 
-# switcher: (rc: release candidate)
-switcher_version = version
+# switcher:
 json_url = "_static/versions.json"
 if any(v in version for v in ["dev", "a", "b", "rc"]):
     # all pre-release stages are called dev
