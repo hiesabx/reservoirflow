@@ -1,20 +1,20 @@
-sphinx
+sphinx==7.3.7
 # sphinx_rtd_theme
 # sphinx_copybutton
-livereload
-myst-parser
-mypy
+livereload==2.7.0
+myst-parser==3.0.1
+mypy==1.10.1
 # sphinx-automodapi
-pydata-sphinx-theme
+pydata-sphinx-theme==0.15.4
 # IPython
 # ipykernel
 # nbsphinx
 # pandoc
-myst-nb
+myst-nb==1.1.1
 # sphinx-gallery
-sphinx-comments
+sphinx-comments==0.0.3
 # numpydoc
-sphinx_design
-sphinxcontrib-bibtex
-sphinx-copybutton
-Pygments
+sphinx_design==0.6.0
+sphinxcontrib-bibtex==2.6.2
+sphinx-copybutton==0.5.2
+Pygments==2.18.0
