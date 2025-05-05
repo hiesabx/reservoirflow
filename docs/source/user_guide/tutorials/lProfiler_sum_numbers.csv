@@ -1,0 +1,8 @@
+Line #,Hits,Time,Per Hit,% Time,Line Contents
+1,,,,@rf,tils.profme.lProfiler(save_output=True)
+2,,,,def,um_numbers(n):
+3,,,.0,0,um = 0
+4    1,,,.1,6,or a in range(n):
+5    1,,,.4,4,sum += a
+6,,,.0,0,eturn sum
+,,,,,
