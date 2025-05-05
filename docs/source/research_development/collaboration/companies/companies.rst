@@ -7,7 +7,7 @@ We are looking to collaborate with companies.
     :maxdepth: 1
     :caption: Collaborators
 
-    ccolab_0001/ccolab_0001
+    .. ccolab_0001/ccolab_0001
     
 |
 

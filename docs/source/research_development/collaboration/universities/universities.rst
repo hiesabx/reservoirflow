@@ -7,7 +7,7 @@ We are looking to collaborate with universities.
     :maxdepth: 1
     :caption: Collaborators
 
-    ucolab_0001/ucolab_0001
+    .. ucolab_0001/ucolab_0001
 
 |
 

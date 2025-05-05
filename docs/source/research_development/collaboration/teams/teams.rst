@@ -7,7 +7,7 @@ We are looking to collaborate with teams.
     :maxdepth: 1
     :caption: Collaborators
 
-    tcolab_0001/tcolab_0001
+    .. tcolab_0001/tcolab_0001
 
 |
 
