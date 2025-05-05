@@ -25,12 +25,12 @@ Our Philosophy is to try to attack the same problem from multiple angles by comb
 Team
 ----
 - `Zakariya Abugrin <https://github.com/zakgrin>`_, Author of *ReservoirFlow*
-    roles: Mathephysineer: researcher, scientist, mathematician, physicist, developer, and engineer.
+    roles: mathephysineer: researcher, scientist, mathematician, physicist, developer, and engineer.
 
-.. note::
-    As soon as we receive enough support, we will start building a team of specialists.
+.. .. note::
+..     As soon as we receive enough support, we will start building a team of specialists.
 
-.. important::
-    Comments section is only opened temporarily to collect a feedback. Comments might be archived and closed. 
+.. .. important::
+..     Comments section is only opened temporarily to collect a feedback. Comments might be archived and closed. 
 
 .. include:: /_static/comments_section.rst

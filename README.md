@@ -20,7 +20,7 @@
 
 ## Introduction
 
-*ReservoirFlow* is a modern open-source Python library developed by [Hiesab](https://www.hiesab.com/en/); a startup company specialized in advanced analytics, computing, and automation founded in 2024 with a mission is to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education, see [About Us](/about_us.html).
+*ReservoirFlow* is a modern open-source Python library developed by [Hiesab](https://www.hiesab.com/en/); a startup company specialized in advanced analytics, computing, and automation founded in 2024 with a mission is to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education, see [About Us](https://reservoirflow.hiesab.com/about_us.html).
 
 <!-- <p align="center">
 <iframe src="https://drive.google.com/file/d/1JCD7W_5vJsUqNWf99NBTYjsLSMeVPEEa/preview"
@@ -41,7 +41,7 @@ allow="autoplay"  width="100%" height="500" frameborder="0" scrolling="auto" cla
   title="Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns." width="100%" height="100%"
   />
   <em>
-  Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns, see <a href="/user_guide/tutorials/tutorial_five_spot_single_phase.html">Tutorials</a>.
+  Example: Pressure Distribution of Single Phase Flow in Five Spot Wells Patterns, see <a href="https://reservoirflow.hiesab.com/user_guide/tutorials/tutorial_five_spot_single_phase.html">Tutorials</a>.
   </em>
 </p>
 
@@ -55,7 +55,7 @@ allow="autoplay"  width="100%" height="500" frameborder="0" scrolling="auto" cla
 - Advanced computing such as GPU, TPU and Quantum Computing.
 - Scientific Machine learning using Physics-informed neural networks (PINNs) or DeepONets.
 
-An open-source reservoir simulation and engineering library within the Python ecosystem is also very important to students, universities, researchers, engineers, and practitioners. Unlike the common monopolistic approach in the Oil and Gas industry where software is usually offered as a closed black-box at a high cost, we plan to make our tools accessible and freely available to everyone except for commercial-use where an explicit authorization will be required. We aim to offer our sponsors the commercial-use license with other benefits including trainings, custom features, studies, and more. On the other hand, our license allows universities, students, academics, and researchers to use our tools directly for teaching or publication just with a proper referencing. Therefore, the growth of this tool can only be taken as a positive growth for a new community that we try to create. However, this requires a huge support to meet the upcoming challenges that we are looking for, see [Support Us](/support_us.html).
+An open-source reservoir simulation and engineering library within the Python ecosystem is also very important to students, universities, researchers, engineers, and practitioners. Unlike the common monopolistic approach in the Oil and Gas industry where software is usually offered as a closed black-box at a high cost, we plan to make our tools accessible and freely available to everyone except for commercial-use where an explicit authorization will be required. We aim to offer our sponsors the commercial-use license with other benefits including trainings, custom features, studies, and more. On the other hand, our license allows universities, students, academics, and researchers to use our tools directly for teaching or publication just with a proper referencing. Therefore, the growth of this tool can only be taken as a positive growth for a new community that we try to create. However, this requires a huge support to meet the upcoming challenges that we are looking for, see [Support Us](https://reservoirflow.hiesab.com/support_us.html).
 
 ## Installation
 
@@ -65,7 +65,7 @@ Install `reservoirflow` directly from [PyPi](https://pypi.org/project/reservoirf
 $ pip install reservoirflow
 ```
 
-For more information about the installation process, see: [Getting Started](/user_guide/getting_started/getting_started.html) in the documentation.
+For more information about the installation process, see: [Getting Started](https://reservoirflow.hiesab.com/user_guide/getting_started/getting_started.html) in the documentation.
 
 ## Import Convention
 
@@ -79,7 +79,7 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 ## Version
 
-[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under active development, `major=0` is used until the first stable version is reached. The first version `v0.1.0b1` was released on May 1, 2025. The current version is `v0.1.0b1`. To know about which features are currently supported, check [Capabilities](capabilities.html).
+[Semantic Versioning](https://semver.org/) is used for the version numbers. Since this library is still under active development, `major=0` is used until the first stable version is reached. The first version `v0.1.0b1` was released on May 1, 2025. The current version is `v0.1.0b1`. To know about which features are currently supported, check [Capabilities](https://reservoirflow.hiesab.com/capabilities.html).
 
 **Version History:**
 
@@ -100,4 +100,4 @@ This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareA
 
 ## Contact
 
-Check our [website](https://www.hiesab.com/en/contact/).
+Check our website: [hiesab.com](https://www.hiesab.com/en/). Check Contact page.

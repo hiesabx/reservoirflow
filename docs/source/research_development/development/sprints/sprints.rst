@@ -6,7 +6,7 @@ We follow the scrum agile methodology. We have a backlog to collect and prioriti
 .. toctree::
     :maxdepth: 1
 
-    sprint001
+    .. sprint001
 
 |
 
