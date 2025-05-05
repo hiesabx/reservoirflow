@@ -230,7 +230,7 @@ html_theme_options = {
         "version_match": switcher_version,
     },
     "check_switcher": True,
-    "show_version_warning_banner": True,
+    "show_version_warning_banner": False,  # for multiple versions
     "navigation_with_keys": False,
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc"],
