@@ -10,4 +10,4 @@ We plan to organize interesting events including presentations, code walkthrough
 .. toctree::
     :maxdepth: 1
 
-    event001
+    .. event001

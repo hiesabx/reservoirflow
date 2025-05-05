@@ -13,4 +13,4 @@ If you like to join our newsletters, feel free click subscribe to fill in *Reser
 .. toctree::
     :maxdepth: 1
 
-    newsletter_20250501
+    .. newsletter_20250501

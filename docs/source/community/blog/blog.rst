@@ -17,5 +17,5 @@ Accepted formats include:
 .. toctree::
     :maxdepth: 1
 
-    blog01
-    external
+    .. blog01
+    .. external

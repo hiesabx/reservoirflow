@@ -1,5 +1,6 @@
 Why do we need ReservoirFlow? 🤷‍♂️
 ===================================
+*Author: Zakariya Abugrin | Date: May 2025*
 
 You may ask, why is this library relevant? The answer is easy! Everyone of us deals with fluid flow in porous media perhaps even daily. Arguably, the most common one is when you brew your espresso, you will not get a coffee until a fluid flow in porous media takes place before the coffee reaches your cup. Things can get more complex if you would like to drill a water well in your garden. Even bigger, when you want to store :math:`CO_2` underground to reduce emissions.
 

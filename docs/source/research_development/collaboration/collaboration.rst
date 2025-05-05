@@ -25,7 +25,7 @@ Here we list all of our active collaborations with universities, companies, team
 .. toctree::
     :maxdepth: 1
 
-    universities/universities
-    companies/companies
-    teams/teams
-    individuals/individuals
+    .. universities/universities
+    .. companies/companies
+    .. teams/teams
+    .. individuals/individuals
