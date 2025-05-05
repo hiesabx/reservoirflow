@@ -5,10 +5,12 @@ on:
   # [push, pull_request, workflow_dispatch]
   push:
     branches: 
-      # - main
+      - main
       - develop
-  # pull_request:
-  #   branches: [ main ]
+  pull_request:
+    branches: 
+      - main
+      - develop
 
 # permissions:
 #   contents: write
@@ -38,15 +40,17 @@ jobs:
         
       - name: Install dependencies
         run: |
-          sudo apt install libosmesa6
+          sudo apt install libosmesa6 freeglut3
           python -m pip install --upgrade pip
           pip install .
           pip install -r docs/requirements.txt
+
       - name: Build HTML
         run: | 
           cd docs/
           make html
           # sphinx-build -b html source/ build/html/ -a
+
       - name: Run ghp-import
         run: | 
           ghp-import -n -p -f docs/build/html
