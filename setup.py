@@ -1,8 +1,27 @@
-# usage  (fixed): pip install .
-# usage (listen): pip install --editable .
-# usage  (fixed): python setup.py install
-# usage (listen): python setup.py develop
-# usage (build): python setup.py bdist_wheel sdist
+"""
+# ReservoirFlow Setup
+
+## Install:
+- Fixed:
+    - pip install .
+    - python setup.py install
+- Listen:
+    - pip install --editable .
+    - pip install --e .
+    - python setup.py develop
+
+## Publish:
+0. Install:
+    - pip install wheel
+    - pip install twine
+1. Build:
+    - python setup.py bdist_wheel sdist
+2. Publish:
+    - twine check dist/*
+    - twine upload -r testpypi dist/*
+    - twine upload dist/*
+"""
+
 import re
 from pathlib import Path
 
@@ -48,7 +67,7 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Physics",
         "Topic :: Scientific/Engineering :: Visualization",
