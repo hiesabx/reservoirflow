@@ -9,6 +9,7 @@ Contents
     :maxdepth: 1
 
     news/news
+    topics/topics
     blog/blog
     events/events
     forum/forum
