@@ -5,14 +5,9 @@
         "url": "/index.html"
     },
     {
-        "name": "0.1.0 (stable)",
-        "version": "0.1.0",
-        "preferred": true,
-        "url": "/index.html"
-    },
-    {
-        "name": "0.1.0 (rc)",
-        "version": "0.1.0rc",
-        "url": "/index.html"
+        "name": "0.1 (latest)",
+        "version": "0.1",
+        "url": "/index.html",
+        "preferred": true
     }
 ]

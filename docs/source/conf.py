@@ -41,10 +41,12 @@ exclude_patterns = [
 # switcher: (rc: release candidate)
 switcher_version = version
 json_url = "_static/versions.json"
-if ".dev" in version:
+if any(v in version for v in ["dev", "a", "b", "rc"]):
+    # all pre-release stages are called dev
     switcher_version = "dev"
-elif "rc" in version:
-    switcher_version = version.split("rc", maxsplit=1)[0] + " (rc)"
+else:
+    # only keep major.minor version number to match versions.json
+    switcher_version = ".".join(version.split(".")[:2])
 
 extensions = [
     "sphinx.ext.autodoc",  # build docstring contents.
@@ -215,12 +217,12 @@ html_theme_options = {
     "footer_end": "",
     "navbar_start": [
         "navbar-logo",
-        "version-switcher",
     ],
     "navbar_center": [
         "navbar-nav",
     ],
     "navbar_end": [
+        "version-switcher",
         "theme-switcher",
         "navbar-icon-links",
     ],
