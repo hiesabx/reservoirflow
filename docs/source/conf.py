@@ -169,7 +169,7 @@ copybutton_exclude = ".linenos, .gp, .go"
 
 # html:
 html_theme = "pydata_sphinx_theme"
-html_title = project  # + release
+html_title = project + f" {version}"
 html_logo = "_static/RF_logo.png"
 html_favicon = "_static/RF_logo.png"
 html_show_sourcelink = False
