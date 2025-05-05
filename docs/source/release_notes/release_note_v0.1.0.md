@@ -1,5 +1,5 @@
 # Release Note v0.1.0
-*Author: Zakariya Abugrin | Date: January 2025*
+*Author: Zakariya Abugrin | Date: May 2025*
 
 During the last few years, I have been experiencing the immense joy of developing reservoir simulation models in Python where I can seamlessly investigate the beautiful combination of scientific computing with deep learning (e.g. physics informed neural networks). Combining reservoir engineering and data science in the Python ecosystem is phenomenal and fun. I am indeed extremely lucky to be able to do that. Today, I am happy to finally share my passion in the form of a new library called *ReservoirFlow*. This is the first version where *ReservoirFlow* was released to the world, a Reservoir Simulation and Engineering Library in Python. In addition, I formed a startup company called *Hiesab* (i.e. in Arabic means compute or calculate) specialized in advanced analytics, computing, and automation, read more [About Us](/about_us.html).
 
