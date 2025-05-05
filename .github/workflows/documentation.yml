@@ -5,8 +5,8 @@ on:
   # [push, pull_request, workflow_dispatch]
   push:
     branches: 
-      - main
-      # - develop
+      # - main
+      - develop
   # pull_request:
   #   branches: [ main ]
 
