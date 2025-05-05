@@ -6,7 +6,7 @@ A long-term plan with high ambitions is already in place for this library. As of
 ============================ ======================= ============ ================== =================================================
 **Feature**                  **Type**                **Support**  **Starting From**  **Comment**
 ============================ ======================= ============ ================== =================================================
-**Model Type**               `BlackOil`_             yes          ``v0.1.0``         only single phase on regular cartesian grids.
+**Model Type**               `BlackOil`_             yes          ``v0.1.0``         only single phase in regular cartesian grids.
 \                            Compositional           no           ``-``              \
 \                            Thermal                 no           ``-``              \
 **Flow Dimensions**          1D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.

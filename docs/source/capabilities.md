@@ -4,7 +4,7 @@ A long-term plan with high ambitions is already in place for this library. As of
 
 |**Module**                |**SubModule/Class**      |**Support**|**Starting From**  |**Comment**|
 |:-------------------------:|------------------------|-----------|-------------------|-----------|
-|**[models]**               |[BlackOil]              |yes        |`v0.1.0`           |Only single phase on regular cartesian grid.|
+|**[models]**               |[BlackOil]              |yes        |`v0.1.0`           |Only single phase in regular cartesian grid.|
 |                           |[Compositional]         |no         |`-`                ||
 |                           |[Thermal]               |no         |`-`                ||
 |**[grids]**                |[RegularCartesian]      |yes        |`v0.1.0`           |Includes: rock compressibility.|
