@@ -2,7 +2,7 @@
 ReservoirFlow
 =============
 
-ReservoirFlow: Reservoir Simulation and Engineering Library in Python developed by Hiesab.
+ReservoirFlow: Reservoir Simulation and Engineering Library in Python developed by Zakariya Abugrin at Hiesab.
 
 Check the `ReservoirFlow </index.html>`_ website.
 Check the [ReservoirFlow](/index.html) website.

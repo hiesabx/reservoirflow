@@ -26,6 +26,8 @@ Team
 ----
 - `Zakariya Abugrin <https://github.com/zakgrin>`_, Author of *ReservoirFlow*
     roles: mathephysineer: researcher, scientist, mathematician, physicist, developer, and engineer.
+- `Emad Kaawan <https://www.linkedin.com/in/emad-kaawan-93698925/>`_, General Manager at Hiesab
+    roles: manager, reservoir engineer.
 
 .. .. note::
 ..     As soon as we receive enough support, we will start building a team of specialists.
