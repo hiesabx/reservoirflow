@@ -1,10 +1,10 @@
 About Us
 ========
 
-We are *Hiesab*; an international startup company founded in 2024 based in  Libya specialized in advanced data analytics, scientific computing, and automation with a mission to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Ultimately, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance.
+We are *Hiesab*; an international startup company founded in 2024 based in  Tripoli, Libya specialized in advanced data analytics, scientific computing, and automation with a mission to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Ultimately, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance.
 
-.. comment: 
-    We acknowledge that our work is deeply inspired by the Holy Quran where achieving justice is an indispensable requirement for all humanity.
+.. note:: 
+   Check our website: `hiesab.com <https://www.hiesab.com/en/>`_
 
 We seek to make knowledge freely available and accessible to everyone by providing open, accessible, specialized, and cutting-edge tools to be a central-unified platform for both industry and education where technological progress is standardized, cleansed, and redistributed with an objective to accelerate research and development and to offer a high-quality educational material with hands-on tutorials on a wide range of topics.
 
@@ -14,8 +14,6 @@ A large enough pool of collaboration with universities, companies, and developer
     This website is a demonstration of our concept. We are planning to release similar tools in the future.
 
 By bringing together researchers, developers, and enthusiasts from diverse backgrounds, *Hiesab* aims to create an inclusive environment where innovation can thrive. This community will not only accelerate advancements in scientific computing and machine learning but also facilitate the translation of theoretical research into practical applications. To achieve this, *Hiesab* plans to organize workshops, hackathons, and seminars that will provide valuable opportunities for networking, knowledge sharing, and hands-on experience with cutting-edge technologies. Additionally, by maintaining a comprehensive online platform, the community members will have access to a rich repository of tutorials, research papers, and code repositories, enabling continuous learning and collaboration. Ultimately, the vision for our products (e.g. *ReservoirFlow*) extends beyond mere technological advancement. It encompasses the creation of a vibrant, supportive ecosystem where knowledge is freely exchanged, challenges are collaboratively tackled, and groundbreaking solutions are developed. Together, we can push the boundaries of what is possible and make significant contributions to the scientific community and society at large.
-
-We are committed to becoming a leading decentralized international startup by embracing a remote work culture, strategically establishing working spaces in key business and technological hubs worldwide. Our vision is to create an extensive network of collaboration with our partners, not only by sharing knowledge but also by sharing working spaces whenever possible. This approach fosters a strong culture of collaboration and communication, enabling us to tackle challenging problems as a unified team. As an R&D accelerator, we aim to bring vibrant culture and have a positive impact wherever we go.
 
 If this mission means a lot to you, then please `Support Us </support_us.html>`_.
 
