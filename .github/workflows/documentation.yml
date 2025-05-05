@@ -1,32 +1,83 @@
-name: documentation
+name: Build Documentation
 
-on: [push, pull_request, workflow_dispatch]
+# Controls when the workflow will run
+on: 
+  # [push, pull_request, workflow_dispatch]
+  push:
+    branches: 
+      - main
+      - develop
+  # pull_request:
+  #   branches: [ main ]
 
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 
-jobs:
-  docs:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs: 
+  # This workflow contains a single job called "build"
+  build: 
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - name: Install reservoirflow
-        run: |
-          pip install .
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+           python-version: "3.10"
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+        
       - name: Install dependencies
         run: |
-          cd docs
-          pip install -r requirements.txt
-      - name: Sphinx build
-        run: |
-          cd docs
+          python -m pip install --upgrade pip
+          pip install .
+          pip install -r docs/requirements.txt
+      - name: Build HTML
+        run: | 
+          cd docs/
+          # make html
           sphinx-build -b html source/ build/html/ -a
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        with:
-          publish_branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/
-          force_orphan: true
+      - name: Run ghp-import
+        run: | 
+          ghp-import -n -p -f docs/build/html
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+
+# jobs:
+#   docs:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: actions/setup-python@v5
+#       - name: Install reservoirflow
+#         run: |
+#           pip install .
+#       - name: Install dependencies
+#         run: |
+#           cd docs
+#           pip install -r requirements.txt
+#       - name: Sphinx build
+#         run: |
+#           cd docs
+#           sphinx-build -b html source/ build/html/ -a
+#       - name: Deploy to GitHub Pages
+#         uses: peaceiris/actions-gh-pages@v3
+#         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+#         with:
+#           publish_branch: gh-pages
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: _build/
+#           force_orphan: true
