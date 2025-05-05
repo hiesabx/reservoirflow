@@ -1,7 +1,12 @@
 # Release Note v0.1.0
+
 *Author: Zakariya Abugrin | Date: May 2025*
 
-During the last few years, I have been experiencing the immense joy of developing reservoir simulation models in Python where I can seamlessly investigate the beautiful combination of scientific computing with deep learning (e.g. physics informed neural networks). Combining reservoir engineering and data science in the Python ecosystem is phenomenal and fun. I am indeed extremely lucky to be able to do that. Today, I am happy to finally share my passion in the form of a new library called *ReservoirFlow*. This is the first version where *ReservoirFlow* was released to the world, a Reservoir Simulation and Engineering Library in Python. In addition, I formed a startup company called *Hiesab* (i.e. in Arabic means compute or calculate) specialized in advanced analytics, computing, and automation, read more [About Us](/about_us.html).
+Hi 🙋‍♂️, 
+
+I am [Zakariya Abugrin](https://www.linkedin.com/in/zakariya-abugrin/), the author of _ReservoirFlow_.
+
+During the last few years, I have been experiencing the immense joy of developing reservoir simulation models in Python where I can seamlessly investigate the beautiful combination of scientific computing with deep learning (e.g. physics informed neural networks). Combining reservoir engineering and data science in the Python ecosystem is phenomenal and fun. I am indeed extremely lucky to be able to do that. Today, I am happy to finally share my passion in the form of a new library called *ReservoirFlow*. This is the first version where *ReservoirFlow* was released to the world, a Reservoir Simulation and Engineering Library in Python.
 
 After working for several years on this project and sharing my progress on LinkedIn, publishing this library is indeed a unique moment for me. This point was already delayed several times due to the huge technical and scientific challenges associated with reservoir simulation especially when combined with deep learning. Nevertheless, this is still a uniquely interesting time since scientific machine learning is still a new emerging field that requires more practical applications which might be offered by this tool. I am very excited about the upcoming opportunities that will be opened by this library. I am looking forward to combining the world of scientific computing with deep learning to further develop more practical solutions.
 
@@ -23,7 +28,7 @@ If you are still wondering Why *ReservoirFlow* will be need, feel free to read [
 
 ## Dedication
 
-This project could have failed in many ways, but the support I got from all my family and friends was much bigger than that. This work took more than 4 years (from 2020 to 2024) of dedication, hard work, designing, engineering, and sometimes frustration aiming for perfection. I am glad that this project came to life in a best possible way; a startup company that offer open-source tools.
+This project could have failed in many ways, but the support I got from all my family and friends was much bigger than that. This work took more than 5 years (from 2020 to 2025) of dedication, hard work, designing, engineering, and sometimes frustration aiming for perfection. I am glad that this project came to life in a best possible way; a startup company that offer open-source tools.
 
 Following the advice of my mother (*Saadat Abugazia*) who repeatedly asked me to build something useful for humanity, and the path that was drawn by my father (*Yousef Abugrin*), may God have mercy on him, who continuously insisted on taking private classes in English, Mathematics and Physics (in my free-time) from preparatory school to university time, I believe that my parents are the true heroes behind this work. I would like also to thank my wife and kids who have been extremely patient with me spending several years fighting with my black-screen coding. I would like also to thank my father-in-law [Mohamed Bayoud](https://www.linkedin.com/in/mohamed-bayoud-6577a991/) for his continuous support.
 
@@ -31,7 +36,7 @@ I would also like to thank all my supervisors, teachers, and colleagues during a
 
 I would like to thank 3 women who helped me to achieve my dreams during my second master’s degree in Applied Data Science at Frankfurt School: [Jo Karajanov](https://www.linkedin.com/in/jo-karajanov/), [Zorica Zujic](https://www.linkedin.com/in/zorica-zujic-bb424123b/), and [Ruby Salvatore](https://www.linkedin.com/in/rubysalvatore/). I can’t thank enough those great people. In addition, my supervisors and teachers at Frankfurt School including: [Florian Ellsaesser](https://www.linkedin.com/in/florian-ellsaesser-49669b1/), [Levente Szabados](https://www.linkedin.com/in/levente-szabados-ai/), [András Simonyi](https://www.linkedin.com/in/andr%C3%A1s-simonyi-a6b5523b/), [Jan Nagler](https://www.linkedin.com/in/jan-nagler-8b5489158/), [Vahe Andonians](https://www.linkedin.com/in/vaheandonians/), [Gregory Wheeler](https://www.linkedin.com/in/gregoryrwheeler/), [Kerem Tomak](https://www.linkedin.com/in/tomakk/), and *Peter Rossbach*. 
 
-Last but not least, I would like to deep thank my supervisors from Friedrich-Alexander-Universität Erlangen-Nürnberg for my on going PhD in applied mathematics (focused on mathematical physics) including: [Prof. Nadja Ray](https://www.linkedin.com/in/nadja-ray-106494279/) for her continues research support and guidance and [Prof. Eberhard Bänsch](https://www.math.fau.de/person/prof-dr-eberhard-baensch/) for his support to start my PhD.
+Last but not least, I would like to thank my supervisors from Friedrich-Alexander-Universität Erlangen-Nürnberg for my on going PhD in applied mathematics (focused on mathematical physics) including: [Prof. Nadja Ray](https://www.linkedin.com/in/nadja-ray-106494279/) for her continues research support and guidance and [Prof. Eberhard Bänsch](https://www.math.fau.de/person/prof-dr-eberhard-baensch/) for his support to start my PhD.
 
 ## Contributors
 
