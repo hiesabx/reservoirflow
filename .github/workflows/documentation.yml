@@ -46,9 +46,9 @@ jobs:
           cd docs/
           make html
           # sphinx-build -b html source/ build/html/ -a
-      # - name: Run ghp-import
-      #   run: | 
-      #     ghp-import -n -p -f docs/build/html
+      - name: Run ghp-import
+        run: | 
+          ghp-import -n -p -f docs/build/html
 
       # Runs a set of commands using the runners shell
       # - name: Run a multi-line script
