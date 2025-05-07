@@ -16,7 +16,7 @@
     You may need to create a project directory with a dedicated virtual environment. If you are new to the python ecosystem, follow the steps below. Note that the steps below require command-line tool. You can execute these commands in IDE, `cmd`, or `bash` terminals..
     ```
 
-## Install in Virtual Enviornment
+## Installation in Virtual Environment
 
 - Create a new folder:
 
