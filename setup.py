@@ -56,8 +56,9 @@ setup(
     license_files=["LICENSE"],
     keywords=["Petroleum", "Reservoir", "Simulation", "Scientific Computing"],
     project_urls={
+        "Website": "https://www.hiesab.com/en/products/reservoirflow/",
         "GitHub": "https://github.com/hiesabx/reservoirflow",
-        "Website": "https://www.hiesab.com/en/",
+        "Documentation": "https://github.com/hiesabx/reservoirflow",
     },
     python_requires=">=3.8",
     packages=find_packages(),

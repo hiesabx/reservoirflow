@@ -442,7 +442,7 @@ def add_ruler(
     )
 
 
-def add_title(pl: pv.Plotter) -> None:
+def add_title(pl: pv.Plotter, title: str) -> None:
     """Add a title to a pyvista plotter
 
     Parameters
@@ -450,8 +450,10 @@ def add_title(pl: pv.Plotter) -> None:
     pl : pv.Plotter
         plotter object from pyvista.
     """
+    if title is None:
+        title = "ReservoirFlow"
     pl.add_text(
-        text="ReservoirFlow",
+        text=title,
         position=(0.45, 0.95),
         font_size=14,
         font="arial",
@@ -578,12 +580,13 @@ def add_grid_labels(
 
 def get_grid_plotter(
     grid,
-    prop,
+    # prop,
     label,
     boundary,
     corners,
     desc,
     # cbar,
+    title,
     cmap,
     gamma,
     n_colors,
@@ -661,7 +664,7 @@ def get_grid_plotter(
     align_camera(pl, cdir, azimuth=azimuth, elevation=elevation, zoom=zoom)
     set_plotter_config(pl, static=static, notebook=notebook)
     add_grid_labels(pl, grid, label, opacity, boundary)
-    add_title(pl)
+    add_title(pl, title)
     if desc:
         add_desc(pl, label, grid.D, grid.fdir, boundary)
 
@@ -670,15 +673,15 @@ def get_grid_plotter(
 
 def show_grid(
     grid,
-    prop: str = "pressures",
+    # prop: str = "pressures",
     label: str = None,
     boundary: bool = False,
-    # wells: bool = True,
     corners: bool = False,
     ruler: bool = False,
     desc: bool = False,
     # info: bool = True,
     # cbar: bool = True,
+    title: str = None,
     cmap: str = "Blues",
     gamma: float = 0.7,
     n_colors: int = 10,
@@ -700,22 +703,38 @@ def show_grid(
 
     Parameters
     ----------
+    prop : str, optional
+        property to be visualized (do not use. still not active).
     label : str, optional
         label of grid centers as str in ['id', 'coords', 'icoords',
         'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center', 'sphere']. If
-        None, this nothing will be added.
+        None or False, nothing will be added as a label.
     boundary : bool, optional
         include boundary cells.
     corners : bool, optional
-        show corners ijk values.
-    static : bool, optional
-        show as a static image in a jupyter notebook. This argument
-        is ignored when notebook argument is set to False. True
-        value is used to render images for the documentation.
-    notebook : bool, optional
-        show plot is placed inline a jupyter notebook. If False,
-        then an interactive window will be opened outside of jupyter
-        notebook.
+        include cells corners with ijk values..
+    ruler : bool, optional
+        show ruler grid lines.
+    info : bool, optional
+        show grid information (do not use. still not active).
+    cbar : bool, optional
+        show color bar (do not use. still not active).
+    title : str, optional
+        title shown at top-center of the Graph. If None, `ReservoirFlow` is shown.
+    cmap : str, optional
+        color map name based on Matplotlib, see
+        `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable/users/explain/colors/colormaps.html>`_.
+    gamma : float, optional
+        shift color map distribution to left when values less than 1 and
+        to right when values larger than 1. In case of qualitative
+        colormaps, this argument is ignored.
+    n_colors : int, optional
+        number of colors. In case of qualitative colormaps, n_colors
+        should not exceed the total number of available colors (e.g. 10
+        for cmap="tab10" and 20 for cmap="tab20").
+    opacity : float, optional
+        adjust transparency between 0 and 1 where 0 is fully transparent
+        and 1 is fully nontransparent.
     azimuth : float, optional
         adjust camera azimuth which is a horizontal rotation around the
         central focal point, see
@@ -728,10 +747,20 @@ def show_grid(
         adjust camera zoom which is direct zooming into the central
         focal point. see
         `pyvista.Camera.zoom <https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.Camera.zoom.html>`_.
+    static : bool, optional
+        show as a static image in a jupyter notebook. This argument
+        is ignored when notebook argument is set to False. True
+        value is used to render images for the documentation.
+    notebook : bool, optional
+        show plot is placed inline a jupyter notebook. If False,
+        then an interactive window will be opened outside of jupyter
+        notebook.
+    window_size : tuple, optional
+        pyvista plotter window size in pixels.
     **kwargs :
         you can pass any argument for pyvista Plotter except if it is
         defined as argument in this function (e.g. window_size), see
-        `pyvista.Plotter <https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html>`_.
+        `pyvista.Plotter <https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.html>`
 
     Raises
     ------
@@ -741,13 +770,13 @@ def show_grid(
     set_plotter_backend(static)
     pl, grid_pv = get_grid_plotter(
         grid,
-        prop=prop,
+        # prop=prop,
         label=label,
         boundary=boundary,
-        # wells=wells,
         corners=corners,
         desc=desc,
         # cbar=cbar,
+        title=title,
         cmap=cmap,
         gamma=gamma,
         n_colors=n_colors,
@@ -790,6 +819,7 @@ def get_model_plotter(
     wells,
     desc,
     cbar,
+    title,
     cmap,
     gamma,
     n_colors,
@@ -860,7 +890,7 @@ def get_model_plotter(
     align_camera(pl, cdir, azimuth=azimuth, elevation=elevation, zoom=zoom)
     set_plotter_config(pl, static=static, notebook=notebook)
     add_grid_labels(pl, model.grid, label, opacity, boundary)
-    add_title(pl)
+    add_title(pl, title)
     if desc:
         add_desc(pl, label, model.grid.D, model.grid.fdir, boundary)
 
@@ -877,6 +907,7 @@ def save_gif(
     desc: bool = False,
     info: bool = True,
     cbar: bool = True,
+    title: str = None,
     cmap: str = "Blues",
     gamma: float = 0.7,
     n_colors: int = 10,
@@ -895,6 +926,10 @@ def save_gif(
     ----------
     prop : str, optional
         property to be visualized in ["pressures", "rates"].
+    label : str
+        label of grid centers as str in ['id', 'coords', 'icoords',
+        'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center', 'sphere']. If
+        None, this nothing will be added.
     boundary : bool, optional
         include boundary cells.
     wells : bool, optional
@@ -905,6 +940,8 @@ def save_gif(
         show simulation information.
     cbar : bool, optional
         show color bar.
+    title : str, optional
+        title shown at top-center of the Graph. If None, `ReservoirFlow` is shown.
     cmap : str, optional
         color map name based on Matplotlib, see
         `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable/users/explain/colors/colormaps.html>`_.
@@ -935,7 +972,7 @@ def save_gif(
         the number of frames per second starting at 1 and higher. Use
         this to control the speed of the gif image. Note that at some
         point, higher fps will not have affect on speed.
-    fine_name : str, optional
+    file_name : str, optional
         file name of the gif file (including the extension .gif).
     window_size : tuple, optional
         pyvista plotter window size in pixels.
@@ -989,6 +1026,7 @@ def save_gif(
         wells=wells,
         desc=desc,
         cbar=cbar,
+        title=title,
         cmap=cmap,
         gamma=gamma,
         n_colors=n_colors,
@@ -1049,6 +1087,7 @@ def show_model(
     desc: bool = False,
     info: bool = True,
     cbar: bool = True,
+    title: str = None,
     cmap: str = "Blues",
     gamma: float = 0.7,
     n_colors: int = 10,
@@ -1081,6 +1120,8 @@ def show_model(
         show simulation information.
     cbar : bool, optional
         show color bar.
+    title : str, optional
+        title shown at top-center of the Graph. If None, `ReservoirFlow` is shown.
     cmap : str, optional
         color map name based on Matplotlib, see
         `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable/users/explain/colors/colormaps.html>`_.
@@ -1146,6 +1187,7 @@ def show_model(
         wells=wells,
         desc=desc,
         cbar=cbar,
+        title=title,
         cmap=cmap,
         gamma=gamma,
         n_colors=n_colors,

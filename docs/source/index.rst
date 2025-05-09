@@ -3,6 +3,8 @@ Home
 
 ReservoirFlow: Reservoir Simulation and Engineering Library in Python
 
+**Date**: |today| - **Version**: |version|
+
 .. attention:: 
    Are you new to ReservoirFlow? Please find some time to read the first release note,
    see `Release Note v0.1.0 </release_notes/release_note_v0.1.0.html>`_. 

@@ -169,7 +169,7 @@ copybutton_exclude = ".linenos, .gp, .go"
 
 # html:
 html_theme = "pydata_sphinx_theme"
-html_title = project  # + release
+html_title = project + f" {version}"
 html_logo = "_static/RF_logo.png"
 html_favicon = "_static/RF_logo.png"
 html_show_sourcelink = False
@@ -230,7 +230,7 @@ html_theme_options = {
         "version_match": switcher_version,
     },
     "check_switcher": True,
-    "show_version_warning_banner": True,
+    "show_version_warning_banner": False,  # for multiple versions
     "navigation_with_keys": False,
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc"],
