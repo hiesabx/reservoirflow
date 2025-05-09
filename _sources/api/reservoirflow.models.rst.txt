@@ -1,0 +1,40 @@
+models
+====================
+
+.. automodule:: reservoirflow.models
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      Model
+      BlackOil
+      Compositional
+      Thermal
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

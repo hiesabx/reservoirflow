@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.set\_mode
+=====================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: set_mode

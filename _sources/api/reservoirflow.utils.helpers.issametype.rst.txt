@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.issametype
+======================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: issametype

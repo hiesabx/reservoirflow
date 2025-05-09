@@ -1,0 +1,6 @@
+reservoirflow.grids.IrregularCartesian.allow\_synonyms
+======================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: IrregularCartesian.allow_synonyms

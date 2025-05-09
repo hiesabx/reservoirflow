@@ -1,0 +1,41 @@
+JAX
+===
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoclass:: JAX
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~JAX.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~JAX.ones
+      
+      
+        ~JAX.transpose
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

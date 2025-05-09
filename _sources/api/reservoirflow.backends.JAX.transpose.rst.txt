@@ -1,0 +1,6 @@
+reservoirflow.backends.JAX.transpose
+====================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: JAX.transpose

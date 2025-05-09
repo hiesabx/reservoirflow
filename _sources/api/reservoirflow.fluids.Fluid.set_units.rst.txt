@@ -1,0 +1,6 @@
+reservoirflow.fluids.Fluid.set\_units
+=====================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: Fluid.set_units

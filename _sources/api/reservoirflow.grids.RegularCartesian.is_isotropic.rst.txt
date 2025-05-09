@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.is\_isotropic
+==================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoproperty:: RegularCartesian.is_isotropic

@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.get\_cdir
+=====================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: get_cdir

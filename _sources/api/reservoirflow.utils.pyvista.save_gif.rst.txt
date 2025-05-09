@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.save\_gif
+=====================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: save_gif

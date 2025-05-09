@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.get\_solutions
+=================================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Compositional.get_solutions

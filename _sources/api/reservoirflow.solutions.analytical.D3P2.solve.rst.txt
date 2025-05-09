@@ -1,0 +1,6 @@
+reservoirflow.solutions.analytical.D3P2.solve
+=============================================
+
+.. currentmodule:: reservoirflow.solutions.analytical
+
+.. automethod:: D3P2.solve

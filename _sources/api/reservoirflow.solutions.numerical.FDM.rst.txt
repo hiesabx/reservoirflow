@@ -1,0 +1,56 @@
+FDM
+===
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. autoclass:: FDM
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~FDM.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~FDM.check_MB
+      
+      
+        ~FDM.get_cell_eq
+      
+      
+        ~FDM.get_cells_eq
+      
+      
+        ~FDM.get_matrices_symb
+      
+      
+        ~FDM.get_matrices_vect
+      
+      
+        ~FDM.run
+      
+      
+        ~FDM.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

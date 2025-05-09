@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.allow\_synonyms
+=============================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.allow_synonyms

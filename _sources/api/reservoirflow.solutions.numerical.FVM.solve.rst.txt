@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.FVM.solve
+===========================================
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. automethod:: FVM.solve

@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.get\_colormap
+=========================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: get_colormap

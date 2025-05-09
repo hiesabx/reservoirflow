@@ -1,0 +1,6 @@
+reservoirflow.solutions.Solution.solve
+======================================
+
+.. currentmodule:: reservoirflow.solutions
+
+.. automethod:: Solution.solve

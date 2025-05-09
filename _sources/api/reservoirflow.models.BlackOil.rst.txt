@@ -1,0 +1,134 @@
+BlackOil
+========
+
+.. currentmodule:: reservoirflow.models
+
+.. autoclass:: BlackOil
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~BlackOil.factors
+      
+      
+        ~BlackOil.name
+      
+      
+        ~BlackOil.unit
+      
+      
+        ~BlackOil.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~BlackOil.allow_synonyms
+      
+      
+        ~BlackOil.compile
+      
+      
+        ~BlackOil.copy
+      
+      
+        ~BlackOil.get_alpha
+      
+      
+        ~BlackOil.get_cell_trans
+      
+      
+        ~BlackOil.get_cells_trans
+      
+      
+        ~BlackOil.get_cells_trans_diag
+      
+      
+        ~BlackOil.get_centers
+      
+      
+        ~BlackOil.get_df
+      
+      
+        ~BlackOil.get_domain
+      
+      
+        ~BlackOil.get_init_arrays
+      
+      
+        ~BlackOil.get_shape
+      
+      
+        ~BlackOil.get_solutions
+      
+      
+        ~BlackOil.get_time
+      
+      
+        ~BlackOil.plot
+      
+      
+        ~BlackOil.plot_grid
+      
+      
+        ~BlackOil.report
+      
+      
+        ~BlackOil.run
+      
+      
+        ~BlackOil.save_gif
+      
+      
+        ~BlackOil.set_all_boundaries
+      
+      
+        ~BlackOil.set_boundaries
+      
+      
+        ~BlackOil.set_boundary
+      
+      
+        ~BlackOil.set_comp
+      
+      
+        ~BlackOil.set_scalers
+      
+      
+        ~BlackOil.set_solution
+      
+      
+        ~BlackOil.set_units
+      
+      
+        ~BlackOil.set_well
+      
+      
+        ~BlackOil.show
+      
+      
+        ~BlackOil.solve
+      
+      
+        ~BlackOil.update_scalers
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

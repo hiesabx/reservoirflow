@@ -1,0 +1,41 @@
+FVM
+===
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. autoclass:: FVM
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~FVM.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~FVM.run
+      
+      
+        ~FVM.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

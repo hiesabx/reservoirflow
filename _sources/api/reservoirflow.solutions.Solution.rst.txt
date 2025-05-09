@@ -1,0 +1,32 @@
+Solution
+========
+
+.. currentmodule:: reservoirflow.solutions
+
+.. autoclass:: Solution
+   :show-inheritance:
+   
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Solution.run
+      
+      
+        ~Solution.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

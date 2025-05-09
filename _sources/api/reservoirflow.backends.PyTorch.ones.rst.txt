@@ -1,0 +1,6 @@
+reservoirflow.backends.PyTorch.ones
+===================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: PyTorch.ones

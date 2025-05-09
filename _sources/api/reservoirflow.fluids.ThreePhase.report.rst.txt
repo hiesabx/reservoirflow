@@ -1,0 +1,6 @@
+reservoirflow.fluids.ThreePhase.report
+======================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: ThreePhase.report

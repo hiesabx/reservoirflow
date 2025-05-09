@@ -1,0 +1,6 @@
+reservoirflow.backends.TensorFlow.ones
+======================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: TensorFlow.ones

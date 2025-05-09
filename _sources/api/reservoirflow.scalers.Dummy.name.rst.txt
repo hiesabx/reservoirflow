@@ -1,0 +1,6 @@
+reservoirflow.scalers.Dummy.name
+================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. autoattribute:: Dummy.name

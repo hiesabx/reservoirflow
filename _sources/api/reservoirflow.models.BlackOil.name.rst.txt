@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.name
+==================================
+
+.. currentmodule:: reservoirflow.models
+
+.. autoattribute:: BlackOil.name

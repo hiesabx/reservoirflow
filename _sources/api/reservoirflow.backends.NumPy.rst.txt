@@ -1,0 +1,41 @@
+NumPy
+=====
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoclass:: NumPy
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~NumPy.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~NumPy.ones
+      
+      
+        ~NumPy.transpose
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

@@ -1,0 +1,6 @@
+reservoirflow.fluids.TwoPhase.set\_comp
+=======================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: TwoPhase.set_comp

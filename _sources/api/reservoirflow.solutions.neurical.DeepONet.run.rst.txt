@@ -1,0 +1,6 @@
+reservoirflow.solutions.neurical.DeepONet.run
+=============================================
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. automethod:: DeepONet.run

@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.FEM.run
+=========================================
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. automethod:: FEM.run

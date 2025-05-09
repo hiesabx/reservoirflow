@@ -1,0 +1,6 @@
+reservoirflow.scalers.Dummy.inverse\_transform
+==============================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: Dummy.inverse_transform

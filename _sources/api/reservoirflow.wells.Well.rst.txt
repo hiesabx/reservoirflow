@@ -1,0 +1,50 @@
+Well
+====
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoclass:: Well
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Well.factors
+      
+      
+        ~Well.name
+      
+      
+        ~Well.unit
+      
+      
+        ~Well.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Well.report
+      
+      
+        ~Well.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

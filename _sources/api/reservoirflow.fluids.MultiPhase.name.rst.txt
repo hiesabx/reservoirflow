@@ -1,0 +1,6 @@
+reservoirflow.fluids.MultiPhase.name
+====================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoattribute:: MultiPhase.name

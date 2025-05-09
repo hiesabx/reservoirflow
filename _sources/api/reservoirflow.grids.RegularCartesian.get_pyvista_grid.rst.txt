@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.get\_pyvista\_grid
+=======================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.get_pyvista_grid

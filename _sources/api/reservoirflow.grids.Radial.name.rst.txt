@@ -1,0 +1,6 @@
+reservoirflow.grids.Radial.name
+===============================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoattribute:: Radial.name

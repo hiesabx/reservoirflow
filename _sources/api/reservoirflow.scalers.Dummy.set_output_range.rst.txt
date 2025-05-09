@@ -1,0 +1,6 @@
+reservoirflow.scalers.Dummy.set\_output\_range
+==============================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: Dummy.set_output_range

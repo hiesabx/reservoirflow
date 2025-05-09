@@ -1,0 +1,45 @@
+analytical
+==================================
+
+.. automodule:: reservoirflow.solutions.analytical
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      D1P1
+      D1P2
+      D1P3
+      D2P1
+      D2P2
+      D2P3
+      D3P1
+      D3P2
+      D3P3
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

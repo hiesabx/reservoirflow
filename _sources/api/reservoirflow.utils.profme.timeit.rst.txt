@@ -1,0 +1,6 @@
+reservoirflow.utils.profme.timeit
+=================================
+
+.. currentmodule:: reservoirflow.utils.profme
+
+.. autofunction:: timeit

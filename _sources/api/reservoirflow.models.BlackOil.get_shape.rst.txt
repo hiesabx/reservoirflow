@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.get\_shape
+========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.get_shape

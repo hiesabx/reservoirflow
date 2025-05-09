@@ -1,0 +1,6 @@
+reservoirflow.fluids.Fluid.allow\_synonyms
+==========================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: Fluid.allow_synonyms

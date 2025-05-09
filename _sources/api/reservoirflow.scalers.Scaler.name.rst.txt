@@ -1,0 +1,6 @@
+reservoirflow.scalers.Scaler.name
+=================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. autoattribute:: Scaler.name

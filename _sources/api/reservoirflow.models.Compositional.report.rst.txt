@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.report
+=========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Compositional.report

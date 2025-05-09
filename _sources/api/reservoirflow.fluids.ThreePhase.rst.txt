@@ -1,0 +1,56 @@
+ThreePhase
+==========
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoclass:: ThreePhase
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~ThreePhase.factors
+      
+      
+        ~ThreePhase.name
+      
+      
+        ~ThreePhase.unit
+      
+      
+        ~ThreePhase.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~ThreePhase.allow_synonyms
+      
+      
+        ~ThreePhase.report
+      
+      
+        ~ThreePhase.set_comp
+      
+      
+        ~ThreePhase.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

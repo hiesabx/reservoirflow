@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.fshape\_warn
+========================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: fshape_warn

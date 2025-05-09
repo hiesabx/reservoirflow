@@ -1,0 +1,6 @@
+reservoirflow.grids.Radial.allow\_synonyms
+==========================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: Radial.allow_synonyms

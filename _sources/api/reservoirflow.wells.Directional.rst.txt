@@ -1,0 +1,50 @@
+Directional
+===========
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoclass:: Directional
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Directional.factors
+      
+      
+        ~Directional.name
+      
+      
+        ~Directional.unit
+      
+      
+        ~Directional.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Directional.report
+      
+      
+        ~Directional.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

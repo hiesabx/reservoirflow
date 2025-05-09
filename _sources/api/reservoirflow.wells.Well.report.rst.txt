@@ -1,0 +1,6 @@
+reservoirflow.wells.Well.report
+===============================
+
+.. currentmodule:: reservoirflow.wells
+
+.. automethod:: Well.report

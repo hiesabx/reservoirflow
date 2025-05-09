@@ -1,0 +1,44 @@
+PINN
+====
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. autoclass:: PINN
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~PINN.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~PINN.fit
+      
+      
+        ~PINN.run
+      
+      
+        ~PINN.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

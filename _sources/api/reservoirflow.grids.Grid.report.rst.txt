@@ -1,0 +1,6 @@
+reservoirflow.grids.Grid.report
+===============================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: Grid.report

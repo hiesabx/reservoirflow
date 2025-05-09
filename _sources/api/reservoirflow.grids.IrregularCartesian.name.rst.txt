@@ -1,0 +1,6 @@
+reservoirflow.grids.IrregularCartesian.name
+===========================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoattribute:: IrregularCartesian.name

@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.units
+========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. autoattribute:: Compositional.units

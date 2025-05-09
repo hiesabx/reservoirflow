@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.set\_comp
+============================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Compositional.set_comp

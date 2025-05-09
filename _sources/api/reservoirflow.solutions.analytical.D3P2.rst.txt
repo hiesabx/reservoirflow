@@ -1,0 +1,41 @@
+D3P2
+====
+
+.. currentmodule:: reservoirflow.solutions.analytical
+
+.. autoclass:: D3P2
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~D3P2.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~D3P2.run
+      
+      
+        ~D3P2.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.show
+=========================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.show

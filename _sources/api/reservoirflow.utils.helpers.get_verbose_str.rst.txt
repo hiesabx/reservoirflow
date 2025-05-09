@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.get\_verbose\_str
+=============================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: get_verbose_str

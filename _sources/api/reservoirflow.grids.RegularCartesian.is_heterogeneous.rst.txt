@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.is\_heterogeneous
+======================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoproperty:: RegularCartesian.is_heterogeneous

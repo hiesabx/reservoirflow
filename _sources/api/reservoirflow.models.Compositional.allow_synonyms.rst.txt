@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.allow\_synonyms
+==================================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Compositional.allow_synonyms

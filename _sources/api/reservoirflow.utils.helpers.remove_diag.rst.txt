@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.remove\_diag
+========================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: remove_diag

@@ -1,0 +1,6 @@
+reservoirflow.backends.JAX.ones
+===============================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: JAX.ones

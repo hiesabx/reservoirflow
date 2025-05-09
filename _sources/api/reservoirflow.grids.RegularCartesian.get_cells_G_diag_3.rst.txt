@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.get\_cells\_G\_diag\_3
+===========================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.get_cells_G_diag_3

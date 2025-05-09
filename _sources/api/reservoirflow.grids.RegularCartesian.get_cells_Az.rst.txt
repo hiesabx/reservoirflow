@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.get\_cells\_Az
+===================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.get_cells_Az

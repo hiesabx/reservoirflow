@@ -1,0 +1,110 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Learn Scientific Computing\n",
+    "\n",
+    "[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1g4VL8HKx2sbdXQ2WIXlFGyrdBgD0Je0H/view?usp=drive_link&target=_blank)\n",
+    "\n",
+    "*Author: Zakariya Abugrin | Date: May 2025*"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "tags": [
+     "remove-input"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# Colab only:\n",
+    "try:\n",
+    "    # Install reservoirflow in Colab\n",
+    "    import os\n",
+    "    import google.colab\n",
+    "    !pip install reservoirflow\n",
+    "    # Restart session after installation\n",
+    "    os.kill(os.getpid(), 9)\n",
+    "    print(\"Session was restarted.\")\n",
+    "    print(\"Now you can run to the following cells.\")\n",
+    "except ImportError:\n",
+    "    pass"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Introduction\n",
+    "\n",
+    "In this tutorial, we will see how the scientific computing is performed behind the scenes in `reservoirflow`. This tutorial shows the advantage of `reservoirflow` not only as a computing tool but also as a guiding tool that uses symbolic computing to show how equations are derived and solved. This will allow the reader to learn more about every detail when it comes to building and solving a system of linear equations that are used in *Numerical Reservoir Simulation*."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.1.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "import reservoirflow as rf\n",
+    "\n",
+    "print(rf.__version__)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "static = notebook = True"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "tags": [
+     "remove-input"
+    ]
+   },
+   "source": [
+    "```{include} /_static/comments_section.md\n",
+    "```"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.9"
+  },
+  "orig_nbformat": 4
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

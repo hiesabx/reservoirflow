@@ -1,0 +1,48 @@
+:root {
+
+    --pst-violet-200: rgb(206, 124, 52);
+    --pst-violet-300: rgb(206, 124, 52);
+    --pst-violet-400: rgb(206, 124, 52);
+    --pst-violet-500: rgb(206, 124, 52);
+    --pst-violet-600: rgb(206, 124, 52);
+    --pst-violet-700: rgb(206, 124, 52);
+    --pst-violet-800: rgb(206, 124, 52);
+    --pst-violet-900: rgb(206, 124, 52);
+}
+
+html[data-theme="light"] {
+
+    --pst-color-primary: rgb(69 157 185);
+    --pst-color-secondary: rgb(238 144 64);
+    --pst-color-secondary-bg: rgb(206, 124, 52);
+    --pst-color-secondary-highlight: rgb(206, 124, 52);
+    --pst-color-background: rgb(255, 255, 255);
+    --pst-color-on-background: rgb(255, 255, 255);
+    --pst-color-background-up: rgb(255, 255, 255);
+    --pst-color-surface: rgb(240, 240, 240);
+    --pst-color-on-surface: rgb(255, 255, 238);
+    --pst-color-link: var(--pst-color-primary);
+    --pst-color-link-hover: var(--pst-color-secondary);
+    --pst-color-inline-code: rgb(232, 62, 140);
+    --pst-color-target: rgb(251, 229, 78);
+    --pst-color-panel-background: var(--pst-color-background-up);
+
+}
+
+html[data-theme="dark"] {
+
+    --pst-color-primary: rgb(69 157 185);
+    --pst-color-secondary: rgb(238 144 64);
+    --pst-color-secondary-bg: rgb(206, 124, 52);
+    --pst-color-secondary-highlight: rgb(206, 124, 52);
+    --pst-color-background: rgb(18, 18, 18);
+    --pst-color-on-background: rgb(30, 30, 30);
+    --pst-color-background-up: rgb(30, 30, 30);
+    --pst-color-surface: rgb(41, 41, 41);
+    --pst-color-on-surface: rgb(55, 55, 55);
+    --pst-color-link: var(--pst-color-primary);
+    --pst-color-link-hover: var(--pst-color-secondary);
+    --pst-color-inline-code: rgb(221, 158, 194);
+    --pst-color-target: rgb(71, 39, 0);
+    --pst-color-panel-background: var(--pst-color-background-up);
+}

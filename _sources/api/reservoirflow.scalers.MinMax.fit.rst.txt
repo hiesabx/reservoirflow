@@ -1,0 +1,6 @@
+reservoirflow.scalers.MinMax.fit
+================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: MinMax.fit

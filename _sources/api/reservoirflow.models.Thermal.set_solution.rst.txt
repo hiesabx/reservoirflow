@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.set\_solution
+==========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Thermal.set_solution

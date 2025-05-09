@@ -1,0 +1,251 @@
+RegularCartesian
+================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoclass:: RegularCartesian
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~RegularCartesian.factors
+      
+      
+        ~RegularCartesian.is_anisotropic
+      
+      
+        ~RegularCartesian.is_heterogeneous
+      
+      
+        ~RegularCartesian.is_homogeneous
+      
+      
+        ~RegularCartesian.is_irregular
+      
+      
+        ~RegularCartesian.is_isotropic
+      
+      
+        ~RegularCartesian.is_regular
+      
+      
+        ~RegularCartesian.name
+      
+      
+        ~RegularCartesian.unit
+      
+      
+        ~RegularCartesian.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~RegularCartesian.allow_synonyms
+      
+      
+        ~RegularCartesian.extract_boundaries
+      
+      
+        ~RegularCartesian.get_D
+      
+      
+        ~RegularCartesian.get_Vt
+      
+      
+        ~RegularCartesian.get_boundaries
+      
+      
+        ~RegularCartesian.get_cell_A
+      
+      
+        ~RegularCartesian.get_cell_Ax
+      
+      
+        ~RegularCartesian.get_cell_Ay
+      
+      
+        ~RegularCartesian.get_cell_Az
+      
+      
+        ~RegularCartesian.get_cell_G
+      
+      
+        ~RegularCartesian.get_cell_V
+      
+      
+        ~RegularCartesian.get_cell_boundaries
+      
+      
+        ~RegularCartesian.get_cell_center
+      
+      
+        ~RegularCartesian.get_cell_coords
+      
+      
+        ~RegularCartesian.get_cell_d
+      
+      
+        ~RegularCartesian.get_cell_dx
+      
+      
+        ~RegularCartesian.get_cell_dy
+      
+      
+        ~RegularCartesian.get_cell_dz
+      
+      
+        ~RegularCartesian.get_cell_icoords
+      
+      
+        ~RegularCartesian.get_cell_id
+      
+      
+        ~RegularCartesian.get_cell_k
+      
+      
+        ~RegularCartesian.get_cell_kx
+      
+      
+        ~RegularCartesian.get_cell_ky
+      
+      
+        ~RegularCartesian.get_cell_kz
+      
+      
+        ~RegularCartesian.get_cell_neighbors
+      
+      
+        ~RegularCartesian.get_cells_A
+      
+      
+        ~RegularCartesian.get_cells_Ax
+      
+      
+        ~RegularCartesian.get_cells_Ay
+      
+      
+        ~RegularCartesian.get_cells_Az
+      
+      
+        ~RegularCartesian.get_cells_G
+      
+      
+        ~RegularCartesian.get_cells_G_diag_1
+      
+      
+        ~RegularCartesian.get_cells_G_diag_2
+      
+      
+        ~RegularCartesian.get_cells_G_diag_3
+      
+      
+        ~RegularCartesian.get_cells_V
+      
+      
+        ~RegularCartesian.get_cells_center
+      
+      
+        ~RegularCartesian.get_cells_coords
+      
+      
+        ~RegularCartesian.get_cells_d
+      
+      
+        ~RegularCartesian.get_cells_dx
+      
+      
+        ~RegularCartesian.get_cells_dy
+      
+      
+        ~RegularCartesian.get_cells_dz
+      
+      
+        ~RegularCartesian.get_cells_i
+      
+      
+        ~RegularCartesian.get_cells_icoords
+      
+      
+        ~RegularCartesian.get_cells_id
+      
+      
+        ~RegularCartesian.get_cells_k
+      
+      
+        ~RegularCartesian.get_corners
+      
+      
+        ~RegularCartesian.get_fdir
+      
+      
+        ~RegularCartesian.get_fshape
+      
+      
+        ~RegularCartesian.get_n
+      
+      
+        ~RegularCartesian.get_n_max
+      
+      
+        ~RegularCartesian.get_ones
+      
+      
+        ~RegularCartesian.get_order
+      
+      
+        ~RegularCartesian.get_prop
+      
+      
+        ~RegularCartesian.get_pyvista_grid
+      
+      
+        ~RegularCartesian.get_shape
+      
+      
+        ~RegularCartesian.get_zeros
+      
+      
+        ~RegularCartesian.remove_boundaries
+      
+      
+        ~RegularCartesian.report
+      
+      
+        ~RegularCartesian.set_cell_value
+      
+      
+        ~RegularCartesian.set_comp
+      
+      
+        ~RegularCartesian.set_prop
+      
+      
+        ~RegularCartesian.set_props
+      
+      
+        ~RegularCartesian.set_units
+      
+      
+        ~RegularCartesian.show
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

@@ -1,0 +1,41 @@
+TensorFlow
+==========
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoclass:: TensorFlow
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~TensorFlow.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~TensorFlow.ones
+      
+      
+        ~TensorFlow.transpose
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

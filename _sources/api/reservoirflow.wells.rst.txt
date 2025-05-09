@@ -1,0 +1,40 @@
+wells
+===================
+
+.. automodule:: reservoirflow.wells
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      Well
+      SingleCell
+      MultiCell
+      Directional
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

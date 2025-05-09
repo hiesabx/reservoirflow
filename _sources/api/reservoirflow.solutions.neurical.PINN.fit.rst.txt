@@ -1,0 +1,6 @@
+reservoirflow.solutions.neurical.PINN.fit
+=========================================
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. automethod:: PINN.fit

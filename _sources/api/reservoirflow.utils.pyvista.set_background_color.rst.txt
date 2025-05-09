@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.set\_background\_color
+==================================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: set_background_color

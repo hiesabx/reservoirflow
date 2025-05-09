@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.copy
+==================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.copy

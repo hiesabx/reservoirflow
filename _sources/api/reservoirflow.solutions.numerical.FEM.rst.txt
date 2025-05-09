@@ -1,0 +1,41 @@
+FEM
+===
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. autoclass:: FEM
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~FEM.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~FEM.run
+      
+      
+        ~FEM.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

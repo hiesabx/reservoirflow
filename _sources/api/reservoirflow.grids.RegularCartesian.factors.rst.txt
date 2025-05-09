@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.factors
+============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoattribute:: RegularCartesian.factors

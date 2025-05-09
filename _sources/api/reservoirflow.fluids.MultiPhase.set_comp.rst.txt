@@ -1,0 +1,6 @@
+reservoirflow.fluids.MultiPhase.set\_comp
+=========================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: MultiPhase.set_comp

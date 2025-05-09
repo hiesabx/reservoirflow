@@ -1,0 +1,6 @@
+reservoirflow.backends.NumPy.name
+=================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoattribute:: NumPy.name

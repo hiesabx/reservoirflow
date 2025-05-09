@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.show
+==================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.show

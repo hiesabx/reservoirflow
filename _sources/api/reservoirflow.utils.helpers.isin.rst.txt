@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.isin
+================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: isin

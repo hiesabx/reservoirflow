@@ -1,0 +1,6 @@
+reservoirflow.scalers.MinMax.set\_output\_range
+===============================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: MinMax.set_output_range

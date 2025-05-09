@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.FDM.get\_cells\_eq
+====================================================
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. automethod:: FDM.get_cells_eq
