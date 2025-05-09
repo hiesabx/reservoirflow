@@ -4,7 +4,7 @@
 
 - Install Python:
 
-    For this project, You need to install python. `python>=3.8` is recommended. More download options can be found at the official website [python.org](https://www.python.org/downloads/release/python-379/). Make sure that you add Python to the `Path` variable of your operating system.
+    For this project, You need to install python. We recommend `python==3.11`. More download options can be found at the official website [python.org](https://www.python.org/downloads/release/python-379/). Make sure that you add Python to the `Path` variable of your operating system.
 
 - Install `reservoirflow` directly from [PyPi](https://pypi.org/project/reservoirflow/):
 
@@ -59,10 +59,10 @@
     or
 
     ```console
-    $ python.exe -m pip install --upgrade pip
+    $ python -m pip install --upgrade pip
     ```
 
-- Setup the library:
+- Install `reservoirflow` in your virtual environment:
 
     ```console
     $ pip install reservoirflow
