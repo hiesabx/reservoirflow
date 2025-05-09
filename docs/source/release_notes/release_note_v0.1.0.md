@@ -28,7 +28,7 @@ If you are still wondering Why *ReservoirFlow* will be need, feel free to read [
 
 ## Dedication
 
-This project could have failed in many ways, but the support I got from all my family and friends was much bigger than that. This work took more than 5 years (from 2020 to 2025) of dedication, hard work, designing, engineering, and sometimes frustration aiming for perfection. I am glad that this project came to life in a best possible way; a startup company that offer open-source tools.
+This project could have failed in many ways, but the support I got from all my family and friends was much bigger than that. This work took more than 5 years (from 2020 to 2025) of dedication, hard work, designing, engineering, and sometimes frustration aiming for perfection. I am glad that this project came to life in a best possible way; an open-source software.
 
 Following the advice of my mother (*Saadat Abugazia*) who repeatedly asked me to build something useful for humanity, and the path that was drawn by my father (*Yousef Abugrin*), may God have mercy on him, who continuously insisted on taking private classes in English, Mathematics and Physics (in my free-time) from preparatory school to university time, I believe that my parents are the true heroes behind this work. I would like also to thank my wife and kids who have been extremely patient with me spending several years fighting with my black-screen coding. I would like also to thank my father-in-law [Mohamed Bayoud](https://www.linkedin.com/in/mohamed-bayoud-6577a991/) for his continuous support.
 
