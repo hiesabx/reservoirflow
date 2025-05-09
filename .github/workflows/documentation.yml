@@ -6,11 +6,12 @@ on:
   push:
     branches: 
       - main
-      - develop
+      - docs
+
   pull_request:
     branches: 
       - main
-      - develop
+      - docs
 
 # permissions:
 #   contents: write
