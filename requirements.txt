@@ -39,6 +39,8 @@ pyvista==0.45.0
 ipywidgets==8.1.6
 aiohttp==3.11.11
 trame==3.9.0
+# pyvista[jupyter] # for interactive output in Jupyter notebooks
+# imageio # for gif output
 
 # Python:
 # line_profiler
