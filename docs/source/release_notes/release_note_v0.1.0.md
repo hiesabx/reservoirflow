@@ -26,7 +26,7 @@ My passion now is to keep developing this tool but with the support of the commu
 If you are still wondering Why *ReservoirFlow* will be need, feel free to read [Why do we need ReservoirFlow? 🤷‍♂️](/community/forum/community_topics/why_do_we_need_reservoirflow.html).
 ````
 
-<!-- ## Dedication
+## Dedication
 
 This project could have failed in many ways, but the support I got from all my family and friends was much bigger than that. This work took more than 5 years (from 2020 to 2025) of dedication, hard work, designing, engineering, and sometimes frustration aiming for perfection. I am glad that this project came to life in a best possible way; a startup company that offer open-source tools.
 
@@ -36,7 +36,7 @@ I would also like to thank all my supervisors, teachers, and colleagues during a
 
 I would like to thank 3 women who helped me to achieve my dreams during my second master’s degree in Applied Data Science at Frankfurt School: [Jo Karajanov](https://www.linkedin.com/in/jo-karajanov/), [Zorica Zujic](https://www.linkedin.com/in/zorica-zujic-bb424123b/), and [Ruby Salvatore](https://www.linkedin.com/in/rubysalvatore/). I can’t thank enough those great people. In addition, my supervisors and teachers at Frankfurt School including: [Florian Ellsaesser](https://www.linkedin.com/in/florian-ellsaesser-49669b1/), [Levente Szabados](https://www.linkedin.com/in/levente-szabados-ai/), [András Simonyi](https://www.linkedin.com/in/andr%C3%A1s-simonyi-a6b5523b/), [Jan Nagler](https://www.linkedin.com/in/jan-nagler-8b5489158/), [Vahe Andonians](https://www.linkedin.com/in/vaheandonians/), [Gregory Wheeler](https://www.linkedin.com/in/gregoryrwheeler/), [Kerem Tomak](https://www.linkedin.com/in/tomakk/), and *Peter Rossbach*. 
 
-Last but not least, I would like to thank my supervisors from Friedrich-Alexander-Universität Erlangen-Nürnberg for my on going PhD in applied mathematics (focused on mathematical physics) including: [Prof. Nadja Ray](https://www.linkedin.com/in/nadja-ray-106494279/) for her continues research support and guidance and [Prof. Eberhard Bänsch](https://www.math.fau.de/person/prof-dr-eberhard-baensch/) for his support to start my PhD. -->
+Last but not least, I would like to thank my supervisors from Friedrich-Alexander-Universität Erlangen-Nürnberg for my on going PhD in applied mathematics (focused on mathematical physics) including: [Prof. Nadja Ray](https://www.linkedin.com/in/nadja-ray-106494279/) for her continues research support and guidance and [Prof. Eberhard Bänsch](https://www.math.fau.de/person/prof-dr-eberhard-baensch/) for his support to start my PhD.
 
 ## Contributors
 

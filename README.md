@@ -67,7 +67,7 @@ Install `reservoirflow` directly from [PyPi](https://pypi.org/project/reservoirf
 $ pip install reservoirflow
 ```
 
-For more information about the installation process, see: [Getting Started](https://reservoirflow.hiesab.com/user_guide/getting_started/getting_started.html) in the documentation.
+We recommend `python==3.11`. For more information about the installation process, see: [Getting Started](https://reservoirflow.hiesab.com/user_guide/getting_started/getting_started.html) in the documentation.
 
 ## Import Convention
 
@@ -92,7 +92,7 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 ## License
 
-This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Detailed license can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode). The current license does not allow commercial use without an explicit authorization from the author. For commercial applications, please [contact](#contact) us.
+This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Detailed license can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode). The current license does not allow commercial use without an explicit authorization from the author. For commercial applications, please [contact](https://www.hiesab.com/en/contact/) us.
 
 ## Disclaimer
 
