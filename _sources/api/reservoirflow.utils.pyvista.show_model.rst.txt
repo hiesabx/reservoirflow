@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.show\_model
+=======================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: show_model

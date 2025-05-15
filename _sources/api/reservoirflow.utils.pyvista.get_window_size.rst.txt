@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.get\_window\_size
+=============================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: get_window_size

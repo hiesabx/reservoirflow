@@ -1,0 +1,37 @@
+solvers
+=========================================
+
+.. automodule:: reservoirflow.solutions.numerical.solvers
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      get_dsolver
+      get_isolver
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

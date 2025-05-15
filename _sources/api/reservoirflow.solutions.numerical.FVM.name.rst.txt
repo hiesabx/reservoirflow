@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.FVM.name
+==========================================
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. autoattribute:: FVM.name

@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.get\_boundary\_str
+==============================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: get_boundary_str

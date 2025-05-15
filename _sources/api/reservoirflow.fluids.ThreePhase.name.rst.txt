@@ -1,0 +1,6 @@
+reservoirflow.fluids.ThreePhase.name
+====================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoattribute:: ThreePhase.name

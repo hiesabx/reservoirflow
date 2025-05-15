@@ -1,0 +1,6 @@
+reservoirflow.wells.MultiCell.factors
+=====================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: MultiCell.factors

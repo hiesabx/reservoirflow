@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.set\_plotter\_config
+================================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: set_plotter_config

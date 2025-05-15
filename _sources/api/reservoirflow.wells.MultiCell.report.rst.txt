@@ -1,0 +1,6 @@
+reservoirflow.wells.MultiCell.report
+====================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. automethod:: MultiCell.report

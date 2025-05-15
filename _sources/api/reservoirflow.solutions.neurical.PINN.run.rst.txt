@@ -1,0 +1,6 @@
+reservoirflow.solutions.neurical.PINN.run
+=========================================
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. automethod:: PINN.run

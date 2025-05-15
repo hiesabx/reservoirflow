@@ -1,0 +1,6 @@
+reservoirflow.backends.JAX.name
+===============================
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoattribute:: JAX.name

@@ -1,0 +1,6 @@
+reservoirflow.backends.Backend.ones
+===================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: Backend.ones

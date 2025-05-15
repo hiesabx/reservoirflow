@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.set\_comp
+==============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.set_comp

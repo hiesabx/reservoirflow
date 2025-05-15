@@ -1,0 +1,6 @@
+reservoirflow.fluids.Fluid.set\_comp
+====================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: Fluid.set_comp

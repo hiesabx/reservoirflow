@@ -1,0 +1,41 @@
+PyTorch
+=======
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoclass:: PyTorch
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~PyTorch.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~PyTorch.ones
+      
+      
+        ~PyTorch.transpose
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

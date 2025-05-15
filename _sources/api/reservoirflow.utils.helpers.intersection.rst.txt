@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.intersection
+========================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: intersection

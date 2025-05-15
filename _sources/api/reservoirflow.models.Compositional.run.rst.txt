@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.run
+======================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Compositional.run

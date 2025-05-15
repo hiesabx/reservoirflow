@@ -1,0 +1,56 @@
+Grid
+====
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoclass:: Grid
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Grid.factors
+      
+      
+        ~Grid.name
+      
+      
+        ~Grid.unit
+      
+      
+        ~Grid.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Grid.allow_synonyms
+      
+      
+        ~Grid.report
+      
+      
+        ~Grid.set_comp
+      
+      
+        ~Grid.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

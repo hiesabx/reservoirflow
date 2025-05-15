@@ -1,0 +1,6 @@
+reservoirflow.fluids.ThreePhase.set\_comp
+=========================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: ThreePhase.set_comp

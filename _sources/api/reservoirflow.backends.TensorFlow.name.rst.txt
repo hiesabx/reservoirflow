@@ -1,0 +1,6 @@
+reservoirflow.backends.TensorFlow.name
+======================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoattribute:: TensorFlow.name

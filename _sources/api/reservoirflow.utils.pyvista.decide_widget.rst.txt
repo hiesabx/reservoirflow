@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.decide\_widget
+==========================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: decide_widget

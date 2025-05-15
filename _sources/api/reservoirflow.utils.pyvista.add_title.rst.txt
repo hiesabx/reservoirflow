@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.add\_title
+======================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: add_title

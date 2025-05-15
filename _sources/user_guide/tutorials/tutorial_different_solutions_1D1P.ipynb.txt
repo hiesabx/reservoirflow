@@ -1,0 +1,820 @@
+{
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# Different Solutions for 1-Dimensional-1-Phase Problem\n",
+                "\n",
+                "[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1-5ztISn_pEuNjBWLEckyimFk1pDJf9wc/view?usp=drive_link&target=_blank)\n",
+                "\n",
+                "*Author: Zakariya Abugrin | Date: May 2025*"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+                "tags": [
+                    "remove-input"
+                ]
+            },
+            "outputs": [],
+            "source": [
+                "# Colab only:\n",
+                "try:\n",
+                "    # Install reservoirflow in Colab\n",
+                "    import os\n",
+                "    import google.colab\n",
+                "    !pip install reservoirflow\n",
+                "    # Restart session after installation\n",
+                "    os.kill(os.getpid(), 9)\n",
+                "    print(\"Session was restarted.\")\n",
+                "    print(\"Now you can run to the following cells.\")\n",
+                "except ImportError:\n",
+                "    pass"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Introduction\n",
+                "\n",
+                "The solution for a simple 1-dimensional-1-phase (1D1P) problem is available in all solutions which includes: `analytical`, `numerical`, `neurical`. In tutorial, we will see how we can build all solutions and compare them together. \n",
+                "\n",
+                "## Prerequisites:\n",
+                "Before you can follow this tutorial, you need to understand the following tutorials:\n",
+                "1. [Understand scalers Module](/user_guide/tutorials/tutorial_understand_scalers_module.html).\n",
+                "2. [Understand Compiling](/user_guide/tutorials/tutorial_understand_compiling.html)."
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Import `reservoirflow`\n",
+                "\n",
+                "We start with importing `reservoirflow` as `rf`. The abbreviation `rf` refers to `reservoirflow` where all modules under this library can be accessed. `rf` is also used throughout the [documentation](/api/API.html). We recommend our users to stick with this convention."
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 1,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "0.1.0\n"
+                    ]
+                }
+            ],
+            "source": [
+                "import reservoirflow as rf\n",
+                "import numpy as np\n",
+                "\n",
+                "print(rf.__version__)"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Create a Model"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 2,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "run_config = dict(\n",
+                "    nsteps=100,\n",
+                "    threading=True,\n",
+                "    vectorize=True,\n",
+                "    check_MB=True,\n",
+                "    print_arrays=False,\n",
+                "    isolver=None,  #'cgs',\n",
+                ")"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 3,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "def create_model(nx=101, n_w=2, comp=False):\n",
+                "    if comp:\n",
+                "        g_comp = 1 * 10**-6\n",
+                "        f_comp = 1 * 10**-5\n",
+                "    else:\n",
+                "        g_comp = None\n",
+                "        f_comp = None\n",
+                "\n",
+                "    grid = rf.grids.RegularCartesian(\n",
+                "        nx=nx,\n",
+                "        ny=1,\n",
+                "        nz=1,\n",
+                "        dx=300,\n",
+                "        dy=350,\n",
+                "        dz=40,\n",
+                "        phi=0.27,\n",
+                "        kx=270,\n",
+                "        comp=g_comp,\n",
+                "        dtype=\"double\",\n",
+                "    )\n",
+                "\n",
+                "    fluid = rf.fluids.SinglePhase(\n",
+                "        mu=0.5,\n",
+                "        B=1,\n",
+                "        comp=f_comp,\n",
+                "        dtype=\"double\",\n",
+                "    )\n",
+                "\n",
+                "    model = rf.models.BlackOil(\n",
+                "        grid, fluid, pi=4000, dtype=\"double\", dt=1, verbose=False\n",
+                "    )\n",
+                "    if n_w > 0:\n",
+                "        well_ids = np.cumsum([nx // (n_w + 1) for i in range(n_w)])\n",
+                "        print(\"Wells_ids:\", well_ids)\n",
+                "        for well_id in well_ids:\n",
+                "            # model.set_well(id=well_id, q=-600, s=1.5, r=3.5)\n",
+                "            model.set_well(id=well_id, pwf=1000, s=1.5, r=3.5)\n",
+                "        model.set_boundaries({0: (\"pressure\", 4000), nx + 1: (\"pressure\", 4000)})\n",
+                "    else:\n",
+                "        model.set_boundaries({0: (\"pressure\", 4000), nx + 1: (\"pressure\", 1000)})\n",
+                "        # model.set_boundaries({0: (\"pressure\", 1000), nx+1: (\"pressure\", 4000)})\n",
+                "\n",
+                "    return model"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 4,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "model = create_model(n_w=0, comp=True)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 5,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] D1P1 was assigned as model.solution.\n",
+                        "[info] Simulation run started: 100 timesteps.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "[step] 1000: 100%|\u001b[32m██████████\u001b[0m| 1000/1000 [01:02<00:00, 16.10steps/s]\n"
+                    ]
+                },
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] Simulation run of 100 steps finished in 62.13 seconds.\n",
+                        "[info] Simulation run started: 100 timesteps.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "[step] 1000: 100%|\u001b[32m██████████\u001b[0m| 1000/1000 [01:02<00:00, 16.11steps/s]"
+                    ]
+                },
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] Simulation run of 100 steps finished in 62.11 seconds.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "\n"
+                    ]
+                }
+            ],
+            "source": [
+                "model.compile(\"analytical\", \"1D1P\")\n",
+                "model.run(**run_config)\n",
+                "model.run(**run_config)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 6,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "100"
+                        ]
+                    },
+                    "execution_count": 6,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "model.solution.tstep"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 7,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "(10403, 103)\n"
+                    ]
+                },
+                {
+                    "data": {
+                        "text/plain": [
+                            "array([[4000.        , 4000.        , 4000.        , ..., 3989.27771411,\n",
+                            "        3950.1025607 , 1000.        ],\n",
+                            "       [4000.        , 4000.        , 4000.        , ..., 3989.27771411,\n",
+                            "        3950.1025607 , 1000.        ],\n",
+                            "       [4000.        , 4000.        , 4000.        , ..., 3989.27771411,\n",
+                            "        3950.1025607 , 1000.        ],\n",
+                            "       ...,\n",
+                            "       [4000.        , 3987.62120047, 3975.22754443, ..., 1094.710814  ,\n",
+                            "        1047.36457992, 1000.        ],\n",
+                            "       [4000.        , 3987.62120047, 3975.22754443, ..., 1094.710814  ,\n",
+                            "        1047.36457992, 1000.        ],\n",
+                            "       [4000.        , 3987.62120047, 3975.22754443, ..., 1094.710814  ,\n",
+                            "        1047.36457992, 1000.        ]])"
+                        ]
+                    },
+                    "execution_count": 7,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "print(model.solution.pressures.shape)\n",
+                "model.solution.pressures"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 8,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "array([4000.        , 3987.62120047, 3975.22754443, 3962.80418455,\n",
+                            "       3950.33629191, 3937.80906523, 3925.20774013, 3912.51759838,\n",
+                            "       3899.72397729, 3886.81227908, 3873.76798032, 3860.5766415 ,\n",
+                            "       3847.22391657, 3833.69556269, 3819.97744994, 3806.05557125,\n",
+                            "       3791.9160523 , 3777.54516163, 3762.92932079, 3748.05511461,\n",
+                            "       3732.90930155, 3717.47882423, 3701.75081996, 3685.71263141,\n",
+                            "       3669.35181742, 3652.65616382, 3635.61369437, 3618.21268178,\n",
+                            "       3600.44165879, 3582.28942927, 3563.74507944, 3544.79798904,\n",
+                            "       3525.43784254, 3505.65464042, 3485.43871032, 3464.78071827,\n",
+                            "       3443.67167978, 3422.10297094, 3400.06633939, 3377.5539152 ,\n",
+                            "       3354.5582216 , 3331.07218558, 3307.08914832, 3282.6028754 ,\n",
+                            "       3257.60756679, 3232.09786664, 3206.06887271, 3179.51614561,\n",
+                            "       3152.4357176 , 3124.82410116, 3096.67829707, 3067.99580221,\n",
+                            "       3038.77461681, 3009.01325134, 2978.71073286, 2947.86661095,\n",
+                            "       2916.480963  , 2884.55439906, 2852.08806601, 2819.08365124,\n",
+                            "       2785.54338564, 2751.47004598, 2716.8669566 , 2681.73799048,\n",
+                            "       2646.08756958, 2609.92066447, 2573.24279323, 2536.06001966,\n",
+                            "       2498.37895069, 2460.20673302, 2421.5510491 , 2382.42011218,\n",
+                            "       2342.82266071, 2302.76795192, 2262.26575455, 2221.32634094,\n",
+                            "       2179.9604782 , 2138.17941868, 2095.99488966, 2053.41908228,\n",
+                            "       2010.46463971, 1967.14464456, 1923.47260565, 1879.46244395,\n",
+                            "       1835.12847793, 1790.48540819, 1745.54830146, 1700.33257394,\n",
+                            "       1654.85397407, 1609.12856474, 1563.17270485, 1517.00303054,\n",
+                            "       1470.6364357 , 1424.09005221, 1377.38122968, 1330.52751479,\n",
+                            "       1283.54663031, 1236.45645378, 1189.27499593, 1142.02037886,\n",
+                            "       1094.710814  , 1047.36457992, 1000.        ])"
+                        ]
+                    },
+                    "execution_count": 8,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "df = model.get_df(columns=['cells_pressure'])\n",
+                "df.iloc[-1].values"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 9,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] FDM was assigned as model.solution.\n",
+                        "[info] Simulation run started: 100 timesteps.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "[step] 100: 100%|\u001b[32m██████████\u001b[0m| 100/100 [00:00<00:00, 329.72steps/s]"
+                    ]
+                },
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] Simulation run of 100 steps finished in 0.3 seconds.\n",
+                        "[info] Material Balance Error: 7.602807272633072e-13.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "\n"
+                    ]
+                }
+            ],
+            "source": [
+                "model.compile(\"numerical\", \"FDM\", True)\n",
+                "model.run(**run_config)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 10,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "(101, 103)\n"
+                    ]
+                },
+                {
+                    "data": {
+                        "text/plain": [
+                            "array([[4000.        , 4000.        , 4000.        , ..., 4000.        ,\n",
+                            "        4000.        , 1000.        ],\n",
+                            "       [4000.        , 4000.        , 4000.        , ..., 2044.30826038,\n",
+                            "        1415.49650699, 1000.        ],\n",
+                            "       [4000.        , 3999.99999999, 3999.99999998, ..., 1619.25974855,\n",
+                            "        1211.73326543, 1000.        ],\n",
+                            "       ...,\n",
+                            "       [4000.        , 3993.79351118, 3981.37292285, ..., 1072.05192067,\n",
+                            "        1024.0205196 , 1000.        ],\n",
+                            "       [4000.        , 3993.69696822, 3981.08335228, ..., 1071.68835969,\n",
+                            "        1023.89928132, 1000.        ],\n",
+                            "       [4000.        , 3993.60118203, 3980.7960529 , ..., 1071.33055675,\n",
+                            "        1023.77996359, 1000.        ]])"
+                        ]
+                    },
+                    "execution_count": 10,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "print(model.solution.pressures.shape)\n",
+                "model.solution.pressures"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 11,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] FDM was assigned as model.solution.\n",
+                        "[info] Simulation run started: 100 timesteps.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "[step] 100: 100%|\u001b[32m██████████\u001b[0m| 100/100 [00:00<00:00, 167.98steps/s]"
+                    ]
+                },
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] Simulation run of 100 steps finished in 0.6 seconds.\n",
+                        "[info] Material Balance Error: 7.600586826583822e-13.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "\n"
+                    ]
+                }
+            ],
+            "source": [
+                "model.compile(\"numerical\", \"FDM\", False)\n",
+                "model.run(**run_config)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 12,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "(101, 103)\n"
+                    ]
+                },
+                {
+                    "data": {
+                        "text/plain": [
+                            "array([[4000.        , 4000.        , 4000.        , ..., 4000.        ,\n",
+                            "        4000.        , 1000.        ],\n",
+                            "       [4000.        , 4000.        , 4000.        , ..., 2044.30826038,\n",
+                            "        1415.49650699, 1000.        ],\n",
+                            "       [4000.        , 3999.99999999, 3999.99999998, ..., 1619.25974855,\n",
+                            "        1211.73326543, 1000.        ],\n",
+                            "       ...,\n",
+                            "       [4000.        , 3993.79351118, 3981.37292285, ..., 1072.05192067,\n",
+                            "        1024.0205196 , 1000.        ],\n",
+                            "       [4000.        , 3993.69696822, 3981.08335228, ..., 1071.68835969,\n",
+                            "        1023.89928132, 1000.        ],\n",
+                            "       [4000.        , 3993.60118203, 3980.7960529 , ..., 1071.33055675,\n",
+                            "        1023.77996359, 1000.        ]])"
+                        ]
+                    },
+                    "execution_count": 12,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "print(model.solution.pressures.shape)\n",
+                "model.solution.pressures"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 26,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "{'BlackOil-analytical-D1P1-True': <reservoirflow.solutions.analytical.d1p1.D1P1 at 0x22a82c46f90>,\n",
+                            " 'BlackOil-numerical-FDM-True': <reservoirflow.solutions.numerical.fdm.FDM at 0x22afa20a250>,\n",
+                            " 'BlackOil-numerical-FDM-False': <reservoirflow.solutions.numerical.fdm.FDM at 0x22a8284a790>}"
+                        ]
+                    },
+                    "execution_count": 26,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "model.solutions"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 14,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "101\n",
+                        "101\n"
+                    ]
+                }
+            ],
+            "source": [
+                "print(model.solutions['BlackOil-numerical-FDM-False'].nsteps)\n",
+                "print(model.solutions['BlackOil-numerical-FDM-True'].nsteps)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 15,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "\"rf.solutions.Compiler(model='BlackOil', stype='numerical', method='FDM', sparse=False)\""
+                        ]
+                    },
+                    "execution_count": 15,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "repr(model.compiler)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 16,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "'<reservoirflow.solutions.numerical.fdm.FDM object at 0x0000022A8284A790>'"
+                        ]
+                    },
+                    "execution_count": 16,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "repr(model.solution)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 17,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "'<reservoirflow.solutions.numerical.fdm.FDM object at 0x0000022AFA20A250>'"
+                        ]
+                    },
+                    "execution_count": 17,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "model.set_solution('BlackOil-numerical-FDM-True')\n",
+                "repr(model.solution)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 18,
+            "metadata": {},
+            "outputs": [
+                {
+                    "data": {
+                        "text/plain": [
+                            "rf.solutions.Compiler(model='BlackOil', stype='numerical', method='FDM', sparse=True)"
+                        ]
+                    },
+                    "execution_count": 18,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "model.compiler"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 19,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# eval(repr(model.compiler))"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {},
+            "outputs": [],
+            "source": []
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {},
+            "outputs": [],
+            "source": []
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 22,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "Help on method run in module reservoirflow.solutions.analytical.d1p1:\n",
+                        "\n",
+                        "run(nsteps=10, threading=True, vectorize=True, check_MB=True, print_arrays=False, isolver=None) method of reservoirflow.solutions.analytical.d1p1.D1P1 instance\n",
+                        "    Solve multiple timesteps.\n",
+                        "    \n",
+                        "    .. attention::\n",
+                        "        This is an abstract method.\n",
+                        "\n"
+                    ]
+                }
+            ],
+            "source": [
+                "help(model.run)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 23,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] Simulation run started: 100 timesteps.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "[step] 1000: 100%|\u001b[32m██████████\u001b[0m| 1000/1000 [00:59<00:00, 16.90steps/s]"
+                    ]
+                },
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[info] Simulation run of 100 steps finished in 59.21 seconds.\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "\n"
+                    ]
+                }
+            ],
+            "source": [
+                "model.run(**run_config)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 24,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "[0.         0.27426894 0.63098792 1.        ]\n",
+                        "[   1.           43.74371464  287.77079009 1000.        ]\n"
+                    ]
+                }
+            ],
+            "source": [
+                "import numpy as np\n",
+                "\n",
+                "\n",
+                "def logarithmic_scaling(x, min_range, max_range, c=1):\n",
+                "    scaled_value = (\n",
+                "        (np.log(x + c) - np.log(X.min() + c))\n",
+                "        / (np.log(X.max() + c) - np.log(X.min() + c))\n",
+                "    ) * (max_range - min_range) + min_range\n",
+                "    return scaled_value\n",
+                "\n",
+                "\n",
+                "# Example usage\n",
+                "X = np.array([1, 10, 100, 1000])\n",
+                "\n",
+                "min_range = 0  # Replace with your desired minimum range\n",
+                "max_range = 1  # Replace with your desired maximum range\n",
+                "\n",
+                "scaled_X = logarithmic_scaling(X, min_range, max_range)\n",
+                "\n",
+                "print(scaled_X)\n",
+                "\n",
+                "\n",
+                "def inverse_logarithmic_scaling(scaled_value, min_range, max_range, c=1):\n",
+                "    original_value = (\n",
+                "        np.exp(\n",
+                "            (\n",
+                "                (scaled_value - min_range)\n",
+                "                * (np.log(X.max() + c) - np.log(X.min() + c))\n",
+                "                / (max_range - min_range)\n",
+                "            )\n",
+                "            + np.log(X.min() + c)\n",
+                "        )\n",
+                "        - c\n",
+                "    )\n",
+                "    return original_value\n",
+                "\n",
+                "\n",
+                "# Example usage\n",
+                "scaled_X = np.array([0, 0.5, 0.8, 1])  # Replace with your scaled values\n",
+                "min_range = 0  # Replace with your specified minimum range\n",
+                "max_range = 1  # Replace with your specified maximum range\n",
+                "\n",
+                "original_X = inverse_logarithmic_scaling(scaled_X, min_range, max_range)\n",
+                "\n",
+                "print(original_X)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {},
+            "outputs": [],
+            "source": []
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {},
+            "outputs": [],
+            "source": []
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {},
+            "outputs": [],
+            "source": []
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {},
+            "outputs": [],
+            "source": []
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+                "tags": [
+                    "remove-input"
+                ]
+            },
+            "source": [
+                "```{include} /_static/comments_section.md\n",
+                "```"
+            ]
+        }
+    ],
+    "metadata": {
+        "kernelspec": {
+            "display_name": ".venv",
+            "language": "python",
+            "name": "python3"
+        },
+        "language_info": {
+            "codemirror_mode": {
+                "name": "ipython",
+                "version": 3
+            },
+            "file_extension": ".py",
+            "mimetype": "text/x-python",
+            "name": "python",
+            "nbconvert_exporter": "python",
+            "pygments_lexer": "ipython3",
+            "version": "3.11.9"
+        },
+        "orig_nbformat": 4
+    },
+    "nbformat": 4,
+    "nbformat_minor": 2
+}

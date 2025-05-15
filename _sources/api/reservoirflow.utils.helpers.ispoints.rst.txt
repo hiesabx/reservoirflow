@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.ispoints
+====================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: ispoints

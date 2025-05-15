@@ -1,0 +1,6 @@
+reservoirflow.scalers.Dummy.fit
+===============================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: Dummy.fit

@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.allow\_synonyms
+====================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.allow_synonyms

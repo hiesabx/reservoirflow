@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.compile
+==========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Compositional.compile

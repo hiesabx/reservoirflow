@@ -1,0 +1,1256 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>reservoirflow.grids.RegularCartesian.remove_boundaries &#8212; ReservoirFlow 0.1.0b3</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8e8a900e" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=5ff7f2d6" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=55cca537"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=00435c62"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/reservoirflow.grids.RegularCartesian.remove_boundaries';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = '_static/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../_static/RF_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="reservoirflow.grids.RegularCartesian.report" href="reservoirflow.grids.RegularCartesian.report.html" />
+    <link rel="prev" title="reservoirflow.grids.RegularCartesian.get_zeros" href="reservoirflow.grids.RegularCartesian.get_zeros.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/RF_logo.png" class="logo__image only-light" alt="ReservoirFlow 0.1.0b3 - Home"/>
+    <script>document.write(`<img src="../_static/RF_logo.png" class="logo__image only-dark" alt="ReservoirFlow 0.1.0b3 - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../research_development/research_development.html">
+    R&D
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../capabilities.html">
+    Capabilities
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="API.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../community/community.html">
+    Community
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../support_us.html">
+    Support Us
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../about_us.html">
+    About Us
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../release_notes/release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/hiesabx/reservoirflow" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.hiesab.com/en/products/reservoirflow/" title="Website" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-link fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Website</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.linkedin.com/company/hiesab/" title="LinkedIn" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-linkedin-in fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">LinkedIn</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../research_development/research_development.html">
+    R&D
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../capabilities.html">
+    Capabilities
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="API.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../community/community.html">
+    Community
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support_us.html">
+    Support Us
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about_us.html">
+    About Us
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/hiesabx/reservoirflow" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.hiesab.com/en/products/reservoirflow/" title="Website" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-link fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Website</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.linkedin.com/company/hiesab/" title="LinkedIn" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-linkedin-in fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">LinkedIn</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.fluids.html">fluids</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.fluids.Fluid.html">Fluid</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.factors.html">reservoirflow.fluids.Fluid.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.name.html">reservoirflow.fluids.Fluid.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.unit.html">reservoirflow.fluids.Fluid.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.units.html">reservoirflow.fluids.Fluid.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.allow_synonyms.html">reservoirflow.fluids.Fluid.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.report.html">reservoirflow.fluids.Fluid.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.set_comp.html">reservoirflow.fluids.Fluid.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.Fluid.set_units.html">reservoirflow.fluids.Fluid.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.html">SinglePhase</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.factors.html">reservoirflow.fluids.SinglePhase.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.name.html">reservoirflow.fluids.SinglePhase.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.unit.html">reservoirflow.fluids.SinglePhase.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.units.html">reservoirflow.fluids.SinglePhase.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.allow_synonyms.html">reservoirflow.fluids.SinglePhase.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.report.html">reservoirflow.fluids.SinglePhase.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.set_B.html">reservoirflow.fluids.SinglePhase.set_B</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.set_comp.html">reservoirflow.fluids.SinglePhase.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.set_mu.html">reservoirflow.fluids.SinglePhase.set_mu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.set_props.html">reservoirflow.fluids.SinglePhase.set_props</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.set_rho.html">reservoirflow.fluids.SinglePhase.set_rho</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.SinglePhase.set_units.html">reservoirflow.fluids.SinglePhase.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.html">TwoPhase</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.factors.html">reservoirflow.fluids.TwoPhase.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.name.html">reservoirflow.fluids.TwoPhase.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.unit.html">reservoirflow.fluids.TwoPhase.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.units.html">reservoirflow.fluids.TwoPhase.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.allow_synonyms.html">reservoirflow.fluids.TwoPhase.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.report.html">reservoirflow.fluids.TwoPhase.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.set_comp.html">reservoirflow.fluids.TwoPhase.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.TwoPhase.set_units.html">reservoirflow.fluids.TwoPhase.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.html">ThreePhase</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.factors.html">reservoirflow.fluids.ThreePhase.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.name.html">reservoirflow.fluids.ThreePhase.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.unit.html">reservoirflow.fluids.ThreePhase.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.units.html">reservoirflow.fluids.ThreePhase.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.allow_synonyms.html">reservoirflow.fluids.ThreePhase.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.report.html">reservoirflow.fluids.ThreePhase.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.set_comp.html">reservoirflow.fluids.ThreePhase.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.ThreePhase.set_units.html">reservoirflow.fluids.ThreePhase.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.html">MultiPhase</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.factors.html">reservoirflow.fluids.MultiPhase.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.name.html">reservoirflow.fluids.MultiPhase.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.unit.html">reservoirflow.fluids.MultiPhase.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.units.html">reservoirflow.fluids.MultiPhase.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.allow_synonyms.html">reservoirflow.fluids.MultiPhase.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.report.html">reservoirflow.fluids.MultiPhase.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.set_comp.html">reservoirflow.fluids.MultiPhase.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.fluids.MultiPhase.set_units.html">reservoirflow.fluids.MultiPhase.set_units</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="reservoirflow.grids.html">grids</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.grids.Grid.html">Grid</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.factors.html">reservoirflow.grids.Grid.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.name.html">reservoirflow.grids.Grid.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.unit.html">reservoirflow.grids.Grid.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.units.html">reservoirflow.grids.Grid.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.allow_synonyms.html">reservoirflow.grids.Grid.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.report.html">reservoirflow.grids.Grid.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.set_comp.html">reservoirflow.grids.Grid.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Grid.set_units.html">reservoirflow.grids.Grid.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.html">RegularCartesian</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.factors.html">reservoirflow.grids.RegularCartesian.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.is_anisotropic.html">reservoirflow.grids.RegularCartesian.is_anisotropic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.is_heterogeneous.html">reservoirflow.grids.RegularCartesian.is_heterogeneous</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.is_homogeneous.html">reservoirflow.grids.RegularCartesian.is_homogeneous</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.is_irregular.html">reservoirflow.grids.RegularCartesian.is_irregular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.is_isotropic.html">reservoirflow.grids.RegularCartesian.is_isotropic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.is_regular.html">reservoirflow.grids.RegularCartesian.is_regular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.name.html">reservoirflow.grids.RegularCartesian.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.unit.html">reservoirflow.grids.RegularCartesian.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.units.html">reservoirflow.grids.RegularCartesian.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.allow_synonyms.html">reservoirflow.grids.RegularCartesian.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.extract_boundaries.html">reservoirflow.grids.RegularCartesian.extract_boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_D.html">reservoirflow.grids.RegularCartesian.get_D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_Vt.html">reservoirflow.grids.RegularCartesian.get_Vt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_boundaries.html">reservoirflow.grids.RegularCartesian.get_boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_A.html">reservoirflow.grids.RegularCartesian.get_cell_A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_Ax.html">reservoirflow.grids.RegularCartesian.get_cell_Ax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_Ay.html">reservoirflow.grids.RegularCartesian.get_cell_Ay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_Az.html">reservoirflow.grids.RegularCartesian.get_cell_Az</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_G.html">reservoirflow.grids.RegularCartesian.get_cell_G</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_V.html">reservoirflow.grids.RegularCartesian.get_cell_V</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_boundaries.html">reservoirflow.grids.RegularCartesian.get_cell_boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_center.html">reservoirflow.grids.RegularCartesian.get_cell_center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_coords.html">reservoirflow.grids.RegularCartesian.get_cell_coords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_d.html">reservoirflow.grids.RegularCartesian.get_cell_d</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_dx.html">reservoirflow.grids.RegularCartesian.get_cell_dx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_dy.html">reservoirflow.grids.RegularCartesian.get_cell_dy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_dz.html">reservoirflow.grids.RegularCartesian.get_cell_dz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_icoords.html">reservoirflow.grids.RegularCartesian.get_cell_icoords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_id.html">reservoirflow.grids.RegularCartesian.get_cell_id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_k.html">reservoirflow.grids.RegularCartesian.get_cell_k</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_kx.html">reservoirflow.grids.RegularCartesian.get_cell_kx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_ky.html">reservoirflow.grids.RegularCartesian.get_cell_ky</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_kz.html">reservoirflow.grids.RegularCartesian.get_cell_kz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cell_neighbors.html">reservoirflow.grids.RegularCartesian.get_cell_neighbors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_A.html">reservoirflow.grids.RegularCartesian.get_cells_A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_Ax.html">reservoirflow.grids.RegularCartesian.get_cells_Ax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_Ay.html">reservoirflow.grids.RegularCartesian.get_cells_Ay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_Az.html">reservoirflow.grids.RegularCartesian.get_cells_Az</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_G.html">reservoirflow.grids.RegularCartesian.get_cells_G</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_G_diag_1.html">reservoirflow.grids.RegularCartesian.get_cells_G_diag_1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_G_diag_2.html">reservoirflow.grids.RegularCartesian.get_cells_G_diag_2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_G_diag_3.html">reservoirflow.grids.RegularCartesian.get_cells_G_diag_3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_V.html">reservoirflow.grids.RegularCartesian.get_cells_V</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_center.html">reservoirflow.grids.RegularCartesian.get_cells_center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_coords.html">reservoirflow.grids.RegularCartesian.get_cells_coords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_d.html">reservoirflow.grids.RegularCartesian.get_cells_d</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_dx.html">reservoirflow.grids.RegularCartesian.get_cells_dx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_dy.html">reservoirflow.grids.RegularCartesian.get_cells_dy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_dz.html">reservoirflow.grids.RegularCartesian.get_cells_dz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_i.html">reservoirflow.grids.RegularCartesian.get_cells_i</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_icoords.html">reservoirflow.grids.RegularCartesian.get_cells_icoords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_id.html">reservoirflow.grids.RegularCartesian.get_cells_id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_cells_k.html">reservoirflow.grids.RegularCartesian.get_cells_k</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_corners.html">reservoirflow.grids.RegularCartesian.get_corners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_fdir.html">reservoirflow.grids.RegularCartesian.get_fdir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_fshape.html">reservoirflow.grids.RegularCartesian.get_fshape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_n.html">reservoirflow.grids.RegularCartesian.get_n</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_n_max.html">reservoirflow.grids.RegularCartesian.get_n_max</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_ones.html">reservoirflow.grids.RegularCartesian.get_ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_order.html">reservoirflow.grids.RegularCartesian.get_order</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_prop.html">reservoirflow.grids.RegularCartesian.get_prop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_pyvista_grid.html">reservoirflow.grids.RegularCartesian.get_pyvista_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_shape.html">reservoirflow.grids.RegularCartesian.get_shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.get_zeros.html">reservoirflow.grids.RegularCartesian.get_zeros</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">reservoirflow.grids.RegularCartesian.remove_boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.report.html">reservoirflow.grids.RegularCartesian.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.set_cell_value.html">reservoirflow.grids.RegularCartesian.set_cell_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.set_comp.html">reservoirflow.grids.RegularCartesian.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.set_prop.html">reservoirflow.grids.RegularCartesian.set_prop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.set_props.html">reservoirflow.grids.RegularCartesian.set_props</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.set_units.html">reservoirflow.grids.RegularCartesian.set_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.RegularCartesian.show.html">reservoirflow.grids.RegularCartesian.show</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.grids.Radial.html">Radial</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.factors.html">reservoirflow.grids.Radial.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.name.html">reservoirflow.grids.Radial.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.unit.html">reservoirflow.grids.Radial.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.units.html">reservoirflow.grids.Radial.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.allow_synonyms.html">reservoirflow.grids.Radial.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.report.html">reservoirflow.grids.Radial.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.set_comp.html">reservoirflow.grids.Radial.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.Radial.set_units.html">reservoirflow.grids.Radial.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.html">IrregularCartesian</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.factors.html">reservoirflow.grids.IrregularCartesian.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.name.html">reservoirflow.grids.IrregularCartesian.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.unit.html">reservoirflow.grids.IrregularCartesian.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.units.html">reservoirflow.grids.IrregularCartesian.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.allow_synonyms.html">reservoirflow.grids.IrregularCartesian.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.report.html">reservoirflow.grids.IrregularCartesian.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.set_comp.html">reservoirflow.grids.IrregularCartesian.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.grids.IrregularCartesian.set_units.html">reservoirflow.grids.IrregularCartesian.set_units</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.wells.html">wells</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.wells.Well.html">Well</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Well.factors.html">reservoirflow.wells.Well.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Well.name.html">reservoirflow.wells.Well.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Well.unit.html">reservoirflow.wells.Well.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Well.units.html">reservoirflow.wells.Well.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Well.report.html">reservoirflow.wells.Well.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Well.set_units.html">reservoirflow.wells.Well.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.wells.SingleCell.html">SingleCell</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.factors.html">reservoirflow.wells.SingleCell.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.name.html">reservoirflow.wells.SingleCell.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.unit.html">reservoirflow.wells.SingleCell.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.units.html">reservoirflow.wells.SingleCell.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.allow_synonyms.html">reservoirflow.wells.SingleCell.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.report.html">reservoirflow.wells.SingleCell.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_cell_id.html">reservoirflow.wells.SingleCell.set_cell_id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_constrain.html">reservoirflow.wells.SingleCell.set_constrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_props.html">reservoirflow.wells.SingleCell.set_props</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_q.html">reservoirflow.wells.SingleCell.set_q</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_r.html">reservoirflow.wells.SingleCell.set_r</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_s.html">reservoirflow.wells.SingleCell.set_s</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.SingleCell.set_units.html">reservoirflow.wells.SingleCell.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.wells.MultiCell.html">MultiCell</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.MultiCell.factors.html">reservoirflow.wells.MultiCell.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.MultiCell.name.html">reservoirflow.wells.MultiCell.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.MultiCell.unit.html">reservoirflow.wells.MultiCell.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.MultiCell.units.html">reservoirflow.wells.MultiCell.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.MultiCell.report.html">reservoirflow.wells.MultiCell.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.MultiCell.set_units.html">reservoirflow.wells.MultiCell.set_units</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.wells.Directional.html">Directional</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Directional.factors.html">reservoirflow.wells.Directional.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Directional.name.html">reservoirflow.wells.Directional.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Directional.unit.html">reservoirflow.wells.Directional.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Directional.units.html">reservoirflow.wells.Directional.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Directional.report.html">reservoirflow.wells.Directional.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.wells.Directional.set_units.html">reservoirflow.wells.Directional.set_units</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.models.html">models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.models.Model.html">Model</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.factors.html">reservoirflow.models.Model.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.name.html">reservoirflow.models.Model.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.unit.html">reservoirflow.models.Model.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.units.html">reservoirflow.models.Model.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.allow_synonyms.html">reservoirflow.models.Model.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.compile.html">reservoirflow.models.Model.compile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.get_solutions.html">reservoirflow.models.Model.get_solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.report.html">reservoirflow.models.Model.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.run.html">reservoirflow.models.Model.run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.set_comp.html">reservoirflow.models.Model.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.set_solution.html">reservoirflow.models.Model.set_solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.set_units.html">reservoirflow.models.Model.set_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Model.solve.html">reservoirflow.models.Model.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.models.BlackOil.html">BlackOil</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.factors.html">reservoirflow.models.BlackOil.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.name.html">reservoirflow.models.BlackOil.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.unit.html">reservoirflow.models.BlackOil.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.units.html">reservoirflow.models.BlackOil.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.allow_synonyms.html">reservoirflow.models.BlackOil.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.compile.html">reservoirflow.models.BlackOil.compile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.copy.html">reservoirflow.models.BlackOil.copy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_alpha.html">reservoirflow.models.BlackOil.get_alpha</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_cell_trans.html">reservoirflow.models.BlackOil.get_cell_trans</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_cells_trans.html">reservoirflow.models.BlackOil.get_cells_trans</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_cells_trans_diag.html">reservoirflow.models.BlackOil.get_cells_trans_diag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_centers.html">reservoirflow.models.BlackOil.get_centers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_df.html">reservoirflow.models.BlackOil.get_df</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_domain.html">reservoirflow.models.BlackOil.get_domain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_init_arrays.html">reservoirflow.models.BlackOil.get_init_arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_shape.html">reservoirflow.models.BlackOil.get_shape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_solutions.html">reservoirflow.models.BlackOil.get_solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.get_time.html">reservoirflow.models.BlackOil.get_time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.plot.html">reservoirflow.models.BlackOil.plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.plot_grid.html">reservoirflow.models.BlackOil.plot_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.report.html">reservoirflow.models.BlackOil.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.run.html">reservoirflow.models.BlackOil.run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.save_gif.html">reservoirflow.models.BlackOil.save_gif</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_all_boundaries.html">reservoirflow.models.BlackOil.set_all_boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_boundaries.html">reservoirflow.models.BlackOil.set_boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_boundary.html">reservoirflow.models.BlackOil.set_boundary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_comp.html">reservoirflow.models.BlackOil.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_scalers.html">reservoirflow.models.BlackOil.set_scalers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_solution.html">reservoirflow.models.BlackOil.set_solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_units.html">reservoirflow.models.BlackOil.set_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.set_well.html">reservoirflow.models.BlackOil.set_well</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.show.html">reservoirflow.models.BlackOil.show</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.solve.html">reservoirflow.models.BlackOil.solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.BlackOil.update_scalers.html">reservoirflow.models.BlackOil.update_scalers</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.models.Compositional.html">Compositional</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.factors.html">reservoirflow.models.Compositional.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.name.html">reservoirflow.models.Compositional.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.unit.html">reservoirflow.models.Compositional.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.units.html">reservoirflow.models.Compositional.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.allow_synonyms.html">reservoirflow.models.Compositional.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.compile.html">reservoirflow.models.Compositional.compile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.get_solutions.html">reservoirflow.models.Compositional.get_solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.report.html">reservoirflow.models.Compositional.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.run.html">reservoirflow.models.Compositional.run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.set_comp.html">reservoirflow.models.Compositional.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.set_solution.html">reservoirflow.models.Compositional.set_solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.set_units.html">reservoirflow.models.Compositional.set_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Compositional.solve.html">reservoirflow.models.Compositional.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.models.Thermal.html">Thermal</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.factors.html">reservoirflow.models.Thermal.factors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.name.html">reservoirflow.models.Thermal.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.unit.html">reservoirflow.models.Thermal.unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.units.html">reservoirflow.models.Thermal.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.allow_synonyms.html">reservoirflow.models.Thermal.allow_synonyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.compile.html">reservoirflow.models.Thermal.compile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.get_solutions.html">reservoirflow.models.Thermal.get_solutions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.report.html">reservoirflow.models.Thermal.report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.run.html">reservoirflow.models.Thermal.run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.set_comp.html">reservoirflow.models.Thermal.set_comp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.set_solution.html">reservoirflow.models.Thermal.set_solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.set_units.html">reservoirflow.models.Thermal.set_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.models.Thermal.solve.html">reservoirflow.models.Thermal.solve</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.solutions.html">solutions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="reservoirflow.solutions.Compiler.html">Compiler</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.solutions.Solution.html">Solution</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.solutions.Solution.run.html">reservoirflow.solutions.Solution.run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.solutions.Solution.solve.html">reservoirflow.solutions.Solution.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.html">analytical</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P1.html">D1P1</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P1.name.html">reservoirflow.solutions.analytical.D1P1.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P1.calc_solution.html">reservoirflow.solutions.analytical.D1P1.calc_solution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P1.run.html">reservoirflow.solutions.analytical.D1P1.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P1.solve.html">reservoirflow.solutions.analytical.D1P1.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P2.html">D1P2</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P2.name.html">reservoirflow.solutions.analytical.D1P2.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P2.run.html">reservoirflow.solutions.analytical.D1P2.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P2.solve.html">reservoirflow.solutions.analytical.D1P2.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P3.html">D1P3</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P3.name.html">reservoirflow.solutions.analytical.D1P3.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P3.run.html">reservoirflow.solutions.analytical.D1P3.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D1P3.solve.html">reservoirflow.solutions.analytical.D1P3.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P1.html">D2P1</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P1.name.html">reservoirflow.solutions.analytical.D2P1.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P1.run.html">reservoirflow.solutions.analytical.D2P1.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P1.solve.html">reservoirflow.solutions.analytical.D2P1.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P2.html">D2P2</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P2.name.html">reservoirflow.solutions.analytical.D2P2.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P2.run.html">reservoirflow.solutions.analytical.D2P2.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P2.solve.html">reservoirflow.solutions.analytical.D2P2.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P3.html">D2P3</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P3.name.html">reservoirflow.solutions.analytical.D2P3.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P3.run.html">reservoirflow.solutions.analytical.D2P3.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D2P3.solve.html">reservoirflow.solutions.analytical.D2P3.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P1.html">D3P1</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P1.name.html">reservoirflow.solutions.analytical.D3P1.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P1.run.html">reservoirflow.solutions.analytical.D3P1.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P1.solve.html">reservoirflow.solutions.analytical.D3P1.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P2.html">D3P2</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P2.name.html">reservoirflow.solutions.analytical.D3P2.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P2.run.html">reservoirflow.solutions.analytical.D3P2.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P2.solve.html">reservoirflow.solutions.analytical.D3P2.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P3.html">D3P3</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P3.name.html">reservoirflow.solutions.analytical.D3P3.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P3.run.html">reservoirflow.solutions.analytical.D3P3.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.analytical.D3P3.solve.html">reservoirflow.solutions.analytical.D3P3.solve</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.solutions.neurical.html">neurical</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.neurical.PINN.html">PINN</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.PINN.name.html">reservoirflow.solutions.neurical.PINN.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.PINN.fit.html">reservoirflow.solutions.neurical.PINN.fit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.PINN.run.html">reservoirflow.solutions.neurical.PINN.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.PINN.solve.html">reservoirflow.solutions.neurical.PINN.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.neurical.DeepONet.html">DeepONet</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.DeepONet.name.html">reservoirflow.solutions.neurical.DeepONet.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.DeepONet.run.html">reservoirflow.solutions.neurical.DeepONet.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.neurical.DeepONet.solve.html">reservoirflow.solutions.neurical.DeepONet.solve</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.solutions.numerical.html">numerical</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.html">FDM</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.name.html">reservoirflow.solutions.numerical.FDM.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.check_MB.html">reservoirflow.solutions.numerical.FDM.check_MB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.get_cell_eq.html">reservoirflow.solutions.numerical.FDM.get_cell_eq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.get_cells_eq.html">reservoirflow.solutions.numerical.FDM.get_cells_eq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.get_matrices_symb.html">reservoirflow.solutions.numerical.FDM.get_matrices_symb</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.get_matrices_vect.html">reservoirflow.solutions.numerical.FDM.get_matrices_vect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.run.html">reservoirflow.solutions.numerical.FDM.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FDM.solve.html">reservoirflow.solutions.numerical.FDM.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.numerical.FVM.html">FVM</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FVM.name.html">reservoirflow.solutions.numerical.FVM.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FVM.run.html">reservoirflow.solutions.numerical.FVM.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FVM.solve.html">reservoirflow.solutions.numerical.FVM.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.numerical.FEM.html">FEM</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FEM.name.html">reservoirflow.solutions.numerical.FEM.name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FEM.run.html">reservoirflow.solutions.numerical.FEM.run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.FEM.solve.html">reservoirflow.solutions.numerical.FEM.solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reservoirflow.solutions.numerical.solvers.html">solvers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.solvers.get_dsolver.html">reservoirflow.solutions.numerical.solvers.get_dsolver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reservoirflow.solutions.numerical.solvers.get_isolver.html">reservoirflow.solutions.numerical.solvers.get_isolver</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.scalers.html">scalers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.scalers.Scaler.html">Scaler</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Scaler.name.html">reservoirflow.scalers.Scaler.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Scaler.fit.html">reservoirflow.scalers.Scaler.fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Scaler.fit_transform.html">reservoirflow.scalers.Scaler.fit_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Scaler.inverse_transform.html">reservoirflow.scalers.Scaler.inverse_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Scaler.set_output_range.html">reservoirflow.scalers.Scaler.set_output_range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Scaler.transform.html">reservoirflow.scalers.Scaler.transform</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.scalers.Dummy.html">Dummy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Dummy.name.html">reservoirflow.scalers.Dummy.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Dummy.fit.html">reservoirflow.scalers.Dummy.fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Dummy.fit_transform.html">reservoirflow.scalers.Dummy.fit_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Dummy.inverse_transform.html">reservoirflow.scalers.Dummy.inverse_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Dummy.set_output_range.html">reservoirflow.scalers.Dummy.set_output_range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.Dummy.transform.html">reservoirflow.scalers.Dummy.transform</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.scalers.MinMax.html">MinMax</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.MinMax.name.html">reservoirflow.scalers.MinMax.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.MinMax.fit.html">reservoirflow.scalers.MinMax.fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.MinMax.fit_transform.html">reservoirflow.scalers.MinMax.fit_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.MinMax.inverse_transform.html">reservoirflow.scalers.MinMax.inverse_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.MinMax.set_output_range.html">reservoirflow.scalers.MinMax.set_output_range</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.scalers.MinMax.transform.html">reservoirflow.scalers.MinMax.transform</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.utils.html">utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.utils.helpers.html">helpers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.fshape_warn.html">reservoirflow.utils.helpers.fshape_warn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.get_boundary_str.html">reservoirflow.utils.helpers.get_boundary_str</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.get_fshape_str.html">reservoirflow.utils.helpers.get_fshape_str</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.get_points_str.html">reservoirflow.utils.helpers.get_points_str</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.get_verbose_str.html">reservoirflow.utils.helpers.get_verbose_str</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.intersection.html">reservoirflow.utils.helpers.intersection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.isin.html">reservoirflow.utils.helpers.isin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.ispoints.html">reservoirflow.utils.helpers.ispoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.issametype.html">reservoirflow.utils.helpers.issametype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.lru_cache.html">reservoirflow.utils.helpers.lru_cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.reformat.html">reservoirflow.utils.helpers.reformat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.remove_diag.html">reservoirflow.utils.helpers.remove_diag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.helpers.shape_error.html">reservoirflow.utils.helpers.shape_error</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.utils.profme.html">profme</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.profme.cProfiler.html">reservoirflow.utils.profme.cProfiler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.profme.lProfiler.html">reservoirflow.utils.profme.lProfiler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.profme.profile.html">reservoirflow.utils.profme.profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.profme.timeit.html">reservoirflow.utils.profme.timeit</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.utils.pyvista.html">pyvista</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.add_desc.html">reservoirflow.utils.pyvista.add_desc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.add_grid_labels.html">reservoirflow.utils.pyvista.add_grid_labels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.add_ruler.html">reservoirflow.utils.pyvista.add_ruler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.add_title.html">reservoirflow.utils.pyvista.add_title</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.add_wells.html">reservoirflow.utils.pyvista.add_wells</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.align_camera.html">reservoirflow.utils.pyvista.align_camera</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.decide_widget.html">reservoirflow.utils.pyvista.decide_widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_annotations.html">reservoirflow.utils.pyvista.get_annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_cbar_dict.html">reservoirflow.utils.pyvista.get_cbar_dict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_cdir.html">reservoirflow.utils.pyvista.get_cdir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_colormap.html">reservoirflow.utils.pyvista.get_colormap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_grid_plotter.html">reservoirflow.utils.pyvista.get_grid_plotter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_limits_fmt.html">reservoirflow.utils.pyvista.get_limits_fmt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_model_plotter.html">reservoirflow.utils.pyvista.get_model_plotter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_model_values.html">reservoirflow.utils.pyvista.get_model_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_text_locs.html">reservoirflow.utils.pyvista.get_text_locs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.get_window_size.html">reservoirflow.utils.pyvista.get_window_size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.save_gif.html">reservoirflow.utils.pyvista.save_gif</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.set_background_color.html">reservoirflow.utils.pyvista.set_background_color</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.set_mode.html">reservoirflow.utils.pyvista.set_mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.set_plotter_backend.html">reservoirflow.utils.pyvista.set_plotter_backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.set_plotter_config.html">reservoirflow.utils.pyvista.set_plotter_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.set_text_color.html">reservoirflow.utils.pyvista.set_text_color</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.show_grid.html">reservoirflow.utils.pyvista.show_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.utils.pyvista.show_model.html">reservoirflow.utils.pyvista.show_model</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reservoirflow.backends.html">backends</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.backends.Backend.html">Backend</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.Backend.ones.html">reservoirflow.backends.Backend.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.Backend.transpose.html">reservoirflow.backends.Backend.transpose</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.backends.NumPy.html">NumPy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.NumPy.name.html">reservoirflow.backends.NumPy.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.NumPy.ones.html">reservoirflow.backends.NumPy.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.NumPy.transpose.html">reservoirflow.backends.NumPy.transpose</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.backends.PyTorch.html">PyTorch</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.PyTorch.name.html">reservoirflow.backends.PyTorch.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.PyTorch.ones.html">reservoirflow.backends.PyTorch.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.PyTorch.transpose.html">reservoirflow.backends.PyTorch.transpose</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.backends.TensorFlow.html">TensorFlow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.TensorFlow.name.html">reservoirflow.backends.TensorFlow.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.TensorFlow.ones.html">reservoirflow.backends.TensorFlow.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.TensorFlow.transpose.html">reservoirflow.backends.TensorFlow.transpose</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reservoirflow.backends.JAX.html">JAX</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.JAX.name.html">reservoirflow.backends.JAX.name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.JAX.ones.html">reservoirflow.backends.JAX.ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reservoirflow.backends.JAX.transpose.html">reservoirflow.backends.JAX.transpose</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="API.html" class="nav-link">API</a></li>
+    
+    
+    <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
+    
+    
+    <li class="breadcrumb-item"><a href="reservoirflow.grids.RegularCartesian.html" class="nav-link">RegularCartesian</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">reservoirflo...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="reservoirflow-grids-regularcartesian-remove-boundaries">
+<h1>reservoirflow.grids.RegularCartesian.remove_boundaries<a class="headerlink" href="#reservoirflow-grids-regularcartesian-remove-boundaries" title="Link to this heading">#</a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="reservoirflow.grids.RegularCartesian.remove_boundaries">
+<span class="sig-prename descclassname"><span class="pre">RegularCartesian.</span></span><span class="sig-name descname"><span class="pre">remove_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'both'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#reservoirflow.grids.RegularCartesian.remove_boundaries" title="Link to this definition">#</a></dt>
+<dd><p>Remove boundary cells from ndarray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_data</strong> (<em>ndarray</em><em>, </em><em>dict</em><em> of </em><em>ndarray</em>) – input data where boundaries need to be removed. Input data
+must be an ndarray with boundaries. Input data as dict with
+keys for these arrays is also possible.</p></li>
+<li><p><strong>points</strong> (<em>bool</em><em>, </em><em>optional</em>) – True for points (i.e. tuples of len 3 like coords, icoords)
+and False for scaler values (e.g. id). If value is set to
+None, bool value is calculated automatically. Warning:
+this argument must be specified in case that in_data was for
+scaler values in fshape that is (#,..,3) (i.e. not flatten).
+For more information about points automatic calculation,
+check the utility function <cite>utils.helpers.ispoints()</cite>.</p></li>
+<li><p><strong>remove</strong> (<em>str</em><em>, </em><em>optional</em>) – boundaries to remove as str in [‘both’, ‘left’, ‘right’].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array with boundaries removed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – boundaries are not included or points argument must be
+    correctly assigned.</p></li>
+<li><p><strong>ValueError</strong> – dtype must be ndarray.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="reservoirflow.grids.RegularCartesian.extract_boundaries.html#reservoirflow.grids.RegularCartesian.extract_boundaries" title="reservoirflow.grids.RegularCartesian.extract_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_boundaries</span></code></a></dt><dd><p>keep only boundary cells from input data.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="reservoirflow.grids.RegularCartesian.get_zeros.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">reservoirflow.grids.RegularCartesian.get_zeros</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="reservoirflow.grids.RegularCartesian.report.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">reservoirflow.grids.RegularCartesian.report</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reservoirflow.grids.RegularCartesian.remove_boundaries"><code class="docutils literal notranslate"><span class="pre">remove_boundaries()</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Developed by Hiesab. Third-party components are copyrighted by their respective authors.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

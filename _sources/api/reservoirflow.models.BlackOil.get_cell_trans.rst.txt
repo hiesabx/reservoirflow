@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.get\_cell\_trans
+==============================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.get_cell_trans

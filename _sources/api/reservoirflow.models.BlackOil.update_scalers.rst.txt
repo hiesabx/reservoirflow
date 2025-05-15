@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.update\_scalers
+=============================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.update_scalers

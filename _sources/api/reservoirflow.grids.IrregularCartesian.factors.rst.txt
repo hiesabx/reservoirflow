@@ -1,0 +1,6 @@
+reservoirflow.grids.IrregularCartesian.factors
+==============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoattribute:: IrregularCartesian.factors

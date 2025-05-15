@@ -1,0 +1,6 @@
+reservoirflow.wells.MultiCell.units
+===================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: MultiCell.units

@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.get\_cell\_boundaries
+==========================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.get_cell_boundaries

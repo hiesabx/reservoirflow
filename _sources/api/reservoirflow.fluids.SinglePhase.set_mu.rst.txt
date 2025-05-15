@@ -1,0 +1,6 @@
+reservoirflow.fluids.SinglePhase.set\_mu
+========================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: SinglePhase.set_mu

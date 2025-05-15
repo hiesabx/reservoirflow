@@ -1,0 +1,6 @@
+reservoirflow.models.Compositional.name
+=======================================
+
+.. currentmodule:: reservoirflow.models
+
+.. autoattribute:: Compositional.name

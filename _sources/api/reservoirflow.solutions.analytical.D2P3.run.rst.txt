@@ -1,0 +1,6 @@
+reservoirflow.solutions.analytical.D2P3.run
+===========================================
+
+.. currentmodule:: reservoirflow.solutions.analytical
+
+.. automethod:: D2P3.run

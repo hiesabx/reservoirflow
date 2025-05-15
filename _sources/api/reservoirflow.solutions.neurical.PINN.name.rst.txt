@@ -1,0 +1,6 @@
+reservoirflow.solutions.neurical.PINN.name
+==========================================
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. autoattribute:: PINN.name

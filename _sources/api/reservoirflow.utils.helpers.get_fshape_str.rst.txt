@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.get\_fshape\_str
+============================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: get_fshape_str

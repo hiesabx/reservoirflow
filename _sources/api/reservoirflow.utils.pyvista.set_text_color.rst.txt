@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.set\_text\_color
+============================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: set_text_color

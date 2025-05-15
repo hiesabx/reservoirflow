@@ -1,0 +1,6 @@
+reservoirflow.solutions.neurical.DeepONet.name
+==============================================
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. autoattribute:: DeepONet.name

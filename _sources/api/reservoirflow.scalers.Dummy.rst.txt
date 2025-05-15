@@ -1,0 +1,50 @@
+Dummy
+=====
+
+.. currentmodule:: reservoirflow.scalers
+
+.. autoclass:: Dummy
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Dummy.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Dummy.fit
+      
+      
+        ~Dummy.fit_transform
+      
+      
+        ~Dummy.inverse_transform
+      
+      
+        ~Dummy.set_output_range
+      
+      
+        ~Dummy.transform
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

@@ -1,0 +1,6 @@
+reservoirflow.models.Model.run
+==============================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Model.run

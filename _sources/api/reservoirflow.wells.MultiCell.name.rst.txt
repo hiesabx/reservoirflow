@@ -1,0 +1,6 @@
+reservoirflow.wells.MultiCell.name
+==================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: MultiCell.name

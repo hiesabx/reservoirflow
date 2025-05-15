@@ -1,0 +1,71 @@
+Compositional
+=============
+
+.. currentmodule:: reservoirflow.models
+
+.. autoclass:: Compositional
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Compositional.factors
+      
+      
+        ~Compositional.name
+      
+      
+        ~Compositional.unit
+      
+      
+        ~Compositional.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Compositional.allow_synonyms
+      
+      
+        ~Compositional.compile
+      
+      
+        ~Compositional.get_solutions
+      
+      
+        ~Compositional.report
+      
+      
+        ~Compositional.run
+      
+      
+        ~Compositional.set_comp
+      
+      
+        ~Compositional.set_solution
+      
+      
+        ~Compositional.set_units
+      
+      
+        ~Compositional.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

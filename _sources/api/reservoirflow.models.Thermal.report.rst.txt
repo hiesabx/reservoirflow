@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.report
+===================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Thermal.report

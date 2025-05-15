@@ -1,0 +1,6 @@
+reservoirflow.grids.Grid.set\_units
+===================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: Grid.set_units

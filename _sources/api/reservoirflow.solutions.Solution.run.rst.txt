@@ -1,0 +1,6 @@
+reservoirflow.solutions.Solution.run
+====================================
+
+.. currentmodule:: reservoirflow.solutions
+
+.. automethod:: Solution.run

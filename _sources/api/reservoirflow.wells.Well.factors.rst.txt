@@ -1,0 +1,6 @@
+reservoirflow.wells.Well.factors
+================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: Well.factors

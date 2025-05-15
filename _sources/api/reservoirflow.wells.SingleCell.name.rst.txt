@@ -1,0 +1,6 @@
+reservoirflow.wells.SingleCell.name
+===================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: SingleCell.name

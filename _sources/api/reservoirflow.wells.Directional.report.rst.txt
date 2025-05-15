@@ -1,0 +1,6 @@
+reservoirflow.wells.Directional.report
+======================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. automethod:: Directional.report

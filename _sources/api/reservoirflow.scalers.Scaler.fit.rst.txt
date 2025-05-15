@@ -1,0 +1,6 @@
+reservoirflow.scalers.Scaler.fit
+================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: Scaler.fit

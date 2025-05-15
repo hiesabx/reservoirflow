@@ -1,0 +1,49 @@
+solutions
+=======================
+
+.. automodule:: reservoirflow.solutions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      Compiler
+      Solution
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module_custom.rst
+   :recursive:
+
+   reservoirflow.solutions.analytical
+   reservoirflow.solutions.neurical
+   reservoirflow.solutions.numerical
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

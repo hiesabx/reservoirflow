@@ -1,0 +1,6 @@
+reservoirflow.fluids.Fluid.name
+===============================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoattribute:: Fluid.name

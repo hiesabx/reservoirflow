@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.run
+================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Thermal.run

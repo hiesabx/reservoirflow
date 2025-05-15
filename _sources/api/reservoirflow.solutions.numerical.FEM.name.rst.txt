@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.FEM.name
+==========================================
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. autoattribute:: FEM.name

@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.get\_centers
+==========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.get_centers

@@ -1,0 +1,56 @@
+Fluid
+=====
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoclass:: Fluid
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Fluid.factors
+      
+      
+        ~Fluid.name
+      
+      
+        ~Fluid.unit
+      
+      
+        ~Fluid.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Fluid.allow_synonyms
+      
+      
+        ~Fluid.report
+      
+      
+        ~Fluid.set_comp
+      
+      
+        ~Fluid.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

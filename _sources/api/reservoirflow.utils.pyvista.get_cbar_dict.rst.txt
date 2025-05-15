@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.get\_cbar\_dict
+===========================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: get_cbar_dict

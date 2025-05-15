@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.set\_boundary
+===========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.set_boundary

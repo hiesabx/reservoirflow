@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.get\_points\_str
+============================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: get_points_str

@@ -1,0 +1,6 @@
+reservoirflow.wells.SingleCell.set\_r
+=====================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. automethod:: SingleCell.set_r

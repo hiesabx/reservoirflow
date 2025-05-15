@@ -1,0 +1,6 @@
+reservoirflow.fluids.MultiPhase.set\_units
+==========================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: MultiPhase.set_units

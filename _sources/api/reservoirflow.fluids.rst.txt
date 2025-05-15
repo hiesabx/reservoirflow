@@ -1,0 +1,41 @@
+fluids
+====================
+
+.. automodule:: reservoirflow.fluids
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      Fluid
+      SinglePhase
+      TwoPhase
+      ThreePhase
+      MultiPhase
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_
