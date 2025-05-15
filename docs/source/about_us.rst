@@ -1,7 +1,7 @@
 About Us
 ========
 
-We are *Hiesab*; an international startup company founded in 2024 based in  Tripoli, Libya specialized in advanced data analytics, scientific computing, and automation with a mission to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Ultimately, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance.
+We are *Hiesab*; an international AI startup company founded in 2024 specialized in artificial intelligence and intelligent systems engineering based on advanced data analytics and scientific computing with a mission to accelerate AI applications and data solutions in different fields including Science, Engineering, and Education. We plan to be a strategic AI and data partner for universities and companies worldwide. Ultimately, we strive for the highest levels of precision in computing and analytics, all in the pursuit of promoting justice in transactions, management, and governance.
 
 .. note:: 
    Check our website: `hiesab.com <https://www.hiesab.com/en/>`_

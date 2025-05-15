@@ -22,14 +22,12 @@
 
 ## Introduction
 
-*ReservoirFlow* is a modern open-source Python library developed by [Zakariya Abugrin](https://www.linkedin.com/in/zakariya-abugrin/) at [Hiesab](https://www.hiesab.com/en/); a startup company specialized in advanced analytics, computing, and automation founded in 2024 with a mission is to accelerate R&D for AI applications and data solutions in different fields including Science, Engineering, and Education, see [About Us](https://reservoirflow.hiesab.com/about_us.html).
+*ReservoirFlow* is a modern open-source Python library developed by [Zakariya Abugrin](https://www.linkedin.com/in/zakariya-abugrin/) at [Hiesab](https://www.hiesab.com/en/); see [About Us](https://reservoirflow.hiesab.com/about_us.html). *ReservoirFlow* is designed to study and model the process of fluid flow in porous media related to subsurface energy storage systems, reservoir simulation and engineering. *ReservoirFlow* is the first reservoir simulator based on physics-informed neural network models and one of its kind in a sense that it allows comparing and combining analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). *ReservoirFlow* is planned to be a central platform between education and industry where scientific papers are implemented and distributed in a standard and accessible format with coding examples, tutorials, and trainings.
 
 <!-- <p align="center">
 <iframe src="https://drive.google.com/file/d/1JCD7W_5vJsUqNWf99NBTYjsLSMeVPEEa/preview"
 allow="autoplay"  width="100%" height="500" frameborder="0" scrolling="auto" class="iframe-full-height" allowfullscreen></iframe>
 </p> -->
-
-*ReservoirFlow* is designed to study and model the process of fluid flow in porous media related to subsurface energy storage systems, reservoir simulation and engineering. *ReservoirFlow* is the first reservoir simulator based on physics-informed neural network models and one of its kind in a sense that it allows comparing and combining analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). *ReservoirFlow* is planned to be a central platform between education and industry where scientific papers are implemented and distributed in a standard and accessible format with coding examples, tutorials, and trainings.
 
 <!--
 تدفق المكامن هي مكتبة حديثة مفتوحة المصدر تم تطويرها بواسطة شركة حساب وهي مصممة لدراسة ومحاكاة ظاهرة تدفق الموائع في الوسط المسامي المعروفة باسم محاكاة وهندسة المكامن.
