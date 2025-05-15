@@ -206,6 +206,12 @@ html_theme_options = {
             "type": "fontawesome",
         },
         {
+            "name": "Website",
+            "url": "https://www.hiesab.com/en/products/reservoirflow/",
+            "icon": "fa-solid fa-link",
+            "type": "fontawesome",
+        },
+        {
             "name": "LinkedIn",
             "url": "https://www.linkedin.com/company/hiesab/",
             "icon": "fab fa-linkedin-in",
