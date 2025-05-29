@@ -17,7 +17,9 @@ import scipy.sparse.linalg as ssl
 import sympy as sym
 from tqdm import tqdm
 
-import reservoirflow as rf
+# import reservoirflow as rf
+from reservoirflow.models.model import Model
+from reservoirflow.solutions.numerical import solvers
 from reservoirflow.solutions.solution import Solution
 from reservoirflow.utils.helpers import _lru_cache
 
@@ -37,7 +39,7 @@ class FDM(Solution):
 
     def __init__(
         self,
-        model,  #: rf.models.Model,
+        model: Model,  #: rf.models.Model,
         sparse: bool = True,
     ):
         """Create Finite-Difference-Method Solution.
@@ -740,7 +742,8 @@ class FDM(Solution):
         if self.sparse:
             A, d = A.tocsc(), d.toarray()
             if isolver:
-                solver = rf.solutions.numerical.solvers.get_isolver(isolver)
+                # solver = rf.solutions.numerical.solvers.get_isolver(isolver)
+                solver = solvers.get_isolver(isolver)
                 pressures, exit_code = solver(
                     A,
                     d,

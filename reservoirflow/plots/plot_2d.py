@@ -2,10 +2,11 @@
 2D
 ==
 """
-from reservoirflow.plots._plot import _Plot
+
+from reservoirflow.plots.plot import Plot
 
 
-class p2D(_Plot):
+class Plot2D(Plot):
     """_summary_
 
     Parameters
@@ -41,5 +42,5 @@ class p2D(_Plot):
 
 
 if __name__ == "__main__":
-    plot = p2D()
+    plot = Plot2D()
     print(plot)

@@ -48,6 +48,11 @@ class MinMax(Scaler):
             self.vmin = None
             self.vmax = None
 
+    def set_input_range(self, input_range: tuple):
+        self.vmin = input_range[0]
+        self.vmax = input_range[1]
+        return self
+
     def set_output_range(self, output_range: tuple):
         self.Vmin = output_range[0]
         self.Vmax = output_range[1]

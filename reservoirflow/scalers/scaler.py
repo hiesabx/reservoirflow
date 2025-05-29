@@ -36,6 +36,16 @@ class Scaler(ABC):
         """
 
     @abstractmethod
+    def set_input_range(self, input_range: tuple):
+        """Set input range for the scaler.
+
+        Parameters
+        ----------
+        input_range : tuple
+            input range used in the transformation.
+        """
+
+    @abstractmethod
     def set_output_range(self, output_range: tuple):
         """Set output range for the scaler.
 

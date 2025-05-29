@@ -26,7 +26,7 @@ class Model(ABC, Base):
     name = "Model"
 
     def __init__(
-        self, 
+        self,
         unit,
         dtype,
         verbose,
@@ -78,7 +78,8 @@ class Model(ABC, Base):
         self,
         stype: str,
         method: str,
-        sparse: bool=True,
+        sparse: bool = True,
+        name: str = None,
     ):
         """Build a solution (equation system) for the model.
 
@@ -99,22 +100,29 @@ class Model(ABC, Base):
             solution type in ``['numerical', 'analytical', 'neurical']``.
         method : str
             solution method as following:
-            
+
             - 'numerical' methods: ``['FDM', 'FVM', 'FEM']``.
             - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
             - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
-            
+
         sparse : bool, optional, default: True
             using sparse computing for a better performance.
-        
+        name : str, optional
+            name of the solution. If not provided, the name will be
+            generated based on the `stype` and `method` parameters.
+
         """
         self.compiler = Compiler(self, stype, method, sparse)
-        self.solutions[str(self.compiler)] = self.solution
-        self.compilers[str(self.compiler)] = self.compiler
+        if name is None:
+            name = str(self.compiler)
+        else:
+            self.solution.name = name
+
+        self.solutions[name] = self.solution
+        self.compilers[name] = self.compiler
         self.solve = self.solution.solve
         self.run = self.solution.run
-        
-    
+
     def set_solution(self, name):
         if name in self.solutions:
             self.solution = self.solutions[name]
@@ -122,10 +130,46 @@ class Model(ABC, Base):
             self.solve = self.solution.solve
             self.run = self.solution.run
         else:
+            print(
+                f"Solution '{name}' not found. Available solutions: {self.get_solutions()}"
+            )
             raise ValueError("Solution method was not compiled.")
-        
+
     def get_solutions(self):
+        """Get all available solutions.
+
+        Returns
+        -------
+        list
+            List of solution names that are available in the model.
+        """
         return list(self.solutions.keys())
+
+    def clear_solutions(self):
+        """Clear all solutions and compilers.
+
+        This method will remove all solutions and compilers from the
+        model, effectively resetting the model to its initial state
+        without any compiled solutions or compilers.
+        After calling this method, the model will not have any
+        assigned solution or compiler, and the methods `solve()` and
+        `run()` will not be available until a new solution is compiled
+        or set.
+
+        .. attention::
+            This method will remove all compiled solutions and compilers
+            from the model. Use with caution, as it cannot be undone.
+
+        Returns
+        -------
+        None
+        """
+        self.solution = None
+        self.solutions = {}
+        self.compiler = None
+        self.compilers = {}
+        del self.solve
+        del self.run
 
     def solve(self, **kwargs):
         """Solve a single timestep.

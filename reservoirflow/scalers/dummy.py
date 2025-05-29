@@ -20,6 +20,9 @@ class Dummy(Scaler):
 
     name = "Dummy"
 
+    def set_input_range(self, input_range):
+        return self
+
     def set_output_range(self, output_range):
         return self
 

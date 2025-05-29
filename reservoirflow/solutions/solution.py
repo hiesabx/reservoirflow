@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-import reservoirflow as rf
+
+# import reservoirflow as rf
+# from reservoirflow.models import Model
+
 
 class Solution(ABC):
     """Abstract solution class.
@@ -18,7 +21,7 @@ class Solution(ABC):
 
     def __init__(
         self,
-        model,#: rf.models.Model,
+        model,  #: Model,  #: rf.models.Model,
         sparse,
     ):
         """Construct solution object.
@@ -52,3 +55,14 @@ class Solution(ABC):
         .. attention::
             This is an abstract method.
         """
+
+    def __repr__(self):
+        return (
+            "rf.solutions.Solution("
+            + f"name='{self.name}'"
+            # + f"model='{self.model.name}'"
+            # + f", sparse={self.sparse}"
+            # + f", name='{self.name}'"
+            # + f", solution='{self.model.solution.name}'"
+            + ")"
+        )

@@ -52,7 +52,7 @@ class Compiler:
         model,
         stype: str,
         method: str,
-        sparse: bool=True,
+        sparse: bool = True,
     ):
         """Construct compiler object.
 
@@ -64,21 +64,21 @@ class Compiler:
             solution type in ['numerical', 'analytical', 'neurical'].
         method : str
             solution method as following:
-            
+
             - numerical methods: ``['FDM', 'FVM', 'FEM']``.
             - analytical methods: ``['1D1P', '1D2P', etc.]``.
             - neurical methods: ``['PINN', 'DeepONet']``.
-            
+
         sparse : bool, optional, default: True
             using sparse computing for a better performance.
         """
         self.model = model
-        
+
         if isinstance(sparse, bool):
             self.sparse = sparse
         else:
             raise ValueError("Argument sparse must be bool.")
-        
+
         self.__set_stype(stype)
         self.__set_method(method)
         self.__add_solution(sparse)
@@ -101,39 +101,52 @@ class Compiler:
                 print("[INFO] Numerical solution could not be assigned.")
                 raise ValueError("Not ready.")
         elif self.stype == "analytical":
-            if self.method == "D1P1":
+
+            D = self.model.grid.D
+            if "D1" in self.method:
+                assert D == 1, "D1 solution is only available for 1D grid."
+            elif "D2" in self.method:
+                assert D == 2, "D2 solution is only available for 2D grid."
+            elif "D3" in self.method:
+                assert D == 3, "D3 solution is only available for 3D grid."
+            else:
+                raise ValueError(
+                    "Compiler can not use Grid D={D} for method={self.method}."
+                )
+
+            if self.method == "D1P1" and D == 1:
                 from reservoirflow.solutions.analytical.d1p1 import D1P1
 
                 self.model.solution = D1P1(self.model, sparse)
-            elif self.method == "D1P2":
+            elif self.method == "D1P2" and D == 1:
                 from reservoirflow.solutions.analytical.d1p2 import D1P2
 
                 self.model.solution = D1P2(self.model, sparse)
-            elif self.method == "D1P3":
+            elif self.method == "D1P3" and D == 1:
                 from reservoirflow.solutions.analytical.d1p3 import D1P3
 
                 self.model.solution = D1P3(self.model, sparse)
-            elif self.method == "D2P1":
+            elif self.method == "D2P1" and D == 2:
                 from reservoirflow.solutions.analytical.d2p1 import D2P1
 
                 self.model.solution = D2P1(self.model, sparse)
-            elif self.method == "D2P2":
+            elif self.method == "D2P2" and D == 2:
                 from reservoirflow.solutions.analytical.d2p2 import D2P2
 
                 self.model.solution = D2P2(self.model, sparse)
-            elif self.method == "D2P3":
+            elif self.method == "D2P3" and D == 2:
                 from reservoirflow.solutions.analytical.d2p3 import D2P3
 
                 self.model.solution = D2P3(self.model, sparse)
-            elif self.method == "D3P1":
+            elif self.method == "D3P1" and D == 3:
                 from reservoirflow.solutions.analytical.d3p1 import D3P1
 
                 self.model.solution = D3P1(self.model, sparse)
-            elif self.method == "D3P2":
+            elif self.method == "D3P2" and D == 3:
                 from reservoirflow.solutions.analytical.d3p2 import D3P2
 
                 self.model.solution = D3P2(self.model, sparse)
-            elif self.method == "D3P3":
+            elif self.method == "D3P3" and D == 3:
                 from reservoirflow.solutions.analytical.d3p3 import D3P3
 
                 self.model.solution = D3P3(self.model, sparse)
@@ -226,7 +239,7 @@ class Compiler:
 
     def __repr__(self):
         return (
-              "rf.solutions.Compiler("
+            "rf.solutions.Compiler("
             + f"model='{self.model.name}'"
             + f", stype='{self.stype}'"
             + f", method='{self.method}'"
@@ -234,10 +247,10 @@ class Compiler:
             # + f", solution='{self.model.solution.name}'"
             + ")"
         )
-        
+
     def __str__(self):
         return (
-              f"{self.model.name}"
+            f"{self.model.name}"
             + f"-{self.stype}"
             + f"-{self.method}"
             + f"-{self.sparse}"

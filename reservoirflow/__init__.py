@@ -13,13 +13,14 @@ __all__ = [
     "solutions",
     "scalers",
     "utils",
+    "plots",
     "backends",
     "FACTORS",
     "UNITS",
     "NOMENCLATURE",
 ]
 
-from . import backends, fluids, grids, models, scalers, solutions, utils, wells
+from . import backends, fluids, grids, models, scalers, solutions, utils, plots, wells
 from .base import FACTORS, NOMENCLATURE, UNITS
 
 __version__ = "0.1.0b3"

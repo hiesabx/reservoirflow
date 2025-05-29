@@ -31,7 +31,7 @@ class D1P1(Solution):
         output_range=[-1, 1],
         clean=True,
     ):
-        
+
         # Independent variables: t, x
         t, x = self.model.get_domain(scale=False, boundary=True)
         L = x.max() - x.min()
@@ -52,16 +52,16 @@ class D1P1(Solution):
         pDi0 = pDi - pD0
         pDin = pDn - pDi
         xDpi = np.pi * xD_values
-        tDpi = -np.pi ** 2 * tD_values
+        tDpi = -np.pi**2 * tD_values
         pDsum = np.zeros_like(xD_values, dtype="double")
         for n in N_range:
             pDsum += (
                 (pDi0 / n + pDin * ((-1) ** n) / n)
-                * np.sin(n*xDpi)
+                * np.sin(n * xDpi)
                 * np.exp((n**2) * tDpi)
             )
         pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * pDsum
-        
+
         # Remove values out of range:
         if clean:
             pD[pD < input_range[0]] = input_range[0]
@@ -89,6 +89,7 @@ class D1P1(Solution):
 
     def run(
         self,
+        N=100,
         nsteps=10,
         threading=True,
         vectorize=True,
@@ -98,6 +99,7 @@ class D1P1(Solution):
     ):
         start_time = time.time()
         # self.nsteps += nsteps
+        self.N = N
         self.tstep = nsteps
         self.nsteps = nsteps + 1
         self.run_ctime = 0
@@ -109,8 +111,7 @@ class D1P1(Solution):
 
         print(f"[info] Simulation run started: {nsteps} timesteps.")
 
-        N = 1000
-        N_range = np.arange(1, N + 1)
+        N_range = np.arange(1, self.N + 1)
         pbar = tqdm(
             N_range,
             unit="steps",
@@ -119,28 +120,27 @@ class D1P1(Solution):
             leave=True,
         )
 
-        scale=False
-        output_range=[-1, 1]
-        clean=True
+        # scale = False
+        # output_range = [-1, 1]
+        clean = False
 
-        
         # for step in pbar:
         #     pbar.set_description(f"[step] {step}")
-            # self.solve(
-            #     threading,
-            #     vectorize,
-            #     check_MB,
-            #     True,
-            #     print_arrays,
-            #     isolver,
-            # )
-            # self.pressures = self.calc_solution(
-            #     N=1000,
-            #     scale=False,
-            #     output_range=[-1, 1],
-            #     clean=True,
-            #     )
-            
+        # self.solve(
+        #     threading,
+        #     vectorize,
+        #     check_MB,
+        #     True,
+        #     print_arrays,
+        #     isolver,
+        # )
+        # self.pressures = self.calc_solution(
+        #     N=1000,
+        #     scale=False,
+        #     output_range=[-1, 1],
+        #     clean=True,
+        #     )
+
         # Independent variables: t, x
         t, x = self.model.get_domain(scale=False, boundary=True)
         L = x.max() - x.min()
@@ -150,8 +150,8 @@ class D1P1(Solution):
 
         # Dependent variable: p
         p = self.pressures
-        input_range = [0, 1]
-        input_scaler = scalers.MinMax(input_range).fit(p, axis=None)
+        input_range = [0, 1]  # Analytical solution domain
+        input_scaler = scalers.MinMax(output_range=input_range).fit(p, axis=None)
         pDi = input_scaler.transform(self.model.pi)
         pD0 = input_scaler.transform(p[0, 0])
         pDn = input_scaler.transform(p[0, -1])
@@ -160,49 +160,55 @@ class D1P1(Solution):
         pDi0 = pDi - pD0
         pDin = pDn - pDi
         xDpi = np.pi * xD_values
-        tDpi = -np.pi ** 2 * tD_values
+        tDpi = -np.pi**2 * tD_values
         pDsum = np.zeros_like(xD_values, dtype="double")
-        
-        
+
         for n in pbar:
             pbar.set_description(f"[step] {n}")
             pDsum += (
                 (pDi0 / n + pDin * ((-1) ** n) / n)
-                * np.sin(n*xDpi)
+                * np.sin(n * xDpi)
                 * np.exp((n**2) * tDpi)
             )
         pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * pDsum
-        
+
         # Remove values out of range:
         if clean:
             pD[pD < input_range[0]] = input_range[0]
             pD[pD > input_range[1]] = input_range[1]
 
-        shape = self.model.get_shape(True)
-        t, x = self.model.get_domain(scale=scale, boundary=True)
-        t_values, x_values = np.meshgrid(t, x, indexing="ij")
-        X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
+        # shape = self.model.get_shape(True)
+        # t, x = self.model.get_domain(scale=scale, boundary=True)
+        # t_values, x_values = np.meshgrid(t, x, indexing="ij")
+        # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
 
-        if scale:
-            output_scaler = scalers.MinMax(output_range, input_range)
-            p = output_scaler.transform(pD)
-            # xD_values = output_scaler.transform(xD_values)
-            # X = np.stack((tD_values, xD_values), axis=-1).reshape(*shape, 2)
-        else:
-            p = input_scaler.inverse_transform(pD)
-            # t_values, x_values = np.meshgrid(t, x, indexing='ij')
-            # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
-            
-        self.pressures = p
+        # if scale:
+        #     output_scaler = scalers.MinMax(output_range, input_range)
+        #     p = output_scaler.transform(pD)
+        #     # xD_values = output_scaler.transform(xD_values)
+        #     # X = np.stack((tD_values, xD_values), axis=-1).reshape(*shape, 2)
+        # else:
+        #     p = input_scaler.inverse_transform(pD)
+        #     # t_values, x_values = np.meshgrid(t, x, indexing='ij')
+        #     # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
+
+        # self.pressures = p
+        # self.pressures = input_scaler.inverse_transform(pD)
+        self.pressures = np.vstack(
+            [
+                self.pressures,
+                input_scaler.inverse_transform(pD[1:, :]),
+            ]
+        )
 
         self.run_ctime = round(time.time() - start_time, 2)
-        self.ctime += self.run_ctime
+        self.ctime = self.run_ctime
         print(
             f"[info] Simulation run of {nsteps} steps",
             f"finished in {self.run_ctime} seconds.",
         )
         # if check_MB:
-            # print(f"[info] Material Balance Error: {self.error}.")
+        # print(f"[info] Material Balance Error: {self.error}.")
 
         if verbose_restore:
             self.model.verbose = True

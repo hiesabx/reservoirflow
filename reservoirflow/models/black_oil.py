@@ -7,12 +7,15 @@ import warnings
 from collections import defaultdict
 from datetime import date
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.sparse as ss
 
-import reservoirflow as rf
+# import reservoirflow as rf
+from reservoirflow.grids import Grid
+from reservoirflow.fluids import Fluid
+from reservoirflow import scalers, utils, plots
 from reservoirflow.models.model import Model
 from reservoirflow.utils.helpers import _lru_cache
 
@@ -30,8 +33,8 @@ class BlackOil(Model):
 
     def __init__(
         self,
-        grid: rf.grids.Grid,
-        fluid: rf.fluids.Fluid,
+        grid: Grid,
+        fluid: Fluid,
         well=None,  # wells.Well = None,
         pi: int = None,
         dt: int = 1,
@@ -634,14 +637,54 @@ class BlackOil(Model):
     @_lru_cache(maxsize=1)
     def get_alpha(
         self,
+        method="mean",
     ):
-        lhs_f = (self.factors["transmissibility conversion"] * self.grid.kx) / (
+        """Calculates alpha parameter.
+        This parameter is used to calculate alpha constant.
+
+        Note
+        ----
+        - This method is used only for 1D in x-direction flow.
+
+        Parameters
+        ----------
+        method : str, optional, default "mean"
+            method to calculate alpha parameter. The following methods
+            are available:
+            - first value: `"first"`.
+            - last value: `"last"`.
+            - mean value: `"mean"`.
+            - vector or array: `None`.
+
+        Returns
+        -------
+        float
+            alpha parameter.
+        """
+        fdir = self.grid.get_fdir()
+        if fdir == "x":
+            k = self.grid.k["x"]
+        else:
+            raise ValueError(f"k for fdir='{fdir}' is not defined.")
+
+        lhs_f = (self.factors["transmissibility conversion"] * k) / (
             self.fluid.mu * self.fluid.B
         )
         rhs_f = (self.grid.phi * self.comp) / (
             self.factors["volume conversion"] * self.fluid.B
         )
-        self.alpha = lhs_f / rhs_f
+        alpha = lhs_f / rhs_f
+
+        if method == "mean":
+            self.alpha = np.mean(alpha)
+        elif method == "first":  # or np.all(alpha == alpha[0]):
+            self.alpha = alpha[0]
+        elif method == "last":
+            self.alpha = alpha[-1]
+        elif method in [None, "vector", "array"]:
+            pass
+        else:  #
+            raise ValueError(f"k for fdir='{fdir}' is not defined.")
 
         return self.alpha
 
@@ -789,7 +832,16 @@ class BlackOil(Model):
     def __update_pressures_scaler(self, boundary):
         config = self.__get_scalers_config(boundary)
         pressures = self.get_df(columns=["cells_pressure"], **config).values
-        self.pressures_scaler.fit(pressures, axis=None)
+        if self.solution and self.solution.name in ["D1P1"]:
+            if self.verbose:
+                print(
+                    "[warning] To avoid scaling based on unstable solutions, "
+                    "pressures scaler is updated based on the final timestep "
+                    "for D1P1 solution."
+                )
+            self.pressures_scaler.fit(pressures[-1], axis=None)
+        else:
+            self.pressures_scaler.fit(pressures, axis=None)
 
     def __update_rates_scaler(self, boundary):
         """Flow rates scaler
@@ -896,9 +948,9 @@ class BlackOil(Model):
 
         def create_scaler(scaler_type, output_range):
             if scaler_type is None or output_range is None:
-                return rf.scalers.Dummy(None), None
+                return scalers.Dummy(None), None
             elif scaler_type.lower() in ["minmax", "minmaxscaler"]:
-                return rf.scalers.MinMax(output_range=output_range), "MinMax"
+                return scalers.MinMax(output_range=output_range), "MinMax"
             else:
                 raise ValueError("scaler type is not defined.")
 
@@ -932,6 +984,34 @@ class BlackOil(Model):
                 self.scalers_dict[column_str] = [None, None]
             else:
                 self.scalers_dict[column_str] = [s_str, scalers_dict[column][1]]
+
+    def get_scalers(
+        self,
+        name: str = None,
+    ):
+        """Get scalers configuration.
+
+        Parameters
+        ----------
+        name : str, optional
+            name of the scaler to be returned. If None or "all" or "*",
+            all scalers will be returned. Otherwise, the scaler with the
+            specified name will be returned.
+
+        Returns
+        -------
+        dict
+            scalers configuration as a dictionary.
+        """
+
+        if name in self.scalers_dict:
+            return self.scalers_dict[name]
+        elif name is None or name in ["all", "*"]:
+            return self.scalers_dict
+        else:
+            raise ValueError(
+                f"name must be defined. Use: {list(self.scalers_dict.keys)}."
+            )
 
     def get_df(
         self,
@@ -1063,54 +1143,175 @@ class BlackOil(Model):
     # Visualization:
     # -------------------------------------------------------------------------
 
-    show = rf.utils.pyvista.show_model
-    save_gif = rf.utils.pyvista.save_gif
+    show = utils.pyvista.show_model
+    save_gif = utils.pyvista.save_gif
 
     # -------------------------------------------------------------------------
     # Plotting:
     # -------------------------------------------------------------------------
 
-    def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
-        """Show values in a cartesian plot.
+    def get_values(
+        self,
+        scale=False,
+        boundary=True,
+    ):
+
+        df = self.get_df(
+            columns=["time", "cells_pressure"],
+            boundary=boundary,
+            units=False,
+            melt=True,
+            scale=scale,
+            drop_zero=False,
+            drop_nan=False,
+        )
+        shape = self.get_shape(boundary)
+        fdir = list(self.grid.get_fdir())
+        ncols = len(fdir) + 2  # +2 for time and P
+        values = df[["Time", *fdir, "P"]].values.reshape(*shape, ncols)
+        X, Y = values[:, :, :2], values[:, :, 2]
+        return X, Y
+
+    def plot(
+        self,
+        scale: bool = False,
+        boundary: bool = True,
+        nrows: int = 3,
+        ncols: int = 3,
+        name: str = None,
+    ):
+        """Plot solution values.
 
         Parameters
         ----------
-        prop : str, optional
-            property name from ["rates", "pressures"].
-        id : int, optional
-            cell id. If None, all cells are selected.
-        tstep : int, optional
-            time step. If None, the last time step is selected.
+        scale : bool, optional
+            scale values using scalers. Default is False.
+        boundary : bool, optional
+            include boundary cells in the plot. Default is True.
+        nrows : int, optional
+            number of rows in the plot. Default is 3.
+        ncols : int, optional
+            number of columns in the plot. Default is 3.
+        name : str, optional
+            name of the solution to plot. If "all" or "*", all solutions
+            will be plotted. If None, the current solution will be
+            plotted. Default is None.
+
+        Returns
+        -------
+        plotter : Plot1D, Plot2D, or Plot3D
+            plotter object with the plotted solution values.
         """
-        if tstep is None:
-            tstep = self.__get_tstep()
+        if self.grid.D == 1:
+            plotter = plots.Plot1D(
+                nrows=nrows,
+                ncols=ncols,
+                verbose=self.verbose,
+            )
+        elif self.grid.D == 2:
+            raise NotImplementedError("2D plotting is not implemented yet.")
+        elif self.grid.D == 3:
+            raise NotImplementedError("3D plotting is not implemented yet.")
+        else:
+            raise ValueError(f"Grid dimension {self.grid.D} is not supported.")
 
-        if id is not None:
-            exec(f"plt.plot(self.{prop}[:, id].flatten())")
-            plt.xlabel("Days")
-        elif tstep is not None:
-            exec(f"plt.plot(self.{prop}[tstep, :].flatten())")
-            plt.xlabel("Grid (id)")
-            boundary = True
-            x_skip = 5
-            x_ticks = np.arange(0, self.grid.get_n(boundary), x_skip)
-            x_labels = self.grid.get_cells_id(boundary, fshape=False, fmt="array")
-            x_labels = x_labels[::x_skip]
-            plt.xticks(ticks=x_ticks, labels=x_labels)
-        plt.grid()
-        plt.show()
+        if name in ["all", "*"]:
+            for solution in self.solutions:
+                self.set_solution(solution)
+                X, Y = self.get_values(scale, boundary)
+                plotter.add(
+                    x=X,
+                    y=Y,
+                    name=solution,
+                )
+        else:
+            if name is not None:
+                self.set_solution(name)
+            X, Y = self.get_values(scale, boundary)
+            plotter.add(
+                x=X,
+                y=Y,
+                name=self.solution.name,
+            )
 
-    def plot_grid(self, property: str = "pressures", tstep: int = None):
-        if tstep is None:
-            tstep = self.__get_tstep()
-        cells_id = self.grid.get_cells_id(False, False, "list")
-        exec(f"plt.imshow(self.{property}[tstep][cells_id][np.newaxis, :])")
-        plt.colorbar(label=f"{property.capitalize()} ({self.units[property[:-1]]})")
-        plt.title(f"{property.capitalize()} Distribution")
-        plt.yticks([])
-        plt.xlabel("Grid (i)")
-        plt.xticks(ticks=range(0, 4), labels=range(1, 5))
-        plt.show()
+        return plotter.plot()
+
+    plot_solution = plot
+
+    def plot_solutions(
+        self,
+        scale=True,
+        boundary=True,
+        nrows: int = 3,
+        ncols: int = 3,
+    ):
+        """Plot all solutions in a grid.
+
+        Parameters
+        ----------
+        scale : bool, optional
+            scale values using scalers. Default is True.
+        boundary : bool, optional
+            include boundary cells in the plot. Default is True.
+        nrows : int, optional
+            number of rows in the plot. Default is 3.
+        ncols : int, optional
+            number of columns in the plot. Default is 3.
+
+        Returns
+        -------
+        plotter : Plot1D, Plot2D, or Plot3D
+            plotter object with the plotted solution values.
+        """
+        return self.plot(
+            scale=scale,
+            boundary=boundary,
+            nrows=nrows,
+            ncols=ncols,
+            name="all",
+        )
+
+    # def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
+    #     """Show values in a cartesian plot.
+
+    #     Parameters
+    #     ----------
+    #     prop : str, optional
+    #         property name from ["rates", "pressures"].
+    #     id : int, optional
+    #         cell id. If None, all cells are selected.
+    #     tstep : int, optional
+    #         time step. If None, the last time step is selected.
+    #     """
+    #     if tstep is None:
+    #         tstep = self.__get_tstep()
+
+    #     if id is not None:
+    #         exec(f"plt.plot(self.{prop}[:, id].flatten())")
+    #         plt.xlabel("Days")
+    #     elif tstep is not None:
+    #         exec(f"plt.plot(self.{prop}[tstep, :].flatten())")
+    #         plt.xlabel("Grid (id)")
+    #         boundary = True
+    #         x_skip = 5
+    #         x_ticks = np.arange(0, self.grid.get_n(boundary), x_skip)
+    #         x_labels = self.grid.get_cells_id(boundary, fshape=False, fmt="array")
+    #         x_labels = x_labels[::x_skip]
+    #         plt.xticks(ticks=x_ticks, labels=x_labels)
+    #     plt.grid()
+    #     plt.show()
+
+    # def plot_grid(self, property: str = "pressures", tstep: int = None):
+    #     if tstep is None:
+    #         tstep = self.__get_tstep()
+    #     cells_id = self.grid.get_cells_id(False, False, "list")
+    #     exec(f"plt.imshow(self.{property}[tstep][cells_id][np.newaxis, :])")
+    #     plt.colorbar(label=f"{property.capitalize()} ({self.units[property[:-1]]})")
+    #     plt.title(f"{property.capitalize()} Distribution")
+    #     plt.yticks([])
+    #     plt.xlabel("Grid (i)")
+    #     plt.xticks(ticks=range(0, 4), labels=range(1, 5))
+    #     plt.show()
 
     def copy(self):
         """Copy model (under development)
@@ -1157,6 +1358,8 @@ class BlackOil(Model):
 
 
 if __name__ == "__main__":
+
+    import reservoirflow as rf
 
     def create_model_example_7_1():
         grid = rf.grids.RegularCartesian(
