@@ -744,7 +744,7 @@ class BlackOil(Model):
         # array = self.rates[:, cells_id]
         array = self.__get_rate(None, cells_id)
         if scale:
-            array = self.rates_scaler.transform(array)
+            array = self.rate_scaler.transform(array)
         if melt:
             labels = ["Q" + rate_str]
             array = array.flatten()
@@ -766,7 +766,7 @@ class BlackOil(Model):
         # array = self.pressures[:, cells_id]
         array = self.__get_pressure(None, cells_id)
         if scale:
-            array = self.pressures_scaler.transform(array)
+            array = self.pressure_scaler.transform(array)
         if melt:
             labels = ["P" + press_str]
             array = array.flatten()
@@ -788,7 +788,7 @@ class BlackOil(Model):
         # array = self.rates[:, list(self.wells.keys())]
         array = self.__get_rate(None, list(self.wells.keys()))
         if scale:
-            array = self.rates_scaler.transform(array)
+            array = self.rate_scaler.transform(array)
         data = pd.DataFrame(array, columns=labels)
         return self.__concat(data, df)
 
@@ -803,7 +803,7 @@ class BlackOil(Model):
         labels = [f"Pwf{str(id)}" + press_str for id in self.w_pressures]
         data = pd.DataFrame(self.w_pressures)
         if scale:
-            data = self.pressures_scaler.transform(data.values)
+            data = self.pressure_scaler.transform(data.values)
             data = pd.DataFrame(data)
         data.columns = labels
         return self.__concat(data, df)
@@ -829,7 +829,7 @@ class BlackOil(Model):
         cells_center, _ = self.get_centers(False, boundary)
         self.space_scaler.fit(cells_center, axis=0)
 
-    def __update_pressures_scaler(self, boundary):
+    def __update_pressure_scaler(self, boundary):
         config = self.__get_scalers_config(boundary)
         pressures = self.get_df(columns=["cells_pressure"], **config).values
         if self.solution and self.solution.name in ["D1P1"]:
@@ -839,11 +839,11 @@ class BlackOil(Model):
                     "pressures scaler is updated based on the final timestep "
                     "for D1P1 solution."
                 )
-            self.pressures_scaler.fit(pressures[-1], axis=None)
+            self.pressure_scaler.fit(pressures[-1], axis=None)
         else:
-            self.pressures_scaler.fit(pressures, axis=None)
+            self.pressure_scaler.fit(pressures, axis=None)
 
-    def __update_rates_scaler(self, boundary):
+    def __update_rate_scaler(self, boundary):
         """Flow rates scaler
 
         Parameters
@@ -863,7 +863,7 @@ class BlackOil(Model):
         """
         config = self.__get_scalers_config(boundary)
         rates = self.get_df(columns=["rates"], **config).values
-        self.rates_scaler.fit(rates, axis=None)
+        self.rate_scaler.fit(rates, axis=None)
 
     def __get_scalers_config(self, boundary):
         return {
@@ -879,8 +879,8 @@ class BlackOil(Model):
     def update_scalers(self, boundary):
         self.__update_time_scaler()  # get_time
         self.__update_space_scaler(boundary)  # get_centers() and __add_xyz()
-        self.__update_pressures_scaler(boundary)
-        self.__update_rates_scaler(boundary)
+        self.__update_pressure_scaler(boundary)
+        self.__update_rate_scaler(boundary)
 
     def get_time(self, scale=False):
         time = self.__get_time_vector().reshape(-1, 1)
@@ -972,10 +972,10 @@ class BlackOil(Model):
                 self.space_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "space"
             elif column.lower() in col_dict["pressure"]:
-                self.pressures_scaler, s_str = create_scaler(scaler_type, output_range)
+                self.pressure_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "pressure"
             elif column.lower() in col_dict["rate"]:
-                self.rates_scaler, s_str = create_scaler(scaler_type, output_range)
+                self.rate_scaler, s_str = create_scaler(scaler_type, output_range)
                 column_str = "rate"
             else:  # if column.lower() not in col_vals:
                 raise ValueError(f"column {column} does not exist.")
@@ -1003,7 +1003,10 @@ class BlackOil(Model):
         dict
             scalers configuration as a dictionary.
         """
-
+        # self.time_scaler
+        # self.space_scaler
+        # self.rate_scaler
+        # self.pressure_scaler
         if name in self.scalers_dict:
             return self.scalers_dict[name]
         elif name is None or name in ["all", "*"]:

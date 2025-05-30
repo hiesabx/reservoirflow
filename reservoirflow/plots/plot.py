@@ -17,21 +17,21 @@ class Plot(Base):
         self.Data[name] = [x, y]
         return self
 
-    def add_solution(self, solution, name=None):
-        """Add solution data to the plot.
+    # def add_solution(self, solution, name=None):
+    #     """Add solution data to the plot.
 
-        Parameters
-        ----------
-        solution : tuple
-            A tuple containing (x, y) data.
-        name : str, optional
-            Name of the solution, by default None.
-        """
-        if name is None:
-            name = solution.name
-        x, y = solution
-        self.add(x, y, name)
-        return self
+    #     Parameters
+    #     ----------
+    #     solution : tuple
+    #         A tuple containing (x, y) data.
+    #     name : str, optional
+    #         Name of the solution, by default None.
+    #     """
+    #     if name is None:
+    #         name = solution.name
+    #     x, y = solution
+    #     self.add(x, y, name)
+    #     return self
 
 
 if __name__ == "__main__":
