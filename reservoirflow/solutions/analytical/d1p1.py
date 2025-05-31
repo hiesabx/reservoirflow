@@ -89,14 +89,27 @@ class D1P1(Solution):
 
     def run(
         self,
-        N=100,
         nsteps=10,
-        threading=True,
-        vectorize=True,
-        check_MB=True,
-        print_arrays=False,
-        isolver=None,
+        N=100,
+        clean=False,
+        # threading=True,
+        # vectorize=True,
+        # check_MB=True,
+        # print_arrays=False,
+        # isolver=None,
     ):
+        """Run the simulation for a given number of steps.
+
+        Parameters
+        ----------
+        nsteps : int, optional
+            Number of steps to run the simulation, by default 10.
+        N : int, optional
+            Number of terms in the analytical solution, by default 100.
+        clean : bool, optional
+            If True, remove values out of range in the analytical solution,
+            by default False.
+        """
         start_time = time.time()
         # self.nsteps += nsteps
         self.N = N
@@ -122,7 +135,7 @@ class D1P1(Solution):
 
         # scale = False
         # output_range = [-1, 1]
-        clean = False
+        # clean = False
 
         # for step in pbar:
         #     pbar.set_description(f"[step] {step}")
@@ -176,6 +189,14 @@ class D1P1(Solution):
         if clean:
             pD[pD < input_range[0]] = input_range[0]
             pD[pD > input_range[1]] = input_range[1]
+            self.pressures = np.vstack(
+                [
+                    self.pressures,
+                    input_scaler.inverse_transform(pD[1:, :]),
+                ]
+            )
+        else:
+            self.pressures = input_scaler.inverse_transform(pD)
 
         # shape = self.model.get_shape(True)
         # t, x = self.model.get_domain(scale=scale, boundary=True)
@@ -191,15 +212,6 @@ class D1P1(Solution):
         #     p = input_scaler.inverse_transform(pD)
         #     # t_values, x_values = np.meshgrid(t, x, indexing='ij')
         #     # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
-
-        # self.pressures = p
-        # self.pressures = input_scaler.inverse_transform(pD)
-        self.pressures = np.vstack(
-            [
-                self.pressures,
-                input_scaler.inverse_transform(pD[1:, :]),
-            ]
-        )
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime = self.run_ctime

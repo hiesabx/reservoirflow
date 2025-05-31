@@ -1181,7 +1181,7 @@ class BlackOil(Model):
         boundary: bool = True,
         nrows: int = 3,
         ncols: int = 3,
-        name: str = None,
+        solution: str = None,
     ):
         """Plot solution values.
 
@@ -1195,7 +1195,7 @@ class BlackOil(Model):
             number of rows in the plot. Default is 3.
         ncols : int, optional
             number of columns in the plot. Default is 3.
-        name : str, optional
+        solution : str, optional
             name of the solution to plot. If "all" or "*", all solutions
             will be plotted. If None, the current solution will be
             plotted. Default is None.
@@ -1218,18 +1218,18 @@ class BlackOil(Model):
         else:
             raise ValueError(f"Grid dimension {self.grid.D} is not supported.")
 
-        if name in ["all", "*"]:
-            for solution in self.solutions:
-                self.set_solution(solution)
+        if solution in ["all", "*"]:
+            for solution_name in self.solutions:
+                self.set_solution(solution_name)
                 X, Y = self.get_values(scale, boundary)
                 plotter.add(
                     x=X,
                     y=Y,
-                    name=solution,
+                    name=solution_name,
                 )
         else:
-            if name is not None:
-                self.set_solution(name)
+            if solution is not None:
+                self.set_solution(solution)
             X, Y = self.get_values(scale, boundary)
             plotter.add(
                 x=X,
@@ -1271,7 +1271,7 @@ class BlackOil(Model):
             boundary=boundary,
             nrows=nrows,
             ncols=ncols,
-            name="all",
+            solution="all",
         )
 
     # def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):

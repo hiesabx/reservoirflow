@@ -88,14 +88,10 @@ class Plot1D(Plot):
 
         return (xlim, xticks), (ylim, yticks)
 
-    def plot(self, id=None):
-        fig, axs = plt.subplots(
-            self.nrows,
-            self.ncols,
-            figsize=(10, 6),
-            sharey=True,
-            sharex=True,
-        )
+    def plot(
+        self,
+        id=None,
+    ):
 
         def get_sampled_array_combined_distribution(input_array, num_samples):
             """
@@ -327,6 +323,14 @@ class Plot1D(Plot):
 
             # Select the values from the input array using the calculated indices
             return selected_indices
+
+        fig, axs = plt.subplots(
+            self.nrows,
+            self.ncols,
+            figsize=(10, 6),
+            sharey=True,
+            sharex=True,
+        )
 
         plt.subplots_adjust(hspace=0.3, wspace=0.2)
         alpha = 1
