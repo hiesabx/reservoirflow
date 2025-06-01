@@ -1177,6 +1177,7 @@ class BlackOil(Model):
 
     def plot(
         self,
+        type: str = "line",
         scale: bool = False,
         boundary: bool = True,
         nrows: int = 3,
@@ -1187,6 +1188,9 @@ class BlackOil(Model):
 
         Parameters
         ----------
+        type : str, optional
+            type of the plot in ['line', 'contour']. Currently only 1D
+            plots are supported. Default is "line".
         scale : bool, optional
             scale values using scalers. Default is False.
         boundary : bool, optional
@@ -1206,11 +1210,18 @@ class BlackOil(Model):
             plotter object with the plotted solution values.
         """
         if self.grid.D == 1:
-            plotter = plots.Plot1D(
-                nrows=nrows,
-                ncols=ncols,
-                verbose=self.verbose,
-            )
+            if type == "line":
+                plotter = plots.Plot1D(
+                    nrows=nrows,
+                    ncols=ncols,
+                    verbose=self.verbose,
+                )
+            elif type == "contour":
+                plotter = plots.Contour1D(
+                    verbose=self.verbose,
+                )
+            else:
+                raise ValueError(f"Plot type {type} is not supported for 1D grid.")
         elif self.grid.D == 2:
             raise NotImplementedError("2D plotting is not implemented yet.")
         elif self.grid.D == 3:
@@ -1273,6 +1284,10 @@ class BlackOil(Model):
             ncols=ncols,
             solution="all",
         )
+
+    def contour(self):
+
+        return None
 
     # def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
     #     """Show values in a cartesian plot.

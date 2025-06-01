@@ -22,8 +22,8 @@ class Contour1D(Plot):
 
     def __init__(
         self,
-        nrows=1,
-        ncols=1,
+        # nrows=1,
+        # ncols=1,
         verbose=False,
     ):
         """Create 1D Plot object.
@@ -38,18 +38,11 @@ class Contour1D(Plot):
             print verbose output, by default False
         """
         super().__init__(verbose)
-        self.nrows = nrows
-        self.ncols = ncols
+        # self.nrows = nrows
+        # self.ncols = ncols
 
     def plot(
         self,
-        X,
-        Y,
-        name,
-        ax=None,
-        fig_type="contourf",
-        cbar_num=11,
-        Y_range=None,
     ):
         """Draw pressures.
 
@@ -74,9 +67,18 @@ class Contour1D(Plot):
         ValueError
             _description_
         """
+
+        name = list(self.Data.keys())[0]
+        ax = None
+        fig_type = "contourf"
+        cbar_num = 11
+        Y_range = None
+
         if ax is None:
             fig, ax = plt.subplots(figsize=(6, 3))
 
+        X = self.Data[name][0]
+        Y = self.Data[name][1]
         t = X[:, :, 0]
         x = X[:, :, 1]
         if Y_range is None:
@@ -86,8 +88,8 @@ class Contour1D(Plot):
             ymin = Y_range[0]
             ymax = Y_range[1]
 
-        xmin = x.min()
-        xmax = x.max()
+        # xmin = x.min()
+        # xmax = x.max()
 
         if ymax >= 2:
             ylim = (x.min(), x.max())
@@ -262,51 +264,51 @@ class Contour1D(Plot):
 
         return (xlim, xticks), (ylim, yticks)
 
-    def plot(self, id=None):
-        fig, axs = plt.subplots(
-            self.nrows, self.ncols, figsize=(10, 6), sharey=True, sharex=True
-        )
-        plt.subplots_adjust(hspace=0.3, wspace=0.2)
-        alpha = 1
-        tsteps = [0, 1, 5, 10, 40, 50, 60, 90, 100]
-        assert len(tsteps) == self.nrows * self.ncols, "tsteps are not compatible"
-        self.__set_axis_labels(axs)
+    # def plot(self, id=None):
+    #     fig, axs = plt.subplots(
+    #         self.nrows, self.ncols, figsize=(10, 6), sharey=True, sharex=True
+    #     )
+    #     plt.subplots_adjust(hspace=0.3, wspace=0.2)
+    #     alpha = 1
+    #     tsteps = [0, 1, 5, 10, 40, 50, 60, 90, 100]
+    #     assert len(tsteps) == self.nrows * self.ncols, "tsteps are not compatible"
+    #     self.__set_axis_labels(axs)
 
-        if id is None:
-            names = list(self.Data.keys())
-            N = len(names)
-        else:
-            if isinstance(id, list):
-                lst = list(self.Data.keys())
-                names = [lst[i] for i in id]
-                N = len(names)
-            else:
-                names = [list(self.Data.keys())[id]]
-                N = 1
+    #     if id is None:
+    #         names = list(self.Data.keys())
+    #         N = len(names)
+    #     else:
+    #         if isinstance(id, list):
+    #             lst = list(self.Data.keys())
+    #             names = [lst[i] for i in id]
+    #             N = len(names)
+    #         else:
+    #             names = [list(self.Data.keys())[id]]
+    #             N = 1
 
-        for n in range(N):
-            name = names[n]
-            lstyle = "-" if "ana" in name.lower() else "--"
-            X = self.Data[name][0]
-            Y = self.Data[name][1]
-            t = X[:, 0, 0]
-            x = X[0, :, 1]
+    #     for n in range(N):
+    #         name = names[n]
+    #         lstyle = "-" if "ana" in name.lower() else "--"
+    #         X = self.Data[name][0]
+    #         Y = self.Data[name][1]
+    #         t = X[:, 0, 0]
+    #         x = X[0, :, 1]
 
-            for i, ax in enumerate(axs.ravel()):
-                tstep = tsteps[i]
-                ax.plot(x, Y[tstep, :], label=name, linestyle=lstyle, alpha=alpha)
-                ax.tick_params(top=True, right=True)
-                ax.set_title(f"t={t[tstep]}")
-                ax.grid(True)
-                if i == 0 and n == 0:
-                    (xlim, xticks), (ylim, yticks) = self.__get_lims_ticks(x, Y)
-                    ax.set_xlim(xlim)
-                    ax.set_ylim(ylim)
-                    ax.set_xticks(xticks)
-                    ax.set_yticks(yticks)
+    #         for i, ax in enumerate(axs.ravel()):
+    #             tstep = tsteps[i]
+    #             ax.plot(x, Y[tstep, :], label=name, linestyle=lstyle, alpha=alpha)
+    #             ax.tick_params(top=True, right=True)
+    #             ax.set_title(f"t={t[tstep]}")
+    #             ax.grid(True)
+    #             if i == 0 and n == 0:
+    #                 (xlim, xticks), (ylim, yticks) = self.__get_lims_ticks(x, Y)
+    #                 ax.set_xlim(xlim)
+    #                 ax.set_ylim(ylim)
+    #                 ax.set_xticks(xticks)
+    #                 ax.set_yticks(yticks)
 
-        self.__add_legends(fig, N)
-        plt.show()
+    #     self.__add_legends(fig, N)
+    #     plt.show()
 
     # -------------------------------------------------------------------------
     # End

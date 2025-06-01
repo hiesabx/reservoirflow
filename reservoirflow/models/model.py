@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from reservoirflow.base import Base
 from reservoirflow.solutions.compiler import Compiler
+from tabulate import tabulate
 
 
 class Model(ABC, Base):
@@ -145,6 +146,42 @@ class Model(ABC, Base):
             List of solution names that are available in the model.
         """
         return list(self.solutions.keys())
+
+    def print_solutions(
+        self,
+    ):
+        headers = [
+            "Name",
+            "stype",
+            "method",
+            "sparse",
+            # "dtype",
+            # "unit",
+            "tstep",
+            "nsteps",
+        ]
+        table = []
+        for solution, compiler in zip(self.solutions.values(), self.compilers.values()):
+            table.append(
+                [
+                    solution.name,
+                    compiler.stype,
+                    compiler.method,
+                    compiler.sparse,
+                    # compiler.dtype,
+                    # solution.unit,
+                    solution.tstep,
+                    solution.nsteps,
+                ]
+            )
+
+        print(
+            tabulate(
+                table,
+                headers=headers,
+                tablefmt="github",
+            )
+        )
 
     def clear_solutions(self):
         """Clear all solutions and compilers.

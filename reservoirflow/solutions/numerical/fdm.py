@@ -798,11 +798,17 @@ class FDM(Solution):
         Parameters
         ----------
         nsteps : int, optional
-            _description_
+            number of simulation steps to run, by default 10.
         threading : bool, optional
-            _description_
+            use multiple threads for concurrence workers. The maximum
+            number of threads are set to the half number of cells.
+        vectorize : bool, optional
+            use vectorized matrices instead of symbolic matrices.
+            This is recommended for better performance.
         check_MB : bool, optional
-            _description_
+            check material balance error after each step.
+        print_arrays : bool, optional
+            print the arrays of matrices A and d after each step.
         isolver : str, optional
             iterative solver for sparse matrices. Available solvers are
             ["bicg", "bicgstab", "cg", "cgs", "gmres", "lgmres",
