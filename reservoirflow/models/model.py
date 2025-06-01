@@ -129,6 +129,7 @@ class Model(ABC, Base):
             self.compiler = self.compilers[name]
             self.solve = self.solution.solve
             self.run = self.solution.run
+            return self.solution
         else:
             print(
                 f"Solution '{name}' not found. Available solutions: {self.get_solutions()}"

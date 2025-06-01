@@ -93,7 +93,7 @@ class D1P1(Solution):
         N=100,
         clean=False,
         # threading=True,
-        # vectorize=True,
+        vectorize=True,
         # check_MB=True,
         # print_arrays=False,
         # isolver=None,
@@ -111,10 +111,9 @@ class D1P1(Solution):
             by default False.
         """
         start_time = time.time()
-        # self.nsteps += nsteps
+        self.tstep += nsteps
+        self.nsteps += nsteps
         self.N = N
-        self.tstep = nsteps
-        self.nsteps = nsteps + 1
         self.run_ctime = 0
         if self.model.verbose:
             self.model.verbose = False
@@ -125,13 +124,6 @@ class D1P1(Solution):
         print(f"[info] Simulation run started: {nsteps} timesteps.")
 
         N_range = np.arange(1, self.N + 1)
-        pbar = tqdm(
-            N_range,
-            unit="steps",
-            colour="green",
-            position=0,
-            leave=True,
-        )
 
         # scale = False
         # output_range = [-1, 1]
@@ -176,13 +168,53 @@ class D1P1(Solution):
         tDpi = -np.pi**2 * tD_values
         pDsum = np.zeros_like(xD_values, dtype="double")
 
-        for n in pbar:
-            pbar.set_description(f"[step] {n}")
-            pDsum += (
-                (pDi0 / n + pDin * ((-1) ** n) / n)
-                * np.sin(n * xDpi)
-                * np.exp((n**2) * tDpi)
-            )
+        if vectorize:
+            # Vectorized computation for all n at once
+            n_values = N_range[:, np.newaxis, np.newaxis]  # shape (N, 1, 1)
+            xDpi = np.pi * xD_values  # shape (T, X)
+            tDpi = -np.pi**2 * tD_values  # shape (T, X)
+
+            # Precompute sin(n * xDpi) and exp(n**2 * tDpi) for all n
+            sin_nx = np.sin(n_values * xDpi)  # shape (N, T, X)
+            exp_nt = np.exp((n_values**2) * tDpi)  # shape (N, T, X)
+
+            # Compute coefficients for each n
+            coeffs = (
+                pDi0 / n_values + pDin * ((-1) ** n_values) / n_values
+            )  # shape (N, 1, 1)
+
+            # Compute all terms and sum over n
+            terms = coeffs * sin_nx * exp_nt  # shape (N, T, X)
+
+            # Progress bar for vectorized computation
+            chunk_size = max(1, len(N_range) // 100)
+            pDsum = np.zeros_like(xD_values, dtype="double")
+            for i in tqdm(
+                range(0, len(N_range), chunk_size),
+                total=(len(N_range) + chunk_size - 1) // chunk_size,
+                unit="chunks",
+                colour="green",
+                position=0,
+                leave=True,
+                desc="[chunk]",
+            ):
+                pDsum += np.sum(terms[i : i + chunk_size], axis=0)
+
+        else:
+            for n in tqdm(
+                N_range,
+                unit="steps",
+                colour="green",
+                position=0,
+                leave=True,
+                desc="[step]",
+            ):
+                # pbar.set_description(f"[step] {n}")
+                pDsum += (
+                    (pDi0 / n + pDin * ((-1) ** n) / n)
+                    * np.sin(n * xDpi)
+                    * np.exp((n**2) * tDpi)
+                )
         pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * pDsum
 
         # Remove values out of range:
@@ -191,7 +223,7 @@ class D1P1(Solution):
             pD[pD > input_range[1]] = input_range[1]
             self.pressures = np.vstack(
                 [
-                    self.pressures,
+                    self.pressures[0, :],
                     input_scaler.inverse_transform(pD[1:, :]),
                 ]
             )

@@ -827,16 +827,15 @@ class FDM(Solution):
         else:
             verbose_restore = False
         print(f"[info] Simulation run started: {nsteps} timesteps.")
-        pbar = tqdm(
+
+        for step in tqdm(
             range(1, nsteps + 1),
             unit="steps",
             colour="green",
             position=0,
             leave=True,
-        )
-
-        for step in pbar:
-            pbar.set_description(f"[step] {step}")
+            desc="[step]",
+        ):
             self.solve(
                 threading,
                 vectorize,
