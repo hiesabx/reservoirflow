@@ -323,11 +323,11 @@ class FDM(Solution):
     def get_cells_eq(self, threading=False):
         """Return flow equations for all internal cells."""
         cells_eq = {}
-        n_threads = self.model.n // 2
+        # n_threads = self.model.n // 2
         if threading:
             # from concurrent.futures import ThreadPoolExecutor
 
-            with ThreadPoolExecutor(n_threads) as executor:
+            with ThreadPoolExecutor(self.model.n_threads) as executor:
                 # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
                 equations = executor.map(self.get_cell_eq, self.model.grid.cells_id)
@@ -410,7 +410,7 @@ class FDM(Solution):
         if threading:
             # from concurrent.futures import ThreadPoolExecutor
 
-            with ThreadPoolExecutor(self.model.n) as executor:
+            with ThreadPoolExecutor(self.model.n_threads) as executor:
                 # from concurrent.futures import ProcessPoolExecutor
                 # with ProcessPoolExecutor(2) as executor:
                 executor.map(self.__update_matrices_symb, self.model.cells_id)
@@ -834,14 +834,16 @@ class FDM(Solution):
             verbose_restore = False
         print(f"[info] Simulation run started: {nsteps} timesteps.")
 
-        for step in tqdm(
+        progress = tqdm(
             range(1, nsteps + 1),
             unit="steps",
             colour="green",
             position=0,
             leave=True,
             desc="[step]",
-        ):
+        )
+
+        for step in progress:
             self.solve(
                 threading,
                 vectorize,

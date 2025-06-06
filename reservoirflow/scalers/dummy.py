@@ -35,10 +35,6 @@ class Dummy(Scaler):
     def inverse_transform(self, vbar):
         return vbar
 
-    def fit_transform(self, v, axis=0):
-        self.fit(v, axis)
-        return self.transform(v)
-
 
 if __name__ == "__main__":
     scaler = Dummy(output_range=(0, 1))

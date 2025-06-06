@@ -277,6 +277,7 @@ class Base:
         self.set_units(unit)
         self.dtype = dtype
         self.verbose = verbose
+        self.n_threads = 8
 
     def set_units(self, unit: str = "field"):
         """Set object units.
@@ -299,6 +300,19 @@ class Base:
             self.factors = FACTORS[unit]
         else:
             raise ValueError(f"Unknown units ({unit}).")
+
+    def set_n_threads(self, n: int = 8):
+        """Set number of threads.
+
+        Parameters
+        ----------
+        n : int, optional
+            number of threads, by default 8.
+        """
+        if n > 0:
+            self.n_threads = n
+        else:
+            raise ValueError("Number of threads must be greater than zero.")
 
     def report(
         self,

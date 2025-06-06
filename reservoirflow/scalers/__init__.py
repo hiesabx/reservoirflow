@@ -19,10 +19,12 @@ __all__ = [
     # "ScalerDC",
     "Dummy",
     "MinMax",
+    "LogMinMax",
 ]
 
+from .scaler import Scaler
 from .dummy import Dummy
 from .minmax import MinMax
-from .scaler import Scaler
+from .logminmax import LogMinMax
 
 # from .scalerdc import ScalerDC

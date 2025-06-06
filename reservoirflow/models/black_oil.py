@@ -166,9 +166,9 @@ class BlackOil(Model):
             self.set_well(well)
 
         self.scalers_dict = {
-            "time": ["MinMaxScaler", (0, 1)],
-            "space": ["MinMaxScaler", (-1, 1)],
-            "pressure": ["MinMaxScaler", (-1, 1)],
+            "time": ["MinMax", (0, 1)],
+            "space": ["MinMax", (-1, 1)],
+            "pressure": ["MinMax", (-1, 1)],
             "rate": [None, None],
         }
         self.set_scalers(self.scalers_dict)
@@ -832,7 +832,7 @@ class BlackOil(Model):
     def __update_pressure_scaler(self, boundary):
         config = self.__get_scalers_config(boundary)
         pressures = self.get_df(columns=["cells_pressure"], **config).values
-        if self.solution and self.solution.name in ["D1P1"]:
+        if self.solution and self.solution.__class__.__name__ in ["D1P1"]:
             if self.verbose:
                 print(
                     "[warning] To avoid scaling based on unstable solutions, "
@@ -924,15 +924,15 @@ class BlackOil(Model):
         .. code-block:: python
 
             scalers_dict = {
-                'time':['MinMaxScaler', (0,1)],
-                'space':['MinMaxScaler', (-1,1)],
-                'pressure':['MinMaxScaler', (-1,1)],
+                'time':['MinMax', (0,1)],
+                'space':['MinMax', (-1,1)],
+                'pressure':['MinMax', (-1,1)],
                 'rate':[None,None],
             }
 
         Note that by default rates are not scaled, time is scaled
         between 0 and 1, while space and pressure are scaled between
-        -1 and 1. By default, MinMaxScaler is used for all dimensions.
+        -1 and 1. By default, MinMax scaler is used for all dimensions.
 
         Parameters
         ----------
@@ -951,6 +951,8 @@ class BlackOil(Model):
                 return scalers.Dummy(None), None
             elif scaler_type.lower() in ["minmax", "minmaxscaler"]:
                 return scalers.MinMax(output_range=output_range), "MinMax"
+            elif scaler_type.lower() in ["logminmax", "logminmaxscaler"]:
+                return scalers.LogMinMax(output_range=output_range), "LogMinMax"
             else:
                 raise ValueError("scaler type is not defined.")
 
@@ -1065,9 +1067,9 @@ class BlackOil(Model):
             .. code-block:: python
 
                 scalers_dict = {
-                    'time':['MinMaxScaler', (0,1)],
-                    'space':['MinMaxScaler', (-1,1)],
-                    'pressure':['MinMaxScaler', (-1,1)],
+                    'time':['MinMax', (0,1)],
+                    'space':['MinMax', (-1,1)],
+                    'pressure':['MinMax', (-1,1)],
                     'rate':[None,None]
                 }
 

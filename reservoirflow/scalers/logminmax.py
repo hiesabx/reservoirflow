@@ -3,11 +3,13 @@ MinMax
 ------
 """
 
+import numpy as np
+
 from reservoirflow.scalers.scaler import Scaler
 
 
-class MinMax(Scaler):
-    """MinMax scaler class.
+class LogMinMax(Scaler):
+    """Logarithmic MinMax scaler class.
 
     This scaler is used to scale input data based on
     ``output_range=(min,max)``. If ``input_range`` is set to ``None``
@@ -32,7 +34,7 @@ class MinMax(Scaler):
         Scaler object.
     """
 
-    name = "MinMax"
+    name = "LogMinMax"
 
     def __init__(
         self,
@@ -72,19 +74,29 @@ class MinMax(Scaler):
 
     def transform(self, v):
         self.__check_vmin_vmax__()
-        vbar = (self.Vmax - self.Vmin) * (v - self.vmin) / (
-            self.vmax - self.vmin
-        ) + self.Vmin
+        c = 1
+        vbar = (np.log(v + c) - np.log(self.vmin + c)) / (
+            np.log(self.vmax + c) - np.log(self.vmin + c)
+        ) * (self.Vmax - self.Vmin) + self.Vmin
         return vbar  #: transformed input values.
 
     def inverse_transform(self, vbar):
         self.__check_vmin_vmax__()
-        v = (self.vmax - self.vmin) * (vbar - self.Vmin) / (
-            self.Vmax - self.Vmin
-        ) + self.vmin
+        c = 1
+        v = (
+            np.exp(
+                (
+                    (vbar - self.Vmin)
+                    * (np.log(self.vmax + c) - np.log(self.vmin + c))
+                    / (self.Vmax - self.Vmin)
+                )
+                + np.log(self.vmin + c)
+            )
+            - c
+        )
         return v  #: inverse_transformed values (back to original).
 
 
 if __name__ == "__main__":
-    scaler = MinMax(output_range=(0, 1))
+    scaler = LogMinMax(output_range=(0, 1))
     print(scaler)

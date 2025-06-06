@@ -28,66 +28,6 @@ class D1P1(Solution):
 
     name = "D1P1"
 
-    def calc_solution(
-        self,
-        N=1000,
-        scale=False,
-        output_range=[-1, 1],
-        clean=True,
-    ):
-
-        # Independent variables: t, x
-        t, x = self.model.get_domain(scale=False, boundary=True)
-        L = x.max() - x.min()
-        xD = (x - x.min()) / L
-        tD = self.model.get_alpha() * t / (L**2)
-        tD_values, xD_values = np.meshgrid(tD, xD, indexing="ij")
-
-        # Dependent variable: p
-        p = self.pressures
-        input_range = [0, 1]
-        input_scaler = scalers.MinMax(input_range).fit(p, axis=None)
-        pDi = input_scaler.transform(self.model.pi)
-        pD0 = input_scaler.transform(p[0, 0])
-        pDn = input_scaler.transform(p[0, -1])
-
-        # Analytical solution:
-        N_range = np.arange(1, N + 1)
-        pDi0 = pDi - pD0
-        pDin = pDn - pDi
-        xDpi = np.pi * xD_values
-        tDpi = -np.pi**2 * tD_values
-        pDsum = np.zeros_like(xD_values, dtype="double")
-        for n in N_range:
-            pDsum += (
-                (pDi0 / n + pDin * ((-1) ** n) / n)
-                * np.sin(n * xDpi)
-                * np.exp((n**2) * tDpi)
-            )
-        pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * pDsum
-
-        # Remove values out of range:
-        if clean:
-            pD[pD < input_range[0]] = input_range[0]
-            pD[pD > input_range[1]] = input_range[1]
-
-        shape = self.model.get_shape(True)
-        t, x = self.model.get_domain(scale=scale, boundary=True)
-        t_values, x_values = np.meshgrid(t, x, indexing="ij")
-        X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
-
-        if scale:
-            output_scaler = scalers.MinMax(output_range, input_range)
-            p = output_scaler.transform(pD)
-            # xD_values = output_scaler.transform(xD_values)
-            # X = np.stack((tD_values, xD_values), axis=-1).reshape(*shape, 2)
-        else:
-            p = input_scaler.inverse_transform(pD)
-            # t_values, x_values = np.meshgrid(t, x, indexing='ij')
-            # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
-
-        return X, p
-
     def solve(self):
         raise NotImplementedError
 
@@ -129,27 +69,6 @@ class D1P1(Solution):
 
         N_range = np.arange(1, self.N + 1)
 
-        # scale = False
-        # output_range = [-1, 1]
-        # clean = False
-
-        # for step in pbar:
-        #     pbar.set_description(f"[step] {step}")
-        # self.solve(
-        #     threading,
-        #     vectorize,
-        #     check_MB,
-        #     True,
-        #     print_arrays,
-        #     isolver,
-        # )
-        # self.pressures = self.calc_solution(
-        #     N=1000,
-        #     scale=False,
-        #     output_range=[-1, 1],
-        #     clean=True,
-        #     )
-
         # Independent variables: t, x
         t, x = self.model.get_domain(scale=False, boundary=True)
         L = x.max() - x.min()
@@ -181,7 +100,7 @@ class D1P1(Solution):
             desc="[step]",
         )
         if threading:
-            with ThreadPoolExecutor(8) as executor:
+            with ThreadPoolExecutor(self.model.n_threads) as executor:
                 executor.map(self.__update_pressures_sum, progress)
             # executer = ThreadPoolExecutor(8)
             # for n in progress:
@@ -206,21 +125,6 @@ class D1P1(Solution):
             )
         else:
             self.pressures = input_scaler.inverse_transform(pD)
-
-        # shape = self.model.get_shape(True)
-        # t, x = self.model.get_domain(scale=scale, boundary=True)
-        # t_values, x_values = np.meshgrid(t, x, indexing="ij")
-        # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
-
-        # if scale:
-        #     output_scaler = scalers.MinMax(output_range, input_range)
-        #     p = output_scaler.transform(pD)
-        #     # xD_values = output_scaler.transform(xD_values)
-        #     # X = np.stack((tD_values, xD_values), axis=-1).reshape(*shape, 2)
-        # else:
-        #     p = input_scaler.inverse_transform(pD)
-        #     # t_values, x_values = np.meshgrid(t, x, indexing='ij')
-        #     # X = np.stack((t_values, x_values), axis=-1).reshape(*shape, 2)
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime = self.run_ctime

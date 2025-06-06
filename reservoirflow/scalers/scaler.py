@@ -96,7 +96,6 @@ class Scaler(ABC):
 
     # descale = inverse_transform
 
-    @abstractmethod
     def fit_transform(self, v, axis=0):
         """Fit scaler and transform input based on output range.
 
@@ -111,6 +110,17 @@ class Scaler(ABC):
             using ``axis=0`` is desired and the length of the output is
             equal to the number of features.
         """
+        self.fit(v, axis)
+        return self.transform(v)
+
+    def __check_vmin_vmax__(self):
+        if self.vmin is None or self.vmax is None:
+            msg = (
+                "input_range=[vmin,vmax] is not defined. "
+                + "Use fit (or fit_transform) or define input_range"
+                + " in initialization."
+            )
+            raise ValueError(msg)
 
 
 if __name__ == "__main__":
