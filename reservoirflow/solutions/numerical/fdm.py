@@ -8,7 +8,7 @@ Finite Difference Method (FDM) class.
 import time
 import warnings
 from collections import defaultdict
-
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import scipy.linalg as sl
@@ -325,7 +325,7 @@ class FDM(Solution):
         cells_eq = {}
         n_threads = self.model.n // 2
         if threading:
-            from concurrent.futures import ThreadPoolExecutor
+            # from concurrent.futures import ThreadPoolExecutor
 
             with ThreadPoolExecutor(n_threads) as executor:
                 # from concurrent.futures import ProcessPoolExecutor
@@ -408,7 +408,7 @@ class FDM(Solution):
                 self.A = np.zeros((self.model.n, self.model.n), dtype=self.model.dtype)
 
         if threading:
-            from concurrent.futures import ThreadPoolExecutor
+            # from concurrent.futures import ThreadPoolExecutor
 
             with ThreadPoolExecutor(self.model.n) as executor:
                 # from concurrent.futures import ProcessPoolExecutor

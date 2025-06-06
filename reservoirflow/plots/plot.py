@@ -11,9 +11,9 @@ class Plot(Base):
     def add(self, x, y, name):
         if self.report:
             if name in self.Data.keys():
-                print(f"[Info] Case: {name} was updated.")
+                print(f"[Info] Solution: {name} was updated.")
             else:
-                print(f"[Info] Case: {name} was added.")
+                print(f"[Info] Solution: {name} was added.")
         self.Data[name] = [x, y]
         return self
 

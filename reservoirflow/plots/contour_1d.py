@@ -127,7 +127,9 @@ class Contour1D(Plot):
         ax.set_yticks(yticks)
         ax.tick_params(top=True, right=True)
 
-        return plt.colorbar(subplot, ax=ax, ticks=cbar_ticks)
+        plt.colorbar(subplot, ax=ax, ticks=cbar_ticks)
+
+        return plt.show()
 
     def compare_draw_pressures(
         self,
@@ -191,31 +193,6 @@ class Contour1D(Plot):
                 11,
                 Y_range_list[i],
             )
-
-    def add(self, x, y, name):
-        if self.report:
-            if name in self.Data.keys():
-                print(f"[Info] Case: {name} was updated.")
-            else:
-                print(f"[Info] Case: {name} was added.")
-        self.Data[name] = [x, y]
-        return self
-
-    def add_solution(self, solution, name=None):
-        """Add solution data to the plot.
-
-        Parameters
-        ----------
-        solution : tuple
-            A tuple containing (x, y) data.
-        name : str, optional
-            Name of the solution, by default None.
-        """
-        if name is None:
-            name = solution.name
-        x, y = solution
-        self.add(x, y, name)
-        return self
 
     def __set_axis_labels(self, axs):
         for i, ax in enumerate(axs.ravel()):

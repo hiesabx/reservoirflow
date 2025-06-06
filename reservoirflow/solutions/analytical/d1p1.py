@@ -5,7 +5,10 @@ from tqdm import tqdm
 
 from reservoirflow import scalers
 from reservoirflow.solutions.solution import Solution
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
+# from reservoirflow.utils.helpers import _lru_cache
 # from reservoirflow.utils.profme import cProfiler
 
 
@@ -93,7 +96,7 @@ class D1P1(Solution):
         nsteps=10,
         N=100,
         clean=False,
-        # threading=True,
+        threading=True,
         vectorize=True,
         # check_MB=True,
         # print_arrays=False,
@@ -163,27 +166,33 @@ class D1P1(Solution):
         pDn = input_scaler.transform(p[0, -1])
 
         # Analytical solution:
-        pDi0 = pDi - pD0
-        pDin = pDn - pDi
-        xDpi = np.pi * xD_values
-        tDpi = -np.pi**2 * tD_values
-        pDsum = np.zeros_like(xD_values, dtype="double")
+        self.pDi0 = pDi - pD0
+        self.pDin = pDn - pDi
+        self.xDpi = np.pi * xD_values
+        self.tDpi = -np.pi**2 * tD_values
+        self.pDsum = np.zeros_like(xD_values, dtype="double")
 
-        for n in tqdm(
+        progress = tqdm(
             N_range,
             unit="steps",
             colour="green",
             position=0,
             leave=True,
             desc="[step]",
-        ):
-            # pbar.set_description(f"[step] {n}")
-            pDsum += (
-                (pDi0 / n + pDin * ((-1) ** n) / n)
-                * np.sin(n * xDpi)
-                * np.exp((n**2) * tDpi)
-            )
-        pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * pDsum
+        )
+        if threading:
+            with ThreadPoolExecutor(8) as executor:
+                executor.map(self.__update_pressures_sum, progress)
+            # executer = ThreadPoolExecutor(8)
+            # for n in progress:
+            #     executer.submit(self.__update_pressures_sum, n)
+            # executer.shutdown(wait=True)
+
+        else:
+            for n in progress:
+                self.__update_pressures_sum(n)
+
+        pD = pD0 + (pDn - pD0) * xD_values + 2 / np.pi * self.pDsum
 
         # Remove values out of range:
         if clean:
@@ -224,3 +233,11 @@ class D1P1(Solution):
 
         if verbose_restore:
             self.model.verbose = True
+
+    # @_lru_cache(maxsize=None) # does not work
+    def __update_pressures_sum(self, n):
+        self.pDsum += (
+            (self.pDi0 / n + self.pDin * ((-1) ** n) / n)
+            * np.sin(n * self.xDpi)
+            * np.exp((n**2) * self.tDpi)
+        )

@@ -84,7 +84,7 @@ class Compiler:
         self.__add_solution(sparse)
 
     def __add_solution(self, sparse):
-        if self.stype == "numerical":
+        if self.stype == "Numerical":
             if self.method == "FDM":
                 from reservoirflow.solutions.numerical.fdm import FDM
 
@@ -100,7 +100,7 @@ class Compiler:
             else:
                 print("[INFO] Numerical solution could not be assigned.")
                 raise ValueError("Not ready.")
-        elif self.stype == "analytical":
+        elif self.stype == "Analytical":
 
             D = self.model.grid.D
             if "D1" in self.method:
@@ -153,7 +153,7 @@ class Compiler:
             else:
                 print("[INFO] Analytical solution could not be assigned.")
                 raise ValueError("Not ready.")
-        elif self.stype == "neurical":
+        elif self.stype == "Neurical":
             if self.method == "PINN":
                 from reservoirflow.solutions.neurical.pinn import PINN
 
@@ -168,16 +168,20 @@ class Compiler:
         else:
             print("[INFO] Solution could not be assigned.")
             raise ValueError("Not ready.")
-        # self.model.solutions[self.method] = self.model.solution
+
+        self.model.solution.stype = self.stype
+        self.model.solution.method = self.method
+        self.model.solution.sparse = sparse
+
         print(f"[info] {self.method} was assigned as model.solution.")
 
     def __set_stype(self, stype):
         if stype.lower() in STYPES["numerical"]:
-            self.stype = "numerical"
+            self.stype = "Numerical"
         elif stype.lower() in STYPES["analytical"]:
-            self.stype = "analytical"
+            self.stype = "Analytical"
         elif stype.lower() in STYPES["neurical"]:
-            self.stype = "neurical"
+            self.stype = "Neurical"
         else:
             raise ValueError(
                 "Unknown value in stype argument. "
@@ -185,7 +189,7 @@ class Compiler:
             )
 
     def __set_method(self, method):
-        if self.stype == "numerical":
+        if self.stype == "Numerical":
             if method.lower() in METHODS["numerical"]["fdm"]:
                 self.method = "FDM"
             elif method.lower() in METHODS["numerical"]["fvm"]:
@@ -197,7 +201,7 @@ class Compiler:
                     f"Unknown value in method argument for stype={self.stype}. "
                     + f"Value must be in {list(METHODS['numerical'].keys())}."
                 )
-        elif self.stype == "analytical":
+        elif self.stype == "Analytical":
             if method.lower() in METHODS["analytical"]["d1p1"]:
                 self.method = "D1P1"
             elif method.lower() in METHODS["analytical"]["d1p2"]:
@@ -221,7 +225,7 @@ class Compiler:
                     f"Unknown value in method argument for stype={self.stype}. "
                     + f"Value must be in {list(METHODS['analytical'].keys())}."
                 )
-        elif self.stype == "neurical":
+        elif self.stype == "Neurical":
             if method.lower() in METHODS["neurical"]["pinn"]:
                 self.method = "PINN"
             elif method.lower() in METHODS["neurical"]["deeponet"]:

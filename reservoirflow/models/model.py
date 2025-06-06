@@ -149,14 +149,32 @@ class Model(ABC, Base):
 
     def print_solutions(
         self,
+        tablefmt="rounded_outline",
+        explian=True,
     ):
+        """Print all available solutions in a table format.
+
+        This method will print a table with the following columns:
+        - Name: Name of the solution.
+        - stype: Type of the solution (e.g., 'Numerical', 'Analytical').
+        - method: Method used in the solution (e.g., 'FDM', 'FVM').
+        - sparse: Whether the solution uses sparse computing.
+        - tstep: Time step of the solution.
+        - nsteps: Number of steps in the solution.
+
+        Parameters
+        ----------
+        tablefmt : str, optional
+            Format of the table to be printed. Default is 'rst'.
+        explian : bool, optional
+            If True, print additional explanation about the table
+            columns. Default is True.
+        """
         headers = [
-            "Name",
+            "name",
             "stype",
             "method",
             "sparse",
-            # "dtype",
-            # "unit",
             "tstep",
             "nsteps",
         ]
@@ -165,11 +183,9 @@ class Model(ABC, Base):
             table.append(
                 [
                     solution.name,
-                    compiler.stype,
-                    compiler.method,
-                    compiler.sparse,
-                    # compiler.dtype,
-                    # solution.unit,
+                    solution.stype,
+                    solution.method,
+                    solution.sparse,
                     solution.tstep,
                     solution.nsteps,
                 ]
@@ -179,9 +195,20 @@ class Model(ABC, Base):
             tabulate(
                 table,
                 headers=headers,
-                tablefmt="github",
+                tablefmt=tablefmt,
+                showindex=True,
             )
         )
+
+        if explian:
+            print(
+                "(*)\n",
+                "- stype: solution type.\n",
+                "- method: solution method.\n",
+                "- sparse: whether the solution uses sparse computing.\n",
+                "- tstep: last time step.\n",
+                "- nsteps: total number of steps in the solution.\n",
+            )
 
     def clear_solutions(self):
         """Clear all solutions and compilers.
