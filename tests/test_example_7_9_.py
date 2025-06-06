@@ -18,9 +18,9 @@ class TestApp(unittest.TestCase):
         df = model.get_df(
             columns=["time", "cells_rate", "cells_pressure", "wells"],
             boundary=True,
+            scale=False,
             units=True,
             melt=False,
-            scale=False,
             save=False,
             drop_nan=False,
             drop_zero=False,

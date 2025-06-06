@@ -868,9 +868,9 @@ class BlackOil(Model):
     def __get_scalers_config(self, boundary):
         return {
             "boundary": boundary,
+            "scale": False,
             "units": False,
             "melt": False,
-            "scale": False,
             "save": False,
             "drop_nan": True,
             "drop_zero": True,
@@ -1022,9 +1022,9 @@ class BlackOil(Model):
         self,
         columns: list = ["time", "cells", "wells"],
         boundary: bool = True,
+        scale: bool = False,
         units: bool = False,
         melt: bool = False,
-        scale: bool = False,
         save: bool = False,
         drop_nan: bool = True,
         drop_zero: bool = True,
@@ -1051,13 +1051,6 @@ class BlackOil(Model):
         boundary : bool, optional
             include boundary cells.
             It is only relevant when cells columns are selected.
-        units : bool, optional
-            column names with units (True) or without units (False).
-        melt : bool, optional
-            to melt columns of the same property to one column. By
-            default, cells id, xyz (based on grid fdir), step columns
-            are included while wells columns (wells_rate,
-            wells_pressure) are ignored.
         scale : bool, optional
             scale time, space (x, y, z), rates, and pressures. To change
             the scaling settings use `set_scalers() </api/reservoirflow.models.html#reservoirflow.models.BlackOil.set_scalers>`_.
@@ -1073,6 +1066,13 @@ class BlackOil(Model):
                     'rate':[None,None]
                 }
 
+        units : bool, optional
+            column names with units (True) or without units (False).
+        melt : bool, optional
+            to melt columns of the same property to one column. By
+            default, cells id, xyz (based on grid fdir), step columns
+            are included while wells columns (wells_rate,
+            wells_pressure) are ignored.
         save : bool, optional
             save output as a csv file.
         drop_nan : bool, optional
@@ -1157,31 +1157,56 @@ class BlackOil(Model):
 
     def get_values(
         self,
-        scale=False,
         boundary=True,
+        scale=False,
     ):
+        """Get solution values as X and Y arrays.
+
+        Parameters
+        ----------
+        boundary : bool, optional
+            include boundary cells in the values. Default is True.
+        scale : bool, optional
+            scale values using scalers. Default is False.
+
+        Returns
+        -------
+        X : np.ndarray
+            X values as a 2D array with shape (n_cells, n_fdir).
+        Y : np.ndarray
+            Y values as a 1D array with shape (n_cells,).
+        """
+
+        if self.solution.tstep == 0:
+            print(
+                f"[info] Solution: {self.solution.name} was ignored "
+                "(no run was executed.)"
+            )
+            return None, None
 
         df = self.get_df(
             columns=["time", "cells_pressure"],
             boundary=boundary,
+            scale=scale,
             units=False,
             melt=True,
-            scale=scale,
             drop_zero=False,
             drop_nan=False,
         )
+
         shape = self.get_shape(boundary)
         fdir = list(self.grid.get_fdir())
         ncols = len(fdir) + 2  # +2 for time and P
         values = df[["Time", *fdir, "P"]].values.reshape(*shape, ncols)
         X, Y = values[:, :, :2], values[:, :, 2]
+
         return X, Y
 
     def plot(
         self,
         type: str = "line",
-        scale: bool = False,
         boundary: bool = True,
+        scale: bool = False,
         nrows: int = 3,
         ncols: int = 3,
         solution: str = None,
@@ -1234,21 +1259,23 @@ class BlackOil(Model):
         if solution in ["all", "*"]:
             for solution_name in self.solutions:
                 self.set_solution(solution_name)
-                X, Y = self.get_values(scale, boundary)
-                plotter.add(
-                    x=X,
-                    y=Y,
-                    name=solution_name,
-                )
+                X, Y = self.get_values(boundary, scale)
+                if X is not None:
+                    plotter.add(
+                        x=X,
+                        y=Y,
+                        name=solution_name,
+                    )
         else:
             if solution is not None:
                 self.set_solution(solution)
-            X, Y = self.get_values(scale, boundary)
-            plotter.add(
-                x=X,
-                y=Y,
-                name=self.solution.name,
-            )
+            X, Y = self.get_values(boundary, scale)
+            if X is not None:
+                plotter.add(
+                    x=X,
+                    y=Y,
+                    name=self.solution.name,
+                )
 
         return plotter.plot()
 
@@ -1256,8 +1283,8 @@ class BlackOil(Model):
 
     def plot_solutions(
         self,
-        scale=True,
         boundary=True,
+        scale=True,
         nrows: int = 3,
         ncols: int = 3,
     ):
@@ -1286,10 +1313,6 @@ class BlackOil(Model):
             ncols=ncols,
             solution="all",
         )
-
-    def contour(self):
-
-        return None
 
     # def plot(self, prop: str = "pressures", id: int = None, tstep: int = None):
     #     """Show values in a cartesian plot.

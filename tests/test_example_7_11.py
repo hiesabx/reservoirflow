@@ -19,9 +19,9 @@ class TestApp(unittest.TestCase):
         df = model.get_df(
             columns=["time", "cells_pressure", "wells"],
             boundary=False,
+            scale=False,
             units=True,
             melt=False,
-            scale=False,
             save=False,
             drop_nan=True,
             drop_zero=True,
@@ -36,9 +36,9 @@ class TestApp(unittest.TestCase):
         df = model.get_df(
             columns=["time", "cells_pressure", "wells"],
             boundary=False,
+            scale=False,
             units=True,
             melt=False,
-            scale=False,
             save=False,
             drop_nan=True,
             drop_zero=True,
@@ -52,9 +52,9 @@ class TestApp(unittest.TestCase):
         df = model.get_df(
             columns=["time", "cells_pressure", "wells"],
             boundary=False,
+            scale=False,
             units=True,
             melt=False,
-            scale=False,
             save=False,
             drop_nan=True,
             drop_zero=True,
@@ -69,9 +69,9 @@ class TestApp(unittest.TestCase):
         df = model.get_df(
             columns=["time", "cells_pressure", "wells"],
             boundary=False,
+            scale=False,
             units=True,
             melt=False,
-            scale=False,
             save=False,
             drop_nan=True,
             drop_zero=True,

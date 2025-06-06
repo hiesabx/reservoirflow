@@ -17,9 +17,6 @@ class PINN(Solution):
 
     name = "PINN"
 
-    def __init__(self, **kwargs):
-        raise NotImplementedError("This class is not implemented.")
-
     def fit(self):
         raise NotImplementedError
 
