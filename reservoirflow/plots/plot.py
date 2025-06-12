@@ -4,12 +4,13 @@ from reservoirflow.base import Base
 class Plot(Base):
     name = "Plot"
 
-    def __init__(self, verbose):
+    def __init__(self, verbose, error):
         self.verbose = verbose
+        self.error = error
         self.Data = {}
 
     def add(self, x, y, name):
-        if self.report:
+        if self.verbose:
             if name in self.Data.keys():
                 print(f"[Info] Solution: {name} was updated.")
             else:

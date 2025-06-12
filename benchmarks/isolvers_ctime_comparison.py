@@ -56,7 +56,7 @@ for isolver in isolvers:
     model = create_model()
     model.run(10, isolver=isolver)
     results["isolver"].append(isolver)
-    results["error"].append(model.solution.error)
+    results["error"].append(model.solution.tstep_error)
     results["ctime"].append(model.solution.ctime)
 results = pd.DataFrame(results)
 results.sort_values(["error", "ctime"], inplace=True)

@@ -28,7 +28,9 @@ class TestApp(unittest.TestCase):
         df = df.astype({"Time [days]": "int32"})
         # df.to_csv("tests/test_example_7_9_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
-        np.testing.assert_almost_equal(model.solution.error, 3.320340669077382e-10)
+        np.testing.assert_almost_equal(
+            model.solution.tstep_error, 3.320340669077382e-10
+        )
 
     def test_trans(self):
         trans_desired = np.array([28.4004, 28.4004, 28.4004, 28.4004, 28.4004])
@@ -57,19 +59,19 @@ class TestApp(unittest.TestCase):
         model = create_model(sparse=False)
         model.solve(update=True, check_MB=True)
         np.testing.assert_almost_equal(
-            1 - model.solution.error, error_desired, decimal=3
+            1 - model.solution.tstep_error, error_desired, decimal=3
         )
         np.testing.assert_almost_equal(
-            model.solution.cumulative_error, cumulative_error_desired, decimal=5
+            model.solution.ctime_error, cumulative_error_desired, decimal=5
         )
 
         model_sp = create_model(sparse=True)
         model_sp.solve(update=True, check_MB=True)
         np.testing.assert_almost_equal(
-            1 - model_sp.solution.error, error_desired, decimal=3
+            1 - model_sp.solution.tstep_error, error_desired, decimal=3
         )
         np.testing.assert_almost_equal(
-            model_sp.solution.cumulative_error, cumulative_error_desired, decimal=5
+            model_sp.solution.ctime_error, cumulative_error_desired, decimal=5
         )
 
         error_desired = 0.99891
@@ -77,18 +79,18 @@ class TestApp(unittest.TestCase):
 
         model.solve(update=True, check_MB=True)
         np.testing.assert_almost_equal(
-            1 - model.solution.error, error_desired, decimal=3
+            1 - model.solution.tstep_error, error_desired, decimal=3
         )
         np.testing.assert_almost_equal(
-            model.solution.cumulative_error, cumulative_error_desired, decimal=5
+            model.solution.ctime_error, cumulative_error_desired, decimal=5
         )
 
         model_sp.solve(update=True, check_MB=True)
         np.testing.assert_almost_equal(
-            1 - model_sp.solution.error, error_desired, decimal=3
+            1 - model_sp.solution.tstep_error, error_desired, decimal=3
         )
         np.testing.assert_almost_equal(
-            model_sp.solution.cumulative_error, cumulative_error_desired, decimal=5
+            model_sp.solution.ctime_error, cumulative_error_desired, decimal=5
         )
 
     def test_well(self):

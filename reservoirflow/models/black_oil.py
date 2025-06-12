@@ -533,6 +533,81 @@ class BlackOil(Model):
     # Boundaries:
     # -------------------------------------------------------------------------
 
+    @_lru_cache(maxsize=None)
+    def calc_b_term(
+        self,
+        cell_id,
+        cell_b_id,
+        cell_p,
+        trans,
+    ) -> float:
+        """Calculates boundary flow term.
+
+        This function calculates the boundary flow term between a
+        specific cell (cell_id) and its boundary cell (cell_b_id).
+
+        Parameters
+        ----------
+        cell_id : int
+            cell id based on natural order as int.
+        cell_b_id : int
+            boundary cell id based on natural order as int.
+        cell_p : Symbol
+            pressure symbol at cell id.
+        trans : float
+            transmissibility between cell_id and cell_b_id.
+
+        Returns
+        -------
+        float
+            boundary flow term (b_term).
+        """
+
+        # implementation 1:
+        # problamatic in case initial pressure is set at boundaries.
+        # cell_b_p = self.pressures[self.tstep, cell_b_id]
+        # if not np.isnan(cell_b_p):
+        #     dz = self.model.grid.z[cell_b_id] - self.model.grid.z[cell_id]
+        #     b_term = trans * 2 * ((cell_b_p - cell_p) - (self.model.fluid.g * dz))
+        # else:
+        #     b_term = self.rates[self.tstep, cell_b_id]
+
+        # implementation 2:
+        if cell_b_id in self.bdict:
+            cond, v = self.bdict[cell_b_id]
+            if cond.lower() in ["pressure", "press", "p"]:
+                dz = self.grid.z[cell_b_id] - self.grid.z[cell_id]
+                return trans * 2 * ((v - cell_p) - (self.fluid.g * dz))
+            else:  # elif cond in ["rate", "q", "gradient", "grad", "g"]:
+                return v
+        else:
+            return 0.0
+
+    def update_boundaries(self, tstep: int):
+        """Update tstep boundary rates.
+
+        Parameters
+        ----------
+        tstep : int
+            timestep to update boundary rates.
+        """
+        # ToDo
+        # ----
+        # vectorization and threading
+        for id_b in self.bdict_update:
+            ((id_n, T),) = self.get_cell_trans(id_b, None, False).items()
+            p_n = self.solution.pressures[tstep, id_n]
+            b_terms = self.calc_b_term(id_n, id_b, p_n, T)
+            self.solution.rates[tstep, id_b] = b_terms
+
+    def update_boundaries_nsteps(self):
+        """Update nsteps boundary rates."""
+        # ToDo
+        # ----
+        # vectorization and threading
+        for tstep in range(1, self.solution.nsteps):
+            self.update_boundaries(tstep)
+
     def set_boundary(self, cell_b_id: int, cond: str, v: float):
         """Set a boundary condition in a cell.
 
@@ -682,7 +757,7 @@ class BlackOil(Model):
         elif method == "last":
             self.alpha = alpha[-1]
         elif method in [None, "vector", "array"]:
-            pass
+            self.alpha = alpha
         else:  #
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
 
@@ -1207,9 +1282,11 @@ class BlackOil(Model):
         type: str = "line",
         boundary: bool = True,
         scale: bool = False,
-        nrows: int = 3,
-        ncols: int = 3,
+        # nrows: int = 3,
+        # ncols: int = 3,
         solution: str = None,
+        error: bool = True,
+        ylims: list = None,
     ):
         """Plot solution values.
 
@@ -1226,10 +1303,12 @@ class BlackOil(Model):
             number of rows in the plot. Default is 3.
         ncols : int, optional
             number of columns in the plot. Default is 3.
-        solution : str, optional
+        solution : str, list, optional
             name of the solution to plot. If "all" or "*", all solutions
             will be plotted. If None, the current solution will be
-            plotted. Default is None.
+            plotted. User solution name as str to select solution explicitly or list of solution names for multiple solutions. Default is None.
+        error : bool, optional
+            To add error to the plot.
 
         Returns
         -------
@@ -1239,13 +1318,15 @@ class BlackOil(Model):
         if self.grid.D == 1:
             if type == "line":
                 plotter = plots.Plot1D(
-                    nrows=nrows,
-                    ncols=ncols,
+                    # nrows=nrows,
+                    # ncols=ncols,
                     verbose=self.verbose,
+                    error=error,
                 )
             elif type == "contour":
                 plotter = plots.Contour1D(
                     verbose=self.verbose,
+                    error=error,
                 )
             else:
                 raise ValueError(f"Plot type {type} is not supported for 1D grid.")
@@ -1266,6 +1347,16 @@ class BlackOil(Model):
                         y=Y,
                         name=solution_name,
                     )
+        elif isinstance(solution, list):
+            for solution_name in solution:
+                self.set_solution(solution_name)
+                X, Y = self.get_values(boundary, scale)
+                if X is not None:
+                    plotter.add(
+                        x=X,
+                        y=Y,
+                        name=solution_name,
+                    )
         else:
             if solution is not None:
                 self.set_solution(solution)
@@ -1277,7 +1368,7 @@ class BlackOil(Model):
                     name=self.solution.name,
                 )
 
-        return plotter.plot()
+        return plotter.plot(ylims=ylims)
 
     plot_solution = plot
 

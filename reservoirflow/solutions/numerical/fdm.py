@@ -6,7 +6,6 @@ Finite Difference Method (FDM) class.
 """
 
 import time
-import warnings
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
@@ -93,55 +92,55 @@ class FDM(Solution):
         dz = self.model.grid.z[cell_n_id] - self.model.grid.z[cell_id]
         return trans * ((cell_n_p - cell_p) - (self.model.fluid.g * dz))
 
-    @_lru_cache(maxsize=None)
-    def __calc_b_term(
-        self,
-        cell_id,
-        cell_b_id,
-        cell_p,
-        trans,
-    ) -> float:
-        """Calculates boundary flow term.
+    # @_lru_cache(maxsize=None)
+    # def __calc_b_term(
+    #     self,
+    #     cell_id,
+    #     cell_b_id,
+    #     cell_p,
+    #     trans,
+    # ) -> float:
+    #     """Calculates boundary flow term.
 
-        This function calculates the boundary flow term between a
-        specific cell (cell_id) and its boundary cell (cell_b_id).
+    #     This function calculates the boundary flow term between a
+    #     specific cell (cell_id) and its boundary cell (cell_b_id).
 
-        Parameters
-        ----------
-        cell_id : int
-            cell id based on natural order as int.
-        cell_b_id : int
-            boundary cell id based on natural order as int.
-        cell_p : Symbol
-            pressure symbol at cell id.
-        trans : float
-            transmissibility between cell_id and cell_b_id.
+    #     Parameters
+    #     ----------
+    #     cell_id : int
+    #         cell id based on natural order as int.
+    #     cell_b_id : int
+    #         boundary cell id based on natural order as int.
+    #     cell_p : Symbol
+    #         pressure symbol at cell id.
+    #     trans : float
+    #         transmissibility between cell_id and cell_b_id.
 
-        Returns
-        -------
-        float
-            boundary flow term (b_term).
-        """
+    #     Returns
+    #     -------
+    #     float
+    #         boundary flow term (b_term).
+    #     """
 
-        # implementation 1:
-        # problamatic in case initial pressure is set at boundaries.
-        # cell_b_p = self.pressures[self.tstep, cell_b_id]
-        # if not np.isnan(cell_b_p):
-        #     dz = self.model.grid.z[cell_b_id] - self.model.grid.z[cell_id]
-        #     b_term = trans * 2 * ((cell_b_p - cell_p) - (self.model.fluid.g * dz))
-        # else:
-        #     b_term = self.rates[self.tstep, cell_b_id]
+    #     # implementation 1:
+    #     # problamatic in case initial pressure is set at boundaries.
+    #     # cell_b_p = self.pressures[self.tstep, cell_b_id]
+    #     # if not np.isnan(cell_b_p):
+    #     #     dz = self.model.grid.z[cell_b_id] - self.model.grid.z[cell_id]
+    #     #     b_term = trans * 2 * ((cell_b_p - cell_p) - (self.model.fluid.g * dz))
+    #     # else:
+    #     #     b_term = self.rates[self.tstep, cell_b_id]
 
-        # implementation 2:
-        if cell_b_id in self.model.bdict:
-            cond, v = self.model.bdict[cell_b_id]
-            if cond.lower() in ["pressure", "press", "p"]:
-                dz = self.model.grid.z[cell_b_id] - self.model.grid.z[cell_id]
-                return trans * 2 * ((v - cell_p) - (self.model.fluid.g * dz))
-            else:  # elif cond in ["rate", "q", "gradient", "grad", "g"]:
-                return v
-        else:
-            return 0.0
+    #     # implementation 2:
+    #     if cell_b_id in self.model.bdict:
+    #         cond, v = self.model.bdict[cell_b_id]
+    #         if cond.lower() in ["pressure", "press", "p"]:
+    #             dz = self.model.grid.z[cell_b_id] - self.model.grid.z[cell_id]
+    #             return trans * 2 * ((v - cell_p) - (self.model.fluid.g * dz))
+    #         else:  # elif cond in ["rate", "q", "gradient", "grad", "g"]:
+    #             return v
+    #     else:
+    #         return 0.0
 
     def __calc_w_term(
         self,
@@ -279,7 +278,9 @@ class FDM(Solution):
                     print(f"[info] Neighbor terms: {n_term}")
 
             for cell_b_id in boundaries:
-                b_term = self.__calc_b_term(cell_id, cell_b_id, cell_p, T[cell_b_id])
+                b_term = self.model.calc_b_term(
+                    cell_id, cell_b_id, cell_p, T[cell_b_id]
+                )
                 terms["f_terms"].append(b_term)
                 if self.model.verbose:
                     print(f"[info] Boundary terms: {b_term}")
@@ -545,7 +546,7 @@ class FDM(Solution):
             for id_b in self.model.bdict_update:
                 ((id, T),) = self.model.get_cell_trans(id_b, None, False).items()
                 p = eval(f"sym.Symbol('p{id}')")
-                b_term = self.__calc_b_term(id, id_b, p, T)
+                b_term = self.model.calc_b_term(id, id_b, p, T)
                 v0, v1 = b_term.as_coefficients_dict().values()
                 self.bdict_v[id_b] = (v0, v1, id)
                 self.A_[self.model.cells_i_dict[id], self.model.cells_i_dict[id]] += v1
@@ -670,12 +671,12 @@ class FDM(Solution):
 
         return False
 
-    def __update_boundaries(self):
-        for id_b in self.model.bdict_update:
-            ((id_n, T),) = self.model.get_cell_trans(id_b, None, False).items()
-            p_n = self.pressures[self.tstep, id_n]
-            b_terms = self.__calc_b_term(id_n, id_b, p_n, T)
-            self.rates[self.tstep, id_b] = b_terms
+    # def __update_boundaries(self):
+    #     for id_b in self.model.bdict_update:
+    #         ((id_n, T),) = self.model.get_cell_trans(id_b, None, False).items()
+    #         p_n = self.pressures[self.tstep, id_n]
+    #         b_terms = self.model.calc_b_term(id_n, id_b, p_n, T)
+    #         self.rates[self.tstep, id_b] = b_terms
 
     def __print_arrays(self, sparse):
         if sparse:
@@ -762,12 +763,14 @@ class FDM(Solution):
             self.pressures = np.vstack([self.pressures, self.pressures[-1]])
             self.pressures[self.tstep, self.model.grid.cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
+            self.model.update_boundaries(self.tstep)
+
             # newtest
             # self.model.As = np.vstack([self.model.As, A.reshape(1, -1)])
             # self.model.ds = np.vstack([self.model.ds, d.reshape(1, -1)])
             self.As = np.vstack([self.As, A.reshape(1, -1)])
             self.ds = np.vstack([self.ds, d.reshape(1, -1)])
-            self.__update_boundaries()
+
             resolve = self.__update_wells()
             if resolve:
                 self.rates = self.rates[: self.tstep]
@@ -778,7 +781,7 @@ class FDM(Solution):
                     print(f"[info] Time step {self.tstep} was resolved.")
 
             if check_MB:
-                self.check_MB()
+                self.check_MB(self.tstep)
 
         if self.model.verbose:
             print("[info] Pressures:\n", self.pressures[self.tstep])
@@ -860,63 +863,7 @@ class FDM(Solution):
             f"finished in {self.run_ctime} seconds.",
         )
         if check_MB:
-            print(f"[info] Material Balance Error: {self.error}.")
+            print(f"[info] Material Balance Error: {self.tstep_error}.")
 
         if verbose_restore:
             self.model.verbose = True
-
-    # -------------------------------------------------------------------------
-    # Material Balance:
-    # -------------------------------------------------------------------------
-
-    def check_MB(self, verbose=False, error_threshold=0.1):
-        """Material Balance Check
-
-        Parameters
-        ----------
-        verbose : bool, optional
-            _description_
-        error_threshold : float, optional
-            _description_
-        """
-        if verbose:
-            print(f"[info] Error in step {self.tstep}")
-
-        if self.model.comp_type == "incompressible":
-            # rates must add up to 0:
-            self.error = self.rates[self.tstep].sum()
-            if verbose:
-                print(f"[info]    - Error: {self.error}")
-        elif self.model.comp_type == "compressible":
-            # error over a timestep:
-            self.error = (
-                self.model.RHS[self.model.grid.cells_id]
-                * (
-                    self.pressures[self.tstep, self.model.grid.cells_id]
-                    - self.pressures[self.tstep - 1, self.model.grid.cells_id]
-                )
-            ).sum() / self.rates[self.tstep].sum()
-            # error from initial timestep to current timestep: (less accurate)
-            self.cumulative_error = (
-                self.model.RHS[self.model.grid.cells_id]
-                * self.model.dt
-                * (
-                    self.pressures[self.tstep, self.model.grid.cells_id]
-                    - self.pressures[0, self.model.grid.cells_id]
-                )
-            ).sum() / (self.model.dt * self.tstep * self.rates.sum())
-            self.error = abs(self.error - 1)
-            if self.model.verbose:
-                print(f"[info]    - Incremental Error: {self.error}")
-                print(f"[info]    -  Cumulative Error: {self.cumulative_error}")
-                print(
-                    f"[info]    -       Total Error: {self.error+self.cumulative_error}"
-                )
-
-        if abs(self.error) > error_threshold:
-            warnings.warn("High material balance error.")
-            print(
-                f"[warning] Material balance error ({self.error})",
-                f"in step {self.tstep}",
-                f"is higher than the allowed error ({error_threshold}).",
-            )

@@ -137,6 +137,16 @@ class Model(ABC, Base):
             )
             raise ValueError("Solution method was not compiled.")
 
+    def get_solution(self, name):
+        if name in self.solutions:
+            return self.solutions[name]
+        else:
+            print(
+                f"Solution '{name}' not found. Available solutions: {self.get_solutions()}"
+            )
+            raise ValueError("Solution method was not compiled.")
+        return self.solutions[name]
+
     def get_solutions(self):
         """Get all available solutions.
 
@@ -177,9 +187,13 @@ class Model(ABC, Base):
             "sparse",
             "tstep",
             "nsteps",
+            "ctime",
+            "tstep_error",
+            "ctime_error",
+            # "total_error",
         ]
         table = []
-        for solution, compiler in zip(self.solutions.values(), self.compilers.values()):
+        for solution in self.solutions.values():
             table.append(
                 [
                     solution.name,
@@ -188,6 +202,10 @@ class Model(ABC, Base):
                     solution.sparse,
                     solution.tstep,
                     solution.nsteps,
+                    solution.ctime,
+                    solution.tstep_error,
+                    solution.ctime_error,
+                    # solution.total_error,
                 ]
             )
 
@@ -208,6 +226,8 @@ class Model(ABC, Base):
                 "- sparse: whether the solution uses sparse computing.\n",
                 "- tstep: last time step.\n",
                 "- nsteps: total number of steps in the solution.\n",
+                "- ctime: cumulative computing time (sec).\n",
+                "- error: material balance error.\n",
             )
 
     def clear_solutions(self):
