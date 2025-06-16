@@ -56,6 +56,16 @@ class Scaler(ABC):
         """
 
     @abstractmethod
+    def get_factors(self):
+        """Get scaling factors.
+
+        Returns
+        -------
+        float
+            scaler value.
+        """
+
+    @abstractmethod
     def fit(self, v, axis: int = 0):
         """Fit scaler with input values.
 

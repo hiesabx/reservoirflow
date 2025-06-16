@@ -145,7 +145,6 @@ class Model(ABC, Base):
                 f"Solution '{name}' not found. Available solutions: {self.get_solutions()}"
             )
             raise ValueError("Solution method was not compiled.")
-        return self.solutions[name]
 
     def get_solutions(self):
         """Get all available solutions.

@@ -144,7 +144,7 @@ class D1P1(Solution):
             self.pressures = input_scaler.inverse_transform(pD)
 
         self.rates = np.repeat(self.rates, repeats=nsteps + 1, axis=0)
-        self.model.update_boundaries_nsteps()
+        self.model.update_boundaries_rates_nsteps()
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime = self.run_ctime

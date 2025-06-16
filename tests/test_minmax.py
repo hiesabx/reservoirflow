@@ -21,8 +21,8 @@ class TestMinMax(unittest.TestCase):
                 [0, 1, 4, 40, 10000],
             ]
         )
-        scaler = MinMax((0, 1))
-        scaler.fit(arr)
+        scaler = MinMax(output_range=(0, 1))
+        scaler.fit(arr, axis=0)
         arr_trans = scaler.transform(arr)
         arr_trans_desired = [
             [np.nan, np.nan, 0.0, 0.0, 0.0],

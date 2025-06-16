@@ -58,6 +58,9 @@ class MinMax(Scaler):
         self.Vmax = output_range[1]
         return self
 
+    def get_factors(self):
+        return (self.vmax - self.vmin) / (self.Vmax - self.Vmin)
+
     def fit(self, v, axis=0):
         if len(v.shape) > 2 and axis == 0:
             msg = (
@@ -68,6 +71,10 @@ class MinMax(Scaler):
             raise ValueError(msg)
         self.vmin = v.min(axis=axis)  #: input minimum value.
         self.vmax = v.max(axis=axis)  #: input maximum value.
+        if (self.vmin.ndim == 0 and self.vmin == self.vmax) or (
+            self.vmin.ndim > 0 and all(self.vmin == self.vmax)
+        ):
+            self.vmax = 1 + self.vmin
         return self
 
     def transform(self, v):

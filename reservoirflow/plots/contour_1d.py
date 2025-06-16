@@ -42,95 +42,6 @@ class Contour1D(Plot):
         # self.nrows = nrows
         # self.ncols = ncols
 
-    def plots(
-        self,
-    ):
-        """Draw pressures.
-
-        Parameters
-        ----------
-        X : ndarray
-            2D-array where rows are time steps and columns are cells centers.
-        Y : ndarray
-            _description_
-        ax : _type_, optional
-            _description_, by default None
-        fig_type : str, optional
-            string from a list ['contourf', 'contour', 'pcolor'], by default
-            'contourf'
-        title : str, optional
-            string, by default 'FDM'
-        cbar_num : int, optional
-            number of contour colors, by default 11
-
-        Raises
-        ------
-        ValueError
-            _description_
-        """
-
-        ax = None
-        fig_type = "contourf"
-        cbar_num = 11
-        Y_range = None
-
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(6, 3))
-
-        name = list(self.Data.keys())[0]
-        X, Y = self.Data[name]
-        t = X[:, :, 0]
-        x = X[:, :, 1]
-        if Y_range is None:
-            ymin = Y.min()
-            ymax = Y.max()
-        else:
-            ymin = Y_range[0]
-            ymax = Y_range[1]
-
-        # xmin = x.min()
-        # xmax = x.max()
-
-        if ymax >= 2:
-            ylim = (x.min(), x.max())
-            yticks = np.linspace(ylim[0], ylim[1], 5)
-            # cbar_ticks = np.linspace(round(ymin, -2), round(ymax, -2), cbar_num)
-            cbar_ticks = np.linspace(ymin, round(ymax, -2), cbar_num)
-        else:
-            ylim = (x.min(), x.max())
-            yticks = np.linspace(ylim[0], ylim[1], 5)
-            cbar_ticks = np.linspace(ymin, ymax, cbar_num)
-
-        # config = dict(vmin=ymin, vmax=ymax, cmap="coolwarm",)
-        config = dict(
-            vmin=cbar_ticks.min(),
-            vmax=cbar_ticks.max(),
-            cmap="coolwarm",
-        )
-        if fig_type != "pcolor":
-            config.update(levels=cbar_ticks, extend="both")
-
-        if fig_type == "contour":
-            subplot = ax.contour(t, x, Y, **config)
-        elif fig_type == "contourf":
-            subplot = ax.contourf(t, x, Y, **config)
-        elif fig_type == "pcolor":
-            subplot = ax.pcolor(t, x, Y, **config)
-        else:
-            raise ValueError("fig_type is not known.")
-        ax.set_title(name)
-        ax.set_xlabel("t")
-        # ax.set_xlim(t.min(), t.max())
-        # ax.set_xticks(xticks)
-        ax.set_ylabel("x")
-        ax.set_ylim(*ylim)
-        ax.set_yticks(yticks)
-        ax.tick_params(top=True, right=True)
-
-        plt.colorbar(subplot, ax=ax, ticks=cbar_ticks)
-
-        return plt.show()
-
     def plot_case(
         self,
         name,
@@ -279,7 +190,7 @@ class Contour1D(Plot):
                 X1, Y1 = self.Data[names[0]]
                 X2, Y2 = self.Data[names[1]]
                 Y3 = np.abs(Y1 - Y2)  # / np.abs(Y1)
-                self.add(X1, Y3, "Absolute Error")
+                self.add(X1, Y3, f"Absolute Error (sum={Y3.sum().round(3)})")
                 names = list(self.Data.keys())
             fig, axs = plt.subplots(1, N, figsize=(N * 6, N + 1))
         plt.subplots_adjust(hspace=0.5)
@@ -299,99 +210,6 @@ class Contour1D(Plot):
             )
 
         return plt.show()
-
-    def __set_axis_labels(self, axs):
-        for i, ax in enumerate(axs.ravel()):
-            if i >= 6:
-                ax.set_xlabel("x")
-            if i in [0, 3, 6]:
-                ax.set_ylabel("p")
-
-    def __add_legends(self, fig, N):
-        # https://stackoverflow.com/a/59393045/11549398
-        labels_handles = {
-            label: handle
-            for ax in fig.axes
-            for handle, label in zip(*ax.get_legend_handles_labels())
-        }
-
-        fig.legend(
-            labels_handles.values(),
-            labels_handles.keys(),
-            loc="upper center",
-            bbox_to_anchor=(0.5, 0.03),
-            ncol=6,  # ncol=N,
-        )
-
-    def __get_lims_ticks(self, x, Y):
-
-        xmin = x.min()
-        xmax = x.max()
-        xmax_ = round(xmax, 1)
-        xstep = (xmax_ - xmin) / 4
-        xmin_ = xmin - xstep * 0.25
-        xlim = (xmin_, xmax * 1.1)
-        xticks = np.linspace(xmin, xmax_, 5)
-
-        ymin = Y.min()
-        ymax = Y.max()
-        n = 0 if ymax < 2 else -3
-        ymax_ = round(ymax, n)
-        ystep = (ymax_ - ymin) / 4
-        ymin_ = ymin - ystep * 0.25
-        ylim = (ymin_, ymax_)
-        if ymax_ > ymax:
-            ystep = ystep if ymax < 2 else 0
-        m = 5 if ystep == 0 else 6
-        yticks = np.linspace(ymin, ymax_ + ystep, m)
-
-        return (xlim, xticks), (ylim, yticks)
-
-    # def plot(self, id=None):
-    #     fig, axs = plt.subplots(
-    #         self.nrows, self.ncols, figsize=(10, 6), sharey=True, sharex=True
-    #     )
-    #     plt.subplots_adjust(hspace=0.3, wspace=0.2)
-    #     alpha = 1
-    #     tsteps = [0, 1, 5, 10, 40, 50, 60, 90, 100]
-    #     assert len(tsteps) == self.nrows * self.ncols, "tsteps are not compatible"
-    #     self.__set_axis_labels(axs)
-
-    #     if id is None:
-    #         names = list(self.Data.keys())
-    #         N = len(names)
-    #     else:
-    #         if isinstance(id, list):
-    #             lst = list(self.Data.keys())
-    #             names = [lst[i] for i in id]
-    #             N = len(names)
-    #         else:
-    #             names = [list(self.Data.keys())[id]]
-    #             N = 1
-
-    #     for n in range(N):
-    #         name = names[n]
-    #         lstyle = "-" if "ana" in name.lower() else "--"
-    #         X = self.Data[name][0]
-    #         Y = self.Data[name][1]
-    #         t = X[:, 0, 0]
-    #         x = X[0, :, 1]
-
-    #         for i, ax in enumerate(axs.ravel()):
-    #             tstep = tsteps[i]
-    #             ax.plot(x, Y[tstep, :], label=name, linestyle=lstyle, alpha=alpha)
-    #             ax.tick_params(top=True, right=True)
-    #             ax.set_title(f"t={t[tstep]}")
-    #             ax.grid(True)
-    #             if i == 0 and n == 0:
-    #                 (xlim, xticks), (ylim, yticks) = self.__get_lims_ticks(x, Y)
-    #                 ax.set_xlim(xlim)
-    #                 ax.set_ylim(ylim)
-    #                 ax.set_xticks(xticks)
-    #                 ax.set_yticks(yticks)
-
-    #     self.__add_legends(fig, N)
-    #     plt.show()
 
     # -------------------------------------------------------------------------
     # End

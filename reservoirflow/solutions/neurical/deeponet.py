@@ -1,7 +1,8 @@
-from reservoirflow.solutions.solution import Solution
+# from reservoirflow.solutions.solution import Solution
+from reservoirflow.solutions.neurical import Network
 
 
-class DeepONet(Solution):
+class DeepONet(Network):
     """DeepONet solution class.
 
     DeepONet is a Deep-Operator-Network.

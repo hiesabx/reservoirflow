@@ -26,6 +26,9 @@ class Dummy(Scaler):
     def set_output_range(self, output_range):
         return self
 
+    def get_factors(self):
+        return 1
+
     def fit(self, v, axis=0):
         return self
 

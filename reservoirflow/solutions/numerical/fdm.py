@@ -763,7 +763,7 @@ class FDM(Solution):
             self.pressures = np.vstack([self.pressures, self.pressures[-1]])
             self.pressures[self.tstep, self.model.grid.cells_id] = pressures
             self.rates = np.vstack([self.rates, self.rates[-1]])
-            self.model.update_boundaries(self.tstep)
+            self.model.update_boundaries_rates(self.tstep)
 
             # newtest
             # self.model.As = np.vstack([self.model.As, A.reshape(1, -1)])
