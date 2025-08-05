@@ -124,6 +124,9 @@ class Model(ABC, Base):
         self.solve = self.solution.solve
         self.run = self.solution.run
 
+        # Update scalers after compiling the model based on initial data:
+        self.update_scalers(True)
+
     def set_solution(self, name):
         if name in self.solutions:
             self.solution = self.solutions[name]

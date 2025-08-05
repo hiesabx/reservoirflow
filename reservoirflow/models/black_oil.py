@@ -6,6 +6,7 @@ BlackOil
 import warnings
 from collections import defaultdict
 from datetime import date
+from concurrent.futures import ThreadPoolExecutor
 
 # import matplotlib.pyplot as plt
 import numpy as np
@@ -140,16 +141,11 @@ class BlackOil(Model):
         self.cells_i_dict = dict(zip(self.cells_id, self.cells_i))
         self.boundaries_id = self.grid.get_boundaries("id", "array")
 
-        # newtest
-        # ones = self.grid.get_ones(True, False, False)[np.newaxis]
-        # self.pressures = ones * np.nan
-        # self.rates = self.grid.get_zeros(True, False, False)[np.newaxis]
         self.init_pressures, self.init_rates = self.__get_arrays()
 
         self.pi = pi
         if pi is not None:
-            # newtest
-            # self.pressures[0, self.grid.cells_id] = pi
+            # self.init_pressures[0] = pi
             self.init_pressures[0, self.grid.cells_id] = pi
         else:
             warnings.warn("Initial reservoir pressure is not defined.")
@@ -223,7 +219,7 @@ class BlackOil(Model):
             return self.init_pressures[tstep, cell_id]
         else:
             assert self.solution is not None, "Model was not compiled."
-            self.update_pressures_shape()
+            # self.update_pressures_shape()
             if tstep is None:
                 return self.solution.pressures[:, cell_id]
             else:
@@ -244,7 +240,7 @@ class BlackOil(Model):
             return self.init_rates[tstep, cell_id]
         else:
             assert self.solution is not None, "Model was not compiled."
-            self.update_rates_shape()
+            # self.update_rates_shape()
             if tstep is None:
                 return self.solution.rates[:, cell_id]
             else:
@@ -610,10 +606,22 @@ class BlackOil(Model):
         # ToDo
         # ----
         # vectorization and threading
-        for tstep in range(1, self.solution.nsteps):
-            self.update_boundaries_rates(tstep)
 
-    def set_boundary(self, cell_b_id: int, cond: str, v: float):
+        # for tstep in range(1, self.solution.nsteps):
+        #     self.update_boundaries_rates(tstep)
+
+        with ThreadPoolExecutor(self.n_threads) as executor:
+            executor.map(
+                self.update_boundaries_rates,
+                range(1, self.solution.nsteps),
+            )
+
+    def set_boundary(
+        self,
+        cell_b_id: int,
+        cond: str,
+        v: float,
+    ):
         """Set a boundary condition in a cell.
 
         Parameters
@@ -628,7 +636,6 @@ class BlackOil(Model):
             'g'].
         v : int, float
             constant value to specify the condition in cond argument.
-
         """
         # ToDo
         # ----
@@ -643,16 +650,30 @@ class BlackOil(Model):
             # self.pressures[self.get_tstep(), cell_b_id] = v
             self.__set_pressure(self.__get_tstep(), cell_b_id, v)
         elif cond in ["gradient", "grad", "g"]:
-            ((cell_id, T),) = self.get_cell_trans(cell_b_id, None, False).items()
-            cell_n = self.grid.get_cell_neighbors(cell_b_id, None, False, "dict")
+            ((cell_id, T),) = self.get_cell_trans(
+                cell_b_id,
+                None,
+                False,
+            ).items()
+            cell_n = self.grid.get_cell_neighbors(
+                cell_b_id,
+                None,
+                False,
+                "dict",
+            )
             dir = [dir for dir in cell_n if cell_id in cell_n[dir]][0]
             # newtest
             # self.rates[self.get_tstep(), cell_b_id] = T * self.grid.d[dir][cell_id] * v
             self.__set_rate(
-                self.__get_tstep(), cell_b_id, T * self.grid.d[dir][cell_id] * v
+                self.__get_tstep(),
+                cell_b_id,
+                T * self.grid.d[dir][cell_id] * v,
             )
         else:
             raise ValueError(f"cond argument {cond} is unknown.")
+
+        # if update_scalers:
+        #     self.update_scalers(boundary=True)
 
         if self.verbose:
             print(f"[info] boundary in cell {cell_b_id} was set to constant {cond}.")
@@ -678,6 +699,9 @@ class BlackOil(Model):
             id_b for id_b in self.bdict.keys() if self.bdict[id_b][0] == "pressure"
         ]
 
+        # Update scalers:
+        # self.update_scalers(boundary=True)
+
     def set_all_boundaries(self, cond, v):
         """Set the same boundary condition in all boundaries.
 
@@ -696,6 +720,9 @@ class BlackOil(Model):
         for cell_id in boundaries:
             self.set_boundary(cell_id, cond, v)
 
+        # Update scalers:
+        # self.update_scalers(boundary=True)
+
     def update_pressures_shape(self):
         if self.solution.pressures.shape[0] != self.solution.nsteps:
             # shape = self.get_shape(True)
@@ -705,7 +732,8 @@ class BlackOil(Model):
             # rates[0] = self.init_rates
             # pressures[:, self.boundaries_id] = self.pressures[:, self.boundaries_id]
             pressures = np.repeat(
-                self.solution.pressures,  # or self.init_pressures,
+                self.init_pressures,
+                # self.solution.pressures,
                 repeats=self.solution.nsteps,
                 axis=0,
             )
@@ -713,13 +741,15 @@ class BlackOil(Model):
             self.solution.pressures = pressures
             print(
                 "[info] pressures array shape was updated.",
-                "This happens due to increasing nsteps manually.",
+                "This happens due to increasing nsteps manually",
+                "or due to solutions in multiple nsteps.",
             )
 
     def update_rates_shape(self):
         if self.solution.rates.shape[0] != self.solution.nsteps:
             rates = np.repeat(
-                self.solution.rates,  # self.init_rates
+                self.init_rates,
+                # self.solution.rates,
                 repeats=self.solution.nsteps,
                 axis=0,
             )
@@ -727,13 +757,15 @@ class BlackOil(Model):
             self.solution.rates = rates
             print(
                 "[info] rates array shape was updated.",
-                "This happens due to increasing nsteps manually.",
+                "This happens due to increasing nsteps manually",
+                "or due to solutions in multiple nsteps.",
             )
-            self.update_boundaries_rates_nsteps()
+        self.update_boundaries_rates_nsteps()
 
     def update_shapes(self):
         self.update_pressures_shape()
         self.update_rates_shape()
+        self.__update_time_scaler()
 
     # -------------------------------------------------------------------------
     # Flow Equations:
@@ -758,6 +790,7 @@ class BlackOil(Model):
         self,
         boundary=True,
         scale=False,
+        method="mean",
     ):
         """Calculates alpha factors.
         This parameter is used to calculate alpha constant.
@@ -784,29 +817,54 @@ class BlackOil(Model):
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
 
-        lhs_f = (self.factors["transmissibility conversion"] * k) / (
+        F_px = (self.factors["transmissibility conversion"] * k) / (
             self.fluid.mu * self.fluid.B
         )
-        rhs_f = (self.grid.phi * self.comp) / (
+        F_pt = (self.grid.phi * self.comp) / (
             self.factors["volume conversion"] * self.fluid.B
         )
+        # Vb = self.grid.get_cells_V(boundary, False, False)
+        F_q = 1 / self.grid.V
 
         if scale:
             self.update_scalers(True)
             s_p = self.pressure_scaler.get_factors()
             s_x = self.space_scaler.get_factors()
             s_t = self.time_scaler.get_factors()
-            # s_q = self.rate_scaler.get_factors()
+            s_q = self.rate_scaler.get_factors()
 
             S_px = s_p / s_x**2
             S_pt = s_p / s_t
+            S_q = s_q
+            print("S_px:", S_px, "S_pt:", S_pt, "S_q:", S_q)
 
-            # S_tx = s_t / s_x
+            F_px *= S_px
+            F_pt *= S_pt
+            F_q *= S_q
 
-            lhs_f *= S_px
-            rhs_f *= S_pt
+        if not boundary:
+            F_px = F_px[self.grid.cells_id]
+            F_pt = F_pt[self.grid.cells_id]
+            F_q = F_q[self.grid.cells_id]
 
-        return lhs_f, rhs_f
+        if method == "mean":
+            F_px = np.mean(F_px)
+            F_pt = np.mean(F_pt)
+            F_q = np.mean(F_q)
+        elif method == "first":  # or np.all(alpha == alpha[0]):
+            F_px = F_px[0]
+            F_pt = F_pt[0]
+            F_q = F_q[0]
+        elif method == "last":
+            F_px = F_px[-1]
+            F_pt = F_pt[-1]
+            F_q = F_q[-1]
+        elif method in [None, "vector", "array"]:
+            pass
+        else:
+            raise ValueError(f"method is not defined. Use: 'mean'.")
+
+        return F_px, F_pt, F_q
 
     @_lru_cache(maxsize=1)
     def get_alpha(
@@ -839,19 +897,23 @@ class BlackOil(Model):
             alpha parameter.
         """
 
-        lhs_f, rhs_f = self.get_factors(True, scale)
-        alpha = lhs_f / rhs_f
+        F_px, F_pt, _ = self.get_factors(
+            boundary=True,
+            scale=scale,
+            method=method,
+        )
+        self.alpha = F_px / F_pt
 
-        if method == "mean":
-            self.alpha = np.mean(alpha)
-        elif method == "first":  # or np.all(alpha == alpha[0]):
-            self.alpha = alpha[0]
-        elif method == "last":
-            self.alpha = alpha[-1]
-        elif method in [None, "vector", "array"]:
-            self.alpha = alpha
-        else:
-            raise ValueError(f"method is not defined. Use: 'mean'.")
+        # if method == "mean":
+        #     self.alpha = np.mean(alpha)
+        # elif method == "first":  # or np.all(alpha == alpha[0]):
+        #     self.alpha = alpha[0]
+        # elif method == "last":
+        #     self.alpha = alpha[-1]
+        # elif method in [None, "vector", "array"]:
+        #     self.alpha = alpha
+        # else:
+        #     raise ValueError(f"method is not defined. Use: 'mean'.")
 
         return self.alpha
 
@@ -1006,14 +1068,14 @@ class BlackOil(Model):
     def __update_pressure_scaler(self, boundary):
         config = self.__get_scalers_config(boundary)
         pressures = self.get_df(columns=["cells_pressure"], **config).values
-        if self.solution and self.solution.__class__.__name__ in ["D1P1"]:
+        if self.solution and self.solution.__class__.__name__ in ["D1P1", "PINN"]:
             if self.verbose:
                 print(
-                    "[warning] To avoid scaling based on unstable solutions, "
-                    "pressures scaler is updated based on the final timestep "
-                    "for D1P1 solution."
+                    "[warning] To avoid scaling based on unstable solutions,"
+                    "pressures scaler is updated based on the initial timestep"
+                    " for D1P1 solution."
                 )
-            self.pressure_scaler.fit(pressures[-1], axis=None)
+            self.pressure_scaler.fit(pressures[0], axis=None)
         else:
             self.pressure_scaler.fit(pressures, axis=None)
 
@@ -1277,9 +1339,13 @@ class BlackOil(Model):
         col_vals = sum(col_dict.values(), [])
 
         df = pd.DataFrame()
+        self.update_shapes()
 
-        if scale:
-            self.update_scalers(True)
+        # To avoid scaling based on unstable solutions, the
+        # pressure scaler is updated based on the initial timestep after
+        # the model is compiled.
+        # if scale:
+        #     self.update_scalers(True)
 
         if melt:
             n_cells = self.grid.get_n(boundary)
@@ -1335,8 +1401,11 @@ class BlackOil(Model):
 
     def get_values(
         self,
-        boundary=True,
-        scale=False,
+        boundary: bool = True,
+        scale: bool = False,
+        # drop_nan: bool = False,
+        # initial=True,
+        # shuffle=False,
     ):
         """Get solution values as X and Y arrays.
 
@@ -1346,6 +1415,8 @@ class BlackOil(Model):
             include boundary cells in the values. Default is True.
         scale : bool, optional
             scale values using scalers. Default is False.
+        drop_nan : bool, optional
+            drop rows which contain any nan values.
 
         Returns
         -------
@@ -1364,9 +1435,42 @@ class BlackOil(Model):
             )
             return None, None
 
+        # df = self.get_df(
+        #     columns=["time", "cells_pressure"],
+        #     boundary=boundary,
+        #     scale=scale,
+        #     units=False,
+        #     melt=True,
+        #     drop_zero=False,
+        #     drop_nan=drop_nan,
+        # )
+
+        # # shape = self.get_shape(boundary)
+        # # fdir = list(self.grid.get_fdir())
+        # # ncols = len(fdir) + 2  # +2 for time and P
+        # # values = df[["Time", *fdir, "P"]].values.reshape(*shape, ncols)
+        # # pcol = ncols - 1  # last column based on zero index
+        # # X, Y = values[:, :, :pcol], values[:, :, pcol]
+        # fdir = list(self.grid.get_fdir())
+        # ncols = len(fdir) + 1
+        # if drop_nan:
+        #     X = df[["Time", *fdir]].values.reshape(-1, ncols)
+        #     Y = df[["P"]].values.reshape(-1, 1)
+        # else:
+        #     shape = self.get_shape(boundary)
+        #     X = df[["Time", *fdir]].values.reshape(*shape, ncols)
+        #     Y = df[["P"]].values.reshape(*shape)
+
+        #     if not initial:
+        #         # n = self.grid.get_n(boundary)
+        #         X = X[1:,].reshape(-1, ncols)
+        #         Y = Y[1:,].reshape(-1, 1)
+
+        # return X, Y
+
         df = self.get_df(
             columns=["time", "cells_pressure"],
-            boundary=boundary,
+            boundary=True,
             scale=scale,
             units=False,
             melt=True,
@@ -1374,20 +1478,140 @@ class BlackOil(Model):
             drop_nan=False,
         )
 
-        # shape = self.get_shape(boundary)
-        # fdir = list(self.grid.get_fdir())
-        # ncols = len(fdir) + 2  # +2 for time and P
-        # values = df[["Time", *fdir, "P"]].values.reshape(*shape, ncols)
-        # pcol = ncols - 1  # last column based on zero index
-        # X, Y = values[:, :, :pcol], values[:, :, pcol]
-
-        shape = self.get_shape(boundary)
+        shape = self.get_shape(True)
         fdir = list(self.grid.get_fdir())
         ncols = len(fdir) + 1
         X = df[["Time", *fdir]].values.reshape(*shape, ncols)
-        Y = df[["P"]].values.reshape(*shape)
+        Y = df[["P"]].values.reshape(*shape, 1)
+
+        cells_id = self.grid.get_cells_id(boundary=boundary)
+        # if initial:
+        #     times_id = np.arange(0, self.solution.nsteps)
+        # else:
+        #     times_id = np.arange(1, self.solution.nsteps)
+        X = X[:, cells_id, :]
+        Y = Y[:, cells_id]
+
+        # if drop_nan:
+        #     X = X.reshape(-1, ncols)
+        #     Y = Y.reshape(-1, 1)
+        #     not_nans = ~np.isnan(Y).any(axis=1)
+        #     X = X[not_nans]
+        #     Y = Y[not_nans]
+
+        # if shuffle:
+        #     X = X.reshape(-1, ncols)
+        #     Y = Y.reshape(-1, 1)
+        #     ids = np.random.choice(X.shape[0], X.shape[0], False)
+        #     X = X[ids]
+        #     Y = Y[ids]
 
         return X, Y
+
+    # def get_domain_values(
+    #     self,
+    #     boundary: bool = True,
+    #     scale: bool = False,
+    #     initial: bool = True,
+    # ):
+
+    #     df = self.get_df(
+    #         columns=["time"],
+    #         # boundary=boundary,
+    #         scale=scale,
+    #         units=False,
+    #         melt=True,
+    #         drop_zero=False,
+    #         drop_nan=True,
+    #     )
+
+    #     fdir = list(self.grid.get_fdir())
+    #     ncols = len(fdir) + 1
+    #     X = df[["Time", *fdir]].values.reshape(-1, ncols)
+
+    #     if not initial:
+    #         n = self.grid.get_n(boundary)
+    #         X = X[n:]
+
+    #     return X
+
+    def get_data(
+        self,
+        times_id: list = None,
+        cells_id: list = None,
+        scale=True,
+        drop_nan=True,
+        shuffle=False,
+    ):
+
+        df = self.get_df(
+            columns=["time", "cells_pressure"],
+            boundary=True,
+            scale=scale,
+            units=False,
+            melt=True,
+            drop_zero=False,
+            drop_nan=False,
+        )
+
+        shape = self.get_shape(True)
+        fdir = list(self.grid.get_fdir())
+        ncols = len(fdir) + 1
+        X = df[["Time", *fdir]].values.reshape(*shape, ncols)
+        Y = df[["P"]].values.reshape(*shape, 1)
+        X = X[times_id, cells_id].reshape(-1, ncols)
+        Y = Y[times_id, cells_id].reshape(-1, 1)
+
+        if drop_nan:
+            not_nans = ~np.isnan(Y).any(axis=1)
+            X = X[not_nans]
+            Y = Y[not_nans]
+
+        if shuffle:
+            ids = np.random.choice(X.shape[0], X.shape[0], False)
+            X = X[ids]
+            Y = Y[ids]
+
+        return X, Y
+
+    def get_X(
+        self,
+        times_id: list = None,
+        cells_id: list = None,
+        scale=True,
+        shuffle=False,
+    ):
+
+        df = self.get_df(
+            columns=["time"],
+            boundary=True,
+            scale=scale,
+            units=False,
+            melt=True,
+            drop_zero=False,
+            drop_nan=False,
+        )
+
+        # Restore in data shape: (n_steps, n_cells, ncols)
+        shape = self.get_shape(True)
+        fdir = list(self.grid.get_fdir())
+        ncols = len(fdir) + 1
+        X = df[["Time", *fdir]].values.reshape(*shape, ncols)
+
+        # Broadcasting for times_id and cells_id
+        if isinstance(times_id, list):
+            times_id = np.array(times_id)
+        if isinstance(times_id, np.ndarray):
+            times_id = times_id[:, np.newaxis]  # to avoid shape issues
+        if isinstance(cells_id, list):
+            cells_id = np.array(cells_id)
+        X = X[times_id, cells_id].reshape(-1, ncols)
+
+        if shuffle:
+            ids = np.random.choice(X.shape[0], X.shape[0], False)
+            X = X[ids]
+
+        return X
 
     def plot(
         self,
@@ -1449,10 +1673,19 @@ class BlackOil(Model):
         else:
             raise ValueError(f"Grid dimension {self.grid.D} is not supported.")
 
+        if ylims is None:
+            if scale:
+                ylims = self.pressure_scaler.get_output_range()
+            else:
+                ylims = self.pressure_scaler.get_input_range()
+
         if solution in ["all", "*"]:
             for solution_name in self.solutions:
                 self.set_solution(solution_name)
-                X, Y = self.get_values(boundary, scale)
+                X, Y = self.get_values(
+                    boundary=boundary,
+                    scale=scale,
+                )
                 if X is not None:
                     plotter.add(
                         x=X,
@@ -1462,7 +1695,10 @@ class BlackOil(Model):
         elif isinstance(solution, list):
             for solution_name in solution:
                 self.set_solution(solution_name)
-                X, Y = self.get_values(boundary, scale)
+                X, Y = self.get_values(
+                    boundary=boundary,
+                    scale=scale,
+                )
                 if X is not None:
                     plotter.add(
                         x=X,
@@ -1472,9 +1708,10 @@ class BlackOil(Model):
         else:
             if solution is not None:
                 self.set_solution(solution)
-            X, Y = self.get_values(boundary, scale)
-            print(X.shape)
-            print(Y.shape)
+            X, Y = self.get_values(
+                boundary=boundary,
+                scale=scale,
+            )
             if X is not None:
                 plotter.add(
                     x=X,

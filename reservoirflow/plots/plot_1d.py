@@ -65,7 +65,7 @@ class Plot1D(Plot):
             ncol=6,  # ncol=N,
         )
 
-    def __get_lims_ticks(self, x, Y):
+    def __get_lims_ticks(self, x, Y, ylims):
 
         xmin = x.min()
         xmax = x.max()
@@ -75,10 +75,14 @@ class Plot1D(Plot):
         xlim = (xmin_, xmax * 1.1)
         xticks = np.linspace(xmin, xmax_, 5)
 
-        ymin = Y.min()
-        ymax = Y.max()
-        n = 0 if ymax < 2 else -3
-        ymax_ = round(ymax, n)
+        if ylims is not None:
+            ymin = ylims[0]
+            ymax = ylims[1]
+        else:
+            ymin = Y.min()
+            ymax = Y.max()
+        # n = 0 if ymax < 10 else -3
+        ymax_ = ymax  # round(ymax, n)
         ystep = (ymax_ - ymin) / 4
         ymin_ = ymin - ystep * 0.25
         ylim = (ymin_, ymax_)
@@ -152,9 +156,11 @@ class Plot1D(Plot):
                 ax.set_title(f"t={t[tstep]}")
                 ax.grid(True)
                 if i == 0 and n == 0:
-                    (xlim, xticks), (ylim, yticks) = self.__get_lims_ticks(x, Y)
-                    if ylims is not None:
-                        ylim = ylims
+                    (xlim, xticks), (ylim, yticks) = self.__get_lims_ticks(
+                        x,
+                        Y,
+                        ylims,
+                    )
                     ax.set_xlim(xlim)
                     ax.set_ylim(ylim)
                     ax.set_xticks(xticks)
@@ -321,7 +327,7 @@ def get_sampled_array_combined_distribution(
         # Calculate indices to select from the unique_sorted_indices_pool
         # np.linspace here creates `num_samples` evenly spaced integer positions within the pool's ranks.
         selection_indices_in_pool = np.linspace(
-            0, len(unique_sorted_indices_pool) - 1, num_samples
+            1, len(unique_sorted_indices_pool) - 1, num_samples
         ).astype(int)
         final_selected_indices = unique_sorted_indices_pool[selection_indices_in_pool]
 

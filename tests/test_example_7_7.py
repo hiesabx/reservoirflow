@@ -26,7 +26,7 @@ class TestApp(unittest.TestCase):
             drop_zero=False,
         )
         df = df.astype({"Time [days]": "int32"})
-        # df.to_csv("tests/test_example_7_7_.csv")
+        df.to_csv("tests/test_example_7_7_.csv")
         pd.testing.assert_frame_equal(df, df_desired)
         np.testing.assert_almost_equal(
             model.solution.tstep_error, 3.320340669077382e-10
@@ -151,3 +151,5 @@ def create_model(sparse):
 
 if __name__ == "__main__":
     unittest.main()
+    # test = TestApp()
+    # test.test_data()

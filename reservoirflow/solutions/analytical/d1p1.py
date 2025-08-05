@@ -6,7 +6,8 @@ from tqdm import tqdm
 from reservoirflow import scalers
 from reservoirflow.solutions.solution import Solution
 from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import ProcessPoolExecutor
+
+# from concurrent.futures import ProcessPoolExecutor
 
 # from reservoirflow.utils.helpers import _lru_cache
 # from reservoirflow.utils.profme import cProfiler
@@ -143,8 +144,9 @@ class D1P1(Solution):
         else:
             self.pressures = input_scaler.inverse_transform(pD)
 
-        self.rates = np.repeat(self.rates, repeats=nsteps + 1, axis=0)
-        self.model.update_boundaries_rates_nsteps()
+        self.model.update_rates_shape()
+        # self.rates = np.repeat(self.rates, repeats=nsteps + 1, axis=0)
+        # self.model.update_boundaries_rates_nsteps()
 
         self.run_ctime = round(time.time() - start_time, 2)
         self.ctime = self.run_ctime

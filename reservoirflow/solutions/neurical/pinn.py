@@ -10,6 +10,7 @@ from matplotlib import cm
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
+from torch.autograd.functional import hessian
 
 # from reservoirflow.solutions.solution import Solution
 from reservoirflow.models.model import Model
@@ -52,87 +53,136 @@ class PINN(Network, nn.Module):
         super().__init__(model, sparse)
         nn.Module.__init__(self)
         self.dtype = torch.float32
-        # self.dtype = torch.float32
-        # self.X_train = self.as_tensor(X_train, False)
-        # self.Y_train = self.as_tensor(Y_train, False)
-        # self.X_test = self.as_tensor(X_test, False)
-        # self.Y_test = self.as_tensor(Y_test, False)
-        # self.X_phy = self.as_tensor(X_phy, True)
-        # self.rates_V_RHS = self.as_tensor(rates_V_RHS, False)
-        # self.LHS_RHS = self.as_tensor(LHS_RHS, False)
-        # self.rates_V = self.as_tensor(rates_V, False)
-        # self.LHSf = self.as_tensor(LHSf, False)
-        # self.RHSf = self.as_tensor(RHSf, False)
-        # self.Y_phy = torch.zeros(self.X_phy.shape[0], dtype=self.dtype)
 
-        # X, Y = model.get_values(boundary=True, scale=True)
-        # self.add(X, Y, "train")
-
-        self.neurons = [2, *[64] * 6, 1]
-        lr = 0.01
-
+        # Neural network parameters:
         self.epochs = 0
         self.epoch = 0
+        self.neurons = [2, *[64] * 6, 1]
+        self.bias = True
+        # self.activation = nn.Tanh  # nn.Tanh, nn.Sigmoid, nn.GELU
+        self.loss_func = nn.MSELoss()  # nn.MSELoss, nn.L1Loss
+        self.network = self.get_network()
+        # self.network = torch.compile(self.network)
+        self.w_y = 0.95  # weight for the training loss
+        self.w_r = 1 - self.w_y  # weight for the physics loss
 
-        self.activation = nn.Tanh
-        # self.activation = nn.GELU
-        self.loss_func = nn.MSELoss
-        self.network = self.get_network(self.neurons)
-        self.lr = lr
+        # Early stopping:
+        self.patience = 10
+        self.min_delta = 1e-4
+        self.counter = 0
+        self.min_validation_loss = float("inf")
+
+    def early_stop(self, validation_loss):
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            self.counter = 0
+        elif validation_loss > (self.min_validation_loss + self.min_delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+        return False
 
     def assert_data(self):
         assert len(self.X_train) == len(self.Y_train), "input length does not match."
         assert self.X_train.shape[1] == self.neurons[0], "input shape does not match."
-        assert (
-            self.Y_train.shape[1] == self.neurons[-1] + 1
-        ), "output shape does not match."
-
+        assert self.Y_train.shape[1] == self.neurons[-1], "output shape does not match."
         assert len(self.X_test) == len(self.Y_test), "input length does not match."
         assert self.X_test.shape[1] == self.neurons[0], "input shape does not match."
-        assert (
-            self.Y_test.shape[1] == self.neurons[-1] + 1
-        ), "output shape does not match."
-
-        assert len(self.X_phy) == len(self.rates_V_RHS), "input length does not match."
-        assert len(self.X_phy) == len(self.LHS_RHS), "input length does not match."
-        assert self.X_phy.shape[1] == self.neurons[0], "input shape does not match."
+        assert self.Y_test.shape[1] == self.neurons[-1], "output shape does not match."
+        # assert len(self.X_r) == len(self.F_px_pt), "input length does not match."
+        assert self.X_r.shape[1] == self.neurons[0], "input shape does not match."
 
     def as_tensor(self, a, grad=False):
         if isinstance(a, pd.DataFrame):
             a = a.values
         return torch.tensor(a, dtype=self.dtype, requires_grad=grad)
 
-    def init_optimizer(self, lr, opt):
-        if lr is None:
-            lr = self.lr
+    def init_optimizer(
+        self,
+        opt="adam",
+        lr=None,
+        weight_decay=None,
+    ):
         if opt.lower() == "adam":
-            return torch.optim.Adam(self.parameters(), lr=lr, weight_decay=1e-6)
+            return torch.optim.Adam(
+                self.parameters(),
+                lr=lr,
+                weight_decay=weight_decay,
+            )
+        elif opt.lower() == "adamw":
+            return torch.optim.AdamW(
+                self.parameters(),
+                lr=lr,
+                weight_decay=weight_decay,
+            )
+        elif opt.lower() == "sgd":
+            return torch.optim.SGD(
+                self.parameters(),
+                lr=lr,
+                momentum=0.9,
+                weight_decay=weight_decay,
+            )
+        elif opt.lower() == "adagrad":
+            return torch.optim.Adagrad(
+                self.parameters(),
+                lr=lr,
+                weight_decay=weight_decay,
+            )
+        elif opt.lower() == "rmsprop":
+            return torch.optim.RMSprop(
+                self.parameters(),
+                lr=lr,
+                alpha=0.99,
+                eps=1e-8,
+                weight_decay=weight_decay,
+            )
+        elif opt.lower() == "adamax":
+            return torch.optim.Adamax(
+                self.parameters(),
+                lr=lr,
+                betas=(0.9, 0.999),
+                eps=1e-8,
+                weight_decay=weight_decay,
+            )
+        elif opt.lower() == "adadelta":
+            return torch.optim.Adadelta(
+                self.parameters(),
+                lr=lr,
+                rho=0.9,
+                eps=1e-6,
+                weight_decay=weight_decay,
+            )
         elif opt.lower() == "lbfgs":
             return torch.optim.LBFGS(
                 self.parameters(),
-                lr,
-                max_iter=100,
-                max_eval=None,
-                tolerance_grad=1e-11,
-                tolerance_change=1e-11,
-                history_size=100,
+                lr=lr,
+                max_iter=3,
+                max_eval=4,
+                history_size=10,
+                tolerance_grad=1e-7,
+                tolerance_change=1e-7,  # 1 * np.finfo(float).eps
                 line_search_fn="strong_wolfe",
             )
         else:
             raise ValueError("Optimizer is unknown. Use ['adam', 'lbfgs']")
 
-    def get_network(self, neurons):
-        bias = True
-        self.N_layers = len(neurons)
+    def get_network(self):
+        self.N_layers = len(self.neurons)
         self.N_range = range(self.N_layers - 1)
         self.linears = [
             nn.Linear(
-                neurons[i],
-                neurons[i + 1],
+                self.neurons[i],
+                self.neurons[i + 1],
                 dtype=self.dtype,
-                bias=bias,
+                bias=self.bias,
             )
             for i in self.N_range
+        ]
+        activation = nn.Tanh()  # nn.GELU(), nn.SiLU()
+        n_act = self.N_layers - 2
+        activations = [
+            *[activation] * n_act,
+            None,
         ]
         self.layers = []
         for i in self.N_range:
@@ -140,10 +190,14 @@ class PINN(Network, nn.Module):
                 self.linears[i].weight,
                 gain=1.0,
             )
-            if bias:
+            if self.bias:
                 nn.init.zeros_(self.linears[i].bias)
-            if i < self.N_layers - 2 and self.activation is not None:
-                self.layers.append([self.linears[i], self.activation()])
+            # if i < self.N_layers - 3 and self.activation is not None:
+            # self.layers.append([self.linears[i], self.activation()])
+            # else:
+            # self.layers.append([self.linears[i]])
+            if activations[i] is not None:
+                self.layers.append([self.linears[i], activations[i]])
             else:
                 self.layers.append([self.linears[i]])
         return nn.Sequential(*sum(self.layers, []))
@@ -156,42 +210,52 @@ class PINN(Network, nn.Module):
 
     predict = forward
 
-    def loss_train(self, x, y, reduction="mean"):
-        return self.loss_func(reduction=reduction)(self.network(x).flatten(), y[:, 0])
+    def loss_y(self, x, y):
+        return self.loss_func(self.network(x), y)
 
-    def loss_phy(self, x):
-        p = self.network(x)
-        Dp = self.gradient(p, x)
-        DDp = self.gradient(Dp[:, 1], x)
-        Y_phy_h = (
-            self.LHS_RHS * DDp[:, 1].flatten() - Dp[:, 0].flatten() + self.rates_V_RHS
-        )  # perfect
-        return torch.mean(Y_phy_h**2)
-        # return self.loss_func(reduction="mean")(Y_phy_h, self.Y_phy)
+    def loss_y_value(self, x, y):
+        return self.loss_y(x, y).detach().float().numpy()
 
-    def loss(self):
-        """_summary_
+    def loss_r(self, x):
+        """Physics loss function.
 
-        Important Notes
-        ---------------
-        Loss should be divided into two components as following:
-        1. training loss: includes both initial and boundary condition.
-        Using separate loss instead for initial and boundary conditions
-        is not working.
-        2. physics loss: includes the residual of a continuous
-        dimensionless PDE. Note that at least one of the derivative
-        terms should be separated from any factors (preferably the lower
-        order term e.g. Dpt). Factors and derivative must be flatten()
-        to have a better performance.
+        This function calculates the residual of a PDE as:
+            y_phy_h = LHS_RHS * d2p_dx2 - dp_dt
+        Where:
+            - x is the input in form of (time, x)
+            - p is the pressure
+            - dp_dt is the first temporal derivative
+            - d2p_dx2 is the second spatial derivative.
+            - LHS_RHS is the ratio of the left-hand side factor and right-hand side factor of the PDE.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (N, 2), where N is the number of samples.
 
         Returns
         -------
-        _type_
-            _description_
+        torch.Tensor
+            Residual of the PDE, averaged over all samples.
         """
-        loss_train = self.loss_train(self.X_train, self.Y_train)
-        loss_phy = 1e-1 * self.loss_phy(self.X_phy)
-        return loss_train + loss_phy
+
+        # prediction: p(t, x)
+        p = self.network(x)
+        # # rates:
+        # # q = self.update_rates()
+        # # first derivative: dp/dt, dp/dx
+        dp = self.gradient(p, x)
+        # # first temporal derivative: dp/dt
+        dp_dt = dp[:, 0]  # .flatten()
+        # # second derivative: d2p/dt2, d2p/dx2
+        d2p = self.gradient(dp[:, 1], x)
+        # # second spacial derivative: d2p/dx2
+        d2p_dx2 = d2p[:, 1]  # .flatten()
+        # residual of the PDE:
+        # r = self.F_px_pt * d2p_dx2 - dp_dt  # + self.F_q_pt * q
+        # return the mean of the squared residual:
+        # return torch.mean(r**2)
+        return self.loss_func(self.F_px_pt * d2p_dx2, dp_dt)
 
     def gradient(self, y_h, x):
         """
@@ -205,21 +269,54 @@ class PINN(Network, nn.Module):
         order derivative products.
         """
         return autograd.grad(
-            y_h,
-            x,
-            torch.ones_like(y_h),
+            outputs=y_h,
+            inputs=x,
+            grad_outputs=torch.ones_like(y_h),
             retain_graph=True,
-            create_graph=True,
+            create_graph=True,  # allows to compute higher order derivatives
         )[0]
+
+    def loss(self):
+        """Calculate the total loss.
+
+        Important Notes
+        ---------------
+        Loss should be divided into two components as following:
+        1. training loss: includes both initial and boundary condition.
+        Using separate loss instead for initial and boundary conditions
+        is not working.
+        2. physics loss: includes the residual of a continuous
+        dimensionless PDE. Note that at least one of the derivative
+        terms should be separated from any factors (preferably the lower
+        order term e.g. dp_dt). Factors and derivative must be flatten()
+        to have a better performance.
+
+        Returns
+        -------
+        torch.Tensor
+            Total loss, which is the sum of training loss and physics loss.
+        """
+        # Training loss:
+        loss_y = self.loss_y(self.X_train, self.Y_train)
+        # Physics loss:
+        loss_r = self.loss_r(self.X_r)
+        # Total loss:
+        return self.w_y * loss_y + self.w_r * loss_r
 
     def closure(self):
         self.optimizer.zero_grad()
         loss = self.loss()
-        loss.backward()
-        # loss.backward(retain_graph=True)
+        loss.backward()  # loss.backward(retain_graph=True)
         return loss
 
-    def fit(self, freq=None, epochs=5000, lr=None, opt="adam"):
+    def fit(
+        self,
+        freq=None,
+        epochs=5000,
+        opt="adam",
+        lr=0.01,
+        weight_decay=None,
+    ):
         run_epoch = self.epochs
         self.epochs += epochs
         self.run_ctime = 0
@@ -235,7 +332,11 @@ class PINN(Network, nn.Module):
             else:
                 freq = epochs // 100
 
-        self.optimizer = self.init_optimizer(lr=lr, opt=opt)
+        self.optimizer = self.init_optimizer(
+            opt=opt,
+            lr=lr,
+            weight_decay=weight_decay,
+        )
 
         if not hasattr(self, "results"):
             self.run_id = 1
@@ -255,32 +356,62 @@ class PINN(Network, nn.Module):
         for epoch in pbar:
             step_start_time = time.time()
             self.epoch = run_epoch + epoch
-            self.optimizer.step(self.closure)
+            loss_train = self.optimizer.step(self.closure)
+            loss_train = loss_train.detach().float().numpy()
+            loss_r = self.loss_r(self.X_r).detach().float().numpy()
             with torch.no_grad():
-                loss_value = (
-                    self.loss_train(self.X_test, self.Y_test).detach().float().numpy()
+                loss_test = self.loss_y_value(self.X_test, self.Y_test)
+                pbar.set_description(
+                    (
+                        f"[epoch] {epoch} - "
+                        f"[loss train] {loss_train:.6f} - "
+                        f"[loss test] {loss_test:.6f} - "
+                        f"[loss residual] {loss_r:.6f}"
+                    )
                 )
-                pbar.set_description(f"[epoch] {epoch} - [loss] {loss_value}")
                 if epoch % freq == 0:
                     self.results["run_id"].append(self.run_id)
                     self.results["epoch"].append(self.epoch)
-                    self.results["loss"].append(loss_value)
+                    self.results["loss (train)"].append(loss_train)
+                    self.results["loss (test)"].append(loss_test)
+                    self.results["loss (residual)"].append(loss_r)
+                    self.results["loss_y + loss_r"].append(loss_train + loss_r)
                     self.run_ctime = round(time.time() - step_start_time, 2)
                     self.results["time"].append(self.run_ctime)
-                if max(loss_value, 0) == 0.0:
-                    print(f"early stop at loss {loss_value}")
-                    break
+                # if self.early_stop(loss_y_test):
+                #     break
+
+        # Reset early stopping counter:
+        self.counter = 0
 
         self.run_ctime = round((time.time() - init_start_time) / 60, 3)
         self.ctime += self.run_ctime
         print(
             f"[info] Pinn fitting of {epochs} epochs",
-            f"finished in {self.run_ctime} minutes",
-            f"(loss: {loss_value}).",
+            f"finished in {self.run_ctime} minutes - ",
+            f"loss (test): {loss_test:.6f}.",
         )
 
-        plt.plot(self.results["epoch"], self.results["loss"], label="loss")
-        plt.ylabel("MSE")
+    def plot(self):
+        plt.plot(
+            self.results["epoch"],
+            self.results["loss (train)"],
+            label="loss (train)",
+        )
+        plt.plot(
+            self.results["epoch"],
+            self.results["loss (test)"],
+            label="loss (test)",
+        )
+        plt.plot(
+            self.results["epoch"],
+            self.results["loss (residual)"],
+            label="loss (residual)",
+        )
+        plt.title(f"PINN {self.name} - {self.model.name} - {self.run_id}")
+        plt.legend()
+        plt.grid()
+        plt.ylabel("Loss")
         plt.xlabel("epoch")
         plt.show()
 
@@ -289,11 +420,48 @@ class PINN(Network, nn.Module):
     def solve(self):
         raise NotImplementedError
 
+    def update_pressures(
+        self,
+        clean=True,
+    ):
+        p = self.network(self.X)
+        output_shape = self.model.get_shape(boundary=True)
+        p = p.detach().numpy().reshape(output_shape)
+        if clean:
+            Vmin = self.model.pressure_scaler.Vmin
+            Vmax = self.model.pressure_scaler.Vmax
+            p[p < Vmin] = Vmin
+            p[p > Vmax] = Vmax
+
+            self.pressures = np.vstack(
+                [
+                    self.pressures[0, :],
+                    self.model.pressure_scaler.inverse_transform(p[1:, :]),
+                ]
+            )
+        else:
+            self.pressures = self.model.pressure_scaler.inverse_transform(p)
+
+    def update_rates(self):
+        self.update_pressures(clean=True)
+        self.model.update_boundaries_rates_nsteps()
+        q = self.model.get_df(
+            columns=["cells_rate"],
+            boundary=True,
+            scale=False,
+            units=False,
+            melt=True,
+            drop_zero=False,
+            drop_nan=True,
+        )["Q"].values
+        return self.as_tensor(q, False)
+
     def run(
         self,
         nsteps=10,
         N=100,
         clean=False,
+        reference=None,
         threading=True,
         vectorize=True,
         check_MB=True,
@@ -315,6 +483,7 @@ class PINN(Network, nn.Module):
         start_time = time.time()
         self.tstep += nsteps
         self.nsteps += nsteps
+        self.model.update_shapes()
         self.N = N
         self.run_ctime = 0
         if self.model.verbose:
@@ -325,61 +494,105 @@ class PINN(Network, nn.Module):
 
         print(f"[info] Simulation run started: {nsteps} timesteps.")
 
-        # Independent variables: t, x
-        alpha = self.model.get_alpha(method="mean")
-        t, x = self.model.get_domain(scale=False, boundary=True)
-        L = x.max() - x.min()
-        xD = (x - x.min()) / L
-        # tD = alpha * t / (L**2)
-        tD = -np.pi**2 * alpha * t / (L**2)
-        tD_values, xD_values = np.meshgrid(
-            tD,
-            xD,
-            # sparse=self.sparse,
-            indexing="ij",
+        # Scale the model:
+        scale = True
+
+        # Training Data: initial and boundary conditions
+        X, Y = self.model.get_data(
+            times_id=None,
+            cells_id=None,
+            scale=scale,
+            drop_nan=True,
+            shuffle=False,
         )
+        self.X_train = self.as_tensor(X, False)
+        self.Y_train = self.as_tensor(Y, False)
 
-        # Dependent variable: p
-        p = self.pressures
-        input_range = [0, 1]  # Analytical solution domain
-        input_scaler = scalers.MinMax(output_range=input_range).fit(
-            p,
-            axis=None,
-        )
-
-        # Neurical solution:
-        progress = tqdm(
-            np.arange(1, self.N + 1),
-            unit="steps",
-            colour="green",
-            position=0,
-            leave=True,
-            desc="[step]",
-        )
-        if threading:
-            with ThreadPoolExecutor(self.model.n_threads) as executor:
-                executor.map(self.__update_pressures_sum, progress)
-        else:
-            for n in progress:
-                self.__update_pressures_sum(n)
-
-        p_pred = pD0
-
-        # Remove values out of range:
-        if clean:
-            p_pred[p_pred < input_range[0]] = input_range[0]
-            p_pred[p_pred > input_range[1]] = input_range[1]
-
-            self.pressures = np.vstack(
-                [
-                    self.pressures[0, :],
-                    input_scaler.inverse_transform(p_pred[1:, :]),
-                ]
+        # Testing Data: based on a reference solution if available
+        if reference is not None:
+            self.model.set_solution(reference)
+            X, Y = self.model.get_data(
+                times_id=slice(1, -1, 1),
+                cells_id=None,
+                scale=scale,
+                drop_nan=False,
+                shuffle=False,
             )
-        else:
-            self.pressures = input_scaler.inverse_transform(p_pred)
+            self.model.set_solution(self.name)
+        self.X_test = self.as_tensor(X, False)
+        self.Y_test = self.as_tensor(Y, False)
 
-        self.rates = np.repeat(self.rates, repeats=nsteps + 1, axis=0)
+        # Full Domain as X(t, x):
+        X = self.model.get_X(
+            times_id=None,  # None for all times
+            cells_id=None,  # None for all cells
+            scale=scale,
+            shuffle=False,
+        )
+        self.X = self.as_tensor(X, False)
+
+        # Residual Domain as X(t, x):
+        X_r = self.model.get_X(
+            times_id=slice(0, -1, 1),
+            cells_id=self.model.grid.get_cells_id(boundary=True),
+            scale=scale,
+            shuffle=False,
+        )
+        self.X_r = self.as_tensor(X_r, True)
+
+        # Differential Factors of the PDE:
+        F_px, F_pt, F_q = self.model.get_factors(
+            boundary=True,
+            scale=scale,
+            method="mean",
+        )
+        # F_px *= 1.0404  # diff_term
+        # F_px *= 1 + self.w_r
+        self.F_px_pt = F_px / F_pt
+
+        # if initial_r:
+        #     nsteps_r = self.nsteps
+        # else:
+        #     nsteps_r = self.nsteps - 1
+
+        # F_px_pt = F_px / F_pt
+        # F_px_pt = np.tile(F_px_pt, nsteps_r)
+        # self.F_px_pt = self.as_tensor(F_px_pt, False)
+
+        # F_pt_px = F_pt / F_px
+        # F_pt_px = np.tile(F_pt_px, nsteps_r)
+        # self.F_pt_px = self.as_tensor(F_pt_px, False)
+
+        # F_px = np.tile(F_px, nsteps_r)
+        # self.F_px = self.as_tensor(F_px, False)
+        # F_pt = np.tile(F_pt, nsteps_r)
+        # self.F_pt = self.as_tensor(F_pt, False)
+
+        # Update Rates: update_rates (did not work as expected)
+        # F_q_pt = F_q / F_pt
+        # F_q_pt = np.tile(F_q_pt, nsteps_r)
+        # self.F_q_pt = self.as_tensor(F_q_pt, False)
+
+        # Check if the data is correct:
+        self.assert_data()
+
+        # opts: ["adam", "adamw", "sgd", "adagrad", "rmsprop", "adamax", "adadelta", "lbfgs"]
+        self.fit(epochs=100, opt="adam", lr=0.01, weight_decay=1e-6)
+        self.fit(epochs=200, opt="adam", lr=0.001, weight_decay=1e-6)
+        self.fit(epochs=50, opt="lbfgs", lr=0.01)
+        # self.fit(epochs=400, opt="adam", lr=0.0001, weight_decay=1e-6)
+        # self.fit(epochs=10, opt="lbfgs", lr=0.01)
+        # self.fit(epochs=400, opt="adam", lr=0.0001)
+        # self.fit(epochs=100, lr=0.0001, opt="adam")
+        # self.fit(epochs=400, lr=0.0001, opt="adam")
+        # self.fit(epochs=1000, lr=0.00001, opt="adam")
+        # self.fit(epochs=1000, lr=0.00001, opt="adam")
+
+        # Prediction:
+        self.update_pressures(clean=clean)
+
+        # Update boundaries rates with the new pressures:
+        # self.model.update_rates_shape()
         self.model.update_boundaries_rates_nsteps()
 
         self.run_ctime = round(time.time() - start_time, 2)

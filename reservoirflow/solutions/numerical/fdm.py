@@ -760,22 +760,36 @@ class FDM(Solution):
 
         if update:
             self.tstep += 1
-            self.pressures = np.vstack([self.pressures, self.pressures[-1]])
+            self.nsteps += 1
+            self.pressures = np.vstack(
+                [self.pressures, self.pressures[-1]],
+                dtype=self.model.dtype,
+            )
             self.pressures[self.tstep, self.model.grid.cells_id] = pressures
-            self.rates = np.vstack([self.rates, self.rates[-1]])
+            self.rates = np.vstack(
+                [self.rates, self.rates[-1]],
+                dtype=self.model.dtype,
+            )
             self.model.update_boundaries_rates(self.tstep)
 
             # newtest
             # self.model.As = np.vstack([self.model.As, A.reshape(1, -1)])
             # self.model.ds = np.vstack([self.model.ds, d.reshape(1, -1)])
-            self.As = np.vstack([self.As, A.reshape(1, -1)])
-            self.ds = np.vstack([self.ds, d.reshape(1, -1)])
+            self.As = np.vstack(
+                [self.As, A.reshape(1, -1)],
+                dtype=self.model.dtype,
+            )
+            self.ds = np.vstack(
+                [self.ds, d.reshape(1, -1)],
+                dtype=self.model.dtype,
+            )
 
             resolve = self.__update_wells()
             if resolve:
                 self.rates = self.rates[: self.tstep]
                 self.pressures = self.pressures[: self.tstep]
                 self.tstep -= 1
+                self.nsteps -= 1
                 self.solve(threading, vectorize, False, True, False)
                 if self.model.verbose:
                     print(f"[info] Time step {self.tstep} was resolved.")
@@ -828,7 +842,7 @@ class FDM(Solution):
         - SciPy: `Iterative Solvers <https://scipy-lectures.org/advanced/scipy_sparse/solvers.html#iterative-solvers>`_.
         """
         start_time = time.time()
-        self.nsteps += nsteps
+        # self.nsteps += nsteps
         self.run_ctime = 0
         if self.model.verbose:
             self.model.verbose = False

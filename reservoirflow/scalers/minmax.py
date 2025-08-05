@@ -3,6 +3,7 @@ MinMax
 ------
 """
 
+import numpy as np
 from reservoirflow.scalers.scaler import Scaler
 
 
@@ -53,10 +54,26 @@ class MinMax(Scaler):
         self.vmax = input_range[1]
         return self
 
+    @property
+    def input_range(self):
+        if self.vmin is None or self.vmax is None:
+            raise ValueError("Input range is not set.")
+        return (self.vmin, self.vmax)
+
+    @property
+    def output_range(self):
+        return (self.Vmin, self.Vmax)
+
+    def get_input_range(self):
+        return (self.vmin, self.vmax)
+
     def set_output_range(self, output_range: tuple):
         self.Vmin = output_range[0]
         self.Vmax = output_range[1]
         return self
+
+    def get_output_range(self):
+        return (self.Vmin, self.Vmax)
 
     def get_factors(self):
         return (self.vmax - self.vmin) / (self.Vmax - self.Vmin)
@@ -69,8 +86,8 @@ class MinMax(Scaler):
                 + "Note that in this case overall min and max are used for scaling."
             )
             raise ValueError(msg)
-        self.vmin = v.min(axis=axis)  #: input minimum value.
-        self.vmax = v.max(axis=axis)  #: input maximum value.
+        self.vmin = np.nanmin(v, axis=axis)  # v.min(axis=axis)
+        self.vmax = np.nanmax(v, axis=axis)  # v.nanmax(axis=axis)
         if (self.vmin.ndim == 0 and self.vmin == self.vmax) or (
             self.vmin.ndim > 0 and all(self.vmin == self.vmax)
         ):
