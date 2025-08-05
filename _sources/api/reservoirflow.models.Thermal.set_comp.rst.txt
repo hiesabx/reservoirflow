@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.set\_comp
+======================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Thermal.set_comp

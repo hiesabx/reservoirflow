@@ -1,0 +1,247 @@
+{
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# Understand `profme` Module\n",
+                "\n",
+                "[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/12_Bsy1huVMLRzO_hIwWVaBF3D7aSTB-Y/view?usp=drive_link&target=_blank)\n",
+                "\n",
+                "*Author: Zakariya Abugrin | Date: May 2025*"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+                "tags": [
+                    "remove-input"
+                ]
+            },
+            "outputs": [],
+            "source": [
+                "# Colab only:\n",
+                "try:\n",
+                "    # Install reservoirflow in Colab\n",
+                "    import os\n",
+                "    import google.colab\n",
+                "    !pip install reservoirflow\n",
+                "    # Restart session after installation\n",
+                "    os.kill(os.getpid(), 9)\n",
+                "    print(\"Session was restarted.\")\n",
+                "    print(\"Now you can run to the following cells.\")\n",
+                "except ImportError:\n",
+                "    pass"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Introduction\n",
+                "\n",
+                "This tutorial shows how to use `profme` from `utils` module."
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Import `reservoirflow`\n",
+                "\n",
+                "We start with importing `reservoirflow` as `rf`. The abbreviation `rf` refers to `reservoirflow` where all modules under this library can be accessed. `rf` is also used throughout the [API](/api/API.html) documentation. We recommend our users to stick with this convention."
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 1,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "0.1.0b3\n"
+                    ]
+                }
+            ],
+            "source": [
+                "import reservoirflow as rf\n",
+                "\n",
+                "print(rf.__version__)"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": []
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 2,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "\n",
+                        "\n",
+                        "func:'sum_numbers' took: 0.0000 sec\n"
+                    ]
+                },
+                {
+                    "data": {
+                        "text/plain": [
+                            "4999950000"
+                        ]
+                    },
+                    "execution_count": 2,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "@rf.utils.profme.timeit\n",
+                "def sum_numbers(n):\n",
+                "    sum = 0\n",
+                "    for a in range(n):\n",
+                "        sum += a\n",
+                "    return sum\n",
+                "\n",
+                "sum_numbers(100000)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 3,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "Timer unit: 1e-07 s\n",
+                        "\n",
+                        "Total time: 0.0640942 s\n",
+                        "File: C:\\Users\\abugrzka\\AppData\\Local\\Temp\\ipykernel_41292\\545659262.py\n",
+                        "Function: sum_numbers at line 1\n",
+                        "\n",
+                        "Line #      Hits         Time  Per Hit   % Time  Line Contents\n",
+                        "==============================================================\n",
+                        "     1                                           @rf.utils.profme.lProfiler(print_output=True, save_output=False)\n",
+                        "     2                                           def sum_numbers(n):\n",
+                        "     3         1          6.0      6.0      0.0      sum = 0\n",
+                        "     4    100001     275344.0      2.8     43.0      for a in range(n):\n",
+                        "     5    100000     365585.0      3.7     57.0          sum += a\n",
+                        "     6         1          7.0      7.0      0.0      return sum\n",
+                        "\n",
+                        "\n"
+                    ]
+                },
+                {
+                    "data": {
+                        "text/plain": [
+                            "4999950000"
+                        ]
+                    },
+                    "execution_count": 3,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "@rf.utils.profme.lProfiler(print_output=True, save_output=False)\n",
+                "def sum_numbers(n):\n",
+                "    sum = 0\n",
+                "    for a in range(n):\n",
+                "        sum += a\n",
+                "    return sum\n",
+                "\n",
+                "sum_numbers(100000)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 4,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "\n",
+                        "\n",
+                        "    ncalls  tottime  percall  cumtime  percall.1  \\\n",
+                        "0       1    0.017    0.017    0.026      0.026   \n",
+                        "1  100000    0.009    0.000    0.009      0.000   \n",
+                        "2       1    0.000    0.000    0.000      0.000   \n",
+                        "\n",
+                        "                           filename:lineno(function)  \n",
+                        "0  C:\\Users\\abugrzka\\AppData\\Local\\Temp\\ipykernel...  \n",
+                        "1  C:\\Users\\abugrzka\\AppData\\Local\\Temp\\ipykernel...  \n",
+                        "2   {method 'disable' of '_lsprof.Profiler' objects}  \n"
+                    ]
+                },
+                {
+                    "data": {
+                        "text/plain": [
+                            "4999950000"
+                        ]
+                    },
+                    "execution_count": 4,
+                    "metadata": {},
+                    "output_type": "execute_result"
+                }
+            ],
+            "source": [
+                "@rf.utils.profme.cProfiler()\n",
+                "def sum_numbers(n):\n",
+                "    sum = 0\n",
+                "    for a in range(n):\n",
+                "        sum = add(sum,a)\n",
+                "    return sum\n",
+                "def add(sum, a):\n",
+                "    return sum+a\n",
+                "\n",
+                "\n",
+                "sum_numbers(100000)"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+                "tags": [
+                    "remove-input"
+                ]
+            },
+            "source": [
+                "```{include} /_static/comments_section.md\n",
+                "```"
+            ]
+        }
+    ],
+    "metadata": {
+        "kernelspec": {
+            "display_name": ".venv",
+            "language": "python",
+            "name": "python3"
+        },
+        "language_info": {
+            "codemirror_mode": {
+                "name": "ipython",
+                "version": 3
+            },
+            "file_extension": ".py",
+            "mimetype": "text/x-python",
+            "name": "python",
+            "nbconvert_exporter": "python",
+            "pygments_lexer": "ipython3",
+            "version": "3.11.9"
+        },
+        "orig_nbformat": 4
+    },
+    "nbformat": 4,
+    "nbformat_minor": 2
+}

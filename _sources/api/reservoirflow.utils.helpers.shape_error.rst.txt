@@ -1,0 +1,6 @@
+reservoirflow.utils.helpers.shape\_error
+========================================
+
+.. currentmodule:: reservoirflow.utils.helpers
+
+.. autofunction:: shape_error

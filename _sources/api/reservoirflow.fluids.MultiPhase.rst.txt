@@ -1,0 +1,56 @@
+MultiPhase
+==========
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoclass:: MultiPhase
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~MultiPhase.factors
+      
+      
+        ~MultiPhase.name
+      
+      
+        ~MultiPhase.unit
+      
+      
+        ~MultiPhase.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~MultiPhase.allow_synonyms
+      
+      
+        ~MultiPhase.report
+      
+      
+        ~MultiPhase.set_comp
+      
+      
+        ~MultiPhase.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

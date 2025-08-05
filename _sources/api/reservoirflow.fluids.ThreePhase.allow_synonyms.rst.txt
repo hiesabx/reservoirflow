@@ -1,0 +1,6 @@
+reservoirflow.fluids.ThreePhase.allow\_synonyms
+===============================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: ThreePhase.allow_synonyms

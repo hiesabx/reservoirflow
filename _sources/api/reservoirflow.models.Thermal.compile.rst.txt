@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.compile
+====================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Thermal.compile

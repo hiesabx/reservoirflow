@@ -1,0 +1,6 @@
+reservoirflow.fluids.SinglePhase.name
+=====================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoattribute:: SinglePhase.name

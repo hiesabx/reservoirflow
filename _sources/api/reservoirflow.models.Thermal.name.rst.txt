@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.name
+=================================
+
+.. currentmodule:: reservoirflow.models
+
+.. autoattribute:: Thermal.name

@@ -1,0 +1,6 @@
+reservoirflow.fluids.SinglePhase.set\_B
+=======================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: SinglePhase.set_B

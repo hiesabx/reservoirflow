@@ -1,0 +1,6 @@
+reservoirflow.models.Thermal.allow\_synonyms
+============================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Thermal.allow_synonyms

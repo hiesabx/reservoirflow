@@ -1,0 +1,6 @@
+reservoirflow.backends.TensorFlow.transpose
+===========================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: TensorFlow.transpose

@@ -1,0 +1,71 @@
+Thermal
+=======
+
+.. currentmodule:: reservoirflow.models
+
+.. autoclass:: Thermal
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Thermal.factors
+      
+      
+        ~Thermal.name
+      
+      
+        ~Thermal.unit
+      
+      
+        ~Thermal.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Thermal.allow_synonyms
+      
+      
+        ~Thermal.compile
+      
+      
+        ~Thermal.get_solutions
+      
+      
+        ~Thermal.report
+      
+      
+        ~Thermal.run
+      
+      
+        ~Thermal.set_comp
+      
+      
+        ~Thermal.set_solution
+      
+      
+        ~Thermal.set_units
+      
+      
+        ~Thermal.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

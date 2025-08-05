@@ -1,0 +1,50 @@
+MinMax
+======
+
+.. currentmodule:: reservoirflow.scalers
+
+.. autoclass:: MinMax
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~MinMax.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~MinMax.fit
+      
+      
+        ~MinMax.fit_transform
+      
+      
+        ~MinMax.inverse_transform
+      
+      
+        ~MinMax.set_output_range
+      
+      
+        ~MinMax.transform
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

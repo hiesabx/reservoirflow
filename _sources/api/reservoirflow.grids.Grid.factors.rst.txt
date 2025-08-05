@@ -1,0 +1,6 @@
+reservoirflow.grids.Grid.factors
+================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoattribute:: Grid.factors

@@ -1,0 +1,68 @@
+SinglePhase
+===========
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoclass:: SinglePhase
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~SinglePhase.factors
+      
+      
+        ~SinglePhase.name
+      
+      
+        ~SinglePhase.unit
+      
+      
+        ~SinglePhase.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~SinglePhase.allow_synonyms
+      
+      
+        ~SinglePhase.report
+      
+      
+        ~SinglePhase.set_B
+      
+      
+        ~SinglePhase.set_comp
+      
+      
+        ~SinglePhase.set_mu
+      
+      
+        ~SinglePhase.set_props
+      
+      
+        ~SinglePhase.set_rho
+      
+      
+        ~SinglePhase.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

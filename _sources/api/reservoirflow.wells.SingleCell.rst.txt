@@ -1,0 +1,71 @@
+SingleCell
+==========
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoclass:: SingleCell
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~SingleCell.factors
+      
+      
+        ~SingleCell.name
+      
+      
+        ~SingleCell.unit
+      
+      
+        ~SingleCell.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~SingleCell.allow_synonyms
+      
+      
+        ~SingleCell.report
+      
+      
+        ~SingleCell.set_cell_id
+      
+      
+        ~SingleCell.set_constrain
+      
+      
+        ~SingleCell.set_props
+      
+      
+        ~SingleCell.set_q
+      
+      
+        ~SingleCell.set_r
+      
+      
+        ~SingleCell.set_s
+      
+      
+        ~SingleCell.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

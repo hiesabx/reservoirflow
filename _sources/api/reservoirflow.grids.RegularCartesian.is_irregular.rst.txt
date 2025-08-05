@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.is\_irregular
+==================================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoproperty:: RegularCartesian.is_irregular

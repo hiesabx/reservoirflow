@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.save\_gif
+=======================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.save_gif

@@ -1,0 +1,50 @@
+Scaler
+======
+
+.. currentmodule:: reservoirflow.scalers
+
+.. autoclass:: Scaler
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Scaler.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Scaler.fit
+      
+      
+        ~Scaler.fit_transform
+      
+      
+        ~Scaler.inverse_transform
+      
+      
+        ~Scaler.set_output_range
+      
+      
+        ~Scaler.transform
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

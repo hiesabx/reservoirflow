@@ -1,0 +1,50 @@
+MultiCell
+=========
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoclass:: MultiCell
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~MultiCell.factors
+      
+      
+        ~MultiCell.name
+      
+      
+        ~MultiCell.unit
+      
+      
+        ~MultiCell.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~MultiCell.report
+      
+      
+        ~MultiCell.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

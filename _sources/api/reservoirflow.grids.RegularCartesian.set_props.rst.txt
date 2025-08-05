@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.set\_props
+===============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.set_props

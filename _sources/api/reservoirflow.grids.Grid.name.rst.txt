@@ -1,0 +1,6 @@
+reservoirflow.grids.Grid.name
+=============================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoattribute:: Grid.name

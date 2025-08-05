@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.set\_units
+===============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.set_units

@@ -1,0 +1,6 @@
+reservoirflow.fluids.Fluid.unit
+===============================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoattribute:: Fluid.unit

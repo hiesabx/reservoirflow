@@ -1,0 +1,6 @@
+reservoirflow.models.Model.report
+=================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Model.report

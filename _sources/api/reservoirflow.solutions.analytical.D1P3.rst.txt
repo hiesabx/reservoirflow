@@ -1,0 +1,41 @@
+D1P3
+====
+
+.. currentmodule:: reservoirflow.solutions.analytical
+
+.. autoclass:: D1P3
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~D1P3.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~D1P3.run
+      
+      
+        ~D1P3.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

@@ -1,0 +1,6 @@
+reservoirflow.solutions.neurical.DeepONet.solve
+===============================================
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. automethod:: DeepONet.solve

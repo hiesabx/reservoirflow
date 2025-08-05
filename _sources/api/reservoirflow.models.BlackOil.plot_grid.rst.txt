@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.plot\_grid
+========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.plot_grid

@@ -1,0 +1,934 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Access Nomenclature &#8212; ReservoirFlow 0.1.0b3</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8e8a900e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5ff7f2d6" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=55cca537"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=00435c62"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/nomenclature/access_nomenclature';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = '_static/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../../_static/RF_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Equations 🧾" href="../equations/equations.html" />
+    <link rel="prev" title="Nomenclature 🏷" href="nomenclature.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/RF_logo.png" class="logo__image only-light" alt="ReservoirFlow 0.1.0b3 - Home"/>
+    <script>document.write(`<img src="../../_static/RF_logo.png" class="logo__image only-dark" alt="ReservoirFlow 0.1.0b3 - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../research_development/research_development.html">
+    R&D
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../capabilities.html">
+    Capabilities
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/API.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../community/community.html">
+    Community
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../support_us.html">
+    Support Us
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../about_us.html">
+    About Us
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../release_notes/release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/hiesabx/reservoirflow" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.hiesab.com/en/products/reservoirflow/" title="Website" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-link fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Website</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.linkedin.com/company/hiesab/" title="LinkedIn" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-linkedin-in fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">LinkedIn</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../research_development/research_development.html">
+    R&D
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../capabilities.html">
+    Capabilities
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/API.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../community/community.html">
+    Community
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../support_us.html">
+    Support Us
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about_us.html">
+    About Us
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes/release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/hiesabx/reservoirflow" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.hiesab.com/en/products/reservoirflow/" title="Website" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-link fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Website</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.linkedin.com/company/hiesab/" title="LinkedIn" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-linkedin-in fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">LinkedIn</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started 🐤</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials 👨‍🏫</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_five_spot_single_phase.html">Five Spot Pattern Single Phase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_understand_grids_module.html">Understand <code class="docutils literal notranslate"><span class="pre">grids</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_understand_scalers_module.html">Understand <code class="docutils literal notranslate"><span class="pre">scalers</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_understand_compiling.html">Understand Compiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorial_understand_profme.html">Understand <code class="docutils literal notranslate"><span class="pre">profme</span></code> Module</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Extras</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../units_factors/units_factors.html">Units &amp; Factors 📐</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../units_factors/access_units_factors.html">Access Units and Factors</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="nomenclature.html">Nomenclature 🏷</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Access Nomenclature</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../equations/equations.html">Equations 🧾</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../glossary/glossary.html">Glossary 📇</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="nomenclature.html" class="nav-link">Nomenclature 🏷</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Access Nomenclature</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="access-nomenclature">
+<h1>Access Nomenclature<a class="headerlink" href="#access-nomenclature" title="Link to this heading">#</a></h1>
+<p><em>Author: Zakariya Abugrin | Date: December 2023</em></p>
+<p>In <code class="docutils literal notranslate"><span class="pre">reservoirflow</span></code>, similar to <code class="docutils literal notranslate"><span class="pre">UNITS</span></code> and <code class="docutils literal notranslate"><span class="pre">FACTORS</span></code>, <code class="docutils literal notranslate"><span class="pre">NOMENCLATURE</span></code> is defined as global dictionary. <code class="docutils literal notranslate"><span class="pre">NOMENCLATURE</span></code> is used to build the documentation and also to define the terms used to develop the mathematical models. This tutorial shows how to access this dictionary.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span> <span class="nn">reservoirflow</span> <span class="k">as</span> <span class="nn">rf</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="nb">print</span><span class="p">(</span><span class="n">rf</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.1.0
+</pre></div>
+</div>
+</div>
+</div>
+<section id="accessing-nomenclature-dictionary">
+<h2>Accessing <code class="docutils literal notranslate"><span class="pre">NOMENCLATURE</span></code> Dictionary<a class="headerlink" href="#accessing-nomenclature-dictionary" title="Link to this heading">#</a></h2>
+<p>Since <code class="docutils literal notranslate"><span class="pre">NOMENCLATURE</span></code> is a dictionary, keys represent the 2 categories and can be accessed as following:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">rf</span><span class="o">.</span><span class="n">NOMENCLATURE</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>dict_keys([&#39;abbreviation&#39;, &#39;symbol&#39;])
+</pre></div>
+</div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">'abbreviation'</span></code> key can be used as following:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">rf</span><span class="o">.</span><span class="n">NOMENCLATURE</span><span class="p">[</span><span class="s2">&quot;abbreviation&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;transmissibility&#39;: &#39;trans&#39;,
+ &#39;error&#39;: &#39;err&#39;,
+ &#39;pressure&#39;: &#39;press&#39;,
+ &#39;potential&#39;: &#39;poten&#39;,
+ &#39;time&#39;: &#39;t&#39;,
+ &#39;rate&#39;: &#39;q&#39;,
+ &#39;length&#39;: &#39;L&#39;,
+ &#39;area&#39;: &#39;A&#39;,
+ &#39;volume&#39;: &#39;V&#39;,
+ &#39;permeability&#39;: &#39;perm&#39;,
+ &#39;viscosity&#39;: &#39;mu&#39;,
+ &#39;gas formation volume factor&#39;: &#39;FVFg&#39;,
+ &#39;liquid formation volume factor&#39;: &#39;FVFl&#39;,
+ &#39;water formation volume factor&#39;: &#39;FVFw&#39;,
+ &#39;oil formation volume factor&#39;: &#39;FVFo&#39;,
+ &#39;solution gas oil ratio&#39;: &#39;GORs&#39;,
+ &#39;phase gravity&#39;: &#39;gamma phase&#39;,
+ &#39;gas flow rate&#39;: &#39;Qg&#39;,
+ &#39;liquid flow rate&#39;: &#39;Ql&#39;,
+ &#39;water flow rate&#39;: &#39;Qw&#39;,
+ &#39;oil flow rate&#39;: &#39;Qo&#39;,
+ &#39;volumetric velocity&#39;: &#39;u&#39;,
+ &#39;density&#39;: &#39;rho&#39;,
+ &#39;compressibility&#39;: &#39;comp&#39;,
+ &#39;compressibility factor&#39;: &#39;z&#39;,
+ &#39;temperature&#39;: &#39;temp&#39;,
+ &#39;porosity&#39;: &#39;phi&#39;,
+ &#39;saturation&#39;: &#39;sat&#39;,
+ &#39;relative permeability&#39;: &#39;relperm&#39;,
+ &#39;angle&#39;: &#39;theta&#39;,
+ &#39;gravitational acceleration&#39;: &#39;g&#39;,
+ &#39;transmissibility conversion&#39;: &#39;beta constant&#39;,
+ &#39;gravity conversion&#39;: &#39;gamma constant&#39;,
+ &#39;volume conversion&#39;: &#39;alpha constant&#39;}
+</pre></div>
+</div>
+</div>
+</div>
+<p>while the <code class="docutils literal notranslate"><span class="pre">'symbol'</span></code> key can be used as following:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">rf</span><span class="o">.</span><span class="n">NOMENCLATURE</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;transmissibility&#39;: &#39;T&#39;,
+ &#39;error&#39;: &#39;e&#39;,
+ &#39;pressure&#39;: &#39;p&#39;,
+ &#39;potential&#39;: &#39;\\Phi&#39;,
+ &#39;time&#39;: &#39;t&#39;,
+ &#39;rate&#39;: &#39;q&#39;,
+ &#39;length&#39;: &#39;L&#39;,
+ &#39;area&#39;: &#39;A&#39;,
+ &#39;volume&#39;: &#39;V&#39;,
+ &#39;permeability&#39;: &#39;k&#39;,
+ &#39;viscosity&#39;: &#39;\\mu&#39;,
+ &#39;gas formation volume factor&#39;: &#39;B_g&#39;,
+ &#39;liquid formation volume factor&#39;: &#39;B_l&#39;,
+ &#39;water formation volume factor&#39;: &#39;B_w&#39;,
+ &#39;oil formation volume factor&#39;: &#39;B_o&#39;,
+ &#39;solution gas oil ratio&#39;: &#39;R_s&#39;,
+ &#39;phase gravity&#39;: &#39;\\gamma_p&#39;,
+ &#39;gas flow rate&#39;: &#39;q_g&#39;,
+ &#39;liquid flow rate&#39;: &#39;q_l&#39;,
+ &#39;water flow rate&#39;: &#39;q_w&#39;,
+ &#39;oil flow rate&#39;: &#39;q_o&#39;,
+ &#39;volumetric velocity&#39;: &#39;u&#39;,
+ &#39;density&#39;: &#39;\\rho&#39;,
+ &#39;compressibility&#39;: &#39;c&#39;,
+ &#39;compressibility factor&#39;: &#39;z&#39;,
+ &#39;temperature&#39;: &#39;-&#39;,
+ &#39;porosity&#39;: &#39;\\phi&#39;,
+ &#39;saturation&#39;: &#39;S&#39;,
+ &#39;relative permeability&#39;: &#39;k_r&#39;,
+ &#39;angle&#39;: &#39;\\theta&#39;,
+ &#39;gravitational acceleration&#39;: &#39;g&#39;,
+ &#39;transmissibility conversion&#39;: &#39;\\beta_c&#39;,
+ &#39;gravity conversion&#39;: &#39;\\gamma_c&#39;,
+ &#39;volume conversion&#39;: &#39;\\alpha_c&#39;}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="comments">
+<h2>Comments 💬<a class="headerlink" href="#comments" title="Link to this heading">#</a></h2>
+<!---
+- usage in rst files:
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_
+
+- usage in ipynb files:
+```{include} /_static/comments_section.md
+```
+-->
+<p>Feel free to make a comment, ask a question, or share your opinion about this specific content.
+Please keep in mind the <a class="reference external" href="/community/commenting_guidelines.html">Commenting Guidelines ⚖</a>.</p>
+    <script>
+        let giscusTheme = localStorage.theme;
+        let giscusAttributes = {
+            "src": "https://giscus.app/client.js",
+            "data-repo": "hiesabx/reservoirflow",
+            "data-repo-id": "R_kgDOG3v41g",
+            "data-category": "Documentation",
+            "data-category-id": "DIC_kwDOG3v41s4CpxFL",
+            "data-mapping": "pathname",
+            "data-strict": "1",
+            "data-reactions-enabled": "1",
+            "data-emit-metadata": "0",
+            "data-input-position": "bottom",
+            "data-theme": giscusTheme,
+            "data-lang": "en",
+            "data-loading": "lazy",
+            "crossorigin": "anonymous",
+            "async": ""};
+        let giscusScript = document.createElement("script");
+        Object.entries(giscusAttributes).forEach(([key, value]) => giscusScript.setAttribute(key, value));
+        document.getElementById("comments").appendChild(giscusScript);
+    </script><!---
+```{raw} html
+---
+class: only-light
+---
+    <script src="https://giscus.app/client.js"
+        data-repo="hiesabx/reservoirflow_comments"
+        data-repo-id="R_kgDOKTqNNg"
+        data-category="General"
+        data-category-id="DIC_kwDOKTqNNs4Cgs8l"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+    >
+    </script>
+```
+
+```{raw} html
+---
+class: only-dark
+---
+    <script src="https://giscus.app/client.js"
+        data-repo="hiesabx/reservoirflow_comments"
+        data-repo-id="R_kgDOKTqNNg"
+        data-category="General"
+        data-category-id="DIC_kwDOKTqNNs4Cgs8l"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+    >
+    </script>
+```
+
+
+```{raw} html
+---
+class: only-dark
+---
+    <script 
+        type="text/javascript"
+        src="https://utteranc.es/client.js"
+        async="async"
+        repo="hiesabx/reservoirflow_comments"
+        issue-term="pathname"
+        theme="github-dark"
+        label="comments 💬"
+        crossorigin="anonymous"
+    >
+    </script>
+```
+
+```{raw} html
+---
+class: only-light
+---
+    <script 
+        type="text/javascript"
+        src="https://utteranc.es/client.js"
+        async="async"
+        repo="hiesabx/reservoirflow_comments"
+        issue-term="pathname"
+        theme="github-light"
+        label="comments 💬"
+        crossorigin="anonymous"
+    >
+    </script>
+```
+-->
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="nomenclature.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Nomenclature 🏷</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../equations/equations.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Equations 🧾</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-nomenclature-dictionary">Accessing <code class="docutils literal notranslate"><span class="pre">NOMENCLATURE</span></code> Dictionary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comments">Comments 💬</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Developed by Hiesab. Third-party components are copyrighted by their respective authors.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

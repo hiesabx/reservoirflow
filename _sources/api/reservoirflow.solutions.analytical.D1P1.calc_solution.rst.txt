@@ -1,0 +1,6 @@
+reservoirflow.solutions.analytical.D1P1.calc\_solution
+======================================================
+
+.. currentmodule:: reservoirflow.solutions.analytical
+
+.. automethod:: D1P1.calc_solution

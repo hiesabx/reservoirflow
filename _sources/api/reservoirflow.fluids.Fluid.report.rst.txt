@@ -1,0 +1,6 @@
+reservoirflow.fluids.Fluid.report
+=================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: Fluid.report

@@ -1,0 +1,6 @@
+reservoirflow.scalers.Scaler.inverse\_transform
+===============================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. automethod:: Scaler.inverse_transform

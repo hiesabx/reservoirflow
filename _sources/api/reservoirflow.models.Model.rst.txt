@@ -1,0 +1,71 @@
+Model
+=====
+
+.. currentmodule:: reservoirflow.models
+
+.. autoclass:: Model
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~Model.factors
+      
+      
+        ~Model.name
+      
+      
+        ~Model.unit
+      
+      
+        ~Model.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Model.allow_synonyms
+      
+      
+        ~Model.compile
+      
+      
+        ~Model.get_solutions
+      
+      
+        ~Model.report
+      
+      
+        ~Model.run
+      
+      
+        ~Model.set_comp
+      
+      
+        ~Model.set_solution
+      
+      
+        ~Model.set_units
+      
+      
+        ~Model.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

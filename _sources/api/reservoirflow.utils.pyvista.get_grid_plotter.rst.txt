@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.get\_grid\_plotter
+==============================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: get_grid_plotter

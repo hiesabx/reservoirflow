@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.unit
+==================================
+
+.. currentmodule:: reservoirflow.models
+
+.. autoattribute:: BlackOil.unit

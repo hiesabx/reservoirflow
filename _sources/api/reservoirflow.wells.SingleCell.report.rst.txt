@@ -1,0 +1,6 @@
+reservoirflow.wells.SingleCell.report
+=====================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. automethod:: SingleCell.report

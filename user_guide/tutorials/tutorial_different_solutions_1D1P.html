@@ -1,0 +1,1238 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Different Solutions for 1-Dimensional-1-Phase Problem &#8212; ReservoirFlow 0.1.0b3</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8e8a900e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=5ff7f2d6" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=55cca537"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=00435c62"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/tutorials/tutorial_different_solutions_1D1P';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = '_static/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../../_static/RF_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/RF_logo.png" class="logo__image only-light" alt="ReservoirFlow 0.1.0b3 - Home"/>
+    <script>document.write(`<img src="../../_static/RF_logo.png" class="logo__image only-dark" alt="ReservoirFlow 0.1.0b3 - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../research_development/research_development.html">
+    R&D
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../capabilities.html">
+    Capabilities
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/API.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../community/community.html">
+    Community
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../support_us.html">
+    Support Us
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../about_us.html">
+    About Us
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../release_notes/release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/hiesabx/reservoirflow" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.hiesab.com/en/products/reservoirflow/" title="Website" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-link fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Website</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.linkedin.com/company/hiesab/" title="LinkedIn" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-linkedin-in fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">LinkedIn</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../research_development/research_development.html">
+    R&D
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../capabilities.html">
+    Capabilities
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/API.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../community/community.html">
+    Community
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../support_us.html">
+    Support Us
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about_us.html">
+    About Us
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes/release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/hiesabx/reservoirflow" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.hiesab.com/en/products/reservoirflow/" title="Website" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-link fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Website</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.linkedin.com/company/hiesab/" title="LinkedIn" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-linkedin-in fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">LinkedIn</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Different...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="different-solutions-for-1-dimensional-1-phase-problem">
+<h1>Different Solutions for 1-Dimensional-1-Phase Problem<a class="headerlink" href="#different-solutions-for-1-dimensional-1-phase-problem" title="Link to this heading">#</a></h1>
+<p><a class="reference external" href="https://drive.google.com/file/d/1-5ztISn_pEuNjBWLEckyimFk1pDJf9wc/view?usp=drive_link&amp;amp;target=_blank"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<p><em>Author: Zakariya Abugrin | Date: May 2025</em></p>
+<div class="cell tag_remove-input docutils container">
+</div>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p>The solution for a simple 1-dimensional-1-phase (1D1P) problem is available in all solutions which includes: <code class="docutils literal notranslate"><span class="pre">analytical</span></code>, <code class="docutils literal notranslate"><span class="pre">numerical</span></code>, <code class="docutils literal notranslate"><span class="pre">neurical</span></code>. In tutorial, we will see how we can build all solutions and compare them together.</p>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites:<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>Before you can follow this tutorial, you need to understand the following tutorials:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="/user_guide/tutorials/tutorial_understand_scalers_module.html">Understand scalers Module</a>.</p></li>
+<li><p><a class="reference external" href="/user_guide/tutorials/tutorial_understand_compiling.html">Understand Compiling</a>.</p></li>
+</ol>
+</section>
+<section id="import-reservoirflow">
+<h2>Import <code class="docutils literal notranslate"><span class="pre">reservoirflow</span></code><a class="headerlink" href="#import-reservoirflow" title="Link to this heading">#</a></h2>
+<p>We start with importing <code class="docutils literal notranslate"><span class="pre">reservoirflow</span></code> as <code class="docutils literal notranslate"><span class="pre">rf</span></code>. The abbreviation <code class="docutils literal notranslate"><span class="pre">rf</span></code> refers to <code class="docutils literal notranslate"><span class="pre">reservoirflow</span></code> where all modules under this library can be accessed. <code class="docutils literal notranslate"><span class="pre">rf</span></code> is also used throughout the <a class="reference external" href="/api/API.html">documentation</a>. We recommend our users to stick with this convention.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span> <span class="nn">reservoirflow</span> <span class="k">as</span> <span class="nn">rf</span>
+<span class="linenos">2</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="linenos">3</span>
+<span class="linenos">4</span><span class="nb">print</span><span class="p">(</span><span class="n">rf</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.1.0b3
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-a-model">
+<h2>Create a Model<a class="headerlink" href="#create-a-model" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">run_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="linenos">2</span>    <span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="linenos">3</span>    <span class="n">threading</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="linenos">4</span>    <span class="n">vectorize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="linenos">5</span>    <span class="n">check_MB</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="linenos">6</span>    <span class="n">print_arrays</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">7</span>    <span class="n">isolver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1">#&#39;cgs&#39;,</span>
+<span class="linenos">8</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">nx</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span> <span class="n">n_w</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="k">if</span> <span class="n">comp</span><span class="p">:</span>
+<span class="linenos"> 3</span>        <span class="n">g_comp</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">6</span>
+<span class="linenos"> 4</span>        <span class="n">f_comp</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">5</span>
+<span class="linenos"> 5</span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos"> 6</span>        <span class="n">g_comp</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos"> 7</span>        <span class="n">f_comp</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>    <span class="n">grid</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">RegularCartesian</span><span class="p">(</span>
+<span class="linenos">10</span>        <span class="n">nx</span><span class="o">=</span><span class="n">nx</span><span class="p">,</span>
+<span class="linenos">11</span>        <span class="n">ny</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">12</span>        <span class="n">nz</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">13</span>        <span class="n">dx</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+<span class="linenos">14</span>        <span class="n">dy</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span>
+<span class="linenos">15</span>        <span class="n">dz</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+<span class="linenos">16</span>        <span class="n">phi</span><span class="o">=</span><span class="mf">0.27</span><span class="p">,</span>
+<span class="linenos">17</span>        <span class="n">kx</span><span class="o">=</span><span class="mi">270</span><span class="p">,</span>
+<span class="linenos">18</span>        <span class="n">comp</span><span class="o">=</span><span class="n">g_comp</span><span class="p">,</span>
+<span class="linenos">19</span>        <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;double&quot;</span><span class="p">,</span>
+<span class="linenos">20</span>    <span class="p">)</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>    <span class="n">fluid</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">fluids</span><span class="o">.</span><span class="n">SinglePhase</span><span class="p">(</span>
+<span class="linenos">23</span>        <span class="n">mu</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="linenos">24</span>        <span class="n">B</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">25</span>        <span class="n">comp</span><span class="o">=</span><span class="n">f_comp</span><span class="p">,</span>
+<span class="linenos">26</span>        <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;double&quot;</span><span class="p">,</span>
+<span class="linenos">27</span>    <span class="p">)</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span>    <span class="n">model</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">BlackOil</span><span class="p">(</span>
+<span class="linenos">30</span>        <span class="n">grid</span><span class="p">,</span> <span class="n">fluid</span><span class="p">,</span> <span class="n">pi</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;double&quot;</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+<span class="linenos">31</span>    <span class="p">)</span>
+<span class="linenos">32</span>    <span class="k">if</span> <span class="n">n_w</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<span class="linenos">33</span>        <span class="n">well_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">([</span><span class="n">nx</span> <span class="o">//</span> <span class="p">(</span><span class="n">n_w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_w</span><span class="p">)])</span>
+<span class="linenos">34</span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Wells_ids:&quot;</span><span class="p">,</span> <span class="n">well_ids</span><span class="p">)</span>
+<span class="linenos">35</span>        <span class="k">for</span> <span class="n">well_id</span> <span class="ow">in</span> <span class="n">well_ids</span><span class="p">:</span>
+<span class="linenos">36</span>            <span class="c1"># model.set_well(id=well_id, q=-600, s=1.5, r=3.5)</span>
+<span class="linenos">37</span>            <span class="n">model</span><span class="o">.</span><span class="n">set_well</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">well_id</span><span class="p">,</span> <span class="n">pwf</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">3.5</span><span class="p">)</span>
+<span class="linenos">38</span>        <span class="n">model</span><span class="o">.</span><span class="n">set_boundaries</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="mi">4000</span><span class="p">),</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)})</span>
+<span class="linenos">39</span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos">40</span>        <span class="n">model</span><span class="o">.</span><span class="n">set_boundaries</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="mi">4000</span><span class="p">),</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)})</span>
+<span class="linenos">41</span>        <span class="c1"># model.set_boundaries({0: (&quot;pressure&quot;, 1000), nx+1: (&quot;pressure&quot;, 4000)})</span>
+<span class="linenos">42</span>
+<span class="linenos">43</span>    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="n">n_w</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;analytical&quot;</span><span class="p">,</span> <span class="s2">&quot;1D1P&quot;</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+<span class="linenos">3</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[info] D1P1 was assigned as model.solution.
+[info] Simulation run started: 100 timesteps.
+</pre></div>
+</div>
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">line</span> <span class="mi">2</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;analytical&quot;</span><span class="p">,</span> <span class="s2">&quot;1D1P&quot;</span><span class="p">)</span>
+<span class="ne">----&gt; </span><span class="mi">2</span> <span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.11.9/x64/lib/python3.11/site-packages/reservoirflow/solutions/analytical/d1p1.py:172,</span> in <span class="ni">D1P1.run</span><span class="nt">(self, nsteps, threading, vectorize, check_MB, print_arrays, isolver)</span>
+<span class="g g-Whitespace">    </span><span class="mi">167</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">168</span>     <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[step] </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">169</span>     <span class="n">pDsum</span> <span class="o">+=</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">170</span>         <span class="p">(</span><span class="n">pDi0</span> <span class="o">/</span> <span class="n">n</span> <span class="o">+</span> <span class="n">pDin</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">171</span>         <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">xDpi</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">172</span>         <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">tDpi</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">173</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">174</span> <span class="n">pD</span> <span class="o">=</span> <span class="n">pD0</span> <span class="o">+</span> <span class="p">(</span><span class="n">pDn</span> <span class="o">-</span> <span class="n">pD0</span><span class="p">)</span> <span class="o">*</span> <span class="n">xD_values</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">pDsum</span>
+<span class="g g-Whitespace">    </span><span class="mi">176</span> <span class="c1"># Remove values out of range:</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">tstep</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">pressures</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">pressures</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(10403, 103)
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[4000.        , 4000.        , 4000.        , ..., 3989.27771411,
+        3950.1025607 , 1000.        ],
+       [4000.        , 4000.        , 4000.        , ..., 3989.27771411,
+        3950.1025607 , 1000.        ],
+       [4000.        , 4000.        , 4000.        , ..., 3989.27771411,
+        3950.1025607 , 1000.        ],
+       ...,
+       [4000.        , 3987.62120047, 3975.22754443, ..., 1094.710814  ,
+        1047.36457992, 1000.        ],
+       [4000.        , 3987.62120047, 3975.22754443, ..., 1094.710814  ,
+        1047.36457992, 1000.        ],
+       [4000.        , 3987.62120047, 3975.22754443, ..., 1094.710814  ,
+        1047.36457992, 1000.        ]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_df</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;cells_pressure&#39;</span><span class="p">])</span>
+<span class="linenos">2</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([4000.        , 3987.62120047, 3975.22754443, 3962.80418455,
+       3950.33629191, 3937.80906523, 3925.20774013, 3912.51759838,
+       3899.72397729, 3886.81227908, 3873.76798032, 3860.5766415 ,
+       3847.22391657, 3833.69556269, 3819.97744994, 3806.05557125,
+       3791.9160523 , 3777.54516163, 3762.92932079, 3748.05511461,
+       3732.90930155, 3717.47882423, 3701.75081996, 3685.71263141,
+       3669.35181742, 3652.65616382, 3635.61369437, 3618.21268178,
+       3600.44165879, 3582.28942927, 3563.74507944, 3544.79798904,
+       3525.43784254, 3505.65464042, 3485.43871032, 3464.78071827,
+       3443.67167978, 3422.10297094, 3400.06633939, 3377.5539152 ,
+       3354.5582216 , 3331.07218558, 3307.08914832, 3282.6028754 ,
+       3257.60756679, 3232.09786664, 3206.06887271, 3179.51614561,
+       3152.4357176 , 3124.82410116, 3096.67829707, 3067.99580221,
+       3038.77461681, 3009.01325134, 2978.71073286, 2947.86661095,
+       2916.480963  , 2884.55439906, 2852.08806601, 2819.08365124,
+       2785.54338564, 2751.47004598, 2716.8669566 , 2681.73799048,
+       2646.08756958, 2609.92066447, 2573.24279323, 2536.06001966,
+       2498.37895069, 2460.20673302, 2421.5510491 , 2382.42011218,
+       2342.82266071, 2302.76795192, 2262.26575455, 2221.32634094,
+       2179.9604782 , 2138.17941868, 2095.99488966, 2053.41908228,
+       2010.46463971, 1967.14464456, 1923.47260565, 1879.46244395,
+       1835.12847793, 1790.48540819, 1745.54830146, 1700.33257394,
+       1654.85397407, 1609.12856474, 1563.17270485, 1517.00303054,
+       1470.6364357 , 1424.09005221, 1377.38122968, 1330.52751479,
+       1283.54663031, 1236.45645378, 1189.27499593, 1142.02037886,
+       1094.710814  , 1047.36457992, 1000.        ])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;numerical&quot;</span><span class="p">,</span> <span class="s2">&quot;FDM&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[info] FDM was assigned as model.solution.
+[info] Simulation run started: 100 timesteps.
+[info] Simulation run of 100 steps finished in 0.3 seconds.
+[info] Material Balance Error: 7.602807272633072e-13.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">pressures</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">pressures</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(101, 103)
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[4000.        , 4000.        , 4000.        , ..., 4000.        ,
+        4000.        , 1000.        ],
+       [4000.        , 4000.        , 4000.        , ..., 2044.30826038,
+        1415.49650699, 1000.        ],
+       [4000.        , 3999.99999999, 3999.99999998, ..., 1619.25974855,
+        1211.73326543, 1000.        ],
+       ...,
+       [4000.        , 3993.79351118, 3981.37292285, ..., 1072.05192067,
+        1024.0205196 , 1000.        ],
+       [4000.        , 3993.69696822, 3981.08335228, ..., 1071.68835969,
+        1023.89928132, 1000.        ],
+       [4000.        , 3993.60118203, 3980.7960529 , ..., 1071.33055675,
+        1023.77996359, 1000.        ]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;numerical&quot;</span><span class="p">,</span> <span class="s2">&quot;FDM&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[info] FDM was assigned as model.solution.
+[info] Simulation run started: 100 timesteps.
+[info] Simulation run of 100 steps finished in 0.6 seconds.
+[info] Material Balance Error: 7.600586826583822e-13.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">pressures</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">pressures</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(101, 103)
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[4000.        , 4000.        , 4000.        , ..., 4000.        ,
+        4000.        , 1000.        ],
+       [4000.        , 4000.        , 4000.        , ..., 2044.30826038,
+        1415.49650699, 1000.        ],
+       [4000.        , 3999.99999999, 3999.99999998, ..., 1619.25974855,
+        1211.73326543, 1000.        ],
+       ...,
+       [4000.        , 3993.79351118, 3981.37292285, ..., 1072.05192067,
+        1024.0205196 , 1000.        ],
+       [4000.        , 3993.69696822, 3981.08335228, ..., 1071.68835969,
+        1023.89928132, 1000.        ],
+       [4000.        , 3993.60118203, 3980.7960529 , ..., 1071.33055675,
+        1023.77996359, 1000.        ]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">solutions</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;BlackOil-analytical-D1P1-True&#39;: &lt;reservoirflow.solutions.analytical.d1p1.D1P1 at 0x22a82c46f90&gt;,
+ &#39;BlackOil-numerical-FDM-True&#39;: &lt;reservoirflow.solutions.numerical.fdm.FDM at 0x22afa20a250&gt;,
+ &#39;BlackOil-numerical-FDM-False&#39;: &lt;reservoirflow.solutions.numerical.fdm.FDM at 0x22a8284a790&gt;}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solutions</span><span class="p">[</span><span class="s1">&#39;BlackOil-numerical-FDM-False&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
+<span class="linenos">2</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solutions</span><span class="p">[</span><span class="s1">&#39;BlackOil-numerical-FDM-True&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>101
+101
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">repr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">compiler</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&quot;rf.solutions.Compiler(model=&#39;BlackOil&#39;, stype=&#39;numerical&#39;, method=&#39;FDM&#39;, sparse=False)&quot;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="nb">repr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;&lt;reservoirflow.solutions.numerical.fdm.FDM object at 0x0000022A8284A790&gt;&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">set_solution</span><span class="p">(</span><span class="s1">&#39;BlackOil-numerical-FDM-True&#39;</span><span class="p">)</span>
+<span class="linenos">2</span><span class="nb">repr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">solution</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;&lt;reservoirflow.solutions.numerical.fdm.FDM object at 0x0000022AFA20A250&gt;&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">compiler</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>rf.solutions.Compiler(model=&#39;BlackOil&#39;, stype=&#39;numerical&#39;, method=&#39;FDM&#39;, sparse=True)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1"># eval(repr(model.compiler))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">help</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Help on method run in module reservoirflow.solutions.analytical.d1p1:
+
+run(nsteps=10, threading=True, vectorize=True, check_MB=True, print_arrays=False, isolver=None) method of reservoirflow.solutions.analytical.d1p1.D1P1 instance
+    Solve multiple timesteps.
+    
+    .. attention::
+        This is an abstract method.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">run_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[info] Simulation run started: 100 timesteps.
+[info] Simulation run of 100 steps finished in 59.21 seconds.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="k">def</span> <span class="nf">logarithmic_scaling</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">min_range</span><span class="p">,</span> <span class="n">max_range</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="linenos"> 5</span>    <span class="n">scaled_value</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos"> 6</span>        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="n">c</span><span class="p">))</span>
+<span class="linenos"> 7</span>        <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="n">c</span><span class="p">))</span>
+<span class="linenos"> 8</span>    <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_range</span> <span class="o">-</span> <span class="n">min_range</span><span class="p">)</span> <span class="o">+</span> <span class="n">min_range</span>
+<span class="linenos"> 9</span>    <span class="k">return</span> <span class="n">scaled_value</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="c1"># Example usage</span>
+<span class="linenos">13</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="n">min_range</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Replace with your desired minimum range</span>
+<span class="linenos">16</span><span class="n">max_range</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Replace with your desired maximum range</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="n">scaled_X</span> <span class="o">=</span> <span class="n">logarithmic_scaling</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">min_range</span><span class="p">,</span> <span class="n">max_range</span><span class="p">)</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span><span class="nb">print</span><span class="p">(</span><span class="n">scaled_X</span><span class="p">)</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span><span class="k">def</span> <span class="nf">inverse_logarithmic_scaling</span><span class="p">(</span><span class="n">scaled_value</span><span class="p">,</span> <span class="n">min_range</span><span class="p">,</span> <span class="n">max_range</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="linenos">24</span>    <span class="n">original_value</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos">25</span>        <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+<span class="linenos">26</span>            <span class="p">(</span>
+<span class="linenos">27</span>                <span class="p">(</span><span class="n">scaled_value</span> <span class="o">-</span> <span class="n">min_range</span><span class="p">)</span>
+<span class="linenos">28</span>                <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="n">c</span><span class="p">))</span>
+<span class="linenos">29</span>                <span class="o">/</span> <span class="p">(</span><span class="n">max_range</span> <span class="o">-</span> <span class="n">min_range</span><span class="p">)</span>
+<span class="linenos">30</span>            <span class="p">)</span>
+<span class="linenos">31</span>            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span>
+<span class="linenos">32</span>        <span class="p">)</span>
+<span class="linenos">33</span>        <span class="o">-</span> <span class="n">c</span>
+<span class="linenos">34</span>    <span class="p">)</span>
+<span class="linenos">35</span>    <span class="k">return</span> <span class="n">original_value</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>
+<span class="linenos">38</span><span class="c1"># Example usage</span>
+<span class="linenos">39</span><span class="n">scaled_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># Replace with your scaled values</span>
+<span class="linenos">40</span><span class="n">min_range</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Replace with your specified minimum range</span>
+<span class="linenos">41</span><span class="n">max_range</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Replace with your specified maximum range</span>
+<span class="linenos">42</span>
+<span class="linenos">43</span><span class="n">original_X</span> <span class="o">=</span> <span class="n">inverse_logarithmic_scaling</span><span class="p">(</span><span class="n">scaled_X</span><span class="p">,</span> <span class="n">min_range</span><span class="p">,</span> <span class="n">max_range</span><span class="p">)</span>
+<span class="linenos">44</span>
+<span class="linenos">45</span><span class="nb">print</span><span class="p">(</span><span class="n">original_X</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0.         0.27426894 0.63098792 1.        ]
+[   1.           43.74371464  287.77079009 1000.        ]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="comments">
+<h2>Comments 💬<a class="headerlink" href="#comments" title="Link to this heading">#</a></h2>
+<!---
+- usage in rst files:
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_
+
+- usage in ipynb files:
+```{include} /_static/comments_section.md
+```
+-->
+<p>Feel free to make a comment, ask a question, or share your opinion about this specific content.
+Please keep in mind the <a class="reference external" href="/community/commenting_guidelines.html">Commenting Guidelines ⚖</a>.</p>
+    <script>
+        let giscusTheme = localStorage.theme;
+        let giscusAttributes = {
+            "src": "https://giscus.app/client.js",
+            "data-repo": "hiesabx/reservoirflow",
+            "data-repo-id": "R_kgDOG3v41g",
+            "data-category": "Documentation",
+            "data-category-id": "DIC_kwDOG3v41s4CpxFL",
+            "data-mapping": "pathname",
+            "data-strict": "1",
+            "data-reactions-enabled": "1",
+            "data-emit-metadata": "0",
+            "data-input-position": "bottom",
+            "data-theme": giscusTheme,
+            "data-lang": "en",
+            "data-loading": "lazy",
+            "crossorigin": "anonymous",
+            "async": ""};
+        let giscusScript = document.createElement("script");
+        Object.entries(giscusAttributes).forEach(([key, value]) => giscusScript.setAttribute(key, value));
+        document.getElementById("comments").appendChild(giscusScript);
+    </script><!---
+```{raw} html
+---
+class: only-light
+---
+    <script src="https://giscus.app/client.js"
+        data-repo="hiesabx/reservoirflow_comments"
+        data-repo-id="R_kgDOKTqNNg"
+        data-category="General"
+        data-category-id="DIC_kwDOKTqNNs4Cgs8l"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+    >
+    </script>
+```
+
+```{raw} html
+---
+class: only-dark
+---
+    <script src="https://giscus.app/client.js"
+        data-repo="hiesabx/reservoirflow_comments"
+        data-repo-id="R_kgDOKTqNNg"
+        data-category="General"
+        data-category-id="DIC_kwDOKTqNNs4Cgs8l"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+    >
+    </script>
+```
+
+
+```{raw} html
+---
+class: only-dark
+---
+    <script 
+        type="text/javascript"
+        src="https://utteranc.es/client.js"
+        async="async"
+        repo="hiesabx/reservoirflow_comments"
+        issue-term="pathname"
+        theme="github-dark"
+        label="comments 💬"
+        crossorigin="anonymous"
+    >
+    </script>
+```
+
+```{raw} html
+---
+class: only-light
+---
+    <script 
+        type="text/javascript"
+        src="https://utteranc.es/client.js"
+        async="async"
+        repo="hiesabx/reservoirflow_comments"
+        issue-term="pathname"
+        theme="github-light"
+        label="comments 💬"
+        crossorigin="anonymous"
+    >
+    </script>
+```
+-->
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#import-reservoirflow">Import <code class="docutils literal notranslate"><span class="pre">reservoirflow</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-model">Create a Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comments">Comments 💬</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Developed by Hiesab. Third-party components are copyrighted by their respective authors.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

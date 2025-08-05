@@ -1,0 +1,56 @@
+IrregularCartesian
+==================
+
+.. currentmodule:: reservoirflow.grids
+
+.. autoclass:: IrregularCartesian
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~IrregularCartesian.factors
+      
+      
+        ~IrregularCartesian.name
+      
+      
+        ~IrregularCartesian.unit
+      
+      
+        ~IrregularCartesian.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~IrregularCartesian.allow_synonyms
+      
+      
+        ~IrregularCartesian.report
+      
+      
+        ~IrregularCartesian.set_comp
+      
+      
+        ~IrregularCartesian.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

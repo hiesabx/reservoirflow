@@ -1,0 +1,6 @@
+reservoirflow.models.Model.units
+================================
+
+.. currentmodule:: reservoirflow.models
+
+.. autoattribute:: Model.units

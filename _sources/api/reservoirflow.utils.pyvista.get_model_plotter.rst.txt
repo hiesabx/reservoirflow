@@ -1,0 +1,6 @@
+reservoirflow.utils.pyvista.get\_model\_plotter
+===============================================
+
+.. currentmodule:: reservoirflow.utils.pyvista
+
+.. autofunction:: get_model_plotter

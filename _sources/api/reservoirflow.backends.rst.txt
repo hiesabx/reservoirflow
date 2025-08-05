@@ -1,0 +1,41 @@
+backends
+======================
+
+.. automodule:: reservoirflow.backends
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      Backend
+      NumPy
+      PyTorch
+      TensorFlow
+      JAX
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

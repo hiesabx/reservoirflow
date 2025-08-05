@@ -1,0 +1,13 @@
+[
+    {
+        "name": "dev",
+        "version": "dev",
+        "url": "/index.html"
+    },
+    {
+        "name": "0.1 (latest)",
+        "version": "0.1",
+        "url": "/index.html",
+        "preferred": true
+    }
+]

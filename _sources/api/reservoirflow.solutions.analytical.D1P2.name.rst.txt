@@ -1,0 +1,6 @@
+reservoirflow.solutions.analytical.D1P2.name
+============================================
+
+.. currentmodule:: reservoirflow.solutions.analytical
+
+.. autoattribute:: D1P2.name

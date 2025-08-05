@@ -1,0 +1,48 @@
+numerical
+=================================
+
+.. automodule:: reservoirflow.solutions.numerical
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      FDM
+      FVM
+      FEM
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module_custom.rst
+   :recursive:
+
+   reservoirflow.solutions.numerical.solvers
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

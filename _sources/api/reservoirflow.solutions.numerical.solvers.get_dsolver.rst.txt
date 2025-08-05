@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.solvers.get\_dsolver
+======================================================
+
+.. currentmodule:: reservoirflow.solutions.numerical.solvers
+
+.. autofunction:: get_dsolver

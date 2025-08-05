@@ -1,0 +1,6 @@
+reservoirflow.grids.RegularCartesian.get\_fdir
+==============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: RegularCartesian.get_fdir

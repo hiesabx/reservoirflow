@@ -1,0 +1,6 @@
+reservoirflow.wells.Directional.name
+====================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: Directional.name

@@ -1,0 +1,39 @@
+scalers
+=====================
+
+.. automodule:: reservoirflow.scalers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: class_custom.rst
+   
+      Scaler
+      Dummy
+      MinMax
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

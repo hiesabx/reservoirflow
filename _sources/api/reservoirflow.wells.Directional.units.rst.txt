@@ -1,0 +1,6 @@
+reservoirflow.wells.Directional.units
+=====================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: Directional.units

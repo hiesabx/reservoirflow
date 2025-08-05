@@ -1,0 +1,6 @@
+reservoirflow.backends.NumPy.transpose
+======================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: NumPy.transpose

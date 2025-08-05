@@ -1,0 +1,6 @@
+reservoirflow.scalers.MinMax.name
+=================================
+
+.. currentmodule:: reservoirflow.scalers
+
+.. autoattribute:: MinMax.name

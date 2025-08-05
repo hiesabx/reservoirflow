@@ -1,0 +1,6 @@
+reservoirflow.grids.IrregularCartesian.report
+=============================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: IrregularCartesian.report

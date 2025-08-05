@@ -1,0 +1,6 @@
+reservoirflow.backends.PyTorch.transpose
+========================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. automethod:: PyTorch.transpose

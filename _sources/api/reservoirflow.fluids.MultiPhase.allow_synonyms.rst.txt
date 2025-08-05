@@ -1,0 +1,6 @@
+reservoirflow.fluids.MultiPhase.allow\_synonyms
+===============================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: MultiPhase.allow_synonyms

@@ -1,0 +1,32 @@
+Backend
+=======
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoclass:: Backend
+   :show-inheritance:
+   
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~Backend.ones
+      
+      
+        ~Backend.transpose
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

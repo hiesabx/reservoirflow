@@ -1,0 +1,227 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Access Nomenclature\n",
+    "\n",
+    "*Author: Zakariya Abugrin | Date: December 2023*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In `reservoirflow`, similar to `UNITS` and `FACTORS`, `NOMENCLATURE` is defined as global dictionary. `NOMENCLATURE` is used to build the documentation and also to define the terms used to develop the mathematical models. This tutorial shows how to access this dictionary."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.1.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "import reservoirflow as rf\n",
+    "\n",
+    "print(rf.__version__)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Accessing `NOMENCLATURE` Dictionary"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Since `NOMENCLATURE` is a dictionary, keys represent the 2 categories and can be accessed as following:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "dict_keys(['abbreviation', 'symbol'])"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rf.NOMENCLATURE.keys()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The `'abbreviation'` key can be used as following:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'transmissibility': 'trans',\n",
+       " 'error': 'err',\n",
+       " 'pressure': 'press',\n",
+       " 'potential': 'poten',\n",
+       " 'time': 't',\n",
+       " 'rate': 'q',\n",
+       " 'length': 'L',\n",
+       " 'area': 'A',\n",
+       " 'volume': 'V',\n",
+       " 'permeability': 'perm',\n",
+       " 'viscosity': 'mu',\n",
+       " 'gas formation volume factor': 'FVFg',\n",
+       " 'liquid formation volume factor': 'FVFl',\n",
+       " 'water formation volume factor': 'FVFw',\n",
+       " 'oil formation volume factor': 'FVFo',\n",
+       " 'solution gas oil ratio': 'GORs',\n",
+       " 'phase gravity': 'gamma phase',\n",
+       " 'gas flow rate': 'Qg',\n",
+       " 'liquid flow rate': 'Ql',\n",
+       " 'water flow rate': 'Qw',\n",
+       " 'oil flow rate': 'Qo',\n",
+       " 'volumetric velocity': 'u',\n",
+       " 'density': 'rho',\n",
+       " 'compressibility': 'comp',\n",
+       " 'compressibility factor': 'z',\n",
+       " 'temperature': 'temp',\n",
+       " 'porosity': 'phi',\n",
+       " 'saturation': 'sat',\n",
+       " 'relative permeability': 'relperm',\n",
+       " 'angle': 'theta',\n",
+       " 'gravitational acceleration': 'g',\n",
+       " 'transmissibility conversion': 'beta constant',\n",
+       " 'gravity conversion': 'gamma constant',\n",
+       " 'volume conversion': 'alpha constant'}"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rf.NOMENCLATURE[\"abbreviation\"]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "while the `'symbol'` key can be used as following:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'transmissibility': 'T',\n",
+       " 'error': 'e',\n",
+       " 'pressure': 'p',\n",
+       " 'potential': '\\\\Phi',\n",
+       " 'time': 't',\n",
+       " 'rate': 'q',\n",
+       " 'length': 'L',\n",
+       " 'area': 'A',\n",
+       " 'volume': 'V',\n",
+       " 'permeability': 'k',\n",
+       " 'viscosity': '\\\\mu',\n",
+       " 'gas formation volume factor': 'B_g',\n",
+       " 'liquid formation volume factor': 'B_l',\n",
+       " 'water formation volume factor': 'B_w',\n",
+       " 'oil formation volume factor': 'B_o',\n",
+       " 'solution gas oil ratio': 'R_s',\n",
+       " 'phase gravity': '\\\\gamma_p',\n",
+       " 'gas flow rate': 'q_g',\n",
+       " 'liquid flow rate': 'q_l',\n",
+       " 'water flow rate': 'q_w',\n",
+       " 'oil flow rate': 'q_o',\n",
+       " 'volumetric velocity': 'u',\n",
+       " 'density': '\\\\rho',\n",
+       " 'compressibility': 'c',\n",
+       " 'compressibility factor': 'z',\n",
+       " 'temperature': '-',\n",
+       " 'porosity': '\\\\phi',\n",
+       " 'saturation': 'S',\n",
+       " 'relative permeability': 'k_r',\n",
+       " 'angle': '\\\\theta',\n",
+       " 'gravitational acceleration': 'g',\n",
+       " 'transmissibility conversion': '\\\\beta_c',\n",
+       " 'gravity conversion': '\\\\gamma_c',\n",
+       " 'volume conversion': '\\\\alpha_c'}"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rf.NOMENCLATURE[\"symbol\"]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "tags": [
+     "remove-input"
+    ]
+   },
+   "source": [
+    "```{include} /_static/comments_section.md\n",
+    "```"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.11"
+  },
+  "orig_nbformat": 4
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

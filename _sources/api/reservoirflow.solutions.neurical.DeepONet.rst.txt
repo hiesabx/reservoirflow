@@ -1,0 +1,41 @@
+DeepONet
+========
+
+.. currentmodule:: reservoirflow.solutions.neurical
+
+.. autoclass:: DeepONet
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~DeepONet.name
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~DeepONet.run
+      
+      
+        ~DeepONet.solve
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst

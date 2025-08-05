@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.solve
+===================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.solve

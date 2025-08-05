@@ -1,0 +1,6 @@
+reservoirflow.utils.profme.cProfiler
+====================================
+
+.. currentmodule:: reservoirflow.utils.profme
+
+.. autofunction:: cProfiler

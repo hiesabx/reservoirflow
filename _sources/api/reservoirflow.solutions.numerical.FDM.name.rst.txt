@@ -1,0 +1,6 @@
+reservoirflow.solutions.numerical.FDM.name
+==========================================
+
+.. currentmodule:: reservoirflow.solutions.numerical
+
+.. autoattribute:: FDM.name

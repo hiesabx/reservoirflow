@@ -1,0 +1,6 @@
+reservoirflow.models.Model.allow\_synonyms
+==========================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: Model.allow_synonyms

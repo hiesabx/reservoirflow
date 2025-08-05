@@ -1,0 +1,6 @@
+reservoirflow.fluids.MultiPhase.report
+======================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: MultiPhase.report

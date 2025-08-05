@@ -1,0 +1,6 @@
+reservoirflow.fluids.SinglePhase.set\_rho
+=========================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. automethod:: SinglePhase.set_rho

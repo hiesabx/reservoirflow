@@ -1,0 +1,6 @@
+reservoirflow.backends.PyTorch.name
+===================================
+
+.. currentmodule:: reservoirflow.backends
+
+.. autoattribute:: PyTorch.name

@@ -1,0 +1,6 @@
+reservoirflow.wells.SingleCell.allow\_synonyms
+==============================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. automethod:: SingleCell.allow_synonyms

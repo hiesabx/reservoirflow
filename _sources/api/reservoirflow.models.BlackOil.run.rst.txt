@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.run
+=================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.run

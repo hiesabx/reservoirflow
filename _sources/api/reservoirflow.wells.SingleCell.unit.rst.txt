@@ -1,0 +1,6 @@
+reservoirflow.wells.SingleCell.unit
+===================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: SingleCell.unit

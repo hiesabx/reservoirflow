@@ -1,0 +1,6 @@
+reservoirflow.wells.Well.name
+=============================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: Well.name

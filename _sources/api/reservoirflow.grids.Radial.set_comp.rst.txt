@@ -1,0 +1,6 @@
+reservoirflow.grids.Radial.set\_comp
+====================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: Radial.set_comp

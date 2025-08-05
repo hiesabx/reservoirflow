@@ -1,0 +1,6 @@
+reservoirflow.wells.Directional.factors
+=======================================
+
+.. currentmodule:: reservoirflow.wells
+
+.. autoattribute:: Directional.factors

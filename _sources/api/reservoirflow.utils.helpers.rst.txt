@@ -1,0 +1,48 @@
+helpers
+===========================
+
+.. automodule:: reservoirflow.utils.helpers
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      fshape_warn
+      get_boundary_str
+      get_fshape_str
+      get_points_str
+      get_verbose_str
+      intersection
+      isin
+      ispoints
+      issametype
+      lru_cache
+      reformat
+      remove_diag
+      shape_error
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+
+
+|
+
+.. include:: /_static/comments_section.md
+   :parser: myst_parser.sphinx_

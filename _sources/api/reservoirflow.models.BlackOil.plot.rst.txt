@@ -1,0 +1,6 @@
+reservoirflow.models.BlackOil.plot
+==================================
+
+.. currentmodule:: reservoirflow.models
+
+.. automethod:: BlackOil.plot

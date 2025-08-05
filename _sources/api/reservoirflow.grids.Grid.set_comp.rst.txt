@@ -1,0 +1,6 @@
+reservoirflow.grids.Grid.set\_comp
+==================================
+
+.. currentmodule:: reservoirflow.grids
+
+.. automethod:: Grid.set_comp

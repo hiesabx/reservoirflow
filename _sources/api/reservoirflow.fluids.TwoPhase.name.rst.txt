@@ -1,0 +1,6 @@
+reservoirflow.fluids.TwoPhase.name
+==================================
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoattribute:: TwoPhase.name

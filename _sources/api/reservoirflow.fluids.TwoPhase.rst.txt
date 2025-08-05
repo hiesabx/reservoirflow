@@ -1,0 +1,56 @@
+TwoPhase
+========
+
+.. currentmodule:: reservoirflow.fluids
+
+.. autoclass:: TwoPhase
+   :show-inheritance:
+   
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      
+        ~TwoPhase.factors
+      
+      
+        ~TwoPhase.name
+      
+      
+        ~TwoPhase.unit
+      
+      
+        ~TwoPhase.units
+      
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+        ~TwoPhase.allow_synonyms
+      
+      
+        ~TwoPhase.report
+      
+      
+        ~TwoPhase.set_comp
+      
+      
+        ~TwoPhase.set_units
+      
+   
+   
+
+|
+
+.. include:: /_static/comments_section.rst
