@@ -11,6 +11,7 @@ Contents
 
     getting_started/getting_started
     tutorials/tutorials
+    benchmarks/benchmarks
 
 .. toctree::
    :maxdepth: 1
