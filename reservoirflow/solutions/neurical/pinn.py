@@ -20,6 +20,26 @@ from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import ProcessPoolExecutor
 
 
+class RelativeL2Loss(nn.Module):
+    def __init__(self, epsilon=1e-6, reduction="mean"):
+        super(RelativeL2Loss, self).__init__()
+        self.epsilon = epsilon
+        self.reduction = reduction
+
+    def forward(self, y_h, y):
+        # Flatten along all but batch dimension
+        diff = y_h - y
+        num = torch.sum(diff**2, dim=tuple(range(1, diff.dim())))
+        denom = torch.sum(y**2, dim=tuple(range(1, y.dim()))) + self.epsilon
+        rel_loss = num / denom
+        if self.reduction == "mean":
+            return torch.mean(rel_loss)
+        elif self.reduction == "sum":
+            return torch.sum(rel_loss)
+        else:
+            return rel_loss
+
+
 class PINN(Network, nn.Module):
     """PINN solution class.
 
@@ -61,6 +81,7 @@ class PINN(Network, nn.Module):
         self.bias = True
         # self.activation = nn.Tanh  # nn.Tanh, nn.Sigmoid, nn.GELU
         self.loss_func = nn.MSELoss()  # nn.MSELoss, nn.L1Loss
+        # self.loss_func = RelativeL2Loss()  # nn.MSELoss, nn.L1Loss
         self.network = self.get_network()
         # self.network = torch.compile(self.network)
         self.w_y = 0.95  # weight for the training loss
@@ -83,9 +104,9 @@ class PINN(Network, nn.Module):
         return False
 
     def assert_data(self):
-        assert len(self.X_train) == len(self.Y_train), "input length does not match."
-        assert self.X_train.shape[1] == self.neurons[0], "input shape does not match."
-        assert self.Y_train.shape[1] == self.neurons[-1], "output shape does not match."
+        assert len(self.X_data) == len(self.Y_data), "input length does not match."
+        assert self.X_data.shape[1] == self.neurons[0], "input shape does not match."
+        assert self.Y_data.shape[1] == self.neurons[-1], "output shape does not match."
         assert len(self.X_test) == len(self.Y_test), "input length does not match."
         assert self.X_test.shape[1] == self.neurons[0], "input shape does not match."
         assert self.Y_test.shape[1] == self.neurons[-1], "output shape does not match."
@@ -297,17 +318,26 @@ class PINN(Network, nn.Module):
             Total loss, which is the sum of training loss and physics loss.
         """
         # Training loss:
-        loss_y = self.loss_y(self.X_train, self.Y_train)
+        loss_d = self.loss_y(self.X_data, self.Y_data)
         # Physics loss:
         loss_r = self.loss_r(self.X_r)
         # Total loss:
-        return self.w_y * loss_y + self.w_r * loss_r
+        return self.w_d * loss_d + self.w_r * loss_r
 
     def closure(self):
         self.optimizer.zero_grad()
-        loss = self.loss()
-        loss.backward()  # loss.backward(retain_graph=True)
-        return loss
+        # Data loss:
+        l_d = self.loss_y(self.X_data, self.Y_data)
+        # Residual loss:
+        l_r = self.loss_r(self.X_r)
+        # Total loss:
+        l_t = self.w_d * l_d + self.w_r * l_r
+        l_t.backward()  # loss.backward(retain_graph=True)
+        # Update losses:
+        self.l_d = l_d.detach().float().numpy()
+        self.l_r = l_r.detach().float().numpy()
+        self.l_t = l_t.detach().float().numpy()
+        return l_t
 
     def fit(
         self,
@@ -356,26 +386,26 @@ class PINN(Network, nn.Module):
         for epoch in pbar:
             step_start_time = time.time()
             self.epoch = run_epoch + epoch
-            loss_train = self.optimizer.step(self.closure)
-            loss_train = loss_train.detach().float().numpy()
-            loss_r = self.loss_r(self.X_r).detach().float().numpy()
+            self.optimizer.step(self.closure)
             with torch.no_grad():
                 loss_test = self.loss_y_value(self.X_test, self.Y_test)
                 pbar.set_description(
                     (
                         f"[epoch] {epoch} - "
-                        f"[loss train] {loss_train:.6f} - "
+                        f"[loss total] {self.l_t:.6f} - "
                         f"[loss test] {loss_test:.6f} - "
-                        f"[loss residual] {loss_r:.6f}"
+                        f"[loss data] {self.l_d:.6f} - "
+                        f"[loss residual] {self.l_r:.6f}"
                     )
                 )
                 if epoch % freq == 0:
                     self.results["run_id"].append(self.run_id)
                     self.results["epoch"].append(self.epoch)
-                    self.results["loss (train)"].append(loss_train)
+                    self.results["loss (total)"].append(self.l_t)
                     self.results["loss (test)"].append(loss_test)
-                    self.results["loss (residual)"].append(loss_r)
-                    self.results["loss_y + loss_r"].append(loss_train + loss_r)
+                    self.results["loss (data)"].append(self.l_d)
+                    self.results["loss (residual)"].append(self.l_r)
+                    self.results["loss_d + loss_r"].append(self.l_d + self.l_r)
                     self.run_ctime = round(time.time() - step_start_time, 2)
                     self.results["time"].append(self.run_ctime)
                 # if self.early_stop(loss_y_test):
@@ -395,13 +425,23 @@ class PINN(Network, nn.Module):
     def plot(self):
         plt.plot(
             self.results["epoch"],
-            self.results["loss (train)"],
-            label="loss (train)",
+            self.results["loss (total)"],
+            label="loss (total: self.w_y * loss_d + self.w_r * loss_r)",
+        )
+        plt.plot(
+            self.results["epoch"],
+            self.results["loss_d + loss_r"],
+            label="loss (total: loss_d + loss_r)",
         )
         plt.plot(
             self.results["epoch"],
             self.results["loss (test)"],
             label="loss (test)",
+        )
+        plt.plot(
+            self.results["epoch"],
+            self.results["loss (data)"],
+            label="loss (data)",
         )
         plt.plot(
             self.results["epoch"],
@@ -505,8 +545,9 @@ class PINN(Network, nn.Module):
             drop_nan=True,
             shuffle=False,
         )
-        self.X_train = self.as_tensor(X, False)
-        self.Y_train = self.as_tensor(Y, False)
+        self.X_data = self.as_tensor(X, False)
+        self.Y_data = self.as_tensor(Y, False)
+        n_d = self.X_data.shape[0]
 
         # Testing Data: based on a reference solution if available
         if reference is not None:
@@ -539,6 +580,13 @@ class PINN(Network, nn.Module):
             shuffle=False,
         )
         self.X_r = self.as_tensor(X_r, True)
+        n_r = self.X_r.shape[0]
+
+        n_t = n_d + n_r
+        self.w_r = n_d / n_t
+        self.w_d = n_r / n_t
+        print("w_r", self.w_r)
+        print("w_d", self.w_d)
 
         # Differential Factors of the PDE:
         F_px, F_pt, F_q = self.model.get_factors(
@@ -578,8 +626,8 @@ class PINN(Network, nn.Module):
 
         # opts: ["adam", "adamw", "sgd", "adagrad", "rmsprop", "adamax", "adadelta", "lbfgs"]
         self.fit(epochs=100, opt="adam", lr=0.01, weight_decay=1e-6)
-        self.fit(epochs=200, opt="adam", lr=0.001, weight_decay=1e-6)
-        self.fit(epochs=50, opt="lbfgs", lr=0.01)
+        # self.fit(epochs=300, opt="adam", lr=0.001, weight_decay=1e-6)
+        self.fit(epochs=100, opt="lbfgs", lr=0.01)
         # self.fit(epochs=400, opt="adam", lr=0.0001, weight_decay=1e-6)
         # self.fit(epochs=10, opt="lbfgs", lr=0.01)
         # self.fit(epochs=400, opt="adam", lr=0.0001)
