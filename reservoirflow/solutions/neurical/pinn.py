@@ -40,6 +40,17 @@ class RelativeL2Loss(nn.Module):
             return rel_loss
 
 
+# Torch RMSE Implementation: https://github.com/jamiedonnelly/PINNs/blob/main/losses.py
+class RMSELoss(nn.MSELoss):
+    def __init__(self):
+        super(RMSELoss, self).__init__()
+        pass
+
+    def __call__(self, target, predicted):
+        loss = torch.sqrt(super().__call__(target, predicted))
+        return loss
+
+
 class PINN(Network, nn.Module):
     """PINN solution class.
 
@@ -80,7 +91,7 @@ class PINN(Network, nn.Module):
         self.neurons = [2, *[64] * 6, 1]
         self.bias = True
         # self.activation = nn.Tanh  # nn.Tanh, nn.Sigmoid, nn.GELU
-        self.loss_func = nn.MSELoss()  # nn.MSELoss, nn.L1Loss
+        self.loss_func = nn.MSELoss(reduction="mean")  # nn.MSELoss, RMSELoss, nn.L1Loss
         # self.loss_func = RelativeL2Loss()  # nn.MSELoss, nn.L1Loss
         self.network = self.get_network()
         # self.network = torch.compile(self.network)
@@ -460,6 +471,112 @@ class PINN(Network, nn.Module):
     def solve(self):
         raise NotImplementedError
 
+    def generate_data(
+        self,
+        nsteps,
+        scale=True,
+        reference=None,
+    ):
+        # Update nsteps:
+        # self.tstep += nsteps
+        # self.nsteps += nsteps
+        self.tstep = nsteps
+        self.nsteps = nsteps + 1
+        self.model.update_shapes(reset=True)
+
+        # Full Domain as X(t, x):
+        X = self.model.get_X(
+            times_id=None,  # None for all times
+            cells_id=None,  # None for all cells
+            scale=scale,
+            shuffle=False,
+        )
+        self.X = self.as_tensor(X, False)
+        n = self.X.shape[0]
+        print("[info] length of full domain:", n)
+
+        # Training Data: initial and boundary conditions
+        X, Y = self.model.get_data(
+            times_id=0,
+            cells_id=self.model.boundaries_id,
+            scale=scale,
+            drop_nan=True,
+            shuffle=False,
+        )
+        self.X_data = self.as_tensor(X, False)
+        self.Y_data = self.as_tensor(Y, False)
+        n_d = self.X_data.shape[0]
+        print("[info] length of data domain:", n_d)
+
+        # Testing Data: based on a reference solution if available
+        if reference is not None:
+            self.model.set_solution(reference)
+            X, Y = self.model.get_data(
+                times_id=slice(0, -1, 1),
+                cells_id=None,
+                scale=scale,
+                drop_nan=False,
+                shuffle=False,
+            )
+            self.model.set_solution(self.name)
+            self.X_test = self.as_tensor(X, False)
+            self.Y_test = self.as_tensor(Y, False)
+            n_t = self.X.shape[0]
+            print("[info] length of test domain:", n_t)
+
+        # Residual Domain as X(t, x):
+        X_r = self.model.get_X(
+            times_id=slice(0, -1, 1),
+            cells_id=self.model.grid.get_cells_id(boundary=True),
+            scale=scale,
+            shuffle=False,
+        )
+        self.X_r = self.as_tensor(X_r, True)
+        n_r = self.X_r.shape[0]
+        print("[info] length of physics domain:", n_r)
+
+        n_t = n_d + n_r
+        self.w_r = n_d / n_t
+        self.w_d = n_r / n_t
+        # print("w_r", self.w_r)
+        # print("w_d", self.w_d)
+
+        # Differential Factors of the PDE:
+        F_px, F_pt, F_q = self.model.get_factors(
+            boundary=True,
+            scale=scale,
+            method="mean",
+        )
+        # F_px *= 1.0404  # diff_term
+        # F_px *= 1 + self.w_r
+        self.F_px_pt = F_px / F_pt
+
+        # if initial_r:
+        #     nsteps_r = self.nsteps
+        # else:
+        #     nsteps_r = self.nsteps - 1
+
+        # F_px_pt = F_px / F_pt
+        # F_px_pt = np.tile(F_px_pt, nsteps_r)
+        # self.F_px_pt = self.as_tensor(F_px_pt, False)
+
+        # F_pt_px = F_pt / F_px
+        # F_pt_px = np.tile(F_pt_px, nsteps_r)
+        # self.F_pt_px = self.as_tensor(F_pt_px, False)
+
+        # F_px = np.tile(F_px, nsteps_r)
+        # self.F_px = self.as_tensor(F_px, False)
+        # F_pt = np.tile(F_pt, nsteps_r)
+        # self.F_pt = self.as_tensor(F_pt, False)
+
+        # Update Rates: update_rates (did not work as expected)
+        # F_q_pt = F_q / F_pt
+        # F_q_pt = np.tile(F_q_pt, nsteps_r)
+        # self.F_q_pt = self.as_tensor(F_q_pt, False)
+
+        # Check if the data is correct:
+        self.assert_data()
+
     def update_pressures(
         self,
         clean=True,
@@ -521,9 +638,6 @@ class PINN(Network, nn.Module):
             by default False.
         """
         start_time = time.time()
-        self.tstep += nsteps
-        self.nsteps += nsteps
-        self.model.update_shapes()
         self.N = N
         self.run_ctime = 0
         if self.model.verbose:
@@ -534,95 +648,7 @@ class PINN(Network, nn.Module):
 
         print(f"[info] Simulation run started: {nsteps} timesteps.")
 
-        # Scale the model:
-        scale = True
-
-        # Training Data: initial and boundary conditions
-        X, Y = self.model.get_data(
-            times_id=None,
-            cells_id=None,
-            scale=scale,
-            drop_nan=True,
-            shuffle=False,
-        )
-        self.X_data = self.as_tensor(X, False)
-        self.Y_data = self.as_tensor(Y, False)
-        n_d = self.X_data.shape[0]
-
-        # Testing Data: based on a reference solution if available
-        if reference is not None:
-            self.model.set_solution(reference)
-            X, Y = self.model.get_data(
-                times_id=slice(1, -1, 1),
-                cells_id=None,
-                scale=scale,
-                drop_nan=False,
-                shuffle=False,
-            )
-            self.model.set_solution(self.name)
-        self.X_test = self.as_tensor(X, False)
-        self.Y_test = self.as_tensor(Y, False)
-
-        # Full Domain as X(t, x):
-        X = self.model.get_X(
-            times_id=None,  # None for all times
-            cells_id=None,  # None for all cells
-            scale=scale,
-            shuffle=False,
-        )
-        self.X = self.as_tensor(X, False)
-
-        # Residual Domain as X(t, x):
-        X_r = self.model.get_X(
-            times_id=slice(0, -1, 1),
-            cells_id=self.model.grid.get_cells_id(boundary=True),
-            scale=scale,
-            shuffle=False,
-        )
-        self.X_r = self.as_tensor(X_r, True)
-        n_r = self.X_r.shape[0]
-
-        n_t = n_d + n_r
-        self.w_r = n_d / n_t
-        self.w_d = n_r / n_t
-        print("w_r", self.w_r)
-        print("w_d", self.w_d)
-
-        # Differential Factors of the PDE:
-        F_px, F_pt, F_q = self.model.get_factors(
-            boundary=True,
-            scale=scale,
-            method="mean",
-        )
-        # F_px *= 1.0404  # diff_term
-        # F_px *= 1 + self.w_r
-        self.F_px_pt = F_px / F_pt
-
-        # if initial_r:
-        #     nsteps_r = self.nsteps
-        # else:
-        #     nsteps_r = self.nsteps - 1
-
-        # F_px_pt = F_px / F_pt
-        # F_px_pt = np.tile(F_px_pt, nsteps_r)
-        # self.F_px_pt = self.as_tensor(F_px_pt, False)
-
-        # F_pt_px = F_pt / F_px
-        # F_pt_px = np.tile(F_pt_px, nsteps_r)
-        # self.F_pt_px = self.as_tensor(F_pt_px, False)
-
-        # F_px = np.tile(F_px, nsteps_r)
-        # self.F_px = self.as_tensor(F_px, False)
-        # F_pt = np.tile(F_pt, nsteps_r)
-        # self.F_pt = self.as_tensor(F_pt, False)
-
-        # Update Rates: update_rates (did not work as expected)
-        # F_q_pt = F_q / F_pt
-        # F_q_pt = np.tile(F_q_pt, nsteps_r)
-        # self.F_q_pt = self.as_tensor(F_q_pt, False)
-
-        # Check if the data is correct:
-        self.assert_data()
+        self.generate_data(nsteps=nsteps, scale=True, reference=reference)
 
         # opts: ["adam", "adamw", "sgd", "adagrad", "rmsprop", "adamax", "adadelta", "lbfgs"]
         self.fit(epochs=100, opt="adam", lr=0.01, weight_decay=1e-6)

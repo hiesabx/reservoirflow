@@ -723,8 +723,8 @@ class BlackOil(Model):
         # Update scalers:
         # self.update_scalers(boundary=True)
 
-    def update_pressures_shape(self):
-        if self.solution.pressures.shape[0] != self.solution.nsteps:
+    def update_pressures_shape(self, reset=False):
+        if reset or self.solution.pressures.shape[0] != self.solution.nsteps:
             # shape = self.get_shape(True)
             # pressures = np.empty(shape, self.dtype).fill(np.nan)
             # pressures[0] = self.init_pressures
@@ -745,8 +745,8 @@ class BlackOil(Model):
                 "or due to solutions in multiple nsteps.",
             )
 
-    def update_rates_shape(self):
-        if self.solution.rates.shape[0] != self.solution.nsteps:
+    def update_rates_shape(self, reset=False):
+        if reset or self.solution.rates.shape[0] != self.solution.nsteps:
             rates = np.repeat(
                 self.init_rates,
                 # self.solution.rates,
@@ -762,9 +762,9 @@ class BlackOil(Model):
             )
         self.update_boundaries_rates_nsteps()
 
-    def update_shapes(self):
-        self.update_pressures_shape()
-        self.update_rates_shape()
+    def update_shapes(self, reset=False):
+        self.update_pressures_shape(reset)
+        self.update_rates_shape(reset)
         self.__update_time_scaler()
 
     # -------------------------------------------------------------------------
@@ -836,7 +836,7 @@ class BlackOil(Model):
             S_px = s_p / s_x**2
             S_pt = s_p / s_t
             S_q = s_q
-            print("S_px:", S_px, "S_pt:", S_pt, "S_q:", S_q)
+            # print("S_px:", S_px, "S_pt:", S_pt, "S_q:", S_q)
 
             F_px *= S_px
             F_pt *= S_pt
@@ -1559,8 +1559,32 @@ class BlackOil(Model):
         ncols = len(fdir) + 1
         X = df[["Time", *fdir]].values.reshape(*shape, ncols)
         Y = df[["P"]].values.reshape(*shape, 1)
-        X = X[times_id, cells_id].reshape(-1, ncols)
-        Y = Y[times_id, cells_id].reshape(-1, 1)
+        # X = X[times_id, cells_id].reshape(-1, ncols)
+        # Y = Y[times_id, cells_id].reshape(-1, 1)
+
+        # Select times:
+        X_times = X[times_id, :].reshape(-1, ncols)
+        Y_times = Y[times_id, :].reshape(-1, 1)
+
+        if cells_id is not None:
+            if isinstance(times_id, (list, tuple, np.ndarray)):
+                cells_times = [
+                    t for t in np.arange(self.solution.nsteps) if t not in times_id
+                ]
+            else:
+                cells_times = [
+                    t for t in np.arange(self.solution.nsteps) if t != times_id
+                ]
+
+            # Select cells:
+            X_cells = X[:, cells_id][cells_times].reshape(-1, ncols)
+            Y_cells = Y[:, cells_id][cells_times].reshape(-1, 1)
+
+            X = np.vstack((X_times, X_cells))
+            Y = np.vstack((Y_times, Y_cells))
+        else:
+            X = X_times
+            Y = Y_times
 
         if drop_nan:
             not_nans = ~np.isnan(Y).any(axis=1)
