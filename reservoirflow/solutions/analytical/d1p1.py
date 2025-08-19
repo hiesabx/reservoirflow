@@ -69,7 +69,7 @@ class D1P1(Solution):
         print(f"[info] Simulation run started: {nsteps} timesteps.")
 
         # Independent variables: t, x
-        alpha = self.model.get_alpha(method="mean")
+        alpha = self.model.get_alpha(method="mean")[0]  # [0] for 1D
         t, x = self.model.get_domain(scale=False, boundary=True)
         L = x.max() - x.min()
         xD = (x - x.min()) / L

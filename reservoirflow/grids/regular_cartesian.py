@@ -2494,8 +2494,8 @@ class RegularCartesian(Grid):
 
         Parameters
         ----------
-        name : str
-            property name as a string from props attribute keys.
+        dir : str
+            direction str in ['x', 'y', 'z'].
         boundary : bool, optional
             include boundary cells.
         fshape : bool, optional

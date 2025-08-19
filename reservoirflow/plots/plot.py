@@ -15,7 +15,7 @@ class Plot(Base):
                 print(f"[Info] Solution: {name} was updated.")
             else:
                 print(f"[Info] Solution: {name} was added.")
-        self.Data[name] = [x, y.squeeze()]
+        self.Data[name] = [x, y]
         return self
 
     # def add_solution(self, solution, name=None):

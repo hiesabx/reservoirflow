@@ -12,9 +12,11 @@ Information:
 __all__ = [
     "Plot",
     "Plot1D",
+    "Plot2D",
     "Contour1D",
 ]
 
 from .plot import Plot
 from .plot_1d import Plot1D
+from .plot_2d import Plot2D
 from .contour_1d import Contour1D

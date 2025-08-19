@@ -85,18 +85,29 @@ class PINN(Network, nn.Module):
         nn.Module.__init__(self)
         self.dtype = torch.float32
 
+        # Check if CUDA (GPU support) is available
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+            print("Using GPU:", torch.cuda.get_device_name(0))
+        else:
+            self.device = torch.device("cpu")
+            print("Using CPU")
+
         # Neural network parameters:
         self.epochs = 0
         self.epoch = 0
-        self.neurons = [2, *[64] * 6, 1]
+        # self.neurons = [2, *[64] * 6, 1]
         self.bias = True
         # self.activation = nn.Tanh  # nn.Tanh, nn.Sigmoid, nn.GELU
-        self.loss_func = nn.MSELoss(reduction="mean")  # nn.MSELoss, RMSELoss, nn.L1Loss
+        self.loss_func = nn.MSELoss(reduction="mean").to(
+            self.device
+        )  # nn.MSELoss, RMSELoss, nn.L1Loss
         # self.loss_func = RelativeL2Loss()  # nn.MSELoss, nn.L1Loss
-        self.network = self.get_network()
+        # self.network = self.get_network()
         # self.network = torch.compile(self.network)
         self.w_y = 0.95  # weight for the training loss
         self.w_r = 1 - self.w_y  # weight for the physics loss
+        self.reference = None
 
         # Early stopping:
         self.patience = 10
@@ -118,16 +129,21 @@ class PINN(Network, nn.Module):
         assert len(self.X_data) == len(self.Y_data), "input length does not match."
         assert self.X_data.shape[1] == self.neurons[0], "input shape does not match."
         assert self.Y_data.shape[1] == self.neurons[-1], "output shape does not match."
-        assert len(self.X_test) == len(self.Y_test), "input length does not match."
-        assert self.X_test.shape[1] == self.neurons[0], "input shape does not match."
-        assert self.Y_test.shape[1] == self.neurons[-1], "output shape does not match."
+        if self.reference is not None:
+            assert len(self.X_test) == len(self.Y_test), "input length does not match."
+            assert (
+                self.X_test.shape[1] == self.neurons[0]
+            ), "input shape does not match."
+            assert (
+                self.Y_test.shape[1] == self.neurons[-1]
+            ), "output shape does not match."
         # assert len(self.X_r) == len(self.F_px_pt), "input length does not match."
         assert self.X_r.shape[1] == self.neurons[0], "input shape does not match."
 
     def as_tensor(self, a, grad=False):
         if isinstance(a, pd.DataFrame):
             a = a.values
-        return torch.tensor(a, dtype=self.dtype, requires_grad=grad)
+        return torch.tensor(a, dtype=self.dtype, requires_grad=grad).to(self.device)
 
     def init_optimizer(
         self,
@@ -232,7 +248,7 @@ class PINN(Network, nn.Module):
                 self.layers.append([self.linears[i], activations[i]])
             else:
                 self.layers.append([self.linears[i]])
-        return nn.Sequential(*sum(self.layers, []))
+        return nn.Sequential(*sum(self.layers, [])).to(self.device)
 
     def forward(self, x):
         if not torch.is_tensor(x):
@@ -240,13 +256,11 @@ class PINN(Network, nn.Module):
         with torch.no_grad():
             return self.network(x)
 
-    predict = forward
-
     def loss_y(self, x, y):
         return self.loss_func(self.network(x), y)
 
     def loss_y_value(self, x, y):
-        return self.loss_y(x, y).detach().float().numpy()
+        return self.loss_y(x, y).cpu().detach().float().numpy()
 
     def loss_r(self, x):
         """Physics loss function.
@@ -273,21 +287,52 @@ class PINN(Network, nn.Module):
 
         # prediction: p(t, x)
         p = self.network(x)
-        # # rates:
-        # # q = self.update_rates()
-        # # first derivative: dp/dt, dp/dx
-        dp = self.gradient(p, x)
-        # # first temporal derivative: dp/dt
-        dp_dt = dp[:, 0]  # .flatten()
-        # # second derivative: d2p/dt2, d2p/dx2
-        d2p = self.gradient(dp[:, 1], x)
-        # # second spacial derivative: d2p/dx2
-        d2p_dx2 = d2p[:, 1]  # .flatten()
+        self.x = x
+        # rates:
+        # q = self.update_rates()
+        # first derivative: dp/dt, dp/dx, dp/dy, dp/dz
+        self.dp = self.gradient(p, x)
+        # first temporal derivative: dp/dt
+        dp_dt = self.dp[:, 0]  # .flatten()
+
+        self.LHS = 0
+
+        # with ThreadPoolExecutor(self.n_threads) as executor:
+        #     executor.map(self.__calc_LHS, range(1, self.input_shape))
+
+        for dim_num in range(1, self.input_shape):
+            # second derivative: d2p/dt2, d2p/dx2, d2p/dy2, d2p/dz2
+            d2p = self.gradient(self.dp[:, dim_num], x)
+            # second spacial derivative: d2p/dx2
+            d2p_d_2 = d2p[:, dim_num]  # .flatten()
+            # add to spatial derivatives:
+            self.LHS += self.F_px_pt[dim_num - 1] * d2p_d_2
+
+        # return the mean of the squared residual:
+        r = self.LHS - dp_dt
+        return torch.mean(r**2).to(self.device)
+
+        # return the total loss:
+        # return self.loss_func(LHS, dp_dt)
+
+        # second derivative: d2p/dt2, d2p/dx2
+        # d2p = self.gradient(dp[:, 1], x)
+        # second spacial derivative: d2p/dx2
+        # d2p_dx2 = d2p[:, 1]  # .flatten()
+
         # residual of the PDE:
         # r = self.F_px_pt * d2p_dx2 - dp_dt  # + self.F_q_pt * q
         # return the mean of the squared residual:
         # return torch.mean(r**2)
-        return self.loss_func(self.F_px_pt * d2p_dx2, dp_dt)
+        # return self.loss_func(self.F_px_pt * d2p_dx2 + self.F_px_pt * d2p_dy2, dp_dt)
+
+    def __calc_LHS(self, dim_num):
+        # second derivative: d2p/dt2, d2p/dx2, d2p/dy2, d2p/dz2
+        d2p = self.gradient(self.dp[:, dim_num], self.x)
+        # second spacial derivative: d2p/dx2
+        d2p_d_2 = d2p[:, dim_num]  # .flatten()
+        # add to spatial derivatives:
+        self.LHS += self.F_px_pt[dim_num - 1] * d2p_d_2
 
     def gradient(self, y_h, x):
         """
@@ -345,9 +390,9 @@ class PINN(Network, nn.Module):
         l_t = self.w_d * l_d + self.w_r * l_r
         l_t.backward()  # loss.backward(retain_graph=True)
         # Update losses:
-        self.l_d = l_d.detach().float().numpy()
-        self.l_r = l_r.detach().float().numpy()
-        self.l_t = l_t.detach().float().numpy()
+        self.l_d = l_d.cpu().detach().float().numpy()
+        self.l_r = l_r.cpu().detach().float().numpy()
+        self.l_t = l_t.cpu().detach().float().numpy()
         return l_t
 
     def fit(
@@ -399,7 +444,10 @@ class PINN(Network, nn.Module):
             self.epoch = run_epoch + epoch
             self.optimizer.step(self.closure)
             with torch.no_grad():
-                loss_test = self.loss_y_value(self.X_test, self.Y_test)
+                if self.reference:
+                    loss_test = self.loss_y_value(self.X_test, self.Y_test)
+                else:
+                    loss_test = np.nan
                 pbar.set_description(
                     (
                         f"[epoch] {epoch} - "
@@ -413,7 +461,8 @@ class PINN(Network, nn.Module):
                     self.results["run_id"].append(self.run_id)
                     self.results["epoch"].append(self.epoch)
                     self.results["loss (total)"].append(self.l_t)
-                    self.results["loss (test)"].append(loss_test)
+                    if self.reference:
+                        self.results["loss (test)"].append(loss_test)
                     self.results["loss (data)"].append(self.l_d)
                     self.results["loss (residual)"].append(self.l_r)
                     self.results["loss_d + loss_r"].append(self.l_d + self.l_r)
@@ -444,11 +493,12 @@ class PINN(Network, nn.Module):
             self.results["loss_d + loss_r"],
             label="loss (total: loss_d + loss_r)",
         )
-        plt.plot(
-            self.results["epoch"],
-            self.results["loss (test)"],
-            label="loss (test)",
-        )
+        if self.reference:
+            plt.plot(
+                self.results["epoch"],
+                self.results["loss (test)"],
+                label="loss (test)",
+            )
         plt.plot(
             self.results["epoch"],
             self.results["loss (data)"],
@@ -475,7 +525,6 @@ class PINN(Network, nn.Module):
         self,
         nsteps,
         scale=True,
-        reference=None,
     ):
         # Update nsteps:
         # self.tstep += nsteps
@@ -505,24 +554,24 @@ class PINN(Network, nn.Module):
         )
         self.X_data = self.as_tensor(X, False)
         self.Y_data = self.as_tensor(Y, False)
-        n_d = self.X_data.shape[0]
-        print("[info] length of data domain:", n_d)
+        self.n_d = self.X_data.shape[0]
+        print("[info] length of data domain:", self.n_d)
 
         # Testing Data: based on a reference solution if available
-        if reference is not None:
-            self.model.set_solution(reference)
+        if self.reference is not None:
+            self.model.set_solution(self.reference)
             X, Y = self.model.get_data(
                 times_id=slice(0, -1, 1),
                 cells_id=None,
                 scale=scale,
-                drop_nan=False,
+                drop_nan=True,
                 shuffle=False,
             )
             self.model.set_solution(self.name)
             self.X_test = self.as_tensor(X, False)
             self.Y_test = self.as_tensor(Y, False)
-            n_t = self.X.shape[0]
-            print("[info] length of test domain:", n_t)
+            self.n_t = self.X.shape[0]
+            print("[info] length of test domain:", self.n_t)
 
         # Residual Domain as X(t, x):
         X_r = self.model.get_X(
@@ -532,12 +581,17 @@ class PINN(Network, nn.Module):
             shuffle=False,
         )
         self.X_r = self.as_tensor(X_r, True)
-        n_r = self.X_r.shape[0]
-        print("[info] length of physics domain:", n_r)
+        self.n_r = self.X_r.shape[0]
+        print("[info] length of physics domain:", self.n_r)
 
-        n_t = n_d + n_r
-        self.w_r = n_d / n_t
-        self.w_d = n_r / n_t
+        self.n_t = self.n_d + self.n_r
+        self.w_r = self.n_d / self.n_t
+        # self.w_r = nn.Parameter(torch.tensor(w_r, dtype=self.dtype))
+        # self.network.register_parameter("w_r", self.w_r)
+        self.w_d = self.n_r / self.n_t
+        # self.w_d = nn.Parameter(torch.tensor(w_d, dtype=self.dtype))
+        # self.network.register_parameter("w_d", self.w_d)
+
         # print("w_r", self.w_r)
         # print("w_d", self.w_d)
 
@@ -574,6 +628,12 @@ class PINN(Network, nn.Module):
         # F_q_pt = np.tile(F_q_pt, nsteps_r)
         # self.F_q_pt = self.as_tensor(F_q_pt, False)
 
+        self.input_shape = self.X_data.shape[1]
+        self.n_threads = self.input_shape - 1
+        self.output_shape = self.Y_data.shape[1]
+        self.neurons = [self.input_shape, *[64] * 6, self.output_shape]
+        self.network = self.get_network()
+
         # Check if the data is correct:
         self.assert_data()
 
@@ -583,7 +643,7 @@ class PINN(Network, nn.Module):
     ):
         p = self.network(self.X)
         output_shape = self.model.get_shape(boundary=True)
-        p = p.detach().numpy().reshape(output_shape)
+        p = p.cpu().detach().numpy().reshape(output_shape)
         if clean:
             Vmin = self.model.pressure_scaler.Vmin
             Vmax = self.model.pressure_scaler.Vmax
@@ -598,6 +658,8 @@ class PINN(Network, nn.Module):
             )
         else:
             self.pressures = self.model.pressure_scaler.inverse_transform(p)
+
+    predict = update_pressures
 
     def update_rates(self):
         self.update_pressures(clean=True)
@@ -647,13 +709,14 @@ class PINN(Network, nn.Module):
             verbose_restore = False
 
         print(f"[info] Simulation run started: {nsteps} timesteps.")
-
-        self.generate_data(nsteps=nsteps, scale=True, reference=reference)
+        self.reference = reference
+        self.generate_data(nsteps=nsteps, scale=True)
 
         # opts: ["adam", "adamw", "sgd", "adagrad", "rmsprop", "adamax", "adadelta", "lbfgs"]
-        self.fit(epochs=100, opt="adam", lr=0.01, weight_decay=1e-6)
+        # epochs = int(self.n_d / 2)
+        self.fit(epochs=150, opt="adam", lr=0.01, weight_decay=1e-6)
         # self.fit(epochs=300, opt="adam", lr=0.001, weight_decay=1e-6)
-        self.fit(epochs=100, opt="lbfgs", lr=0.01)
+        self.fit(epochs=150, opt="lbfgs", lr=0.01)
         # self.fit(epochs=400, opt="adam", lr=0.0001, weight_decay=1e-6)
         # self.fit(epochs=10, opt="lbfgs", lr=0.01)
         # self.fit(epochs=400, opt="adam", lr=0.0001)

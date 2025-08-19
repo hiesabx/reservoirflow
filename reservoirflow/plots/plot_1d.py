@@ -26,6 +26,7 @@ class Plot1D(Plot):
         # ncols=1,
         verbose=False,
         error=False,
+        tsteps=None,
     ):
         """Create 1D Line Plot object.
 
@@ -39,8 +40,14 @@ class Plot1D(Plot):
             print verbose output, by default False
         """
         super().__init__(verbose, error)
+        self.tsteps = tsteps
         self.nrows = 3
         self.ncols = 3
+
+        if tsteps is not None:
+            assert (
+                len(tsteps) == self.nrows * self.ncols
+            ), "tsteps are not compatible with the number of rows and columns."
 
     def __set_axis_labels(self, axs):
         for i, ax in enumerate(axs.ravel()):
@@ -136,10 +143,13 @@ class Plot1D(Plot):
             t = X[:, 0, 0]
             x = X[0, :, 1]
 
-            tsteps = get_sampled_array_combined_distribution(
-                t,
-                self.nrows * self.ncols,
-            )
+            if self.tsteps is None:
+                tsteps = get_sampled_array_combined_distribution(
+                    t,
+                    self.nrows * self.ncols,
+                )
+            else:
+                tsteps = self.tsteps
 
             assert len(tsteps) == self.nrows * self.ncols, "tsteps are not compatible"
 
@@ -147,7 +157,7 @@ class Plot1D(Plot):
                 tstep = tsteps[i]
                 ax.plot(
                     x,
-                    Y[tstep, :],
+                    Y[tstep, :].squeeze(),
                     label=name,
                     linestyle=lstyle,
                     alpha=alpha,

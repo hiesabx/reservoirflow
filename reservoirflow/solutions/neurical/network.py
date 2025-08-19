@@ -44,7 +44,7 @@ class Network(Solution):
         self.Data[name] = [x, y]
         return self
 
-    def fit(self):
+    def train(self):
         raise NotImplementedError
 
     def solve(self):

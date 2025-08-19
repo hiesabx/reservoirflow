@@ -813,7 +813,14 @@ class BlackOil(Model):
         # Permeability:
         fdir = self.grid.get_fdir()
         if fdir == "x":
-            k = self.grid.k["x"]
+            k = self.grid.k["x"][np.newaxis, :]
+        elif fdir == "xy":
+            k = np.stack((self.grid.k["x"], self.grid.k["y"]), axis=1).reshape(-1, 2)
+        elif fdir == "xyz":
+            k = np.stack(
+                (self.grid.k["x"], self.grid.k["y"], self.grid.k["z"]),
+                axis=1,
+            ).reshape(-1, 3)
         else:
             raise ValueError(f"k for fdir='{fdir}' is not defined.")
 
@@ -836,19 +843,24 @@ class BlackOil(Model):
             S_px = s_p / s_x**2
             S_pt = s_p / s_t
             S_q = s_q
-            # print("S_px:", S_px, "S_pt:", S_pt, "S_q:", S_q)
+            print("S_px:", S_px, "S_pt:", S_pt, "S_q:", S_q)
 
             F_px *= S_px
             F_pt *= S_pt
             F_q *= S_q
 
         if not boundary:
-            F_px = F_px[self.grid.cells_id]
+            F_px = F_px[self.grid.cells_id, None]
             F_pt = F_pt[self.grid.cells_id]
             F_q = F_q[self.grid.cells_id]
 
+        # if self.grid.D == 1:
+        #     axis = None
+        # else:
+        #     axis = 0
+
         if method == "mean":
-            F_px = np.mean(F_px)
+            F_px = np.mean(F_px, axis=0)
             F_pt = np.mean(F_pt)
             F_q = np.mean(F_q)
         elif method == "first":  # or np.all(alpha == alpha[0]):
@@ -1403,9 +1415,7 @@ class BlackOil(Model):
         self,
         boundary: bool = True,
         scale: bool = False,
-        # drop_nan: bool = False,
-        # initial=True,
-        # shuffle=False,
+        fshape: bool = False,
     ):
         """Get solution values as X and Y arrays.
 
@@ -1415,8 +1425,8 @@ class BlackOil(Model):
             include boundary cells in the values. Default is True.
         scale : bool, optional
             scale values using scalers. Default is False.
-        drop_nan : bool, optional
-            drop rows which contain any nan values.
+        fshape : bool, optional
+            return arrays as flow shape.
 
         Returns
         -------
@@ -1491,6 +1501,11 @@ class BlackOil(Model):
         #     times_id = np.arange(1, self.solution.nsteps)
         X = X[:, cells_id, :]
         Y = Y[:, cells_id]
+
+        if fshape:
+            shape = (shape[0], *self.grid.get_shape(boundary))
+            X = X.reshape(*shape, ncols)
+            Y = Y.reshape(*shape, 1)
 
         # if drop_nan:
         #     X = X.reshape(-1, ncols)
@@ -1647,6 +1662,7 @@ class BlackOil(Model):
         solution: str = None,
         error: bool = True,
         ylims: list = None,
+        tsteps: list = None,
     ):
         """Plot solution values.
 
@@ -1669,6 +1685,12 @@ class BlackOil(Model):
             plotted. User solution name as str to select solution explicitly or list of solution names for multiple solutions. Default is None.
         error : bool, optional
             To add error to the plot.
+        ylims : list, optional
+            y-axis limits for the plot. If None, the limits will be
+            set based on the scaler output range if scale is True, or
+            input range if scale is False.
+        tsteps : list, optional
+
 
         Returns
         -------
@@ -1682,6 +1704,7 @@ class BlackOil(Model):
                     # ncols=ncols,
                     verbose=self.verbose,
                     error=error,
+                    tsteps=tsteps,
                 )
             elif type == "contour":
                 plotter = plots.Contour1D(
@@ -1690,8 +1713,16 @@ class BlackOil(Model):
                 )
             else:
                 raise ValueError(f"Plot type {type} is not supported for 1D grid.")
+            fshape = False
         elif self.grid.D == 2:
-            raise NotImplementedError("2D plotting is not implemented yet.")
+            plotter = plots.Plot2D(
+                # nrows=nrows,
+                # ncols=ncols,
+                verbose=self.verbose,
+                error=error,
+                tsteps=tsteps,
+            )
+            fshape = True
         elif self.grid.D == 3:
             raise NotImplementedError("3D plotting is not implemented yet.")
         else:
@@ -1709,6 +1740,7 @@ class BlackOil(Model):
                 X, Y = self.get_values(
                     boundary=boundary,
                     scale=scale,
+                    fshape=fshape,
                 )
                 if X is not None:
                     plotter.add(
@@ -1722,6 +1754,7 @@ class BlackOil(Model):
                 X, Y = self.get_values(
                     boundary=boundary,
                     scale=scale,
+                    fshape=fshape,
                 )
                 if X is not None:
                     plotter.add(
@@ -1735,6 +1768,7 @@ class BlackOil(Model):
             X, Y = self.get_values(
                 boundary=boundary,
                 scale=scale,
+                fshape=fshape,
             )
             if X is not None:
                 plotter.add(
