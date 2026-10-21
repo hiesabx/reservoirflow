@@ -1,0 +1,53 @@
+[project]
+name = "reservoirflow"
+dynamic = ["version"]
+description = "Reservoir Simulation and Engineering Library in Python"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "aiohttp>=3.11.11",
+    "ipywidgets>=8.1.6",
+    "line-profiler>=4.2.0",
+    "matplotlib>=3.10.0",
+    "numpy>=2.1.0",
+    "pandas>=2.2.3",
+    "pyvista[jupyter]>=0.45.0",
+    "scipy>=1.14.1",
+    "sympy>=1.13.1",
+    "tabulate>=0.9.0",
+    "torch>=2.6.0",
+    "tqdm>=4.67.1",
+    "trame>=3.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.3.0",
+    "torch>=2.7.0",
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "reservoirflow.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["reservoirflow*"]

@@ -22,13 +22,13 @@ Mathematics
     PDE
         partial-differential-equations used in mathematics to represent a physical phenomenon.
 
-    FDM
+    FdmSolution
         finite-difference-method.
 
-    FVM
+    FvmSolution
         finite-volume-method.
 
-    FEM
+    FemSolution
         finite-element-method.
 
 |
@@ -63,7 +63,7 @@ Definitions
     :sorted:
 
     permeability
-        permeability is a directional property and defined as the capacity of the grid cell to transmit fluid through its interconnected pores, check is_isotropic property.
+        permeability is a DirectionalWell property and defined as the capacity of the grid cell to transmit fluid through its interconnected pores, check is_isotropic property.
 
     porosity
         rock porosity or effective porosity is a ratio of the volume of interconnected pores to the grid cell volume. Porosity is a volumetric ratio, check is_homogenous property.

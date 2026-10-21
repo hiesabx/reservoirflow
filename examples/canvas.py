@@ -12,7 +12,7 @@ def get_d(d_0, n):
 
 def model_1(n, unify):
     nx, ny, nz = n
-    g = grids.RegularCartesian(
+    g = grids.RegularCartesianGrid(
         nx=nx,
         ny=ny,
         nz=nz,

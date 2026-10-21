@@ -3,8 +3,8 @@
 ============
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import cm
 
 from reservoirflow.plots.plot import Plot
@@ -44,9 +44,9 @@ class Plot2D(Plot):
         self.ncols = 3
 
         if tsteps is not None:
-            assert (
-                len(tsteps) == self.nrows * self.ncols
-            ), "tsteps are not compatible with the number of rows and columns."
+            assert len(tsteps) == self.nrows * self.ncols, (
+                "tsteps are not compatible with the number of rows and columns."
+            )
 
     def __set_axis_labels(self, axs):
         for i, ax in enumerate(axs.ravel()):
@@ -122,7 +122,7 @@ class Plot2D(Plot):
         #     c="r",
         #     label="Boundary",
         # )
-        # # FDM:
+        # # FdmSolution:
         # ax.plot_wireframe(
         #     arr[:, :, 0],
         #     arr[:, :, 1],
@@ -133,7 +133,7 @@ class Plot2D(Plot):
         #     color="k",
         #     label="linear interp",
         # )
-        # # PINN:
+        # # PinnSolution:
         # Y_test_h = (
         #     rsm_pinn.predict(arr[:, :, :2]).reshape(arr[:, :, 0].shape).detach().numpy()
         # )

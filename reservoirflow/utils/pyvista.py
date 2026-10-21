@@ -8,7 +8,7 @@ These functions are used as class methods to provide direct
 accessibility to 3D visualizations using ``show()`` method.
 """
 
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import pyvista as pv
 
@@ -312,28 +312,29 @@ def get_colormap(
     cmap: str,
     gamma: float,
     n_colors: int,
-):  # -> plt.cm:
-    """Get colormap for a pyvista plotter from plt.cm
+) -> mpl.colors.Colormap:
+    """Get colormap for a pyvista plotter from matplotlib.
 
     Parameters
     ----------
-    cmap : str, optional
+    cmap : str
         color map name based on Matplotlib, see
         `Choosing Colormaps in Matplotlib <https://matplotlib.org/stable
         /users/explain/colors/colormaps.html>`_.
-    gamma : float, optional
+    gamma : float
         shift color map distribution to left when values less than 1 and
         to right when values larger than 1. In case of qualitative
-        colormaps, this argument is ignored.
-    n_colors : int, optional
+        colormaps, this argument is ignored. Also ignored for colormaps
+        that do not support gamma (e.g. "viridis").
+    n_colors : int
         number of colors. In case of qualitative colormaps, n_colors
         should not exceed the total number of available colors (e.g. 10
         for cmap="tab10" and 20 for cmap="tab20").
 
     Returns
     -------
-    plt.cm
-        color map as a cm object from plt (matplotlib.pyplot).
+    matplotlib.colors.Colormap
+        color map object with n_colors levels.
     """
     qualitative_cmaps = [
         "Pastel1",
@@ -350,12 +351,14 @@ def get_colormap(
         "tab20c",
     ]
 
-    colormap = plt.cm.get_cmap(cmap, n_colors)
+    base = mpl.colormaps[cmap] if isinstance(cmap, str) else cmap
+    colormap = base.resampled(n_colors)  # returns a copy, registry is untouched
+
     if cmap in qualitative_cmaps:
         cshape = np.unique(colormap.colors, axis=0).shape
         if cshape[0] < n_colors:
             print(f"Some colors are repetitive, consider n_colors<={cshape[0]}.")
-    else:
+    elif hasattr(colormap, "set_gamma"):
         colormap.set_gamma(gamma)
 
     return colormap
@@ -485,12 +488,7 @@ def add_desc(
         add boundary string.
     """
     s = helpers.get_boundary_str(boundary)
-    desc = "{}D grid model by {} (flow at {}-direction {})".format(
-        D,
-        label,
-        fdir,
-        s,
-    )
+    desc = f"{D}D grid model by {label} (flow at {fdir}-direction {s})"
     pl.add_text(
         text=desc,
         position=(0.01, 0.01),
@@ -584,6 +582,7 @@ def get_grid_plotter(
     label,
     boundary,
     corners,
+    ruler,
     desc,
     # cbar,
     title,
@@ -630,20 +629,20 @@ def get_grid_plotter(
 
     grid_pv = grid.get_pyvista_grid(boundary)
 
-    grid_mesh = dict(
-        mesh=grid_pv,
+    grid_mesh = {
+        "mesh": grid_pv,
         # clim=limits,
-        show_edges=True,
-        opacity=opacity,
-        nan_color="gray",
-        nan_opacity=0.05,
-        lighting=True,
-        colormap=colormap,
-        color="white",
+        "show_edges": True,
+        "opacity": opacity,
+        "nan_color": "gray",
+        "nan_opacity": 0.05,
+        "lighting": True,
+        "colormap": colormap,
+        "color": "white",
         # scalars=values[0].copy(),
-        show_scalar_bar=False,
+        "show_scalar_bar": False,
         # annotations=annotations,
-    )
+    }
 
     if corners:
         points = grid_pv.points
@@ -667,8 +666,10 @@ def get_grid_plotter(
     add_title(pl, title)
     if desc:
         add_desc(pl, label, grid.D, grid.fdir, boundary)
+    if ruler:
+        add_ruler(pl, grid_pv)
 
-    return pl, grid_pv
+    return pl
 
 
 def show_grid(
@@ -715,6 +716,8 @@ def show_grid(
         include cells corners with ijk values..
     ruler : bool, optional
         show ruler grid lines.
+    desc : bool, optional
+        show grid description.
     info : bool, optional
         show grid information (do not use. still not active).
     cbar : bool, optional
@@ -768,12 +771,13 @@ def show_grid(
         label is not recognized.
     """
     set_plotter_backend(static)
-    pl, grid_pv = get_grid_plotter(
+    pl = get_grid_plotter(
         grid,
         # prop=prop,
         label=label,
         boundary=boundary,
         corners=corners,
+        ruler=ruler,
         desc=desc,
         # cbar=cbar,
         title=title,
@@ -789,9 +793,6 @@ def show_grid(
         window_size=window_size,
         **kwargs,
     )
-
-    if ruler:
-        add_ruler(pl, grid_pv)
 
     pl.show(title=WINDOW_TITLE)
 
@@ -863,20 +864,20 @@ def get_model_plotter(
 
     grid_pv = model.grid.get_pyvista_grid(boundary)
 
-    grid_mesh = dict(
-        mesh=grid_pv,
-        clim=limits,
-        show_edges=True,
-        opacity=opacity,
-        nan_color="gray",
-        nan_opacity=0.05,
-        lighting=True,
-        colormap=colormap,
-        color="white",
-        scalars=values[0].copy(),
-        show_scalar_bar=False,
-        annotations=annotations,
-    )
+    grid_mesh = {
+        "mesh": grid_pv,
+        "clim": limits,
+        "show_edges": True,
+        "opacity": opacity,
+        "nan_color": "gray",
+        "nan_opacity": 0.05,
+        "lighting": True,
+        "colormap": colormap,
+        "color": "white",
+        "scalars": values[0].copy(),
+        "show_scalar_bar": False,
+        "annotations": annotations,
+    }
 
     if wells:
         add_wells(pl, model)
@@ -900,14 +901,14 @@ def get_model_plotter(
 def save_gif(
     model,
     prop: str = "pressures",
-    label: str = None,
+    label: str | None = None,
     boundary: bool = False,
     wells: bool = True,
     ruler: bool = False,
     desc: bool = False,
     info: bool = True,
     cbar: bool = True,
-    title: str = None,
+    title: str | None = None,
     cmap: str = "Blues",
     gamma: float = 0.7,
     n_colors: int = 10,
@@ -917,7 +918,7 @@ def save_gif(
     zoom: float = 1,
     fps: int = 10,
     file_name: str = "grid_animated.gif",
-    window_size: tuple = None,  # (2048, 1080),
+    window_size: tuple[int, int] | None = None,  # (2048, 1080),
     **kwargs,
 ):
     """Saves pyvista show as gif
@@ -926,7 +927,7 @@ def save_gif(
     ----------
     prop : str, optional
         property to be visualized in ["pressures", "rates"].
-    label : str
+    label : str | None
         label of grid centers as str in ['id', 'coords', 'icoords',
         'dx', 'dy', 'dz', 'Ax', 'Ay', 'Az', 'V', 'center', 'sphere']. If
         None, this nothing will be added.
@@ -1041,8 +1042,8 @@ def save_gif(
     )
 
     if info:
-        font = dict(font="courier", color=TEXT_COLOR)
-        conf = dict(font_size=11, viewport=True, render=False)
+        font = {"font": "courier", "color": TEXT_COLOR}
+        conf = {"font_size": 11, "viewport": True, "render": False}
         locs = get_text_locs(6, 0.01, 0.95, 0.03)
         dates = model.get_df(columns=["Date"])["Date"]
         date = pl.add_text("", position=locs[0], **font, **conf)
@@ -1080,14 +1081,14 @@ def save_gif(
 def show_model(
     model,
     prop: str = "pressures",
-    label: str = None,
+    label: str | None = None,
     boundary: bool = False,
     wells: bool = True,
     ruler: bool = False,
     desc: bool = False,
     info: bool = True,
     cbar: bool = True,
-    title: str = None,
+    title: str | None = None,
     cmap: str = "Blues",
     gamma: float = 0.7,
     n_colors: int = 10,
@@ -1097,7 +1098,7 @@ def show_model(
     zoom: float = 1,
     static: bool = False,
     notebook: bool = False,
-    window_size: tuple = None,
+    window_size: tuple[int, int] | None = None,
     **kwargs,
 ):
     """Show pyvista plotter

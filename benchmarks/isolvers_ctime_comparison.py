@@ -3,11 +3,10 @@ import numpy as np
 import pandas as pd
 
 from reservoirflow import fluids, grids, models
-from reservoirflow.utils import profme
 
 
 def create_model():
-    grid = grids.RegularCartesian(
+    grid = grids.RegularCartesianGrid(
         nx=500,
         ny=500,
         nz=4,
@@ -21,8 +20,10 @@ def create_model():
         comp=1 * 10**-6,
         dtype="double",
     )
-    fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
-    model = models.BlackOil(
+    fluid = fluids.SinglePhaseFluid(
+        mu=0.5, B=1, rho=50, comp=1 * 10**-5, dtype="double"
+    )
+    model = models.BlackOilModel(
         grid, fluid, pi=6000, dt=5, start_date="10.10.2018", dtype="double"
     )
 

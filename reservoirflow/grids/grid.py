@@ -1,12 +1,13 @@
 """
 Grid classes for reservoir simulation models.
 
-This module contains all grid classes that are required to build the 
-Model class. Grid class represents both the rock geometry and the rock 
-properties which are required for the fluid-flow in porous-media 
+This module contains all grid classes that are required to build the
+Model class. Grid class represents both the rock geometry and the rock
+properties which are required for the fluid-flow in porous-media
 calculations.
 """
-from abc import ABC, abstractmethod
+
+from abc import ABC
 
 # from ..base import Base
 from reservoirflow.base import Base
@@ -32,7 +33,7 @@ class Grid(ABC, Base):
     name = "Grid"
 
     def __init__(
-        self, 
+        self,
         unit,
         dtype,
         unify,

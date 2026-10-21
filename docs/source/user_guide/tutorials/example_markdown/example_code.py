@@ -7,7 +7,7 @@ The workflow of reservoirflow library consists of 8 steps as following:
 import reservoirflow as rf
 
 # Step 1: Define 1D grid (default dtype: 'double')
-grid = rf.grids.RegularCartesian(
+grid = rf.grids.RegularCartesianGrid(
     nx=4,
     ny=1,
     nz=1,
@@ -20,7 +20,7 @@ grid = rf.grids.RegularCartesian(
 )
 
 # Step 2: Define a fluid (single phase incompressible fluid)
-fluid = rf.fluids.SinglePhase(
+fluid = rf.fluids.SinglePhaseFluid(
     mu=0.5,
     B=1,
     rho=50,
@@ -28,7 +28,7 @@ fluid = rf.fluids.SinglePhase(
 )
 
 # Step 3: Create a model
-model = rf.models.BlackOil(
+model = rf.models.BlackOilModel(
     grid,
     fluid,
     pi=4000,

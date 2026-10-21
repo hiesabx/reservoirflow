@@ -1,7 +1,5 @@
 import unittest
 
-import numpy as np
-
 from reservoirflow import grids
 
 # class TestApp(unittest.TestCase):
@@ -31,7 +29,7 @@ def get_d(d_0, n):
 
 
 def test_grid(nx, ny, nz):
-    grid = grids.RegularCartesian(
+    grid = grids.RegularCartesianGrid(
         nx=nx,
         ny=ny,
         nz=nz,

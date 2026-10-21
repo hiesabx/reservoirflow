@@ -6,31 +6,107 @@ STYPES = {
 
 METHODS = {
     "numerical": {
-        "fdm": ["fdm", "finite difference method", "finite-difference-method"],
-        "fvm": ["fvm", "finite volume method", "finite-volume-method"],
-        "fem": ["fem", "finite element method", "finite-element-method"],
+        "FdmSolution": [
+            "fdm",
+            "fdmsolution",
+            "fdm_solution",
+            "finite difference method",
+            "finite-difference-method",
+        ],
+        "FvmSolution": [
+            "fvm",
+            "fvmsolution",
+            "fvm_solution",
+            "finite volume method",
+            "finite-volume-method",
+        ],
+        "FemSolution": [
+            "fem",
+            "femsolution",
+            "fem_solution",
+            "finite element method",
+            "finite-element-method",
+        ],
     },
     "analytical": {
-        "d1p1": ["d1p1", "1d1p", "1-dimension-1-phase", "1dimension1phase"],
-        "d1p2": ["d1p2", "1d2p", "1-dimension-2-phase", "1dimension2phase"],
-        "d1p3": ["d1p3", "1d3p", "1-dimension-3-phase", "1dimension3phase"],
-        "d2p1": ["d2p1", "2d1p", "2-dimension-1-phase", "2dimension1phase"],
-        "d2p2": ["d2p2", "2d1p", "2-dimension-2-phase", "2dimension2phase"],
-        "d2p3": ["d2p3", "2d1p", "2-dimension-3-phase", "2dimension3phase"],
-        "d3p1": ["d3p1", "3d1p", "3-dimension-1-phase", "3dimension1phase"],
-        "d3p2": ["d3p2", "3d1p", "3-dimension-2-phase", "3dimension2phase"],
-        "d3p3": ["d3p3", "3d1p", "3-dimension-3-phase", "3dimension3phase"],
+        "D1P1Solution": [
+            "1d1p",
+            "d1p1solution",
+            "d1p1_solution",
+            "1-dimension-1-phase",
+            "1dimension1phase",
+        ],
+        "D1P2Solution": [
+            "1d2p",
+            "d1p2solution",
+            "d1p2_solution",
+            "1-dimension-2-phase",
+            "1dimension2phase",
+        ],
+        "D1P3Solution": [
+            "1d3p",
+            "d1p3solution",
+            "d1p3_solution",
+            "1-dimension-3-phase",
+            "1dimension3phase",
+        ],
+        "D2P1Solution": [
+            "2d1p",
+            "d2p1solution",
+            "d2p1_solution",
+            "2-dimension-1-phase",
+            "2dimension1phase",
+        ],
+        "D2P2Solution": [
+            "2d1p",
+            "d2p2solution",
+            "d2p2_solution",
+            "2-dimension-2-phase",
+            "2dimension2phase",
+        ],
+        "D2P3Solution": [
+            "2d1p",
+            "d2p3solution",
+            "d2p3_solution",
+            "2-dimension-3-phase",
+            "2dimension3phase",
+        ],
+        "D3P1Solution": [
+            "3d1p",
+            "d3p1solution",
+            "d3p1_solution",
+            "3-dimension-1-phase",
+            "3dimension1phase",
+        ],
+        "D3P2Solution": [
+            "3d1p",
+            "d3p2solution",
+            "d3p2_solution",
+            "3-dimension-2-phase",
+            "3dimension2phase",
+        ],
+        "D3P3Solution": [
+            "3d1p",
+            "d3p3solution",
+            "d3p3_solution",
+            "3-dimension-3-phase",
+            "3dimension3phase",
+        ],
     },
     "neurical": {
-        "pinn": [
+        "PinnSolution": [
             "pinn",
-            "physics informed neural network",
-            "physics-informed-neural-network",
+            "pinnsolution",
+            "pinn_solution",
+            "physics informed neural Network Solution",
+            "physics-informed-neural-Network-Solution",
         ],
-        "deeponet": [
+        "DeepONetSolution": [
             "deeponet",
-            "deep operator network",
-            "deep-operator-network",
+            "deeponetsolution",
+            "deeponet_solution",
+            "deep operator Network Solution",
+            "deep-operator-Network-Solution",
         ],
     },
 }
@@ -65,9 +141,9 @@ class Compiler:
         method : str
             solution method as following:
 
-            - numerical methods: ``['FDM', 'FVM', 'FEM']``.
+            - numerical methods: ``['FdmSolution', 'FvmSolution', 'FemSolution']``.
             - analytical methods: ``['1D1P', '1D2P', etc.]``.
-            - neurical methods: ``['PINN', 'DeepONet']``.
+            - neurical methods: ``['PinnSolution', 'DeepONetSolution']``.
 
         sparse : bool, optional, default: True
             using sparse computing for a better performance.
@@ -85,23 +161,22 @@ class Compiler:
 
     def __add_solution(self, sparse):
         if self.stype == "Numerical":
-            if self.method == "FDM":
-                from reservoirflow.solutions.numerical.fdm import FDM
+            if self.method == "FdmSolution":
+                from reservoirflow.solutions.numerical.fdm_solution import FdmSolution
 
-                self.model.solution = FDM(self.model, sparse)
-            elif self.method == "FVM":
-                from reservoirflow.solutions.numerical.fvm import FVM
+                self.model.solution = FdmSolution(self.model, sparse)
+            elif self.method == "FvmSolution":
+                from reservoirflow.solutions.numerical.fvm_solution import FvmSolution
 
-                self.model.solution = FVM(self.model, sparse)
-            elif self.method == "FEM":
-                from reservoirflow.solutions.numerical.fem import FEM
+                self.model.solution = FvmSolution(self.model, sparse)
+            elif self.method == "FemSolution":
+                from reservoirflow.solutions.numerical.fem_solution import FemSolution
 
-                self.model.solution = FEM(self.model, sparse)
+                self.model.solution = FemSolution(self.model, sparse)
             else:
                 print("[INFO] Numerical solution could not be assigned.")
                 raise ValueError("Not ready.")
         elif self.stype == "Analytical":
-
             D = self.model.grid.D
             if "D1" in self.method:
                 assert D == 1, "D1 solution is only available for 1D grid."
@@ -114,54 +189,74 @@ class Compiler:
                     "Compiler can not use Grid D={D} for method={self.method}."
                 )
 
-            if self.method == "D1P1" and D == 1:
-                from reservoirflow.solutions.analytical.d1p1 import D1P1
+            if self.method == "D1P1Solution" and D == 1:
+                from reservoirflow.solutions.analytical.d1p1_solution import (
+                    D1P1Solution,
+                )
 
-                self.model.solution = D1P1(self.model, sparse)
-            elif self.method == "D1P2" and D == 1:
-                from reservoirflow.solutions.analytical.d1p2 import D1P2
+                self.model.solution = D1P1Solution(self.model, sparse)
+            elif self.method == "D1P2Solution" and D == 1:
+                from reservoirflow.solutions.analytical.d1p2_solution import (
+                    D1P2Solution,
+                )
 
-                self.model.solution = D1P2(self.model, sparse)
-            elif self.method == "D1P3" and D == 1:
-                from reservoirflow.solutions.analytical.d1p3 import D1P3
+                self.model.solution = D1P2Solution(self.model, sparse)
+            elif self.method == "D1P3Solution" and D == 1:
+                from reservoirflow.solutions.analytical.d1p3_solution import (
+                    D1P3Solution,
+                )
 
-                self.model.solution = D1P3(self.model, sparse)
-            elif self.method == "D2P1" and D == 2:
-                from reservoirflow.solutions.analytical.d2p1 import D2P1
+                self.model.solution = D1P3Solution(self.model, sparse)
+            elif self.method == "D2P1Solution" and D == 2:
+                from reservoirflow.solutions.analytical.d2p1_solution import (
+                    D2P1Solution,
+                )
 
-                self.model.solution = D2P1(self.model, sparse)
-            elif self.method == "D2P2" and D == 2:
-                from reservoirflow.solutions.analytical.d2p2 import D2P2
+                self.model.solution = D2P1Solution(self.model, sparse)
+            elif self.method == "D2P2Solution" and D == 2:
+                from reservoirflow.solutions.analytical.d2p2_solution import (
+                    D2P2Solution,
+                )
 
-                self.model.solution = D2P2(self.model, sparse)
-            elif self.method == "D2P3" and D == 2:
-                from reservoirflow.solutions.analytical.d2p3 import D2P3
+                self.model.solution = D2P2Solution(self.model, sparse)
+            elif self.method == "D2P3Solution" and D == 2:
+                from reservoirflow.solutions.analytical.d2p3_solution import (
+                    D2P3Solution,
+                )
 
-                self.model.solution = D2P3(self.model, sparse)
-            elif self.method == "D3P1" and D == 3:
-                from reservoirflow.solutions.analytical.d3p1 import D3P1
+                self.model.solution = D2P3Solution(self.model, sparse)
+            elif self.method == "D3P1Solution" and D == 3:
+                from reservoirflow.solutions.analytical.d3p1_solution import (
+                    D3P1Solution,
+                )
 
-                self.model.solution = D3P1(self.model, sparse)
-            elif self.method == "D3P2" and D == 3:
-                from reservoirflow.solutions.analytical.d3p2 import D3P2
+                self.model.solution = D3P1Solution(self.model, sparse)
+            elif self.method == "D3P2Solution" and D == 3:
+                from reservoirflow.solutions.analytical.d3p2_solution import (
+                    D3P2Solution,
+                )
 
-                self.model.solution = D3P2(self.model, sparse)
-            elif self.method == "D3P3" and D == 3:
-                from reservoirflow.solutions.analytical.d3p3 import D3P3
+                self.model.solution = D3P2Solution(self.model, sparse)
+            elif self.method == "D3P3Solution" and D == 3:
+                from reservoirflow.solutions.analytical.d3p3_solution import (
+                    D3P3Solution,
+                )
 
-                self.model.solution = D3P3(self.model, sparse)
+                self.model.solution = D3P3Solution(self.model, sparse)
             else:
                 print("[INFO] Analytical solution could not be assigned.")
                 raise ValueError("Not ready.")
         elif self.stype == "Neurical":
-            if self.method == "PINN":
-                from reservoirflow.solutions.neurical.pinn import PINN
+            if self.method == "PinnSolution":
+                from reservoirflow.solutions.neurical.pinn_solution import PinnSolution
 
-                self.model.solution = PINN(self.model, sparse)
-            elif self.method == "DeepONet":
-                from reservoirflow.solutions.neurical.deeponet import DeepONet
+                self.model.solution = PinnSolution(self.model, sparse)
+            elif self.method == "DeepONetSolution":
+                from reservoirflow.solutions.neurical.deeponet_solution import (
+                    DeepONetSolution,
+                )
 
-                self.model.solution = DeepONet(self.model, sparse)
+                self.model.solution = DeepONetSolution(self.model, sparse)
             else:
                 print("[INFO] Neurical solution could not be assigned.")
                 raise ValueError("Not ready.")
@@ -190,46 +285,46 @@ class Compiler:
 
     def __set_method(self, method):
         if self.stype == "Numerical":
-            if method.lower() in METHODS["numerical"]["fdm"]:
-                self.method = "FDM"
-            elif method.lower() in METHODS["numerical"]["fvm"]:
-                self.method = "FVM"
-            elif method.lower() in METHODS["numerical"]["fem"]:
-                self.method = "FEM"
+            if method.lower() in METHODS["numerical"]["FdmSolution"]:
+                self.method = "FdmSolution"
+            elif method.lower() in METHODS["numerical"]["FvmSolution"]:
+                self.method = "FvmSolution"
+            elif method.lower() in METHODS["numerical"]["FemSolution"]:
+                self.method = "FemSolution"
             else:
                 raise ValueError(
-                    f"Unknown value in method argument for stype={self.stype}. "
+                    f"Unknown value ('{method}') in method argument for stype={self.stype}. "
                     + f"Value must be in {list(METHODS['numerical'].keys())}."
                 )
         elif self.stype == "Analytical":
-            if method.lower() in METHODS["analytical"]["d1p1"]:
-                self.method = "D1P1"
-            elif method.lower() in METHODS["analytical"]["d1p2"]:
-                self.method = "D1P2"
-            elif method.lower() in METHODS["analytical"]["d1p3"]:
-                self.method = "D1P3"
-            elif method.lower() in METHODS["analytical"]["d2p1"]:
-                self.method = "D2P1"
-            elif method.lower() in METHODS["analytical"]["d2p2"]:
-                self.method = "D2P2"
-            elif method.lower() in METHODS["analytical"]["d2p3"]:
-                self.method = "D2P3"
-            elif method.lower() in METHODS["analytical"]["d3p1"]:
-                self.method = "D3P1"
-            elif method.lower() in METHODS["analytical"]["d3p2"]:
-                self.method = "D3P2"
-            elif method.lower() in METHODS["analytical"]["d3p3"]:
-                self.method = "D3P3"
+            if method.lower() in METHODS["analytical"]["D1P1Solution"]:
+                self.method = "D1P1Solution"
+            elif method.lower() in METHODS["analytical"]["D1P2Solution"]:
+                self.method = "D1P2Solution"
+            elif method.lower() in METHODS["analytical"]["D1P3Solution"]:
+                self.method = "D1P3Solution"
+            elif method.lower() in METHODS["analytical"]["D2P1Solution"]:
+                self.method = "D2P1Solution"
+            elif method.lower() in METHODS["analytical"]["D2P2Solution"]:
+                self.method = "D2P2Solution"
+            elif method.lower() in METHODS["analytical"]["D2P3Solution"]:
+                self.method = "D2P3Solution"
+            elif method.lower() in METHODS["analytical"]["D3P1Solution"]:
+                self.method = "D3P1Solution"
+            elif method.lower() in METHODS["analytical"]["D3P2Solution"]:
+                self.method = "D3P2Solution"
+            elif method.lower() in METHODS["analytical"]["D3P3Solution"]:
+                self.method = "D3P3Solution"
             else:
                 raise ValueError(
                     f"Unknown value in method argument for stype={self.stype}. "
                     + f"Value must be in {list(METHODS['analytical'].keys())}."
                 )
         elif self.stype == "Neurical":
-            if method.lower() in METHODS["neurical"]["pinn"]:
-                self.method = "PINN"
-            elif method.lower() in METHODS["neurical"]["deeponet"]:
-                self.method = "DeepONet"
+            if method.lower() in METHODS["neurical"]["PinnSolution"]:
+                self.method = "PinnSolution"
+            elif method.lower() in METHODS["neurical"]["DeepONetSolution"]:
+                self.method = "DeepONetSolution"
             else:
                 raise ValueError(
                     f"Unknown value in method argument for stype={self.stype}. "
@@ -262,9 +357,9 @@ class Compiler:
 
 
 if __name__ == "__main__":
-    compiler = Compiler(stype="numerical", method="fdm")
+    compiler = Compiler(stype="numerical", method="FdmSolution")
     print(compiler)
     compiler.fit()
-    compiler = Compiler(stype="neurical", method="pinn")
+    compiler = Compiler(stype="neurical", method="PinnSolution")
     print(compiler)
     compiler.fit()

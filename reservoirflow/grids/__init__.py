@@ -5,7 +5,7 @@ grids
 
 .. note::
     Flow dimension is defined based on grid shape.
-    
+
 Information:
     - design pattern: inheritance, abstraction
     - base class: `Grid </api/reservoirflow.grids.Grid.html>`_
@@ -14,17 +14,17 @@ Information:
 
 __all__ = [
     "Grid",
-    "RegularCartesian",
-    "Radial",
-    "IrregularCartesian",
+    "IrregularCartesianGrid",
+    "RadialGrid",
+    "RegularCartesianGrid",
 ]
 
 from .grid import Grid
-from .irregular_cartesian import IrregularCartesian
-from .radial import Radial
-from .regular_cartesian import RegularCartesian
+from .irregular_cartesian_grid import IrregularCartesianGrid
+from .radial_grid import RadialGrid
+from .regular_cartesian_grid import RegularCartesianGrid
 
-# __all_exports = [RegularCartesian]
+# __all_exports = [RegularCartesianGrid]
 
 # for e in __all_exports:
 #     e.__module__ = __name__

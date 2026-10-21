@@ -1,7 +1,5 @@
 import unittest
 
-import numpy as np
-
 from reservoirflow import grids
 
 
@@ -294,7 +292,7 @@ class Test_3D(unittest.TestCase):
 
 
 unify = False
-grid_1d_x = grids.RegularCartesian(
+grid_1d_x = grids.RegularCartesianGrid(
     nx=3,
     ny=1,
     nz=1,
@@ -309,7 +307,7 @@ grid_1d_x = grids.RegularCartesian(
     unify=unify,
 )
 
-grid_1d_y = grids.RegularCartesian(
+grid_1d_y = grids.RegularCartesianGrid(
     nx=1,
     ny=3,
     nz=1,
@@ -324,7 +322,7 @@ grid_1d_y = grids.RegularCartesian(
     unify=unify,
 )
 
-grid_1d_z = grids.RegularCartesian(
+grid_1d_z = grids.RegularCartesianGrid(
     nx=1,
     ny=1,
     nz=3,
@@ -339,7 +337,7 @@ grid_1d_z = grids.RegularCartesian(
     unify=unify,
 )
 
-grid_2d_xy = grids.RegularCartesian(
+grid_2d_xy = grids.RegularCartesianGrid(
     nx=3,
     ny=3,
     nz=1,
@@ -353,7 +351,7 @@ grid_2d_xy = grids.RegularCartesian(
     verbose=False,
     unify=unify,
 )
-grid_2d_xz = grids.RegularCartesian(
+grid_2d_xz = grids.RegularCartesianGrid(
     nx=3,
     ny=1,
     nz=3,
@@ -367,7 +365,7 @@ grid_2d_xz = grids.RegularCartesian(
     verbose=False,
     unify=unify,
 )
-grid_2d_yz = grids.RegularCartesian(
+grid_2d_yz = grids.RegularCartesianGrid(
     nx=1,
     ny=3,
     nz=3,
@@ -381,7 +379,7 @@ grid_2d_yz = grids.RegularCartesian(
     verbose=False,
     unify=unify,
 )
-grid_3d = grids.RegularCartesian(
+grid_3d = grids.RegularCartesianGrid(
     nx=3,
     ny=3,
     nz=3,

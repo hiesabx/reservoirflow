@@ -20,7 +20,7 @@
     report(prop: str, showindex: bool, ifmt: int)
     set_units(unit: str)
     }
-    class BlackOil {
+    class BlackOilModel {
     As : ndarray
     RHS : ndarray
     alpha
@@ -82,65 +82,65 @@
     model
     stype : str
     }
-    class Compositional {
+    class CompositionalModel {
     name : str
     }
-    class D1P1 {
+    class D1P1Solution {
     name : str
     run_ctime : int
     calc_solution(N, scale, output_range, clean)
     run(nsteps, threading, vectorize, check_MB, print_arrays, isolver)
     solve()*
     }
-    class D1P2 {
+    class D1P2Solution {
     name : str
     run()*
     solve()*
     }
-    class D1P3 {
+    class D1P3Solution {
     name : str
     run()*
     solve()*
     }
-    class D2P1 {
+    class D2P1Solution {
     name : str
     run()*
     solve()*
     }
-    class D2P2 {
+    class D2P2Solution {
     name : str
     run()*
     solve()*
     }
-    class D2P3 {
+    class D2P3Solution {
     name : str
     run()*
     solve()*
     }
-    class D3P1 {
+    class D3P1Solution {
     name : str
     run()*
     solve()*
     }
-    class D3P2 {
+    class D3P2Solution {
     name : str
     run()*
     solve()*
     }
-    class D3P3 {
+    class D3P3Solution {
     name : str
     run()*
     solve()*
     }
-    class DeepONet {
+    class DeepONetSolution {
     name : str
     run()*
     solve()*
     }
-    class Directional {
+    class DirectionalWell {
     name : str
     }
-    class Dummy {
+    class DummyScaler {
     name : str
     fit(v, axis)
     fit_transform(v, axis)
@@ -148,7 +148,7 @@
     set_output_range(output_range)
     transform(v)
     }
-    class FDM {
+    class FdmSolution {
     A : lil_matrix, ndarray
     A_ : lil_matrix
     bdict_v : dict
@@ -166,12 +166,12 @@
     run(nsteps, threading, vectorize, check_MB, print_arrays, isolver)
     solve(threading, vectorize, check_MB, update, print_arrays, isolver)
     }
-    class FEM {
+    class FemSolution {
     name : str
     run()*
     solve()*
     }
-    class FVM {
+    class FvmSolution {
     name : str
     run()*
     solve()*
@@ -208,7 +208,7 @@
     ones()*
     transpose()*
     }
-    class MinMax {
+    class MinMaxScaler {
     Vmax
     Vmin
     name : str
@@ -237,7 +237,7 @@
     set_comp(comp: float)
     solve()
     }
-    class MultiCell {
+    class MultiCellWell {
     name : str
     }
     class MultiPhase {
@@ -248,7 +248,7 @@
     ones()*
     transpose()*
     }
-    class PINN {
+    class PinnSolution {
     name : str
     fit()*
     run()*
@@ -262,7 +262,7 @@
     class Radial {
     name : str
     }
-    class RegularCartesian {
+    class RegularCartesianGrid {
     Ax
     Ay
     Az
@@ -395,7 +395,7 @@
     set_output_range(output_range: tuple)*
     transform(v)*
     }
-    class SingleCell {
+    class SingleCellWell {
     cell_id
     constrain
     name : str
@@ -417,7 +417,7 @@
     set_r(r)
     set_s(s)
     }
-    class SinglePhase {
+    class SinglePhaseFluid {
     B : float
     FVF
     density
@@ -449,7 +449,7 @@
     ones()*
     transpose()*
     }
-    class Thermal {
+    class ThermalModel {
     name : str
     }
     class ThreePhase {
@@ -467,48 +467,48 @@
     TensorFlow --|> Backend
     Fluid --|> Base
     MultiPhase --|> Fluid
-    SinglePhase --|> Fluid
+    SinglePhaseFluid --|> Fluid
     ThreePhase --|> Fluid
     TwoPhase --|> Fluid
     Grid --|> Base
     IrregularCartesian --|> Grid
     Radial --|> Grid
-    RegularCartesian --|> Grid
-    BlackOil --|> Model
-    Compositional --|> Model
+    RegularCartesianGrid --|> Grid
+    BlackOilModel --|> Model
+    CompositionalModel --|> Model
     Model --|> Base
-    Thermal --|> Model
-    Dummy --|> Scaler
-    MinMax --|> Scaler
-    D1P1 --|> Solution
-    D1P2 --|> Solution
-    D1P3 --|> Solution
-    D2P1 --|> Solution
-    D2P2 --|> Solution
-    D2P3 --|> Solution
-    D3P1 --|> Solution
-    D3P2 --|> Solution
-    D3P3 --|> Solution
-    DeepONet --|> Solution
-    PINN --|> Solution
-    FDM --|> Solution
-    FEM --|> Solution
-    FVM --|> Solution
-    Directional --|> Well
-    MultiCell --|> Well
-    SingleCell --|> Well
+    ThermalModel --|> Model
+    DummyScaler --|> Scaler
+    MinMaxScaler --|> Scaler
+    D1P1Solution --|> Solution
+    D1P2Solution --|> Solution
+    D1P3Solution --|> Solution
+    D2P1Solution --|> Solution
+    D2P2Solution --|> Solution
+    D2P3Solution --|> Solution
+    D3P1Solution --|> Solution
+    D3P2Solution --|> Solution
+    D3P3Solution --|> Solution
+    DeepONetSolution --|> Solution
+    PinnSolution --|> Solution
+    FdmSolution --|> Solution
+    FemSolution --|> Solution
+    FvmSolution --|> Solution
+    DirectionalWell --|> Well
+    MultiCellWell --|> Well
+    SingleCellWell --|> Well
     Well --|> Base
-    Dummy --* BlackOil : time_scaler
-    Dummy --* BlackOil : space_scaler
-    Dummy --* BlackOil : pressure_scaler
-    Dummy --* BlackOil : rate_scaler
-    MinMax --* BlackOil : time_scaler
-    MinMax --* BlackOil : space_scaler
-    MinMax --* BlackOil : pressure_scaler
-    MinMax --* BlackOil : rate_scaler
+    DummyScaler --* BlackOilModel : time_scaler
+    DummyScaler --* BlackOilModel : space_scaler
+    DummyScaler --* BlackOilModel : pressure_scaler
+    DummyScaler --* BlackOilModel : rate_scaler
+    MinMaxScaler --* BlackOilModel : time_scaler
+    MinMaxScaler --* BlackOilModel : space_scaler
+    MinMaxScaler --* BlackOilModel : pressure_scaler
+    MinMaxScaler --* BlackOilModel : rate_scaler
     Compiler --* Model : compiler
-    Fluid --o BlackOil : fluid
-    Grid --o BlackOil : grid
+    Fluid --o BlackOilModel : fluid
+    Grid --o BlackOilModel : grid
 
   </div>
 </body>

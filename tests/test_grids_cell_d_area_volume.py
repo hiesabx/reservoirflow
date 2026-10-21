@@ -1,7 +1,5 @@
 import unittest
 
-import numpy as np
-
 from reservoirflow import grids
 
 
@@ -74,7 +72,7 @@ class TestApp(unittest.TestCase):
 dx = [11, 21, 31, 41]
 dy = [12, 22, 32, 42]
 dz = [13, 23, 33, 43]
-grid = grids.RegularCartesian(
+grid = grids.RegularCartesianGrid(
     nx=2,
     ny=2,
     nz=2,

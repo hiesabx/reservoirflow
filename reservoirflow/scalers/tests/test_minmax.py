@@ -2,15 +2,15 @@ import unittest
 
 import numpy as np
 
-from reservoirflow.scalers import MinMax
+from reservoirflow.scalers import MinMaxScaler
 
 
 class TestMinMax(unittest.TestCase):
     def test_create(self):
-        MinMax((0, 1))
-        MinMax(output_range=(0, 1))
-        MinMax(output_range=(0, 1), input_range=None)
-        MinMax(output_range=(0, 1), input_range=(10, 100))
+        MinMaxScaler((0, 1))
+        MinMaxScaler(output_range=(0, 1))
+        MinMaxScaler(output_range=(0, 1), input_range=None)
+        MinMaxScaler(output_range=(0, 1), input_range=(10, 100))
 
     def test_fit(self):
         arr = np.array(
@@ -21,7 +21,7 @@ class TestMinMax(unittest.TestCase):
                 [0, 1, 4, 40, 10000],
             ]
         )
-        scaler = MinMax((0, 1))
+        scaler = MinMaxScaler((0, 1))
         scaler.fit(arr)
         print(scaler.transform(arr))
 

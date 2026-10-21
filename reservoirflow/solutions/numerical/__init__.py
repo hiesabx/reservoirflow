@@ -2,15 +2,15 @@
 numerical
 =========
 
-This module provides solutions using the scientific computing approach 
+This module provides solutions using the scientific computing approach
 based on discretized :term:`PDE` where a system of linear equations is
-built. Additionally, this module includes ``solvers`` which is used to 
+built. Additionally, this module includes ``solvers`` which is used to
 solve the system  of linear equations.
 
-List of numerical solutions: 
-    * ``FDM``: Finite-Difference-Method
-    * ``FVM``: Finite-Volume-Method (not available)
-    * ``FEM``: Finite-Element-Method (not available)
+List of numerical solutions:
+    * ``FdmSolution``: Finite-Difference-Method
+    * ``FvmSolution``: Finite-Volume-Method (not available)
+    * ``FemSolution``: Finite-Element-Method (not available)
 
 Information:
     - design pattern: inheritance, abstraction
@@ -19,14 +19,14 @@ Information:
 """
 
 __all__ = [
-    "FDM",
-    "FVM",
-    "FEM",
+    "FdmSolution",
+    "FemSolution",
+    "FvmSolution",
     "solvers",
 ]
 
 
 from . import solvers
-from .fdm import FDM
-from .fem import FEM
-from .fvm import FVM
+from .fdm_solution import FdmSolution
+from .fem_solution import FemSolution
+from .fvm_solution import FvmSolution

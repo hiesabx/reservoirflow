@@ -9,19 +9,19 @@ Information:
 """
 
 __all__ = [
+    "BlackOilModel",
+    "CompositionalModel",
     "Model",
-    "BlackOil",
-    "Compositional",
-    "Thermal",
+    "ThermalModel",
 ]
 
 
-from .black_oil import BlackOil
-from .compositional import Compositional
+from .black_oil_model import BlackOilModel
+from .compositional_model import CompositionalModel
 from .model import Model
-from .thermal import Thermal
+from .thermal_model import ThermalModel
 
-# __all_exports = [BlackOil]
+# __all_exports = [BlackOilModel]
 
 # for e in __all_exports:
 #     e.__module__ = __name__

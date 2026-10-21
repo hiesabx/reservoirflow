@@ -3,8 +3,8 @@
 =======
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from reservoirflow.plots.plot import Plot
 
@@ -64,7 +64,7 @@ class Contour1D(Plot):
             string from a list ['contourf', 'contour', 'pcolor'], by default
             'contourf'
         title : str, optional
-            string, by default 'FDM'
+            string, by default 'FdmSolution'
         cbar_num : int, optional
             number of contour colors, by default 11
 
@@ -78,6 +78,7 @@ class Contour1D(Plot):
             fig, ax = plt.subplots(figsize=(6, 3))
 
         X, Y = self.Data[name]
+        Y = np.squeeze(Y)
         t = X[:, :, 0]
         x = X[:, :, 1]
         if Y_range is None:
@@ -147,7 +148,7 @@ class Contour1D(Plot):
         X : ndarray
             2D-array where rows are time steps and columns are cells centers.
         Y : ndarray
-            output based on FDM.
+            output based on FdmSolution.
         Y_h : ndarray
             output based on PINNs.
         fig_type : str, optional

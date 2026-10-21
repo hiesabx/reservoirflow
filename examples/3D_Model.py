@@ -1,6 +1,6 @@
-from reservoirflow import fluids, grids, models, wells
+from reservoirflow import fluids, grids, models
 
-grid = grids.RegularCartesian(
+grid = grids.RegularCartesianGrid(
     nx=2,
     ny=2,
     nz=1,
@@ -14,9 +14,9 @@ grid = grids.RegularCartesian(
     comp=0,
     dtype="double",
 )
-fluid = fluids.SinglePhase(mu=1.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
+fluid = fluids.SinglePhaseFluid(mu=1.5, B=1, rho=50, comp=1 * 10**-5, dtype="double")
 grid.show("id")
-model = models.BlackOil(grid, fluid, pi=6000, dt=5, dtype="double")
+model = models.BlackOilModel(grid, fluid, pi=6000, dt=5, dtype="double")
 model.set_well(cell_id=9, q=-400, pwf=1500, s=0, r=3.5)
 model.set_boundaries({0: ("rate", 0)})
 model.run(nsteps=30, sparse=True)

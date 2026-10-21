@@ -17,14 +17,14 @@ Information:
 __all__ = [
     "Scaler",
     # "ScalerDC",
-    "Dummy",
-    "MinMax",
-    "LogMinMax",
+    "DummyScaler",
+    "MinMaxScaler",
+    "LogMinMaxScaler",
 ]
 
+from .dummy_scaler import DummyScaler
+from .logminmax_scaler import LogMinMaxScaler
+from .minmax_scaler import MinMaxScaler
 from .scaler import Scaler
-from .dummy import Dummy
-from .minmax import MinMax
-from .logminmax import LogMinMax
 
 # from .scalerdc import ScalerDC

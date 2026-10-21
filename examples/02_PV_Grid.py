@@ -1,13 +1,10 @@
-from re import S
-
 import numpy as np
 import pyvista as pv
-from numpy import size
 
 from reservoirflow import grids
 
 z = [3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62]
-grid = grids.RegularCartesian(
+grid = grids.RegularCartesianGrid(
     nx=4, ny=1, nz=1, dx=300, dy=350, dz=40, z=z, phi=0.27, kx=270
 )
 

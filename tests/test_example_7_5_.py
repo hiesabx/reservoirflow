@@ -1,5 +1,4 @@
 import unittest
-import warnings
 
 import numpy as np
 
@@ -51,7 +50,9 @@ class TestApp(unittest.TestCase):
         rates_desired = np.array(
             [600.0000000000247, 0.0, 0.0, 0.0, -600.0000000000036, 0.0]
         )
-        np.testing.assert_almost_equal(model.solution.rates[-1], rates_desired, decimal=5)
+        np.testing.assert_almost_equal(
+            model.solution.rates[-1], rates_desired, decimal=5
+        )
 
     def test_simulation_run(self):
         model = create_model(sparse=False)
@@ -62,7 +63,7 @@ class TestApp(unittest.TestCase):
 
 def create_model(sparse):
     z = np.array([3212.73, 3182.34, 3121.56, 3060.78, 3000, 2969.62])
-    grid = grids.RegularCartesian(
+    grid = grids.RegularCartesianGrid(
         nx=4,
         ny=1,
         nz=1,
@@ -74,11 +75,11 @@ def create_model(sparse):
         kx=270,
         dtype="double",
     )
-    fluid = fluids.SinglePhase(mu=0.5, B=1, rho=50, dtype="double")
-    model = models.BlackOil(grid, fluid, dtype="double", verbose=False)
+    fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, rho=50, dtype="double")
+    model = models.BlackOilModel(grid, fluid, dtype="double", verbose=False)
     model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
-    model.compile(stype="numerical", method="fdm", sparse=sparse)
+    model.compile(stype="numerical", method="FdmSolution", sparse=sparse)
     return model
 
 

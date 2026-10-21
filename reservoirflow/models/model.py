@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+
+from tabulate import tabulate
 
 from reservoirflow.base import Base
 from reservoirflow.solutions.compiler import Compiler
-from tabulate import tabulate
 
 
 class Model(ABC, Base):
@@ -102,9 +103,9 @@ class Model(ABC, Base):
         method : str
             solution method as following:
 
-            - 'numerical' methods: ``['FDM', 'FVM', 'FEM']``.
+            - 'numerical' methods: ``['FdmSolution', 'FvmSolution', 'FemSolution']``.
             - 'analytical' methods: ``['1D1P', '1D2P', etc.]``.
-            - 'neurical' methods: ``['PINN', 'DeepONet', etc.]``.
+            - 'neurical' methods: ``['PinnSolution', 'DeepONetSolution', etc.]``.
 
         sparse : bool, optional, default: True
             using sparse computing for a better performance.
@@ -169,7 +170,7 @@ class Model(ABC, Base):
         This method will print a table with the following columns:
         - Name: Name of the solution.
         - stype: Type of the solution (e.g., 'Numerical', 'Analytical').
-        - method: Method used in the solution (e.g., 'FDM', 'FVM').
+        - method: Method used in the solution (e.g., 'FdmSolution', 'FvmSolution').
         - sparse: Whether the solution uses sparse computing.
         - tstep: Time step of the solution.
         - nsteps: Number of steps in the solution.
@@ -275,7 +276,6 @@ class Model(ABC, Base):
             "The model is not compiled.",
             "Use model.compile() to add solve() and run() methods.",
         )
-        return None
 
     def run(self, **kwargs):
         """Solve multiple timesteps.

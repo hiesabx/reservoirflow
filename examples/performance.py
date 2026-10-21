@@ -3,7 +3,7 @@ import time
 from reservoirflow import grids
 
 t1 = time.time()
-grid = grids.RegularCartesian(nx=3, ny=1, nz=1, dx=10, dy=10, dz=5, phi=0.4, kx=10)
+grid = grids.RegularCartesianGrid(nx=3, ny=1, nz=1, dx=10, dy=10, dz=5, phi=0.4, kx=10)
 for i in range(1000):
     id = grid.get_cell_id((1, 0, 0))
     id = grid.get_cell_id((2, 0, 0))

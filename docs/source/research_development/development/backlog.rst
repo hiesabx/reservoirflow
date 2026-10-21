@@ -34,32 +34,32 @@ Improving Current Modules
 
 ``reservoirflow.models``
 ^^^^^^^^^^^^^^^^^^^^^^^^
-- `Compositional </api/reservoirflow.models.Compositional.html>`_ Model.
-- `Thermal </api/reservoirflow.models.Thermal.html>`_ Model.
+- `CompositionalModel </api/reservoirflow.models.CompositionalModel.html>`_ Model.
+- `ThermalModel </api/reservoirflow.models.ThermalModel.html>`_ Model.
 
 ``reservoirflow.solutions``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - `analytical </api/reservoirflow.solutions.analytical.html>`_ Solutions:
-  `D1P1  </api/reservoirflow.solutions.analytical.D1P1.html>`_, 
-  `D1P2  </api/reservoirflow.solutions.analytical.D1P2.html>`_, 
-  `D1P3  </api/reservoirflow.solutions.analytical.D1P3.html>`_, 
-  `D2P1  </api/reservoirflow.solutions.analytical.D2P1.html>`_, 
-  `D2P2  </api/reservoirflow.solutions.analytical.D2P2.html>`_, 
-  `D2P3  </api/reservoirflow.solutions.analytical.D2P3.html>`_, 
-  `D3P1  </api/reservoirflow.solutions.analytical.D3P1.html>`_, 
-  `D3P2  </api/reservoirflow.solutions.analytical.D3P2.html>`_, 
-  `D3P3  </api/reservoirflow.solutions.analytical.D3P3.html>`_.
+  `D1P1Solution  </api/reservoirflow.solutions.analytical.D1P1Solution.html>`_, 
+  `D1P2Solution  </api/reservoirflow.solutions.analytical.D1P2Solution.html>`_, 
+  `D1P3Solution  </api/reservoirflow.solutions.analytical.D1P3Solution.html>`_, 
+  `D2P1Solution  </api/reservoirflow.solutions.analytical.D2P1Solution.html>`_, 
+  `D2P2Solution  </api/reservoirflow.solutions.analytical.D2P2Solution.html>`_, 
+  `D2P3Solution  </api/reservoirflow.solutions.analytical.D2P3Solution.html>`_, 
+  `D3P1Solution  </api/reservoirflow.solutions.analytical.D3P1Solution.html>`_, 
+  `D3P2Solution  </api/reservoirflow.solutions.analytical.D3P2Solution.html>`_, 
+  `D3P3Solution  </api/reservoirflow.solutions.analytical.D3P3Solution.html>`_.
 - `neurical </api/reservoirflow.solutions.neurical.html>`_ Solutions:
-  `PINN </api/reservoirflow.solutions.neurical.PINN.html>`_, 
-  `DeepONet </api/reservoirflow.solutions.neurical.DeepONet.html>`_.
+  `PinnSolution </api/reservoirflow.solutions.neurical.PinnSolution.html>`_, 
+  `DeepONetSolution </api/reservoirflow.solutions.neurical.DeepONetSolution.html>`_.
 - `numerical </api/reservoirflow.solutions.numerical.html>`_ Solutions:
-  `FVM </api/reservoirflow.solutions.numerical.FVM.html>`_, 
-  `FEM </api/reservoirflow.solutions.numerical.FEM.html>`_.
+  `FvmSolution </api/reservoirflow.solutions.numerical.FvmSolution.html>`_, 
+  `FemSolution </api/reservoirflow.solutions.numerical.FemSolution.html>`_.
 
 ``reservoirflow.wells``
 ^^^^^^^^^^^^^^^^^^^^^^^
-- `MultiCell </api/reservoirflow.wells.MultiCell.html>`_ Well.
-- `Directional </api/reservoirflow.wells.Directional.html>`_ Well.
+- `MultiCellWell </api/reservoirflow.wells.MultiCellWell.html>`_ Well.
+- `DirectionalWell </api/reservoirflow.wells.DirectionalWell.html>`_ Well.
 
 ``reservoirflow.backends``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

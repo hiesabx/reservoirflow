@@ -113,7 +113,7 @@ class TestApp(unittest.TestCase):
 
 
 def create_model(sparse):
-    grid = grids.RegularCartesian(
+    grid = grids.RegularCartesianGrid(
         nx=2,
         ny=2,
         nz=1,
@@ -126,13 +126,13 @@ def create_model(sparse):
         dtype="double",
         unify=False,
     )
-    fluid = fluids.SinglePhase(
+    fluid = fluids.SinglePhaseFluid(
         mu=3.5,
         B=1,
         rho=50,
         dtype="double",
     )
-    model = models.BlackOil(grid, fluid, dtype="double", verbose=False)
+    model = models.BlackOilModel(grid, fluid, dtype="double", verbose=False)
     model.set_well(cell_id=6, pwf=2000, s=0, r=3)
     model.set_well(cell_id=9, q=-600, s=0, r=3)
     model.set_boundaries(
@@ -145,7 +145,7 @@ def create_model(sparse):
             14: ("rate", -200),
         }
     )
-    model.compile(stype="numerical", method="fdm", sparse=sparse)
+    model.compile(stype="numerical", method="FdmSolution", sparse=sparse)
     return model
 
 

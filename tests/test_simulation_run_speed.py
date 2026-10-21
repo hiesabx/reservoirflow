@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -11,7 +10,7 @@ show_result = False
 if generate_data:
 
     def create_model(n):
-        grid = grids.RegularCartesian(
+        grid = grids.RegularCartesianGrid(
             nx=n,
             ny=1,
             nz=1,
@@ -24,10 +23,10 @@ if generate_data:
             dtype="double",
             unify=False,
         )
-        fluid = fluids.SinglePhase(
+        fluid = fluids.SinglePhaseFluid(
             mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double"
         )
-        model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
+        model = models.BlackOilModel(grid, fluid, pi=3000, dt=5, dtype="double")
         id = grid.cells_id[0]
         model.set_well(cell_id=id, q=-400, pwf=1500, s=0, r=3)
         # model.set_boundaries({0: ("rate", 0)})

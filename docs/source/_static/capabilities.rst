@@ -6,19 +6,19 @@ A long-term plan with high ambitions is already in place for this library. As of
 ============================ ======================= ============ ================== =================================================
 **Feature**                  **Type**                **Support**  **Starting From**  **Comment**
 ============================ ======================= ============ ================== =================================================
-**Model Type**               `BlackOil`_             yes          ``v0.1.0``         only single phase in regular cartesian grids.
-\                            Compositional           no           ``-``              \
-\                            Thermal                 no           ``-``              \
+**Model Type**               `BlackOilModel`_             yes          ``v0.1.0``         only single phase in regular cartesian grids.
+\                            CompositionalModel           no           ``-``              \
+\                            ThermalModel                 no           ``-``              \
 **Flow Dimensions**          1D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.
 \                            2D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.
 \                            3D                      yes          ``v0.1.0``         Flow dimension is defined based on grid shape.
-**Grid Types**               `RegularCartesian`_     yes          ``v0.1.0``         \
+**Grid Types**               `RegularCartesianGrid`_     yes          ``v0.1.0``         \
 \                            Radial                  no           ``-``              \
 \                            Irregular Cartesian     no           ``-``              \
-**Fluid Phases**             `SinglePhase`_          yes          ``v0.1.0``         \
+**Fluid Phases**             `SinglePhaseFluid`_          yes          ``v0.1.0``         \
 \                            Two Phases              no           ``-``              \
 \                            Three Phases            no           ``-``              \
-\                            Compositional           no           ``-``              \
+\                            CompositionalModel           no           ``-``              \
 **Fluid Compressibility**    Incompressible          yes          ``v0.1.0``         \
 \                            Slightly Compressible   yes          ``v0.1.0``         \
 \                            Compressible            no           ``-``              \
@@ -28,11 +28,11 @@ A long-term plan with high ambitions is already in place for this library. As of
 \                            Slim-Tube               no           ``-``              \
 **Well Types**               Single Cell             yes          ``v0.1.0``         \
 \                            Multiple Cells          no           ``-``              \
-\                            Directional             no           ``-``              \
+\                            DirectionalWell             no           ``-``              \
 **History Matching**         Conventional            no           ``-``              \
 \                            Machine Learning        no           ``-``              \
 **Production Optimization**  Reinforcement Learning  no           ``-``              \
-**Solutions**                Numerical [FDM]         yes          ``v0.1.0``         Requires an `Initializer` and a `Solver`
+**Solutions**                Numerical [FdmSolution]         yes          ``v0.1.0``         Requires an `Initializer` and a `Solver`
 \                            Analytical [1D]         yes          ``v0.1.0``         Available only for `1D Single Phase` problems.
 \                            Neurical [1D]           yes          ``v0.1.0``         Neural networks based solution (e.g., PINNs).
 **Numerical Initializers**   Vectorized              yes          ``v0.1.0``         Used for efficient computing.
@@ -50,9 +50,9 @@ A long-term plan with high ambitions is already in place for this library. As of
 (*) *Innovative solution introduced within this work.*
 
 .. Links:
-.. _RegularCartesian: /api/reservoirflow.grids.RegularCartesian.html
-.. _BlackOil: /api/reservoirflow.models.BlackOil.html
-.. _SinglePhase: /api/reservoirflow.fluids.SinglePhase.html
+.. _RegularCartesian: /api/reservoirflow.grids.RegularCartesianGrid.html
+.. _BlackOil: /api/reservoirflow.models.BlackOilModel.html
+.. _SinglePhase: /api/reservoirflow.fluids.SinglePhaseFluid.html
 
 |
 

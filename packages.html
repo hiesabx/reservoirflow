@@ -48,17 +48,17 @@
           }
           class black_oil {
           }
-          class compositional {
+          class CompositionalModel {
           }
           class model {
           }
-          class thermal {
+          class ThermalModel {
           }
           class scalers {
           }
-          class dummy {
+          class DummyScaler {
           }
-          class minmax {
+          class MinMaxScaler {
           }
           class scaler {
           }
@@ -68,39 +68,39 @@
           }
           class analytical {
           }
-          class d1p1 {
+          class D1P1Solution {
           }
-          class d1p2 {
+          class D1P2Solution {
           }
-          class d1p3 {
+          class D1P3Solution {
           }
-          class d2p1 {
+          class D2P1Solution {
           }
-          class d2p2 {
+          class D2P2Solution {
           }
-          class d2p3 {
+          class D2P3Solution {
           }
-          class d3p1 {
+          class D3P1Solution {
           }
-          class d3p2 {
+          class D3P2Solution {
           }
-          class d3p3 {
+          class D3P3Solution {
           }
           class compiler {
           }
           class neurical {
           }
-          class deeponet {
+          class DeepONetSolution {
           }
-          class pinn {
+          class PinnSolution {
           }
           class numerical {
           }
-          class fdm {
+          class FdmSolution {
           }
-          class fem {
+          class FemSolution {
           }
-          class fvm {
+          class FvmSolution {
           }
           class solvers {
           }
@@ -116,7 +116,7 @@
           }
           class wells {
           }
-          class directional {
+          class DirectionalWell {
           }
           class multi_cell {
           }
@@ -156,76 +156,76 @@
           regular_cartesian --> utils
           regular_cartesian --> helpers
           models --> black_oil
-          models --> compositional
+          models --> CompositionalModel
           models --> model
-          models --> thermal
+          models --> ThermalModel
           black_oil --> reservoirflow
           black_oil --> model
           black_oil --> helpers
-          compositional --> model
+          CompositionalModel --> model
           model --> base
           model --> compiler
-          thermal --> model
-          scalers --> dummy
-          scalers --> minmax
+          ThermalModel --> model
+          scalers --> DummyScaler
+          scalers --> MinMaxScaler
           scalers --> scaler
-          dummy --> scaler
-          minmax --> scaler
+          DummyScaler --> scaler
+          MinMaxScaler --> scaler
           solutions --> compiler
           solutions --> solution
-          analytical --> d1p1
-          analytical --> d1p2
-          analytical --> d1p3
-          analytical --> d2p1
-          analytical --> d2p2
-          analytical --> d2p3
-          analytical --> d3p1
-          analytical --> d3p2
-          analytical --> d3p3
-          d1p1 --> reservoirflow
-          d1p1 --> scalers
-          d1p1 --> solution
-          d1p1 --> profme
-          d1p2 --> solution
-          d1p3 --> solution
-          d2p1 --> solution
-          d2p2 --> solution
-          d2p3 --> solution
-          d3p1 --> solution
-          d3p2 --> solution
-          d3p3 --> solution
-          compiler --> d1p1
-          compiler --> d1p2
-          compiler --> d1p3
-          compiler --> d2p1
-          compiler --> d2p2
-          compiler --> d2p3
-          compiler --> d3p1
-          compiler --> d3p2
-          compiler --> d3p3
-          compiler --> deeponet
-          compiler --> pinn
-          compiler --> fdm
-          compiler --> fem
-          compiler --> fvm
-          neurical --> deeponet
-          neurical --> pinn
-          deeponet --> solution
-          pinn --> solution
-          numerical --> fdm
-          numerical --> fem
-          numerical --> fvm
-          fdm --> reservoirflow
-          fdm --> solution
-          fdm --> helpers
-          fem --> solution
-          fvm --> solution
+          analytical --> D1P1Solution
+          analytical --> D1P2Solution
+          analytical --> D1P3Solution
+          analytical --> D2P1Solution
+          analytical --> D2P2Solution
+          analytical --> D2P3Solution
+          analytical --> D3P1Solution
+          analytical --> D3P2Solution
+          analytical --> D3P3Solution
+          D1P1Solution --> reservoirflow
+          D1P1Solution --> scalers
+          D1P1Solution --> solution
+          D1P1Solution --> profme
+          D1P2Solution --> solution
+          D1P3Solution --> solution
+          D2P1Solution --> solution
+          D2P2Solution --> solution
+          D2P3Solution --> solution
+          D3P1Solution --> solution
+          D3P2Solution --> solution
+          D3P3Solution --> solution
+          compiler --> D1P1Solution
+          compiler --> D1P2Solution
+          compiler --> D1P3Solution
+          compiler --> D2P1Solution
+          compiler --> D2P2Solution
+          compiler --> D2P3Solution
+          compiler --> D3P1Solution
+          compiler --> D3P2Solution
+          compiler --> D3P3Solution
+          compiler --> DeepONetSolution
+          compiler --> PinnSolution
+          compiler --> FdmSolution
+          compiler --> FemSolution
+          compiler --> FvmSolution
+          neurical --> DeepONetSolution
+          neurical --> PinnSolution
+          DeepONetSolution --> solution
+          PinnSolution --> solution
+          numerical --> FdmSolution
+          numerical --> FemSolution
+          numerical --> FvmSolution
+          FdmSolution --> reservoirflow
+          FdmSolution --> solution
+          FdmSolution --> helpers
+          FemSolution --> solution
+          FvmSolution --> solution
           solvers --> helpers
-          wells --> directional
+          wells --> DirectionalWell
           wells --> multi_cell
           wells --> single_cell
           wells --> well
-          directional --> well
+          DirectionalWell --> well
           multi_cell --> well
           single_cell --> well
           well --> base

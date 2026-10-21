@@ -16,8 +16,8 @@ classes based on neurical solution usually requires a training
     about scientific machine learning.
 
 List of neurical solutions:
-    * ``PINN``: Physics-Informed-Neural-Network
-    * ``DeepONet``: Deep-Operator-Network (not available)
+    * ``PinnSolution``: Physics-Informed-Neural-NetworkSolution
+    * ``DeepONetSolution``: Deep-Operator-NetworkSolution (not available)
 
 .. attention::
     More efficient and state-of-the-art solutions will be added in the
@@ -31,11 +31,11 @@ Information:
 """
 
 __all__ = [
-    "Network",
-    "PINN",
-    "DeepONet",
+    "DeepONetSolution",
+    "NetworkSolution",
+    "PinnSolution",
 ]
 
-from .network import Network
-from .pinn import PINN
-from .deeponet import DeepONet
+from .deeponet_solution import DeepONetSolution
+from .network_solution import NetworkSolution
+from .pinn_solution import PinnSolution

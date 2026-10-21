@@ -134,7 +134,7 @@ def create_model(sparse):
     dx = np.array([400, 400, 300, 150, 200, 250, 250])
     phi = np.array([0.21, 0.21, 0.17, 0.10, 0.25, 0.13, 0.13])
     kx = np.array([273, 273, 248, 127, 333, 198, 198])
-    grid = grids.RegularCartesian(
+    grid = grids.RegularCartesianGrid(
         nx=5,
         ny=1,
         nz=1,
@@ -147,11 +147,13 @@ def create_model(sparse):
         dtype="double",
         unify=False,
     )
-    fluid = fluids.SinglePhase(mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double")
-    model = models.BlackOil(grid, fluid, pi=3000, dt=5, dtype="double")
+    fluid = fluids.SinglePhaseFluid(
+        mu=1.5, B=1, rho=50, comp=2.5 * 10**-5, dtype="double"
+    )
+    model = models.BlackOilModel(grid, fluid, pi=3000, dt=5, dtype="double")
     model.set_well(cell_id=4, q=-400, pwf=1500, s=0, r=3)
     model.set_boundaries({0: ("rate", 0), 6: ("rate", 0)})
-    model.compile(stype="numerical", method="fdm", sparse=sparse)
+    model.compile(stype="numerical", method="FdmSolution", sparse=sparse)
     return model
 
 

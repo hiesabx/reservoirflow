@@ -11,13 +11,13 @@ Information:
 """
 
 __all__ = [
+    "DirectionalWell",
+    "MultiCellWell",
+    "SingleCellWell",
     "Well",
-    "SingleCell",
-    "MultiCell",
-    "Directional",
 ]
 
-from .directional import Directional
-from .multi_cell import MultiCell
-from .single_cell import SingleCell
+from .directional_well import DirectionalWell
+from .multi_cell_well import MultiCellWell
+from .single_cell_well import SingleCellWell
 from .well import Well

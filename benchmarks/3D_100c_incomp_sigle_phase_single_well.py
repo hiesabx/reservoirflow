@@ -3,7 +3,7 @@ from reservoirflow.utils import profme
 
 
 def create_model():
-    grid = grids.RegularCartesian(
+    grid = grids.RegularCartesianGrid(
         nx=4,
         ny=1,
         nz=1,
@@ -14,8 +14,8 @@ def create_model():
         kx=270,
         dtype="double",
     )
-    fluid = fluids.SinglePhase(mu=0.5, B=1, dtype="double")
-    model = models.BlackOil(grid, fluid, dtype="double", dt=1, verbose=False)
+    fluid = fluids.SinglePhaseFluid(mu=0.5, B=1, dtype="double")
+    model = models.BlackOilModel(grid, fluid, dtype="double", dt=1, verbose=False)
     model.set_well(cell_id=4, q=-600, s=1.5, r=3.5)
     model.set_boundaries({0: ("pressure", 4000), 5: ("rate", 0)})
     return model
