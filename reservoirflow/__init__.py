@@ -23,4 +23,4 @@ __all__ = [
 from . import backends, fluids, grids, models, plots, scalers, solutions, utils, wells
 from .base import FACTORS, NOMENCLATURE, UNITS
 
-__version__ = "0.1.0rc2"
+__version__ = "0.1.0rc3"

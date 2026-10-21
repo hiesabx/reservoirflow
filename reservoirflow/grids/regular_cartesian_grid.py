@@ -8,9 +8,10 @@ import pyvista as pv
 import scipy.sparse as ss
 
 from reservoirflow import utils
-from reservoirflow.utils.helpers import _lru_cache
 
-from .grid import Grid
+# from .grid import Grid
+from reservoirflow.grids.grid import Grid
+from reservoirflow.utils.helpers import _lru_cache
 
 
 class RegularCartesianGrid(Grid):

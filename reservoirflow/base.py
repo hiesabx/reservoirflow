@@ -1,3 +1,6 @@
+import inspect
+
+import numpy as np
 from tabulate import tabulate
 
 UNITS = {
@@ -45,12 +48,12 @@ UNITS = {
         "volume": "m^3",
         "permeability": "m^2",
         "viscosity": "mpa.sec",
-        "gas formation volume factor": "m^3/(std\,m^3)",
-        "liquid formation volume factor": "m^3/(std\,m^3)",
-        "solution gas oil ratio": "(std\,m^3)/(std\,m^3)",
+        "gas formation volume factor": r"m^3/(std\,m^3)",
+        "liquid formation volume factor": r"m^3/(std\,m^3)",
+        "solution gas oil ratio": r"(std\,m^3)/(std\,m^3)",
         "phase gravity": "kpa/m",
-        "gas flow rate": "(std\,m^3)/day",
-        "liquid flow rate": "(std\,m^3)/day",
+        "gas flow rate": r"(std\,m^3)/day",
+        "liquid flow rate": r"(std\,m^3)/day",
         "volumetric velocity": "m/day",
         "density": "kg/m^3",
         "compressibility": "kpa^{-1}",
@@ -77,12 +80,12 @@ UNITS = {
         "volume": "cm^3",
         "permeability": "darcy",
         "viscosity": "cp",
-        "gas formation volume factor": "cm^3/(std\,cm^3)",
-        "liquid formation volume factor": "cm^3/(std\,cm^3)",
-        "solution gas oil ratio": "(std\,cm^3)/(std\,cm^3)",
+        "gas formation volume factor": r"cm^3/(std\,cm^3)",
+        "liquid formation volume factor": r"cm^3/(std\,cm^3)",
+        "solution gas oil ratio": r"(std\,cm^3)/(std\,cm^3)",
         "phase gravity": "atm/cm",
-        "gas flow rate": "(std\,cm^3)/day",
-        "liquid flow rate": "(std\,cm^3)/day",
+        "gas flow rate": r"(std\,cm^3)/day",
+        "liquid flow rate": r"(std\,cm^3)/day",
         "volumetric velocity": "cm/day",
         "density": "g/cm^3",
         "compressibility": "atm^{-1}",
@@ -159,17 +162,17 @@ NOMENCLATURE = {
         "volume conversion": "alpha constant",
     },
     "symbol": {
-        "transmissibility": "\mathbb{T}",
+        "transmissibility": r"\mathbb{T}",
         "error": "e",
         "pressure": "P",
-        "potential": "\Phi",
+        "potential": r"\Phi",
         "time": "t",
         "rate": "q",
         "length": "L",
         "area": "A",
         "volume": "V",
         "permeability": "k",
-        "viscosity": "\mu",
+        "viscosity": r"\mu",
         "gas formation volume factor": "B_g",
         "liquid formation volume factor": "B_l",
         "water formation volume factor": "B_w",
@@ -185,13 +188,13 @@ NOMENCLATURE = {
         "compressibility": "c",
         "compressibility factor": "z",
         "temperature": "T",
-        "porosity": "\phi",
+        "porosity": r"\phi",
         "saturation": "S",
         "relative permeability": "k_r",
         "angle": r"\theta",
         "gravitational acceleration": "g",
         "transmissibility conversion": r"\beta_c",
-        "gravity conversion": "\gamma_c",
+        "gravity conversion": r"\gamma_c",
         "volume conversion": r"\alpha_c",
     },
 }
@@ -294,7 +297,7 @@ class Base:
         ValueError
             Unknown units.
         """
-        if unit in UNITS.keys():
+        if unit in UNITS:
             self.unit = unit
             self.units = UNITS[unit]
             self.factors = FACTORS[unit]
@@ -376,11 +379,41 @@ class Base:
             )
 
     def __str__(self):
-        self.report()
-        return ""
+        return f"{self.__class__.__name__}(unit='{self.unit}', dtype='{self.dtype}')"
+
+    def _repr_args(self):
+        args = []
+        seen = set()
+        # walk child -> parent so inherited parameters (unit, dtype, ...) are included
+        for cls in type(self).__mro__:
+            args.extend(self._repr_args_for_class(cls, seen))
+        return args
+
+    def _repr_args_for_class(self, cls, seen):
+        init = cls.__dict__.get("__init__")
+        if init is None:
+            return []
+
+        args = []
+        for name, parameter in inspect.signature(init).parameters.items():
+            if name == "self" or name in seen:
+                continue
+            if parameter.kind in (parameter.VAR_POSITIONAL, parameter.VAR_KEYWORD):
+                continue
+            seen.add(name)
+            if not hasattr(self, name):
+                continue  # stored under a different name, skip it
+            value = getattr(self, name)
+            if isinstance(value, np.ndarray):
+                value = f"<array{value.shape}>"  # keep repr short
+                args.append(f"{name}={value}")
+            else:
+                args.append(f"{name}={value!r}")
+        return args
 
     def __repr__(self):
-        return str(vars(self))
+        args = self._repr_args()
+        return f"{type(self).__name__}({', '.join(args)})"
 
     # -------------------------------------------------------------------------
     # End
