@@ -1,24 +1,9 @@
-import unittest
+import pytest
+import pyvista as pv
 
 from reservoirflow import grids
 
-# class TestApp(unittest.TestCase):
-#     def test_CartGrid(self):
-#         test_grid(nx=1, ny=1, nz=1)
-#         test_grid(nx=2, ny=1, nz=1)
-#         test_grid(nx=1, ny=2, nz=1)
-#         test_grid(nx=1, ny=1, nz=2)
-#         test_grid(nx=2, ny=2, nz=1)
-#         test_grid(nx=2, ny=1, nz=2)
-#         test_grid(nx=1, ny=2, nz=2)
-#         test_grid(nx=2, ny=2, nz=2)
-#         test_grid(nx=3, ny=1, nz=1)
-#         test_grid(nx=1, ny=3, nz=1)
-#         test_grid(nx=1, ny=1, nz=3)
-#         test_grid(nx=3, ny=3, nz=1)
-#         test_grid(nx=3, ny=1, nz=3)
-#         test_grid(nx=1, ny=3, nz=3)
-#         test_grid(nx=3, ny=3, nz=3)
+pv.OFF_SCREEN = True
 
 
 def get_d(d_0, n):
@@ -28,6 +13,27 @@ def get_d(d_0, n):
         return d_0
 
 
+@pytest.mark.parametrize(
+    "nx, ny, nz",
+    [
+        (1, 1, 1),
+        (2, 1, 1),
+        (1, 2, 1),
+        (1, 1, 2),
+        (2, 2, 1),
+        (2, 1, 2),
+        (1, 2, 2),
+        (2, 2, 2),
+        (3, 1, 1),
+        (1, 3, 1),
+        (1, 1, 3),
+        (3, 3, 1),
+        (3, 1, 3),
+        (1, 3, 3),
+        (3, 3, 3),
+    ],
+    ids=lambda v: str(v),
+)
 def test_grid(nx, ny, nz):
     grid = grids.RegularCartesianGrid(
         nx=nx,
@@ -43,7 +49,3 @@ def test_grid(nx, ny, nz):
     )
     grid.show(boundary=True, label="id")
     grid.show(boundary=False, label="id")
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -4,11 +4,23 @@ dynamic = ["version"]
 description = "Reservoir Simulation and Engineering Library in Python"
 readme = "README.md"
 requires-python = ">=3.11"
+license = "CC-BY-NC-SA-4.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Hiesab", email = "contact@hiesab.com" }]
+maintainers = [{ name = "Zakariya Abugrin", email = "zakariya.abugrin@hiesab.com" }]
+keywords = ["Petroleum", "Reservoir", "Simulation", "Scientific Computing"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "aiohttp>=3.11.11",
@@ -26,11 +38,21 @@ dependencies = [
     "trame>=3.9.0",
 ]
 
+[project.urls]
+Website = "https://www.hiesab.com/en/products/reservoirflow/"
+Documentation = "https://reservoirflow.hiesab.com/"
+GitHub = "https://github.com/hiesabx/reservoirflow"
+
 [dependency-groups]
 dev = [
     "ipykernel>=7.3.0",
+    "pytest>=8.0",
     "torch>=2.7.0",
+    "seaborn",
 ]
+
+[tool.ruff]
+target-version = "py311"
 
 [tool.uv.sources]
 torch = [

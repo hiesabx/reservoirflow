@@ -1,6 +1,6 @@
 # ReservoirFlow: Reservoir Simulation and Engineering Library in Python
 
-> [Documenation](https://reservoirflow.hiesab.com) | [GitHub](https://github.com/hiesabx/reservoirflow) | [Website](https://www.hiesab.com/en/products/reservoirflow/)
+> [Documenation](https://reservoirflow.hiesab.com) | [PYPI](https://pypi.org/project/reservoirflow/) | [GitHub](https://github.com/hiesabx/reservoirflow) | [Website](https://www.hiesab.com/en/products/reservoirflow/)
 
 <!-- 
 ![five_spot_single_phase](/docs\source\user_guide\tutorials\tutorial_five_spot_single_phase\grid_animated.gif)\ 
@@ -22,7 +22,7 @@
 
 ## Introduction
 
-*ReservoirFlow* is a modern open-source Python library developed by [Zakariya Abugrin](https://www.linkedin.com/in/zakariya-abugrin/) at [Hiesab](https://www.hiesab.com/en/); see [About Us](https://reservoirflow.hiesab.com/about_us.html). *ReservoirFlow* is designed to study and model the process of fluid flow in porous media related to subsurface energy storage systems, reservoir simulation and engineering. *ReservoirFlow* is the first reservoir simulator based on physics-informed neural NetworkSolution models and one of its kind in a sense that it allows comparing and combining analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). *ReservoirFlow* is planned to be a central platform between education and industry where scientific papers are implemented and distributed in a standard and accessible format with coding examples, tutorials, and trainings.
+*ReservoirFlow* is a modern open-source Python library developed by [Hiesab](https://www.hiesab.com/en/); see [About Us](https://reservoirflow.hiesab.com/about_us.html). *ReservoirFlow* is designed to study and model the process of fluid flow in porous media related to subsurface energy storage systems, reservoir simulation and engineering. *ReservoirFlow* is the first reservoir simulator based on physics-informed neural NetworkSolution models and one of its kind in a sense that it allows comparing and combining analytical solutions, numerical solutions, and neurical solutions (i.e. solutions based on artificial neural networks). *ReservoirFlow* is planned to be a central platform between education and industry where scientific papers are implemented and distributed in a standard and accessible format with coding examples, tutorials, and trainings.
 
 <!-- <p align="center">
 <iframe src="https://drive.google.com/file/d/1JCD7W_5vJsUqNWf99NBTYjsLSMeVPEEa/preview"
@@ -83,10 +83,10 @@ The abbreviation `rf` refers to `reservoirflow` where all modules under this lib
 
 **Version History:**
 
-|     | **Version** | **Status**          | **Release Date (dd.mm.yyyy)** |
-| --- | ----------- | ------------------- | ----------------------------- |
-| 1   | `v0.1.0b1`  | current version     | 01.05.2025                    |
-| 2   | `v0.1.0rc1` | *under development* | *ongoing*                     |
+|     | **Version** | **Status**          | **Release Date** |
+| --- | ----------- | ------------------- | ---------------- |
+| 1   | `v0.1.0`    | current version     | 01.05.2025       |
+| 2   | `v0.2.0`    | *under development* | *ongoing*        |
 
 ## License
 
