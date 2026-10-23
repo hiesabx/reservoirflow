@@ -7,4 +7,3 @@ This page is dedicated to the software development. We follow the scrum agile me
     :maxdepth: 1
 
     backlog
-    sprints/sprints

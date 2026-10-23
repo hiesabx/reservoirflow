@@ -12,7 +12,7 @@ Contents
 
     contribution
     development/development
-    collaboration/collaboration
+    research/research
 
 
 .. toctree::

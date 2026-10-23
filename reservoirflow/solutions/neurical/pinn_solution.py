@@ -337,6 +337,7 @@ class PinnSolution(NetworkSolution, nn.Module):
         -------
         - create_graph is set to True allowing to compute higher
         order derivative products.
+
         """
         return autograd.grad(
             outputs=y_h,

@@ -1,5 +1,5 @@
-Collaboration 🤝
-================
+Research 📚
+===========
 
 .. button-link:: https://docs.google.com/forms/d/e/1FAIpQLSdDEWmryNyDR5snNOyKs6CXZYirQLW7r1hQYV85v3a4NdtbRA/viewform?usp=pp_url
     :color: secondary
@@ -20,12 +20,9 @@ Regardless of your type of collaboration, we recommend you to register for a col
 Collaborators
 -------------
 
-Here we list all of our active collaborations with universities, companies, teams, and individuals.
+Here we list all of our active collaborations:
 
 .. toctree::
     :maxdepth: 1
 
-    universities/universities
-    companies/companies
-    teams/teams
-    individuals/individuals
+    icolab_0001/icolab_0001

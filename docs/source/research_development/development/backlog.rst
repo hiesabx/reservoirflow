@@ -23,19 +23,19 @@ Improving Current Modules
 
 ``reservoirflow.fluids``
 ^^^^^^^^^^^^^^^^^^^^^^^^
-- `TwoPhase </api/reservoirflow.fluids.TwoPhase.html>`_ Fluid.
-- `ThreePhase </api/reservoirflow.fluids.ThreePhase.html>`_ Fluid.
-- `MultiPhase </api/reservoirflow.fluids.MultiPhase.html>`_ Fluid.
+- `TwoPhaseFluid </api/reservoirflow.fluids.TwoPhaseFluid.html>`_.
+- `ThreePhaseFluid </api/reservoirflow.fluids.ThreePhaseFluid.html>`_.
+- `MultiPhaseFluid </api/reservoirflow.fluids.MultiPhaseFluid.html>`_.
 
 ``reservoirflow.grids``
 ^^^^^^^^^^^^^^^^^^^^^^^
-- `Radial </api/reservoirflow.grids.Radial.html>`_ Grid.
-- `IrregularCartesian </api/reservoirflow.grids.IrregularCartesian.html>`_ Grid.
+- `RadialGrid </api/reservoirflow.grids.RadialGrid.html>`_.
+- `IrregularCartesianGrid </api/reservoirflow.grids.IrregularCartesianGrid.html>`_.
 
 ``reservoirflow.models``
 ^^^^^^^^^^^^^^^^^^^^^^^^
-- `CompositionalModel </api/reservoirflow.models.CompositionalModel.html>`_ Model.
-- `ThermalModel </api/reservoirflow.models.ThermalModel.html>`_ Model.
+- `CompositionalModel </api/reservoirflow.models.CompositionalModel.html>`_.
+- `ThermalModel </api/reservoirflow.models.ThermalModel.html>`_.
 
 ``reservoirflow.solutions``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

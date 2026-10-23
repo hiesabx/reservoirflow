@@ -50,6 +50,19 @@ dev = [
     "torch>=2.7.0",
     "seaborn",
 ]
+docs = [
+    "sphinx>=7.3.7",
+    "pydata-sphinx-theme>=0.15.4",
+    "myst-parser>=3.0.1",
+    "myst-nb>=1.1.1",
+    "sphinx-comments>=0.0.3",
+    "sphinx-design>=0.6.0",
+    "sphinxcontrib-bibtex>=2.6.2",
+    "sphinx-copybutton>=0.5.2",
+    "pygments>=2.18.0",
+    "livereload>=2.7.0",
+    "ghp-import",
+]
 
 [tool.ruff]
 target-version = "py311"

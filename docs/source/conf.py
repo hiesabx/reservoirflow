@@ -4,6 +4,7 @@
 # import sys
 from datetime import datetime
 
+from packaging.version import Version
 from tabulate import tabulate
 
 import reservoirflow as rf
@@ -16,7 +17,7 @@ disclaimer = "Third-party components are copyrighted by their respective authors
 copyright = f"{datetime.now().year}, {author}. {disclaimer}"
 version = rf.__version__
 release = f"v{version}"
-master_doc = "index"
+root_doc = "index"
 
 # remove warnings:
 suppress_warnings = [
@@ -40,12 +41,11 @@ exclude_patterns = [
 
 # switcher:
 json_url = "_static/versions.json"
-if any(v in version for v in ["dev", "a", "b", "rc"]):
-    # all pre-release stages are called dev
-    switcher_version = "dev"
-else:
-    # only keep major.minor version number to match versions.json
-    switcher_version = ".".join(version.split(".")[:2])
+switcher_version = (
+    "dev"
+    if Version(version).is_prerelease
+    else f"{Version(version).major}.{Version(version).minor}"
+)
 
 extensions = [
     "sphinx.ext.autodoc",  # build docstring contents.
@@ -63,7 +63,15 @@ extensions = [
     "sphinx_design",  # https://sphinx-design.readthedocs.io/en/latest/get_started.html
     "sphinxcontrib.bibtex",  # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html
     "sphinx_copybutton",  # https://sphinx-copybutton.readthedocs.io/en/latest/
+    "sphinx.ext.intersphinx",
 ]
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "torch": ("https://pytorch.org/docs/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+}
 
 # config: https://www.sphinx-doc.org/en/master/usage/configuration.html
 add_module_names = True
@@ -112,9 +120,9 @@ autoclass_content = "both"
 
 # myst and myst-nb: https://myst-nb.readthedocs.io/en/latest/render/format_code_cells.html
 myst_all_links_external = True
-myst_admonition_enable = True
-myst_amsmath_enable = True
-myst_html_img_enable = True
+# myst_admonition_enable = True
+# myst_amsmath_enable = True
+# myst_html_img_enable = True
 myst_url_schemes = ("http", "https", "mailto")
 myst_enable_extensions = [
     "amsmath",
@@ -125,7 +133,7 @@ myst_enable_extensions = [
     "fieldlist",
 ]
 myst_footnote_transition = False  # solves the issue with references in nb.
-myst_highlight_code_blocks = False
+# myst_highlight_code_blocks = False
 
 # myst-nb: https://myst-nb.readthedocs.io/en/latest/configuration.html
 nb_output_stderr = "remove"  # 'remove' progress bar
@@ -180,13 +188,13 @@ html_css_files = [
     "custom.css",
 ]
 
-# bug in pydata theme: remove in future version starting at 0.15.4
-html_sidebars = {
-    "support_us": [],
-    "capabilities": [],
-    "about_us": [],
-    "release_notes/*": [],
-}
+# # bug in pydata theme: remove in future version starting at 0.15.4
+# html_sidebars = {
+#     "support_us": [],
+#     "capabilities": [],
+#     "about_us": [],
+#     "release_notes/*": [],
+# }
 pygments_style = "none"
 
 # announcement = """
@@ -293,7 +301,7 @@ def store_dict(in_dict, name="FACTORS", folder=""):
             ]
         )
     table = tabulate(report, headers=headers, showindex=False, tablefmt="rst")
-    path = f"{folder+name.lower()}_table.rst"
+    path = f"{folder + name.lower()}_table.rst"
     with open(path, "w") as f:
         f.writelines(table)
 
